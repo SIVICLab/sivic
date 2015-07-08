@@ -156,7 +156,9 @@ void svkIdfVolumeReader::SetMultiVolumeType(svkIdfVolumeReader::MultiVolumeType 
 void svkIdfVolumeReader::OnlyReadHeader(bool onlyReadHeader)
 {
     this->onlyReadHeader = onlyReadHeader;
-    vtkWarningWithObjectMacro(this, "onlyReadHeader: " << this->onlyReadHeader);   
+    if (this->GetDebug()) {
+        vtkWarningWithObjectMacro(this, "onlyReadHeader: " << this->onlyReadHeader);   
+    }
 }
 
 
@@ -166,7 +168,9 @@ void svkIdfVolumeReader::OnlyReadHeader(bool onlyReadHeader)
 void svkIdfVolumeReader::SetReadIntAsSigned(bool readIntAsSigned)
 {
     this->readIntAsSigned = readIntAsSigned;
-    vtkWarningWithObjectMacro(this, "readIntAsSigned: " << this->readIntAsSigned);
+    if (this->GetDebug()) {
+        vtkWarningWithObjectMacro(this, "readIntAsSigned: " << this->readIntAsSigned);
+    }
 }
 
 
