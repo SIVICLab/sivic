@@ -125,7 +125,8 @@ int main (int argc, char** argv)
         FLAG_SINGLE, 
         FLAG_PPM1,
         FLAG_PPM2,
-        FLAG_ERROR
+        FLAG_ERROR,
+        FLAG_SINGLETHREAD
     }; 
 
 
