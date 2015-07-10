@@ -94,7 +94,7 @@ svkHSVD::~svkHSVD()
         this->filterImage->Delete();
         this->filterImage = NULL;
     }
-}
+} 
 
 
 /*!
@@ -149,6 +149,14 @@ int svkHSVD::RequestInformation( vtkInformation* request, vtkInformationVector**
 void svkHSVD::SetErrorHandlingBehavior( HSVDBehaviorOnError errBehavior )
 { 
     this->errorHandlingFlag = errBehavior;
+}
+
+/*!
+ *  Switch to single threading (relevant for grid submissions)
+ */
+void svkHSVD::SetSingleThreaded()
+{ 
+    this->SetNumberOfThreads(1);
 }
 
 

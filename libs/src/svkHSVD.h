@@ -169,6 +169,8 @@ class svkHSVD : public svkThreadedImageAlgorithm
 
         void                SetThresholdModelDifference( float percentDifference );
 
+        void                SetSingleThreaded();
+    
     protected:
 
         svkHSVD();

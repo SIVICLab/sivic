@@ -94,6 +94,8 @@ int main (int argc, char** argv)
     usemsg += "                                 0 = SET_FILTER_TO_ZERO (input signal unchanged) \n";
     usemsg += "                                 1 = SET_SIGNAL_TO_ZERO (default)                \n";
     usemsg += "                                 2 = IGNORE_ERROR                                \n";
+    usemsg += "   --singleThreaded         Execute the algorithm as a single                    \n";
+    usemsg += "                            thread, e.g. on grids (default is multi-threaded).   \n";
     usemsg += "   -h                       Print this help mesage.                              \n"; 
     usemsg += "                                                                                 \n";  
     usemsg += "HSVD filter to remove baseline components from spectra.                          \n";  
@@ -111,6 +113,7 @@ int main (int argc, char** argv)
     bool    filterWater = false; 
     bool    filterLipid = false; 
     bool    onlyFilterSingleFile = false;
+    bool    executeSingleThreaded = false;
     vector< vector <float> > customFilter; 
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
@@ -133,6 +136,7 @@ int main (int argc, char** argv)
         {"ppm1",      required_argument, NULL,  FLAG_PPM1},
         {"ppm2",      required_argument, NULL,  FLAG_PPM2},
         {"error",     required_argument, NULL,  FLAG_ERROR},
+        {"singleThreaded", no_argument,  NULL,  FLAG_SINGLETHREAD},
         {0, 0, 0, 0}
     };
 
@@ -182,6 +186,9 @@ int main (int argc, char** argv)
                 break;           
             case FLAG_ERROR:
                 errorBehavior = static_cast<svkHSVD::HSVDBehaviorOnError>(atoi( optarg )); 
+                break;
+            case FLAG_SINGLETHREAD:
+                executeSingleThreaded = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -292,6 +299,11 @@ int main (int argc, char** argv)
     }
  
     hsvd->SetErrorHandlingBehavior( errorBehavior );
+
+    if ( executeSingleThreaded ) {
+        cout << "Executing as a singe thread " << endl;
+        hsvd->SetSingleThreaded();
+    }
 
     hsvd->Update();
 
