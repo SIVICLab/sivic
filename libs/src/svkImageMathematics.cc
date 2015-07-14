@@ -156,28 +156,34 @@ void svkImageMathematics::CheckDataTypeMatch()
         int outType0 = this->GetImageDataInput(0)->GetScalarType();
         int outType1 = this->GetImageDataInput(1)->GetScalarType();
         
+        vtkImageCast* cast = vtkImageCast::New();
         if ( outType0 > outType1 ) {
             cout << "Cast image 1 to image 0 type: " << outType0 << endl;
-            vtkImageCast* cast = vtkImageCast::New();
-            cast->SetOutputScalarType( outType0 );
-            cast->SetInput( this->GetImageDataInput(1) ); 
-            cast->ClampOverflowOn();
-            cast->Update(); 
-            this->GetImageDataInput(1)->DeepCopy( cast->GetOutput() ); 
-            cast->Delete(); 
+            //  The cast doesn't seem to work correctly with multple PointData arrays
+            //cast->SetOutputScalarType( outType0 );
+            //cast->SetInput( this->GetImageDataInput(1) ); 
+            //cast->ClampOverflowOn();
+            //cast->Update(); 
+            //this->GetImageDataInput(1)->DeepCopy( cast->GetOutput() ); 
+
+            svkImageData::SafeDownCast(this->GetImageDataInput(1))->CastDataFormat( svkDcmHeader::SIGNED_FLOAT_4); 
         }
         if ( outType1 > outType0 ) {
             cout << "Cast image 0 to image 1 type: " << outType1 << endl;
-            vtkImageCast* cast = vtkImageCast::New();
-            cast->SetOutputScalarType( outType1 );
-            cast->SetInput( this->GetImageDataInput(0) ); 
-            cast->ClampOverflowOn();
-            cast->Update(); 
-            this->GetImageDataInput(0)->DeepCopy( cast->GetOutput() ); 
-            cast->Delete(); 
+            //  target cast type should depent on outTYpe1: 
+            //cast->SetOutputScalarType( outType1 );
+            //cast->SetInput( this->GetImageDataInput(0) ); 
+            //cast->ClampOverflowOn();
+            //cast->Update(); 
+            //this->GetImageDataInput(0)->DeepCopy( cast->GetOutput() ); 
+
+            svkImageData::SafeDownCast(this->GetImageDataInput(0))->CastDataFormat( svkDcmHeader::SIGNED_FLOAT_4); 
         }
     }
+
+    this->GetOutput()->DeepCopy( this->GetImageDataInput(0) ); 
 }
+
 
 /*!
  *  This method loops over all volumes and calls the VTK super class update method on each to 
@@ -189,34 +195,118 @@ void svkImageMathematics::Update()
     // if there are 2 inputs of different types, upcast to the larger: 
     this->CheckDataTypeMatch();  
 
-
     //  Determine how many vtkPointData arrays are in the input data
-    int numVolumes = this->GetImageDataInput(0)->GetPointData()->GetNumberOfArrays();
-  
+    //  Require the first input to have at least as many volumes as the 2nd input if a binary 
+    //  operation.     
+    this->GetImageDataInput(0); 
+    this->GetImageDataInput(0)->GetPointData(); 
+    int numVolumes0 = this->GetImageDataInput(0)->GetPointData()->GetNumberOfArrays();
+    int numVolumes1 = 0;
+    if (this->GetInput(1)) {
+        numVolumes1 = this->GetImageDataInput(1)->GetPointData()->GetNumberOfArrays();
+        if ( numVolumes0 != numVolumes1 ) {
+            if ( numVolumes1 == 1 ) {
+            } else {
+                cout << "ERROR, svkImageMathematics:  number of volumes is not compatible: " << numVolumes0 << " " << numVolumes1 << endl;
+                exit(1); 
+            }
+        }
+    }
+
+    int numVolumes = ( numVolumes1 > numVolumes0 ) ? numVolumes1:numVolumes0;
+
     //  Set the active scalars for each relevant input and output arrays:    
     //  Determine number of input ports for this particular operation (1 or 2).    
-    svkImageData* tmp = svkMriImageData::New();
-    tmp->DeepCopy( this->GetImageDataInput(0) ); 
     this->SetInputPortsFromXML();
+
+    //cout << "OUTPUT DATA: " << *this->GetOutput(); 
 
     for ( int vol = 0; vol < numVolumes; vol++ ) {
 
+        cout << "VOL LOOP: " << vol<< endl;
+
+        //  input 1 scalar data volume
+        string arrayName0;  
         if (this->GetInput(0)) {
-            this->GetImageDataInput(0)->GetPointData()->SetActiveAttribute (vol, vtkDataSetAttributes::SCALARS); 
+            arrayName0 = this->GetImageDataInput(0)->GetPointData()->GetArray(vol)->GetName(); 
+            this->GetImageDataInput(0)->GetPointData()->SetActiveScalars( 
+                //this->GetImageDataInput(0)->GetPointData()->GetArray(vol)->GetName()
+                arrayName0.c_str() 
+            );
         }    
 
+        //  input 2 scalar data volume
+        string arrayName1;  
         if (this->GetInput(1)) {
-            this->GetImageDataInput(1)->GetPointData()->SetActiveAttribute (vol, vtkDataSetAttributes::SCALARS); 
-            
+            int vol1; 
+            if ( numVolumes1 == 1 ) {
+                vol1 = 0 ;
+            } else {
+                vol1 = vol; 
+            }
+            arrayName1 = this->GetImageDataInput(1)->GetPointData()->GetArray(vol1)->GetName(); 
+            this->GetImageDataInput(1)->GetPointData()->SetActiveScalars( 
+                //this->GetImageDataInput(1)->GetPointData()->GetArray(vol1)->GetName()
+                arrayName1.c_str() 
+            );
         }    
-    
+
+        //this->Superclass::Update(); 
         if (this->GetOutput()) {
-            this->GetOutput()->GetPointData()->SetActiveAttribute(vtkDataSetAttributes::SCALARS, vol);
+
+            this->GetOutput()->GetPointData()->SetActiveScalars( 
+                //this->GetImageDataInput(0)->GetPointData()->GetArray(vol)->GetName()
+                arrayName0.c_str() 
+            );
         }    
+
+        int numVoxels[3];
+        svkMriImageData::SafeDownCast(this->GetOutput(0))->GetNumberOfVoxels(numVoxels);
+        int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
+        vtkDataArray* in1Array = this->GetImageDataInput(0)->GetPointData()->GetScalars();    // returns a vtkDataArray
+        vtkDataArray* in2Array;
+        if (this->GetInput(1)) {
+            in2Array = this->GetImageDataInput(1)->GetPointData()->GetScalars();    // returns a vtkDataArray
+        }
+        vtkDataArray* outArray = this->GetOutput()->GetPointData()->GetArray(arrayName0.c_str() );    // returns a vtkDataArray
+        for ( int i = 0; i < totalVoxels; i++ ) {
+            if ( this->Operation == VTK_ADD ) {
+                outArray->SetTuple1( 
+                    i,  
+                    in1Array->GetTuple1(i) + in2Array->GetTuple1(i) 
+                ); 
+            } else if ( this->Operation == VTK_SUBTRACT ) {
+                outArray->SetTuple1( 
+                    i,  
+                    in1Array->GetTuple1(i) - in2Array->GetTuple1(i) 
+                ); 
+            } else if ( this->Operation == VTK_DIVIDE ) {
+                if ( in2Array->GetTuple1(i) == 0 ) {
+                    outArray->SetTuple1( 
+                        i,  
+                        0
+                    ); 
+                } else {
+                    outArray->SetTuple1( 
+                        i,  
+                        (in1Array->GetTuple1(i)) / in2Array->GetTuple1(i) 
+                    ); 
+                }
+            } else if ( this->Operation == VTK_MULTIPLY ) {
+                outArray->SetTuple1( 
+                    i,  
+                    in1Array->GetTuple1(i) * in2Array->GetTuple1(i) 
+                ); 
+            } else if ( this->Operation == VTK_MULTIPLYBYK ) {
+                outArray->SetTuple1( 
+                    i,  
+                    in1Array->GetTuple1(i) * this->GetConstantK()  
+                ); 
+            }
+        }
+
+        //cout << "SPOUT post: " << *this->GetOutput(); 
         
-        this->Superclass::Update(); 
-
-
         //  Mask the data if a mask was provided.  Preferably the masking would be applied by 
         //  limiting the extent fo the vtkImagetMathematics operation, but I'll just zero out the 
         //  results here for now. 
@@ -239,34 +329,32 @@ void svkImageMathematics::Update()
             }
         }
 
-        //  Push results into correct array in tmp data
-        tmp->GetPointData()->GetArray(vol)->DeepCopy( this->GetOutput()->GetPointData()->GetScalars() ); 
+        //  debug
+        /*
+        vtkDataArray* in1Array0 = this->GetImageDataInput(0)->GetPointData()->GetScalars();    // returns a vtkDataArray
+        vtkDataArray* in2Array0 = this->GetImageDataInput(1)->GetPointData()->GetScalars();    // returns a vtkDataArray
+        vtkDataArray* outArray0 = this->GetOutput()->GetPointData()->GetArray(arrayName0.c_str() );    // returns a vtkDataArray
+        for (int k = 0; k < 1; k++ ) {
+            cout << "K: " << k << endl;
+            //outArray0 = this->GetOutput()->GetPointData()->GetArray(k);
+            cout << "ARRAY 1 " << *in1Array0 << endl;
+            cout << "ARRAY 2 " << *in2Array0 << endl;
+            cout << "ARRAY o0 " << *outArray0 << endl;
+            for ( int i = 1543; i < 1550; i++ ) {
+                cout<<"TUPLE Init: " << i << " " << in1Array0->GetTuple1(i) 
+                    << " op " << in2Array0->GetTuple1(i) << " " <<outArray0->GetTuple1( i ) << endl; 
+            }
+        }
+        */
+        
     }
 
-//  debug
-/*
-vtkDataArray* in1Array = this->GetImageDataInput(0)->GetPointData()->GetScalars();    // returns a vtkDataArray
-vtkDataArray* in2Array = this->GetImageDataInput(1)->GetPointData()->GetScalars();    // returns a vtkDataArray
-vtkDataArray* outArray = this->GetOutput()->GetPointData()->GetScalars();    // returns a vtkDataArray
-cout << "ARRAY 1" << *in1Array << endl;
-cout << "ARRAY 2" << *in2Array << endl;
-cout << "ARRAY o" << *outArray << endl;
-int numVoxels[3];
-svkMriImageData::SafeDownCast(this->GetOutput(0))->GetNumberOfVoxels(numVoxels);
-int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
-for ( int i = 0; i < totalVoxels; i++ ) {
-    cout << "TUPLE: " << i << " " << in1Array->GetTuple1(i) << " - " << in2Array->GetTuple1(i) << " " << outArray->GetTuple1( i ) << endl; 
-}
-*/
-
     //  Now copy the multi-volume output results back into the  algorithm's output object. 
-    svkMriImageData::SafeDownCast(this->GetOutput())->DeepCopy( tmp ); 
     if( this->GetPortMapper()->GetStringInputPortValue( OUTPUT_SERIES_DESCRIPTION ) != NULL ) {
         string description = this->GetPortMapper()->GetStringInputPortValue( OUTPUT_SERIES_DESCRIPTION )->GetValue();
         svkMriImageData::SafeDownCast(this->GetOutput())->GetDcmHeader()->SetValue("SeriesDescription", description );
     }
-    tmp->Delete();
-        
+    cout << "FINAL: " << *this->GetOutput() << endl;
 }
 
 
