@@ -28,16 +28,16 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: svn+ssh://jccrane@svn.code.sf.net/p/sivic/code/trunk/applications/cmd_line/src/svk_image_mathematics.cc $
+ *  $Rev: 2282 $
+ *  $Author: jccrane $
+ *  $Date: 2015-07-07 15:53:20 -0700 (Tue, 07 Jul 2015) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
  *
- *  Utility application for converting between supported file formats. 
+ *  Application to create a z-score map of the ration of two metabolite maps. 
  *
  */
 
@@ -53,7 +53,7 @@ extern "C" {
 #include <svkImageReader2.h>
 #include <svkImageWriter.h>
 #include <svkImageWriterFactory.h>
-#include <svkImageMathematics.h>
+#include <svkMetaboliteRatioZScores.h>
 
 
 using namespace svk;
@@ -64,30 +64,25 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_image_mathematics --i1 input_file_name [ --i2 input_file_name ]          \n";  
-    usemsg += "                      -o output_file_root -p operation                       \n"; 
+    usemsg += "svk_zscore --i1 input_file_name  --i2 input_file_name                        \n";  
+    usemsg += "           -o output_file_root -u upperThreshold -l lowerThreshold           \n"; 
     usemsg += "                                                                             \n";  
-    usemsg += "   --i1          input_file_name     Name of input file 1                    \n"; 
-    usemsg += "   --i2          input_file_name     Name of input file 2 (binary operation) \n"; 
+    usemsg += "   --i1          input_file_name     Name of input file 1 (numerator)        \n"; 
+    usemsg += "   --i2          input_file_name     Name of input file 2 (denominator)      \n"; 
     usemsg += "   -o            output_file_root    Root name of output (no extension)      \n";  
-    usemsg += "   -p            operation            Operator:                              \n";  
-    usemsg += "                                         1 = +                               \n";  
-    usemsg += "                                         2 = -                               \n";  
-    usemsg += "                                         3 = *                               \n";  
-    usemsg += "                                         4 = /                               \n";  
-    usemsg += "                                         5 = * k (Scale by constant)         \n";  
-    usemsg += "   -s            scale factor        float scaling factor                    \n";
+    usemsg += "   -u            threshold           Upper std dev threshold                 \n";  
+    usemsg += "   -l            threshold           lower std dev threshold                 \n";  
     usemsg += "   -v                                Verbose output.                         \n";
     usemsg += "   -h                                Print help mesage.                      \n";  
     usemsg += "                                                                             \n";  
-    usemsg += "Applies specified operation to input image                                   \n";  
+    usemsg += "Computs the z-score of the ratio of the two input metabolite maps.           \n";  
     usemsg += "                                                                             \n";  
 
     string inputFileName1; 
     string inputFileName2; 
     string outputFileName; 
-    int    operation = 0;  
-    float  scalingFactor = 1;
+    int    lowerThreshold = 0;  
+    int    upperThreshold = 0;  
     bool   verbose = false;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
@@ -110,7 +105,7 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:o:s:p:hv", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "o:l:u:hv", long_options, &option_index)) != EOF) {
         switch (i) {
             case FLAG_FILE_1:
                 inputFileName1.assign( optarg );
@@ -121,11 +116,11 @@ int main (int argc, char** argv)
             case 'o':
                 outputFileName.assign(optarg);
                 break;
-            case 'p':
-                operation = atoi(optarg);
+            case 'l':
+                lowerThreshold = atof(optarg);
                 break;
-            case 's':
-                scalingFactor = atof(optarg);
+            case 'u':
+                upperThreshold = atof(optarg);
                 break;
             case 'v':
                 verbose = true;
@@ -142,29 +137,24 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
-    if ( argc != 0 || inputFileName1.length() == 0 || outputFileName.length() == 0 ) { 
-        cout << usemsg << endl;
-        exit(1); 
-    }
-
-    if ( operation < 1 || operation > 5 ) {
-        cout << "Invalid operation: " << operation << endl;
+    if ( argc != 0 || inputFileName1.length() == 0 || 
+         inputFileName2.length() == 0 || 
+         outputFileName.length() == 0 ) 
+    { 
         cout << usemsg << endl;
         exit(1); 
     }
 
     if( verbose ) {
         cout << "INPUT:    " << inputFileName1 << endl;
+        cout << "INPUT:    " << inputFileName2 << endl;
         cout << "OUTPUT:   " << outputFileName << endl;
-        cout << "OPERATOR: " << operation << endl;
     }
 
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
     svkImageReader2* reader1 = readerFactory->CreateImageReader2(inputFileName1.c_str());
     svkImageReader2* reader2 = NULL;
-    if ( inputFileName2.size() > 0 ) {
-        reader2 = readerFactory->CreateImageReader2( inputFileName2.c_str() );
-    }
+    reader2 = readerFactory->CreateImageReader2( inputFileName2.c_str() );
 
     //  Get input reader type: 
     if ( reader1->IsA("svkDcmMriVolumeReader") ) {
@@ -183,36 +173,24 @@ int main (int argc, char** argv)
         cerr << "Can not determine appropriate reader for: " << inputFileName1 << endl;
         exit(1);
     }
+    if (reader2 == NULL) {
+        cerr << "Can not determine appropriate reader for: " << inputFileName2 << endl;
+        exit(1);
+    }
     reader1->SetFileName( inputFileName1.c_str() );
     reader1->Update(); 
-    if ( reader2 != NULL ) {
-        reader2->SetFileName( inputFileName2.c_str() );
-        reader2->Update();
-    }
+    reader2->SetFileName( inputFileName2.c_str() );
+    reader2->Update();
 
 
     //  Set the input command line into the data set provenance:
     reader1->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
 
     //  Scale image by constant factor: 
-    svkImageMathematics* math = svkImageMathematics::New();
-    math->SetInput1( reader1->GetOutput() );
-    if ( reader2 != NULL ) {
-        math->SetInput2( reader2->GetOutput() ); 
-    }
-    if ( operation == 1 ) {
-        math->SetOperationToAdd();   
-    } else if ( operation == 2 ) {
-        math->SetOperationToSubtract();   
-    } else if ( operation == 3 ) {
-        math->SetOperationToMultiply();   
-    } else if ( operation == 4 ) {
-        math->SetOperationToDivide();   
-    } else if ( operation == 5 ) {
-        math->SetOperationToMultiplyByK();   
-        math->SetConstantK( scalingFactor );
-    } 
-    math->Update();
+    svkMetaboliteRatioZScores* zscore = svkMetaboliteRatioZScores::New();
+    zscore->SetInputNumerator( reader1->GetOutput() );
+    zscore->SetInputDenominator( reader2->GetOutput() );
+    zscore->Update();
 
     // If the type is supported be svkImageWriterFactory then use it, otherwise use the vtkXMLWriter
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
@@ -225,15 +203,13 @@ int main (int argc, char** argv)
 
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( math->GetOutput() );
+    writer->SetInput( zscore->GetOutput() );
     writer->Write();
     writer->Delete();
 
     reader1->Delete();
-    if ( reader2 != NULL ) {
-        reader2->Delete();
-    }
-    math->Delete();
+    reader2->Delete();
+    zscore->Delete();
 
     return 0; 
 }

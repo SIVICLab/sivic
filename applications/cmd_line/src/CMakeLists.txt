@@ -542,6 +542,14 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_zscore
+    svk_zscore.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_zscore
+	${SVK_LIBS}
+)
 
 
 ADD_EXECUTABLE(
@@ -726,6 +734,7 @@ SET(APPS
     svk_spec_diff 
     svk_integrate_dynamic 
     svk_quantify 
+    svk_zscore
     svk_reslice 
     svk_transform
     svk_dcmdump 
