@@ -145,6 +145,8 @@ class svkPlotGridView : public svkDataView
         void                        TurnPropOff(int propIndex);
         void                        HideView();
         void                        ShowView();
+        void                        AlignCameraOff(); 
+        void                        AlignCameraOn(); 
 
         //! Enum represents objects in the scene
         typedef enum {
@@ -215,6 +217,7 @@ class svkPlotGridView : public svkDataView
         svkImageMapToColors*     windowLevel;
         vtkstd::vector<int>      volumeIndexVector;
         int                      overlayTextDigits;
+        bool                     alignCamera; 
 
         static const double CLIP_TOLERANCE;
 
