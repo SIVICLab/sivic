@@ -429,24 +429,6 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
-    svk_dce_cancer
-    svk_dce_cancer.cc
-)
-TARGET_LINK_LIBRARIES(
-    svk_dce_cancer
-    ${SVK_LIBS}
-)
-
-ADD_EXECUTABLE(
-    svk_dce_high_grade
-    svk_dce_high_grade.cc
-)
-TARGET_LINK_LIBRARIES(
-    svk_dce_high_grade
-    ${SVK_LIBS}
-)
-
-ADD_EXECUTABLE(
     svk_reslice
     svk_reslice.cc
 )
