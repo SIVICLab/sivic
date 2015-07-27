@@ -274,6 +274,7 @@ ADD_LIBRARY(
     sivicTestCase.cc
     sivicTestSuite.cc
     svkSecondaryCaptureFormatter.cc
+    svkSecondaryCaptureFormatterProstate.cc
 )
 
 

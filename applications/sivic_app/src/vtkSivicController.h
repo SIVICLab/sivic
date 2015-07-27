@@ -81,6 +81,7 @@
 #include <svkVoxelTaggingUtils.h>
 #include <svkDataViewController.h>
 #include <svkSecondaryCaptureFormatter.h>
+#include <svkSecondaryCaptureFormatterProstate.h>
 #include <svkImageWriterFactory.h> 
 #include <sivicViewRenderingWidget.h>
 #include <svkDataModel.h>
@@ -295,6 +296,7 @@ class vtkSivicController : public vtkObject
         static void                    UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
         static void                    ExitSivic(vtkObject* subject, unsigned long, void* thisObject, void* callData);
         void                           DeselectMetabolites( ); 
+        void                           InitSecondaryCaptureFormatter(); 
         vtkCallbackCommand*            progressCallback;
         vtkCallbackCommand*            exitSivicCallback;
         string                         thresholdType;

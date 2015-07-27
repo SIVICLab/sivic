@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_SECONDARY_CAPTURE_FORMATTER_H
-#define SVK_SECONDARY_CAPTURE_FORMATTER_H
+#ifndef SVK_SECONDARY_CAPTURE_FORMATTER_PROSTATE_H
+#define SVK_SECONDARY_CAPTURE_FORMATTER_PROSTATE_H
 
 
 #include <vtkObject.h>
@@ -59,82 +59,39 @@
 #include <svkImageData.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
+#include <svkSecondaryCaptureFormatter.h>
 
 
 class vtkSivicController;
 
+
 namespace svk {
 
+
 /*! 
- *
+ *  Prostate specific secondary capture formatter
  */
-class svkSecondaryCaptureFormatter : public vtkObject
+class svkSecondaryCaptureFormatterProstate : public svkSecondaryCaptureFormatter
 {
 
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkSecondaryCaptureFormatter,vtkObject );
+        vtkTypeRevisionMacro( svkSecondaryCaptureFormatterProstate, svkSecondaryCaptureFormatter);
    
-        static svkSecondaryCaptureFormatter* New();  
+        static svkSecondaryCaptureFormatterProstate* New();  
 
-        svkSecondaryCaptureFormatter();
-        ~svkSecondaryCaptureFormatter();
-
-        enum {
-            ALL_SLICES = 0,
-            CURRENT_SLICE
-        } OutputOption;
-
-        enum {
-            LIGHT_ON_DARK = 0,
-            DARK_ON_LIGHT 
-        } ColorSchema;
-    
-        enum {
-            SPECTRA_CAPTURE = 0,
-            IMAGE_CAPTURE
-        } CaptureType;
-
-        typedef enum {
-            LANDSCAPE = 0,
-            PORTRAIT
-        } CaptureAspect;
-
-    
-        void SetSivicController( vtkSivicController* sivicController );
-        void SetPlotController( svkPlotGridViewController* plotController );
-        void SetOverlayController( svkOverlayViewController* overlayController );
-        void SetModel( svkDataModel* );    
-        void SetOrientation( svkDcmHeader::Orientation orientation );
-        void WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
-        void WriteCombinedCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
-        void WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, int instanceNumber = 0 );
-        void WriteCombinedWithSummaryCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, bool preview = 0 );
+        svkSecondaryCaptureFormatterProstate();
+        ~svkSecondaryCaptureFormatterProstate();
 
 
     protected:
-
-        vtkSivicController*            sivicController;
-        svkPlotGridViewController*     plotController;
-        svkOverlayViewController*      overlayController;
-        svkDataModel*                  model;
-        CaptureAspect                  aspect;
+        virtual void RenderCombinedImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
+        virtual void PopulateInfoText( vtkTextActor* specText1, vtkTextActor* specText2, vtkTextActor* imageText );
 
     private:
    
-        svkDcmHeader::Orientation      orientation;
-        vtkRenderWindow*               captureWindow;
-        int imageSize[2];
-        int spectraHalfSize[2];
 
-        void SetAspect( CaptureAspect aspect);
-        void RenderSpectraImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage );
-        void RenderCombinedImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
-        void RenderSummaryImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
-        void PopulateInfoText( vtkTextActor* specText1, vtkTextActor* specText2, vtkTextActor* imageText );
-        void PrintImages( string fileNameString, int startImage, int endImage );
-        static void PreviewImage( svkImageData* image ); 
 
 };
 
@@ -142,4 +99,4 @@ class svkSecondaryCaptureFormatter : public vtkObject
 }   //svk
 
 
-#endif //SVK_SECONDARY_CAPTURE_FORMATTER_H
+#endif //SVK_SECONDARY_CAPTURE_FORMATTER_PROSTATE_H

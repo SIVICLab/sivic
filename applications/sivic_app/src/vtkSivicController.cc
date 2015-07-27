@@ -2068,6 +2068,27 @@ void vtkSivicController::SaveSecondaryCaptureOsiriX()
 }
 
 
+/*
+ *  Lazy instantiantiation of SC formatter: 
+ */
+void vtkSivicController::InitSecondaryCaptureFormatter() 
+{
+    if ( this->secondaryCaptureFormatter == NULL ) {
+
+        if ( this->anatomyType == vtkSivicController::ANATOMY_PROSTATE ) { 
+            this->secondaryCaptureFormatter = svkSecondaryCaptureFormatterProstate::New();
+        } else {
+            this->secondaryCaptureFormatter = svkSecondaryCaptureFormatter::New();
+        }
+    
+        this->secondaryCaptureFormatter->SetPlotController( this->plotController );
+        this->secondaryCaptureFormatter->SetOverlayController( this->overlayController );
+        this->secondaryCaptureFormatter->SetSivicController( this );
+        this->secondaryCaptureFormatter->SetModel( this->model );
+    }
+}
+
+
 /*! 
  *  Writes a screen capture from a render window to a .dcm file
  */   
@@ -4024,6 +4045,11 @@ void vtkSivicController::SetAnatomyType(int anatomyType)
     } else if ( anatomyType == vtkSivicController::ANATOMY_PROSTATE) { 
         this->anatomyType = vtkSivicController::ANATOMY_PROSTATE; 
     }
+    if( this->secondaryCaptureFormatter != NULL ) {
+        this->secondaryCaptureFormatter->Delete();
+        this->secondaryCaptureFormatter = NULL;
+    }
+    this->InitSecondaryCaptureFormatter(); 
 }
 
 

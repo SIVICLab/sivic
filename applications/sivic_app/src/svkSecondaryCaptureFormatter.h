@@ -106,19 +106,12 @@ class svkSecondaryCaptureFormatter : public vtkObject
         void SetPlotController( svkPlotGridViewController* plotController );
         void SetOverlayController( svkOverlayViewController* overlayController );
         void SetModel( svkDataModel* );    
-        void SetAspect( CaptureAspect aspect);
         void SetOrientation( svkDcmHeader::Orientation orientation );
         void WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
-        void RenderSpectraImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage );
         void WriteCombinedCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
-        void RenderCombinedImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
         void WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, int instanceNumber = 0 );
-        void RenderSummaryImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
         void WriteCombinedWithSummaryCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, bool preview = 0 );
-        void PopulateInfoText( vtkTextActor* specText1, vtkTextActor* specText2, vtkTextActor* imageText );
-        void PrintImages( string fileNameString, int startImage, int endImage );
 
-        static void PreviewImage( svkImageData* image ); 
     protected:
 
         vtkSivicController*            sivicController;
@@ -126,13 +119,23 @@ class svkSecondaryCaptureFormatter : public vtkObject
         svkOverlayViewController*      overlayController;
         svkDataModel*                  model;
         CaptureAspect                  aspect;
+        int                            imageSize[2];
+        int                            spectraHalfSize[2];
+        svkDcmHeader::Orientation      orientation;
+
+        virtual void PopulateInfoText( vtkTextActor* specText1, vtkTextActor* specText2, vtkTextActor* imageText );
+        virtual void RenderCombinedImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
 
     private:
    
-        svkDcmHeader::Orientation      orientation;
         vtkRenderWindow*               captureWindow;
-        int imageSize[2];
-        int spectraHalfSize[2];
+
+        void SetAspect( CaptureAspect aspect);
+        void RenderSpectraImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage );
+        void RenderSummaryImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
+        void PrintImages( string fileNameString, int startImage, int endImage );
+        static void PreviewImage( svkImageData* image );
+
 
 };
 
