@@ -119,7 +119,7 @@ void svkSecondaryCaptureFormatterProstate::RenderCombinedImage( int firstFrame, 
             col1Left, 
             imageViewTop, 
             col1Right, 
-            imageViewTop + imageViewHeight 
+            1 - titleViewHeight - infoViewHeight
     };
 
     //  col 2
@@ -156,12 +156,16 @@ void svkSecondaryCaptureFormatterProstate::RenderCombinedImage( int firstFrame, 
     if ( this->GetDebug() ) {
         cout << "title: " << titleViewport[0] << " " << titleViewport[1] << " " 
             << titleViewport[2] << " " <<  titleViewport[3] << endl;
-        cout << "INFOI: " << imageInfoViewport[0] << " " << imageInfoViewport[1] << " " 
+        cout << "INFO I: " << imageInfoViewport[0] << " " << imageInfoViewport[1] << " " 
             << imageInfoViewport[2] << " " <<  imageInfoViewport[3] << endl;
-        cout << "INFOS: " << spectraInfoViewport[0] << " " << spectraInfoViewport[1] << " " 
+        cout << "INFO S: " << spectraInfoViewport[0] << " " << spectraInfoViewport[1] << " " 
             << spectraInfoViewport[2] << " " <<  spectraInfoViewport[3] << endl;
+        cout << "Blank View 1: " << blankViewport1[0] << " " << blankViewport1[1] << " " 
+            << blankViewport1[2] << " " <<  blankViewport1[3] << endl;
         cout << "View: " << overlayViewport[0] << " " << overlayViewport[1] << " " 
             << overlayViewport[2] << " " <<  overlayViewport[3] << endl;
+        cout << "Blank View: " << blankViewport2[0] << " " << blankViewport2[1] << " " 
+            << blankViewport2[2] << " " <<  blankViewport2[3] << endl;
         cout << "View: " << plotViewport[0] << " " << plotViewport[1] << " " 
             << plotViewport[2] << " " <<  plotViewport[3] << endl;
     }
