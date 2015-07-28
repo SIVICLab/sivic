@@ -652,6 +652,11 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
         // product GE sequence:  
         aMapper = svkGEPFileMapper::New();
 
+    } else if ( psd.find("prose_prostate_ucsf") != string::npos ) {
+
+        //  UCSF Prostate MRSI sequence 
+        aMapper = svkGEPFileMapperUCSFProseProstate::New();
+
     } else if ( psd.find("probe") != string::npos || psd.find("prose") != string::npos ) {
 
         //  Assume that if it's not an exact match that it is a UCSF research sequence. 

@@ -145,7 +145,7 @@ class svkGEPFileMapper : public vtkObject
         int                     GetNumVoxelsInVol();
         virtual void            GetNumVoxels( int numVoxels[3] ); 
         virtual int             GetNumKSpacePoints(); 
-        void                    GetVoxelSpacing( double voxelSpacing[3] ); 
+        virtual void            GetVoxelSpacing( double voxelSpacing[3] ); 
         void                    GetFOV( float fov[3] ); 
         int                     GetNumCoils(); 
         int                     GetNumFrames(); 

@@ -173,6 +173,7 @@ ADD_LIBRARY(
     svkGEPFileMapperUCSFfidcsi.cc
     svkGEPFileMapperUCSFfidcsiDev0.cc
     svkGEPFileMapperUCSFfidcsiDev07t.cc
+    svkGEPFileMapperUCSFProseProstate.cc
     svkGEPFileMapperMPCSIOBL.cc
     svkIdfVolumeReader.cc
     svkDdfVolumeReader.cc
