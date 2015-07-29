@@ -420,15 +420,6 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
-    svk_dce_ductal
-    svk_dce_ductal.cc
-)
-TARGET_LINK_LIBRARIES(
-    svk_dce_ductal
-    ${SVK_LIBS}
-)
-
-ADD_EXECUTABLE(
     svk_reslice
     svk_reslice.cc
 )
