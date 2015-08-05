@@ -88,7 +88,8 @@ class svkSatBandsXML: public vtkObject
         void                        ClearXMLFile( );
         void                        SetVerbose( bool isVerbose );     
         int                         GetNumberOfPressBoxSats(); 
-        int                         GetNumberOfAutoSats(); 
+        int                         GetNumberOfAutoSats();
+        int                         GetXMLVersion(); 
         void                        GetPressBoxSat(
                                         int     satNumber, 
                                         string* label, 
@@ -166,10 +167,21 @@ class svkSatBandsXML: public vtkObject
         int                         InitPressBoxFromDat( string rootName ); 
         int                         InitSatsFromDat( string rootName ); 
         void                        SortNormalArrayRLAPSI( float  normals[3][3] ); 
-
-
+        // out of 6 plane representation
+        void                        GetPRESSBoxParametersVer10( 
+                                        float pressOrigin[3], 
+                                        float pressThickness[3], 
+                                        float pressAngles[3] 
+                                    ); 
+        // out of 2 plane representation
+        void                        GetPRESSBoxParametersVer20( 
+                                        float pressOrigin[3], 
+                                        float pressThickness[3], 
+                                        float pressAngles[3] 
+                                    ); 
         
         //  Members:
+        float                       versionNumber;
         bool                        isVerbose; 
         vtkstd::string              xmlFileName; 
         vtkXMLDataElement*          satBandsXML;

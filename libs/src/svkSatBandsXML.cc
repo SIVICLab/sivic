@@ -73,6 +73,8 @@ svkSatBandsXML::svkSatBandsXML()
     this->versionElement = NULL;     
     this->pressBoxElement = NULL;     
     this->autoSatsElement = NULL; 
+    
+    this->versionNumber = 1.0;
 }
 
 
@@ -105,6 +107,8 @@ int svkSatBandsXML::SetXMLFileName( string xmlFileName )
     this->versionElement = this->satBandsXML->FindNestedElementWithName("version");
     this->pressBoxElement = this->satBandsXML->FindNestedElementWithName("press_box");
     this->autoSatsElement = this->satBandsXML->FindNestedElementWithName("auto_sats");
+
+    this->versionNumber = this->GetFloatElementData(this->versionElement);
 
     if( this->GetDebug() ) {
         this->satBandsXML->PrintXML(cout, vtkIndent());
@@ -704,7 +708,7 @@ void svkSatBandsXML::WriteXMLFile( string xmlFileName )
  */
 void svkSatBandsXML::GetPressBoxSat(int satNumber, string* label, float *normalX, float *normalY, float* normalZ, float* thickness, float* distance)
 {
-
+    cout << "INSIDE GetPressBoxSat nr: " << satNumber<< endl;
     vtkXMLDataElement* satBandElement; 
     satBandElement = this->pressBoxElement->FindNestedElementWithNameAndId(
                 "sat_band", 
@@ -804,6 +808,14 @@ float svkSatBandsXML::GetFloatElementData( vtkXMLDataElement* element )
 /*!
  * 
  */
+int svkSatBandsXML::GetXMLVersion() 
+{
+    return this->versionNumber; 
+}
+
+/*!
+ * 
+ */
 int svkSatBandsXML::GetNumberOfPressBoxSats() 
 {
     int numberOfSats = this->pressBoxElement->GetNumberOfNestedElements(); 
@@ -877,14 +889,119 @@ void svkSatBandsXML::PSDAutSatAnglesToNormal( float angle1, float angle2, float 
     normal[2] = cos (angle2); 
 }
 
-
 /*!
  *  Given the xml press box definition, extract the 
  *  location, thickness and orientation  of the box for use by the PSD.  
+ *  Since this is the only difference between the versions, no new classes are used.
  */
 void svkSatBandsXML::GetPRESSBoxParameters( float pressOrigin[3], float pressThickness[3], float pressAngles[3] ) 
 {
+    cout << "VERSION OF THE XML FILE: " << this->versionNumber << endl;    
+    if (this->versionNumber == 2.0)
+    {
+        this->GetPRESSBoxParametersVer20(pressOrigin, pressThickness, pressAngles);
+    }
+    else
+    {
+        this->GetPRESSBoxParametersVer10(pressOrigin, pressThickness, pressAngles);
+    }
 
+}
+
+
+/*!
+ *  Given the xml press box definition, extract the 
+ *  location, thickness and orientation  of the box for use by the PSD. Uses 3 plane     
+ *  representaiton  
+ */
+void svkSatBandsXML::GetPRESSBoxParametersVer20( float pressOrigin[3], float pressThickness[3], float pressAngles[3] ) 
+{
+    float normals[3][3];
+    float distances[3];
+    string labels[3];
+
+    for ( int satNumber = 1; satNumber <= 3; satNumber++ ) {
+    
+        this->GetPressBoxSat(
+                    satNumber, 
+                    &labels[satNumber-1], 
+                    &normals[satNumber-1][0], 
+                    &normals[satNumber-1][1], 
+                    &normals[satNumber-1][2], 
+                    &pressThickness[satNumber-1], 
+                    &distances[satNumber-1]
+                ); 
+    }
+//    normals[0][0]
+//    normals[0][1]
+//    normals[0][2]
+
+/*    normals[1][0] = -normals[1][0];
+    normals[1][1] = -normals[1][1];
+    normals[1][2] = -normals[1][2];
+
+    normals[2][0] = -normals[2][0];   
+    normals[2][1] = -normals[2][1];
+    normals[2][2] = -normals[2][2];
+*/
+    //  ===========================================================
+    //  Now, use the normals and distances to get the location of the  
+    //  center of the box.  
+    //  ===========================================================
+    //  first get the corresponding lengths: 
+
+    for ( int i = 0; i < 3; i++ ) {
+        pressOrigin[i] = 0.; 
+    }
+    for ( int i = 0; i < 3; i++ ) {
+        for ( int j = 0; j < 3; j++ ) {
+            float tmp = normals[i][j] * (distances[i]); 
+            pressOrigin[j] += tmp;  
+        }
+    }
+
+/*    for ( int i = 0; i < 3; i++ ) {
+        pressOrigin[i] = 0.; 
+    }
+    for ( int i = 0; i < 3; i++ ) {
+        for ( int j=0; j<3; j++) {
+            pressOrigin[i] += normals[j][i] * distances[i];  
+        }
+    } */
+    cout << "PRESS ORIGIN ver 2.0: " << pressOrigin[0] << " " << pressOrigin[1] << " " << pressOrigin[2] << endl;    
+    //  ===========================================================
+    //  The PRESS Thickness is directly loaded from the XML in Version 2.0
+    //  ===========================================================
+    cout << "PRESS Thickness ver 2.0: " << pressThickness[0] << " " 
+            << pressThickness[1] << " " << pressThickness[2] << endl;    
+
+    //  ===========================================================
+    //  Finally, get the 3 Euler angles from the normals array (DCM). 
+    //  http://en.wikipedia.org/wiki/Rotation_formalisms_in_three_dimensions#Rotation_matrix_.E2.86.94_Euler_angles
+    //      Note here that the rotation matrix, DCM = AzAyAx, so 
+    //          Ax-> Psi is rotation about L 
+    //          Ay-> Theta is rotation about P 
+    //          Az-> Phi is rotation about S
+    //  ===========================================================
+
+    this->RotationMatrixToEulerAngles( normals, pressAngles ); 
+
+    //  ADD PI to the 3rd angle.. this is a bit of a black box operation, but required for the PSD
+    //  to get the correct prescription
+    pressAngles[2] += vtkMath::Pi();
+    
+    
+    cout << "PRESS EULERS ver 2.0: " << pressAngles[0] << " " << pressAngles[1] << " " << pressAngles[2] << endl;        
+
+}
+
+/*!
+ *  Given the xml press box definition, extract the 
+ *  location, thickness and orientation  of the box for use by the PSD. Uses 6 plane
+ *  representation  
+ */
+void svkSatBandsXML::GetPRESSBoxParametersVer10( float pressOrigin[3], float pressThickness[3], float pressAngles[3] ) 
+{
     float normals[3][3]; 
     this->InitPressBoxNormals(normals); 
 
