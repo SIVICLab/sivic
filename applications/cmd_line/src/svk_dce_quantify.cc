@@ -70,16 +70,20 @@ int main (int argc, char** argv)
     string usemsg("\n") ;
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";
     usemsg += "svk_dce_quantify -i input_file_root -o outputfile_root                   \n";
-    usemsg += "                 [ --mask name ] [ -t output_data_type ] [ -h ]          \n";
+    usemsg += "                 [--end end_time_point]                                  \n";
+    usemsg += "                 [ -t output_data_type ] [ -h ]                          \n";
     usemsg += "\n";
     usemsg += "   -i            input_file_root     Root name of DCE file to quantify.  \n";
+    // usemsg += "   --start       start_time_point    Optional timepoint to start DCE     \n"; 
+    // usemsg += "                                     analysis (defaults to first)        \n";
+    usemsg += "   --end         end_time_point      Optional timepoint to end DCE       \n"; 
+    usemsg += "                                     analysis (defaults to last)         \n";
     usemsg += "   -o            output_file_root    Name of outputfiles.                \n";
     usemsg += "   -t            output_data_type    Target data type:                   \n";
     usemsg += "                                         3 = UCSF IDF                    \n";
     usemsg += "                                         5 = DICOM_MRI                   \n";
     usemsg += "                                         6 = DICOM_Enhanced MRI          \n";
-    usemsg += "   --mask        root_name           Root name of mask file              \n";
-    usemsg += "   -h                       Print this help mesage.                      \n";
+    usemsg += "   -h                                Print this help mesage.             \n";
     usemsg += "\n";
     usemsg += "Generate DCE maps.                                                       \n";
     usemsg += "\n";
@@ -88,19 +92,24 @@ int main (int argc, char** argv)
     string inputFileName; 
     string maskFileName;
     string outputFileName = "";
+    int    startTimePt    = 1;
+    int    endTimePt      = 1;
+
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_ENHANCED_MRI;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
-        FLAG_MASK_NAME = 0 
+        // FLAG_START_TP = 0,
+        FLAG_END_TP = 0
     };
 
 
     static struct option long_options[] =
     {
         /* This option sets a flag. */
-        {"mask",    required_argument, NULL,  FLAG_MASK_NAME},
+        // {"start", required_argument, NULL, FLAG_START_TP},
+        {"end", required_argument, NULL, FLAG_END_TP},
         {0, 0, 0, 0}
     };
 
@@ -110,19 +119,22 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0;
-    while ( ( i = getopt_long(argc, argv, "i:o:t:h", long_options, &option_index) ) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:o:t:h", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
+                break;
+            // case FLAG_START_TP:
+            //     startTimePt = atof(optarg);
+            //     break;
+            case FLAG_END_TP:
+                endTimePt = atof(optarg);
                 break;
             case 'o':
                 outputFileName.assign(optarg);
                 break;
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
-                break;
-            case FLAG_MASK_NAME:
-                maskFileName.assign( optarg );
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -144,16 +156,15 @@ int main (int argc, char** argv)
                    dataTypeOut != svkImageWriterFactory::DICOM_MRI 
                 && dataTypeOut != svkImageWriterFactory::IDF 
                 && dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI 
-                )
+               )
     ) {
-            cout << usemsg << endl;
-            exit(1); 
+        cout << usemsg << endl;
+        exit(1); 
     }
 
 
     cout << "Input root:  " << inputFileName << endl;
     cout << "Output root: " << outputFileName << endl;
-    cout << "Mask: " << maskFileName << endl;
 
 
     // ===============================================
@@ -161,14 +172,10 @@ int main (int argc, char** argv)
     //  of the correct type for the input file format.
     // ===============================================
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-    svkImageReader2* reader    = readerFactory->CreateImageReader2( inputFileName.c_str() );
-    svkImageReader2* readerMask = NULL; 
-    if ( maskFileName.size() > 0 ) {
-        readerMask = readerFactory->CreateImageReader2( maskFileName.c_str() );
-    }
+    svkImageReader2* reader     = readerFactory->CreateImageReader2(inputFileName.c_str());
     readerFactory->Delete();
 
-    if ( reader == NULL ) { 
+    if (reader == NULL) { 
         cerr << "Can not determine appropriate reader for: " << inputFileName << endl; 
         exit(1);
     }
@@ -176,40 +183,57 @@ int main (int argc, char** argv)
     //  Read the data to initialize an svkImageData object
     //  If volume files are being read, interpret them as a time series.  This is automatic for DICOM, but must be specified
     //  for IDF where each vol file may represent channel or time. 
-    if ( reader->IsA("svkIdfVolumeReader") == true ) {
+    if (reader->IsA("svkIdfVolumeReader") == true) {
         svkIdfVolumeReader::SafeDownCast( reader )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
     }
-    reader->SetFileName( inputFileName.c_str() );
+    reader->SetFileName(inputFileName.c_str());
     reader->Update();
-    if ( readerMask!= NULL ) { 
-        readerMask->SetFileName( maskFileName.c_str() );
-        readerMask->Update();
+
+
+    // Validate start/end timepoints
+    int numVols = reader->GetOutput()->GetDcmHeader()->GetNumberOfTimePoints();
+    // int numVols = reader->GetOutput()->GetPointData()->GetNumberOfArrays();
+    if(startTimePt < 1 || endTimePt < 1) {
+        cerr << "Timepoints must be greater than 1" << endl;
+        // cerr << "Start timepoint input: " << startTimePt << endl;
+        cerr << "End timepoint input:   " << endTimePt << endl;
+        exit(1);
+    }
+    if(startTimePt > endTimePt || endTimePt > numVols) {
+        cerr << "Please double check your timepoints" << endl;
+        // cerr << "Start timepoint input: " << startTimePt << endl;
+        cerr << "End timepoint input:   " << endTimePt << endl;
+        cerr << "Number of timepoints in image: " << numVols << endl;
+        exit(1);
     }
 
     // ===============================================  
     //  Initialize DCE Quantify algorithm 
     // ===============================================  
     svkDCEQuantify* dceQuant = svkDCEQuantify::New();
-    dceQuant->SetInputConnection( 0, reader->GetOutputPort() ); 
-    if ( readerMask!= NULL ) { 
-        dceQuant->SetInputConnection( 1, readerMask->GetOutputPort() ); // input 1 is the mask
+    dceQuant->SetInputConnection(0, reader->GetOutputPort());
+    dceQuant->SetTimepointStart(startTimePt);
+    if (endTimePt != 1)
+    {
+        dceQuant->SetTimepointEnd(endTimePt);
+    } else {
+        dceQuant->SetTimepointEnd(numVols);
     }
     dceQuant->Update();
-
 
     // ===============================================  
     //  Use writer factory to create writer for specified
     //  output file format. 
     // ===============================================  
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    svkImageWriter* baseHtWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) );
-    svkImageWriter* peakHtWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* peakTimeWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* maxSlopeWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* washoutWriter  = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) );
+    svkImageWriter* baseHtWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut));
+    svkImageWriter* peakHtWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut)); 
+    svkImageWriter* peakTimeWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut)); 
+    svkImageWriter* maxSlopeWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut)); 
+    svkImageWriter* washoutWriter  = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut));
     writerFactory->Delete();
     
-    if ( peakHtWriter == NULL || peakTimeWriter == NULL || maxSlopeWriter == NULL ) { 
+    if (peakHtWriter == NULL || peakTimeWriter == NULL || maxSlopeWriter == NULL) { 
         cerr << "Can not create writer of type: " << dataTypeOut << endl;
         exit(1);
     }
@@ -226,17 +250,17 @@ int main (int argc, char** argv)
     maxSlopeFile.append("_dce_up_slope");  
     washoutFile.append("_dce_washout");
 
-    baseHtWriter->SetFileName(   baseHtFile.c_str() );
-    peakHtWriter->SetFileName(   peakHtFile.c_str() );
-    peakTimeWriter->SetFileName( peakTimeFile.c_str() );
-    maxSlopeWriter->SetFileName( maxSlopeFile.c_str() );
-    washoutWriter->SetFileName(  washoutFile.c_str() );
+    baseHtWriter->SetFileName(baseHtFile.c_str());
+    peakHtWriter->SetFileName(peakHtFile.c_str());
+    peakTimeWriter->SetFileName(peakTimeFile.c_str());
+    maxSlopeWriter->SetFileName(maxSlopeFile.c_str());
+    washoutWriter->SetFileName(washoutFile.c_str());
 
-    baseHtWriter->SetInput(   dceQuant->GetOutput(0) );      // port 0 is baseline map
-    peakHtWriter->SetInput(   dceQuant->GetOutput(1) );      // port 1 is peakHt map 
-    peakTimeWriter->SetInput( dceQuant->GetOutput(2) );      // port 2 is peakTimet map 
-    maxSlopeWriter->SetInput( dceQuant->GetOutput(3) );      // port 3 is max slope map  
-    washoutWriter->SetInput(  dceQuant->GetOutput(4) );       // port 4 is washout map
+    baseHtWriter->SetInput(dceQuant->GetOutput(0));      // port 0 is baseline map
+    peakHtWriter->SetInput(dceQuant->GetOutput(1));      // port 1 is peakHt map 
+    peakTimeWriter->SetInput(dceQuant->GetOutput(2));      // port 2 is peakTimet map 
+    maxSlopeWriter->SetInput(dceQuant->GetOutput(3));      // port 3 is max slope map  
+    washoutWriter->SetInput(dceQuant->GetOutput(4));       // port 4 is washout map
 
     baseHtWriter->Write();
     peakHtWriter->Write();

@@ -70,23 +70,19 @@ svkDCEQuantify::svkDCEQuantify()
 #endif
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
-    this->SetNumberOfInputPorts(1);
+    this->SetNumberOfInputPorts(3);
     bool repeatable = true;
-    bool required = true;
+    bool required   = true;
     this->GetPortMapper()->InitializeInputPort(INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, !repeatable);
-    //  Outputports:  0 for base ht map
-    //  Outputports:  1 for peak ht map
-    //  Outputports:  2 for peak time map 
-    //  Outputports:  3 for up slope map 
-    //  Outputports:  4 for washout slope map
+    this->GetPortMapper()->InitializeInputPort(START_TIME_PT, "START_TIME_PT", svkAlgorithmPortMapper::SVK_INT, !required);
+    this->GetPortMapper()->InitializeInputPort(END_TIME_PT, "END_TIME_PT", svkAlgorithmPortMapper::SVK_INT, !required);
+
     this->SetNumberOfOutputPorts(5);
     this->GetPortMapper()->InitializeOutputPort(BASE_HT_MAP, "BASE_HT_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeOutputPort(PEAK_HT_MAP, "PEAK_HT_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeOutputPort(PEAK_TIME_MAP, "PEAK_TIME_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeOutputPort(UP_SLOPE_MAP, "UP_SLOPE_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeOutputPort(WASHOUT_SLOPE_MAP, "WASHOUT_SLOPE_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
-
-    
 }
 
 
@@ -96,6 +92,42 @@ svkDCEQuantify::svkDCEQuantify()
 svkDCEQuantify::~svkDCEQuantify()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::~"<<this->GetClassName());
+}
+
+
+/*!
+ * Utility setter for input port: Timepoint Start
+ */
+void svkDCEQuantify::SetTimepointStart(int startPt)
+{
+    this->GetPortMapper()->SetIntInputPortValue(START_TIME_PT, startPt);
+}
+
+
+/*!
+ * Utility getter for input port: Timepoint Start
+ */
+svkInt* svkDCEQuantify::GetTimepointStart()
+{
+    return this->GetPortMapper()->GetIntInputPortValue(START_TIME_PT);
+}
+
+
+/*!
+ * Utility setter for input port: Timepoint End
+ */
+void svkDCEQuantify::SetTimepointEnd(int endPt)
+{
+    this->GetPortMapper()->SetIntInputPortValue(END_TIME_PT, endPt);
+}
+
+
+/*!
+ * Utility getter for input port: Timepoint End
+ */
+svkInt* svkDCEQuantify::GetTimepointEnd()
+{
+    return this->GetPortMapper()->GetIntInputPortValue(END_TIME_PT);
 }
 
 
@@ -117,20 +149,22 @@ void svkDCEQuantify::Quantify()
  */
 void svkDCEQuantify::GenerateDCEMaps()
 {
-
     //  Calculate DCE maps:
     svkDCEBasicFit* dcePkHt = svkDCEBasicFit::New();
-    dcePkHt->SetInput( this->GetImageDataInput(0) ); 
-    dcePkHt->SetSeriesDescription( "Peak Params" );
+    // dcePkHt->SetInput1(this->GetImageDataInput(0));
+    dcePkHt->SetInput(0, this->GetInput(0));
+    dcePkHt->SetTimepointStart(this->GetTimepointStart()->GetValue());
+    dcePkHt->SetTimepointEnd(this->GetTimepointEnd()->GetValue());
+    dcePkHt->SetSeriesDescription("DCE Params");
     dcePkHt->Update();
-    this->GetOutput(0)->DeepCopy( dcePkHt->GetOutput(0) );
-    this->GetOutput(1)->DeepCopy( dcePkHt->GetOutput(1) );
-    this->GetOutput(2)->DeepCopy( dcePkHt->GetOutput(2) );
-    this->GetOutput(3)->DeepCopy( dcePkHt->GetOutput(3) );
-    this->GetOutput(4)->DeepCopy( dcePkHt->GetOutput(4) );
+
+    this->GetOutput(0)->DeepCopy(dcePkHt->GetOutput(0));
+    this->GetOutput(1)->DeepCopy(dcePkHt->GetOutput(1));
+    this->GetOutput(2)->DeepCopy(dcePkHt->GetOutput(2));
+    this->GetOutput(3)->DeepCopy(dcePkHt->GetOutput(3));
+    this->GetOutput(4)->DeepCopy(dcePkHt->GetOutput(4));
 
     dcePkHt->Delete();
-
 }
 
 
@@ -141,17 +175,17 @@ void svkDCEQuantify::GenerateDCEMaps()
  */
 void svkDCEQuantify::GenerateNormalizedMaps()
 {
-
     //  Calculate DCE Peak Ht map:
     svkDCEBasicFit* dcePkHt = svkDCEBasicFit::New();
-    dcePkHt->SetInput( this->GetImageDataInput(0) ); 
-    dcePkHt->SetSeriesDescription( "normalized Peak Height" );
+    dcePkHt->SetInput(this->GetInput(0));
+    dcePkHt->SetTimepointStart(this->GetTimepointStart()->GetValue());
+    dcePkHt->SetTimepointEnd(this->GetTimepointEnd()->GetValue());    
+    dcePkHt->SetSeriesDescription("Normalized Peak Height");
     dcePkHt->SetNormalize();
     dcePkHt->Update();
     svkMriImageData* image = svkMriImageData::New();
-    image->DeepCopy( dcePkHt->GetOutput() );
+    image->DeepCopy(dcePkHt->GetOutput());
     dcePkHt->Delete();
-
 }
 
 
@@ -159,7 +193,7 @@ void svkDCEQuantify::GenerateNormalizedMaps()
  *  Resets the origin and extent for correct initialization of output svkMriImageData object from input 
  *  svkMrsImageData object. 
  */
-int svkDCEQuantify::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+int svkDCEQuantify::RequestInformation(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector)
 {
     return 1;
 }
@@ -168,7 +202,7 @@ int svkDCEQuantify::RequestInformation( vtkInformation* request, vtkInformationV
 /*!
  *  Copy the Dcm Header and Provenance from the input to the output. 
  */
-int svkDCEQuantify::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+int svkDCEQuantify::RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector)
 {
     this->Quantify();
     return 1; 

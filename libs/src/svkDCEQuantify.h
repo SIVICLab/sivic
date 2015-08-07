@@ -74,7 +74,9 @@ class svkDCEQuantify: public svkImageAlgorithmWithPortMapper
     public:
 
         enum {
-            INPUT_IMAGE = 0
+            INPUT_IMAGE = 0,
+            START_TIME_PT,
+            END_TIME_PT
         } svkDCEQuantifyInput;
         //  Outputports:  0 for base ht map
         //  Outputports:  1 for peak ht map
@@ -91,32 +93,37 @@ class svkDCEQuantify: public svkImageAlgorithmWithPortMapper
 
         static svkDCEQuantify* New();
         vtkTypeRevisionMacro( svkDCEQuantify, svkImageAlgorithmWithPortMapper);
-        vtkstd::vector< svkMriImageData* >*                 GetDCEMaps();
+        vtkstd::vector< svkMriImageData* >* GetDCEMaps();
+
+        void    SetTimepointStart(int startPt);
+        svkInt* GetTimepointStart( );
+
+        void    SetTimepointEnd(int endPt);
+        svkInt* GetTimepointEnd( );
 
     protected:
 
         svkDCEQuantify();
         ~svkDCEQuantify();
 
-        virtual int             RequestInformation(
-                                    vtkInformation* request,
-                                    vtkInformationVector** inputVector,
-                                    vtkInformationVector* outputVector
-                                );
-        virtual int             RequestData( 
-                                    vtkInformation* request, 
-                                    vtkInformationVector** inputVector, 
-                                    vtkInformationVector* outputVector 
-                                );
-
+        virtual int RequestInformation(
+                        vtkInformation* request,
+                        vtkInformationVector** inputVector,
+                        vtkInformationVector* outputVector
+                    );
+        virtual int RequestData( 
+                        vtkInformation* request, 
+                        vtkInformationVector** inputVector, 
+                        vtkInformationVector* outputVector 
+                    );
 
     private:
 
         //  Methods:
-        virtual void                        UpdateProvenance();
-        void                                Quantify();
-        void                                GenerateDCEMaps();
-        void                                GenerateNormalizedMaps(); 
+        virtual void UpdateProvenance();
+        void         Quantify();
+        void         GenerateDCEMaps();
+        void         GenerateNormalizedMaps(); 
 
         //  Members:
         vtkstd::vector< svkMriImageData* >  dceMapVector; 

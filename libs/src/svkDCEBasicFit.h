@@ -53,6 +53,7 @@
 #include <svkImageAlgorithm.h>
 #include <svkDcmHeader.h>
 #include <svkDynamicImageMap.h>
+#include <svkAlgorithmPortMapper.h>
 
 
 namespace svk {
@@ -69,36 +70,63 @@ class svkDCEBasicFit: public svkDynamicImageMap
 
     public:
 
-        static svkDCEBasicFit *New();
-        vtkTypeRevisionMacro( svkDCEBasicFit, svkDynamicImageMap);
+        enum {
+            INPUT_IMAGE = 0,
+            START_TIME_PT,
+            END_TIME_PT
+        } svkDCEBasicFitInput;
 
+        enum {
+            BASE_HT_MAP = 0,
+            PEAK_HT_MAP,
+            PEAK_TIME_MAP,
+            UP_SLOPE_MAP,
+            WASHOUT_SLOPE_MAP
+        } svkDCEBasicFitOutput;
+
+        static svkDCEBasicFit *New();
+        vtkTypeRevisionMacro(svkDCEBasicFit, svkDynamicImageMap);
+
+        void     SetTimepointStart(int startPt);
+        svkInt*  GetTimepointStart();
+
+        void     SetTimepointEnd(int endPt);
+        svkInt*  GetTimepointEnd();
+
+        // Get the internal XML interpreter
+        svkAlgorithmPortMapper* GetPortMapper();
 
     protected:
 
         svkDCEBasicFit();
         ~svkDCEBasicFit();
 
+        virtual int  FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+        virtual int  FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+
+        //! The port mapper used to set the input port parameters.
+        svkAlgorithmPortMapper* portMapper;
 
     private:
 
         //  Methods:
-        virtual void            GenerateMaps(); 
-        void                    InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex, float imageRate );
-        void                    InitializeBaseline();
-        int                     GetInjectionPoint( float* baselineArray );
-        double                  GetTimePointMean(int timePoint ); 
-        double                  GetStandardDeviation( vtkDataArray* array, float mean, int endPt); 
-        void                    InitializeInjectionPoint();
-        void                    GetBaseHt( float* dynamicVoxelPtr, double* voxelBaseHt );
-        void                    GetPeakHt( float* dynamicVoxelPtr, double* voxelPeakHt );
-        void                    GetPeakTm( float* dynamicVoxelPtr, double voxelPeakHt, double* voxelPeakTime);
-        void                    GetUpSlope( float* dynamicVoxelPtr, double voxelPeakTime, double* voxelUpSlope );
-        void                    GetWashout( float* dynamicVoxelPtr, int filterWindow, int voxelIndex, double* voxelWashout );
-        void                    ScaleParams( float imageRate, double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout );
+        virtual void GenerateMaps(); 
+        void         InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex, float imageRate );
+        void         InitializeBaseline();
+        int          GetInjectionPoint( float* baselineArray );
+        double       GetTimePointMean(int timePoint ); 
+        double       GetStandardDeviation( vtkDataArray* array, float mean, int endPt); 
+        void         InitializeInjectionPoint();
+        void         GetBaseHt( float* dynamicVoxelPtr, double* voxelBaseHt );
+        void         GetPeakHt( float* dynamicVoxelPtr, double* voxelPeakHt );
+        void         GetPeakTm( float* dynamicVoxelPtr, double voxelPeakHt, double* voxelPeakTime);
+        void         GetUpSlope( float* dynamicVoxelPtr, double voxelPeakTime, double* voxelUpSlope );
+        void         GetWashout( float* dynamicVoxelPtr, int filterWindow, int voxelIndex, double* voxelWashout );
+        void         ScaleParams( float imageRate, double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout );
 
-        double                  baselineMean;
-        double                  baselineStdDeviation; 
-        int                     injectionPoint; 
+        double       baselineMean;
+        double       baselineStdDeviation; 
+        int          injectionPoint; 
         
 };
 
