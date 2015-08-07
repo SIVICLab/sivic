@@ -251,6 +251,7 @@ class vtkSivicController : public vtkObject
         void                       SetActive4DImageData( int index );
         svk4DImageData*            GetActive4DImageData();
         void                       SyncDisplayVolumes(svkImageData* data, int volume, int volumeIndex = -1 );
+        bool                       AutoZoomOnSliceChange();  
 
         //svkInspectingWidget*       GetView();
         svkDataModel*              GetModel();
@@ -328,8 +329,8 @@ class vtkSivicController : public vtkObject
         vtkKWWindowBase*               windowLevelWindow;
         vtkKWWindowBase*               preferencesWindow;
         vtkKWWindowBase*               voxelTaggingWindow;
-        bool						   synchronizeVolumes;
-
+        bool                           synchronizeVolumes;
+        bool                           autoZoomOnSliceChange;
 
 };
 

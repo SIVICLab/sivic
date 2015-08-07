@@ -50,6 +50,7 @@ sivicPreferencesWidget::sivicPreferencesWidget()
     this->settings.push_back( "defaults/sync_components/Set to 'active' to update only active trace's component, otherwise update all traces. (active or all)");
     this->settings.push_back( "defaults/printer/Name of the printer to use when printing.");
     this->settings.push_back( "defaults/spectra_extension_filtering/Set to ON if the file browser should filter spectra files by extension. (ON | OFF)");
+    this->settings.push_back( "defaults/auto_zoom_on_slice_change/When set to ON (default) then all plots are auto zoomed to window. (ON | OFF)");
     this->settings.push_back( "plot_grid/red/Sets the red component for the plot overlayed on the image. (0-1)");
     this->settings.push_back( "plot_grid/blue/Sets the blue component for the plot overlayed on the image. (0-1)");
     this->settings.push_back( "plot_grid/green/Sets the green component for the plot overlayed on the image. (0-1)");

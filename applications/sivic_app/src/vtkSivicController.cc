@@ -84,8 +84,8 @@ vtkSivicController::vtkSivicController()
     this->exitSivicCallback->SetClientData( (void*)this );
     this->synchronizeVolumes = true;
     this->anatomyType = vtkSivicController::ANATOMY_BRAIN; 
+    this->autoZoomOnSliceChange = true;
 
-    
 }
 
 
@@ -1523,6 +1523,13 @@ void vtkSivicController::SetPreferencesFromRegistry( )
         int digits = atoi( overlayTextDigits );
         svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetOverlayTextDigits( digits );
 
+    }
+
+    this->app->GetRegistryValue( this->registryLevel, "defaults", "auto_zoom_on_slice_change", registryValue );
+    if( registryValue != NULL && strcmp( registryValue, "OFF" ) == 0 ) {
+    	this->autoZoomOnSliceChange = false;
+    } else {
+    	this->autoZoomOnSliceChange = true;
     }
 
 	if( toggleDraw ) {
@@ -4053,12 +4060,26 @@ void vtkSivicController::SetAnatomyType(int anatomyType)
 }
 
 
+/*!
+ *  Returns value of pref that controls whether to change zoom when 
+ *  spectroscopy slice changes. 
+ */ 
+bool vtkSivicController::AutoZoomOnSliceChange()
+{
+    return this->autoZoomOnSliceChange;
+}
+
+
 /*
  *  Anatomy specific setup 
  */
 void vtkSivicController::SetAnatomyPrefs() 
 {
+
     return; // revisit later
+    if ( this->anatomyType == vtkSivicController::ANATOMY_PROSTATE ) { 
+        svkPlotGridView::SafeDownCast(this->plotController->GetView())->AlignCameraOff();
+    }
     if ( this->anatomyType == vtkSivicController::ANATOMY_PROSTATE ) { 
         //  For prostate: 
         //  Sync the cameras on the left and right (overlay and plot grid views)

@@ -317,7 +317,14 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
             this->sliceSlider->SetValue( this->sliceSlider->GetRangeMax());
         }
         if( event != vtkKWScale::ScaleValueStartChangingEvent && this->sliceSlider->GetEnabled()) {
+    
+            if ( this->sivicController->AutoZoomOnSliceChange() == false ) {
+                svkPlotGridView::SafeDownCast(this->plotController->GetView())->AlignCameraOff();
+            }
             this->sivicController->SetSlice( static_cast<int>(this->sliceSlider->GetValue()) - 1, centerImage);
+            if ( this->sivicController->AutoZoomOnSliceChange() == false ) {
+                svkPlotGridView::SafeDownCast(this->plotController->GetView())->AlignCameraOn();
+            }
         }
         int decrementValue = this->plotController->GetSlice();
         int incrementValue = this->plotController->GetSlice() + 2;
