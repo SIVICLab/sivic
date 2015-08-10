@@ -932,18 +932,7 @@ void svkSatBandsXML::GetPRESSBoxParametersVer20( float pressOrigin[3], float pre
                     &distances[satNumber-1]
                 ); 
     }
-//    normals[0][0]
-//    normals[0][1]
-//    normals[0][2]
 
-/*    normals[1][0] = -normals[1][0];
-    normals[1][1] = -normals[1][1];
-    normals[1][2] = -normals[1][2];
-
-    normals[2][0] = -normals[2][0];   
-    normals[2][1] = -normals[2][1];
-    normals[2][2] = -normals[2][2];
-*/
     //  ===========================================================
     //  Now, use the normals and distances to get the location of the  
     //  center of the box.  
