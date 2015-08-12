@@ -1684,128 +1684,153 @@ void svkPlotGridView::SetOrientation( svkDcmHeader::Orientation orientation )
 //! Resets the camera to look at the new selection
 void svkPlotGridView::AlignCamera( ) 
 {  
-    if ( this->alignCamera == true ) {
-        if( this->GetRenderer( svkPlotGridView::PRIMARY) != NULL && this->dataVector[MR4D] != NULL ) {
-            double bounds[6];
-            double normal[3];
-            this->dataVector[MR4D]->GetSliceNormal( normal, this->orientation );
-            double zoom;
-            string acquisitionType;
-            if( this->dataVector[MR4D]->IsA("svkMrsImageData")) {
-                string acquisitionType = dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-            }
-            if( acquisitionType == "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->HasSelectionBox() ) {
-                memcpy( bounds, this->GetProp( VOL_SELECTION )->GetBounds(), sizeof(double)*6 );
-            } else {
-                this->plotGrids[0]->CalculateTlcBrcBounds( bounds, this->tlcBrc );
-            }
-            double viewWidth =  bounds[1] - bounds[0];
-            double viewHeight = bounds[3] - bounds[2];
-            double viewDepth =  bounds[5] - bounds[4];
 
-            double diagonal = sqrt( pow(bounds[1] - bounds[0],2) 
-                                  + pow(bounds[3] - bounds[2],2) 
-                                  + pow(bounds[5] - bounds[4],2) );
-            double focalPoint[3] = { bounds[0] + (bounds[1] - bounds[0])/2.0 ,
-                                     bounds[2] + (bounds[3] - bounds[2])/2.0 ,
-                                     bounds[4] + (bounds[5] - bounds[4])/2.0 };
+    double currentScale = this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->GetParallelScale( );
+    double currentViewAngle= this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->GetViewAngle( );
+    if (this->GetDebug()) {
+        cout << endl;
+        cout << "Slice " << this->slice << endl;
+        cout << "CurScale: " << currentScale << endl;
+        cout << "CurAngle: " << currentViewAngle<< endl;
+    }
 
-            this->GetRenderer( svkPlotGridView::PRIMARY)->ResetCamera( bounds );
-            if( this->dataVector[MR4D]->IsA("svkMrsImageData") && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
-                double* selectionBoxBounds = this->GetProp( VOL_SELECTION )->GetBounds();
-                double tmpViewBounds[6];
-                memcpy( tmpViewBounds, bounds, sizeof(double)*6 );
-                int orientationIndex = this->dataVector[MR4D]->GetOrientationIndex( this->orientation );
-                tmpViewBounds[2*orientationIndex] = selectionBoxBounds[2*orientationIndex];
-                tmpViewBounds[2*orientationIndex+1] = selectionBoxBounds[2*orientationIndex+1];
-                diagonal = sqrt( pow(tmpViewBounds[1] - tmpViewBounds[0],2) 
-                               + pow(tmpViewBounds[3] - tmpViewBounds[2],2) 
-                               + pow(tmpViewBounds[5] - tmpViewBounds[4],2) );
-                this->GetRenderer( svkPlotGridView::PRIMARY)->ResetCamera( tmpViewBounds );
-            }
+    if( this->GetRenderer( svkPlotGridView::PRIMARY) != NULL && this->dataVector[MR4D] != NULL ) {
+        double bounds[6];
+        double normal[3];
+        this->dataVector[MR4D]->GetSliceNormal( normal, this->orientation );
+        double zoom;
+        string acquisitionType;
+        if( this->dataVector[MR4D]->IsA("svkMrsImageData")) {
+            string acquisitionType = dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+        }
+        if( acquisitionType == "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->HasSelectionBox() ) {
+            memcpy( bounds, this->GetProp( VOL_SELECTION )->GetBounds(), sizeof(double)*6 );
+        } else {
+            this->plotGrids[0]->CalculateTlcBrcBounds( bounds, this->tlcBrc );
+        }
+        double viewWidth =  bounds[1] - bounds[0];
+        double viewHeight = bounds[3] - bounds[2];
+        double viewDepth =  bounds[5] - bounds[4];
 
-            int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY)->GetDraw();
-            if( toggleDraw ) {
-                this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOff();
-            }
+        double diagonal = sqrt( pow(viewWidth,2) 
+                              + pow(viewHeight,2) 
+                              + pow(viewDepth,2) );
+        double focalPoint[3] = { bounds[0] + (viewWidth)/2.0 ,
+                                 bounds[2] + (viewHeight)/2.0 ,
+                                 bounds[4] + (viewDepth)/2.0 };
 
-            // if the data set is not axial, move the camera
-            this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetFocalPoint( focalPoint );
-            double* cameraPosition = this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->GetPosition();
-            double distance = sqrt( pow( focalPoint[0] - cameraPosition[0], 2 ) +
-                                    pow( focalPoint[1] - cameraPosition[1], 2 ) +
-                                    pow( focalPoint[2] - cameraPosition[2], 2 ) );
-            
-            double newCameraPosition[3] = {0,0,0};
+        this->GetRenderer( svkPlotGridView::PRIMARY)->ResetCamera( bounds );
+        if( this->dataVector[MR4D]->IsA("svkMrsImageData") 
+            && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->IsSliceInSelectionBox( this->slice, this->orientation ) ) 
+        {
+            double* selectionBoxBounds = this->GetProp( VOL_SELECTION )->GetBounds();
+            double tmpViewBounds[6];
+            memcpy( tmpViewBounds, bounds, sizeof(double)*6 );
+            int orientationIndex = this->dataVector[MR4D]->GetOrientationIndex( this->orientation );
+            tmpViewBounds[2*orientationIndex] = selectionBoxBounds[2*orientationIndex];
+            tmpViewBounds[2*orientationIndex+1] = selectionBoxBounds[2*orientationIndex+1];
+            diagonal = sqrt( pow(tmpViewBounds[1] - tmpViewBounds[0],2) 
+                           + pow(tmpViewBounds[3] - tmpViewBounds[2],2) 
+                           + pow(tmpViewBounds[5] - tmpViewBounds[4],2) );
+            this->GetRenderer( svkPlotGridView::PRIMARY)->ResetCamera( tmpViewBounds );
+        }
 
-            // Lets calculate the distance from the focal point to the selection box
-            if( this->orientation == svkDcmHeader::AXIAL && normal[2] > 0 ) {
-                distance *=-1;
-            } else if( this->orientation == svkDcmHeader::CORONAL && normal[1] > 0 ) { 
-                distance *=-1;
-            } else if( this->orientation == svkDcmHeader::SAGITTAL && normal[0] < 0 ) { 
-                distance *=-1;
-            }
-             
-            newCameraPosition[0] = focalPoint[0] + distance*normal[0]; 
-            newCameraPosition[1] = focalPoint[1] + distance*normal[1];
-            newCameraPosition[2] = focalPoint[2] + distance*normal[2];
-            this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetPosition( newCameraPosition );
+        int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY)->GetDraw();
+        if( toggleDraw ) {
+            this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOff();
+        }
 
-            double* visibleBounds  = this->GetRenderer( svkPlotGridView::PRIMARY)->ComputeVisiblePropBounds();
-            double thickness = sqrt( pow( visibleBounds[1] - visibleBounds[0], 2 ) +
-                                     pow( visibleBounds[3] - visibleBounds[2], 2 ) +
-                                     pow( visibleBounds[5] - visibleBounds[4], 2 ) ) + fabs(distance);
-            this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetThickness( thickness );
-            double columnNormal[3];
-            double viewUp[3];
-            int inverter = -1;
+        // if the data set is not axial, move the camera
+        this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetFocalPoint( focalPoint );
+        double* cameraPosition = this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->GetPosition();
+        double distance = sqrt( pow( focalPoint[0] - cameraPosition[0], 2 ) +
+                                pow( focalPoint[1] - cameraPosition[1], 2 ) +
+                                pow( focalPoint[2] - cameraPosition[2], 2 ) );
+        
+        double newCameraPosition[3] = {0,0,0};
 
-            switch ( this->orientation ) {
-                case svkDcmHeader::AXIAL:
-                    this->dataVector[MR4D]->GetSliceNormal( viewUp, svkDcmHeader::CORONAL );
-                    if( viewUp[1] < 0 ) {
-                        inverter *=-1;
-                    }
-                    this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
-                                                                  inverter*viewUp[1], 
-                                                                  inverter*viewUp[2] );
-                    break;
-                case svkDcmHeader::CORONAL:
-                    this->dataVector[MR4D]->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
-                    if( viewUp[2] > 0 ) {
-                        inverter *=-1;
-                    }
-                    this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
-                                                                  inverter*viewUp[1], 
-                                                                  inverter*viewUp[2] );
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    this->dataVector[MR4D]->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
-                    if( viewUp[2] > 0 ) {
-                        inverter *=-1;
-                    }
-                    this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
-                                                                  inverter*viewUp[1], 
-                                                                  inverter*viewUp[2] );
-                    break;
-            }
+        // Lets calculate the distance from the focal point to the selection box
+        if( this->orientation == svkDcmHeader::AXIAL && normal[2] > 0 ) {
+            distance *=-1;
+        } else if( this->orientation == svkDcmHeader::CORONAL && normal[1] > 0 ) { 
+            distance *=-1;
+        } else if( this->orientation == svkDcmHeader::SAGITTAL && normal[0] < 0 ) { 
+            distance *=-1;
+        }
+         
+        newCameraPosition[0] = focalPoint[0] + distance*normal[0]; 
+        newCameraPosition[1] = focalPoint[1] + distance*normal[1];
+        newCameraPosition[2] = focalPoint[2] + distance*normal[2];
+        this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetPosition( newCameraPosition );
 
-            if( viewWidth >= viewHeight && viewWidth >= viewDepth ) {
-                zoom = diagonal/viewWidth;        
-            } else if( viewHeight >= viewWidth && viewHeight >= viewDepth ) {
-                zoom = diagonal/viewHeight;        
-            } else {
-                zoom = diagonal/viewDepth;        
-            }
+        double* visibleBounds  = this->GetRenderer( svkPlotGridView::PRIMARY)->ComputeVisiblePropBounds();
+        double thickness = sqrt( pow( visibleBounds[1] - visibleBounds[0], 2 ) +
+                                 pow( visibleBounds[3] - visibleBounds[2], 2 ) +
+                                 pow( visibleBounds[5] - visibleBounds[4], 2 ) ) + fabs(distance);
+        this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetThickness( thickness );
+        double columnNormal[3];
+        double viewUp[3];
+        int inverter = -1;
 
-            // We'll back off the zoom to 95% to leave some edges
-            this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->Zoom(0.95*zoom);
-            if( toggleDraw ) {
-                this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOn();
-            }
+        switch ( this->orientation ) {
+            case svkDcmHeader::AXIAL:
+                this->dataVector[MR4D]->GetSliceNormal( viewUp, svkDcmHeader::CORONAL );
+                if( viewUp[1] < 0 ) {
+                    inverter *=-1;
+                }
+                this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
+                                                              inverter*viewUp[1], 
+                                                              inverter*viewUp[2] );
+                break;
+            case svkDcmHeader::CORONAL:
+                this->dataVector[MR4D]->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
+                if( viewUp[2] > 0 ) {
+                    inverter *=-1;
+                }
+                this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
+                                                              inverter*viewUp[1], 
+                                                              inverter*viewUp[2] );
+                break;
+            case svkDcmHeader::SAGITTAL:
+                this->dataVector[MR4D]->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
+                if( viewUp[2] > 0 ) {
+                    inverter *=-1;
+                }
+                this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
+                                                              inverter*viewUp[1], 
+                                                              inverter*viewUp[2] );
+                break;
+        }
+
+
+        if( viewWidth >= viewHeight && viewWidth >= viewDepth ) {
+            zoom = diagonal/viewWidth;        
+        } else if( viewHeight >= viewWidth && viewHeight >= viewDepth ) {
+            zoom = diagonal/viewHeight;        
+        } else {
+            zoom = diagonal/viewDepth;        
+        }
+        // We'll back off the zoom to 95% to leave some edges
+        zoom = 0.95 * zoom; 
+        this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->Zoom( zoom );
+
+        //  If not aligning camera, then retain the current rwi "zoom" or scale factor
+        if ( this->alignCamera == false ) {
+            this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetParallelScale( currentScale);
+        }
+
+        if( toggleDraw ) {
+            this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOn();
+        }
+
+        if (this->GetDebug()) {
+            currentScale = this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->GetParallelScale( );
+            cout << "reset CurScale: " << currentScale << endl;
+            currentViewAngle= this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->GetViewAngle( );
+            cout << "reset CurAngle: " << currentViewAngle<< endl;
         }
     }
+
 }
 
 
