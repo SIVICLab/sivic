@@ -197,12 +197,38 @@ int main (int argc, char** argv)
     if ( magX != 1 || magY != 1 || magZ !=1 ) {
         reslicer->SetMagnificationFactors( magX, magY, magZ);
     }
+
+    reslicer->SetOutputSpacing(targetReader->GetOutput()->GetSpacing());
+    // Get the ijk voxel position from the input image that matches the origin of the target
+    // NOTE: GetIndexFromPosition returns a double index, representing fractions of voxels 
+    double index[3];
+    inputReader->GetOutput()->GetIndexFromPosition(targetReader->GetOutput()->GetOrigin(), index);
+
+    double* inputSpacing = inputReader->GetOutput()->GetSpacing();
+    double* inputOrigin  = inputReader->GetOutput()->GetOrigin();
+    double outputOrigin[3];
+
+    // See comment in GetIndexFromPosition to understand why 0.5 is subtracted
+    outputOrigin[0] = inputOrigin[0] + (index[0] - 0.5) * inputSpacing[0];
+    outputOrigin[1] = inputOrigin[1] + (index[1] - 0.5) * inputSpacing[1];
+    outputOrigin[2] = inputOrigin[2] + (index[2] - 0.5) * inputSpacing[2];
+
+    reslicer->SetOutputOrigin(outputOrigin);
+    reslicer->SetOutputExtent(targetReader->GetOutput()->GetExtent());
+
     reslicer->Update();
+
+    // Check if input and target/output centerpoints are aligned
+    bool aligned = reslicer->AreCenterpointsAligned();
+    if (!aligned) {
+        cout << "Input and Target centerpoints are not aligned- this is currently unsupported" << endl;
+        exit(1);
+    }
 
     vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New();
     svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( dataTypeOut ));
     writer->SetFileName( outputFileName.c_str() );
-
+    // Add check to see if the output is null.
     writer->SetInput( reslicer->GetOutput() );
     writer->Write();
     writer->Delete();

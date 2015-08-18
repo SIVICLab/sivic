@@ -76,6 +76,10 @@ class svkObliqueReslice : public svkImageAlgorithm
         void                    SetTargetDcosFromImage(svkImageData* image);
         void                    SetTargetDcos(double dcos[3][3]);   //fillinputportinfo
         void                    SetMagnificationFactors( float x, float y, float z); 
+        void                    SetOutputSpacing( double spacing[3] ); 
+        void                    SetOutputOrigin( double origin[3] ); 
+        void                    SetOutputExtent( int extent[6] ); 
+        bool                    AreCenterpointsAligned();
 
     protected:
 
@@ -109,6 +113,7 @@ class svkObliqueReslice : public svkImageAlgorithm
         void                Print3x3(double matrix[3][3], string name);
         bool                IsDcosInitialized(); 
         bool                magnify(); 
+        double*             CalculateCenterpoint(svkImageData* image);
 
 
 

@@ -45,6 +45,7 @@
 #include <vtkImageChangeInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
+#include <cmath>
 
 
 using namespace svk;
@@ -253,6 +254,22 @@ void svkObliqueReslice::SetMagnificationFactors( float x, float y, float z)
     this->magnification[2] = z; 
 }
 
+void svkObliqueReslice::SetOutputSpacing( double spacing[3] )
+{
+    this->reslicer->SetOutputSpacing(spacing);
+}
+
+
+void svkObliqueReslice::SetOutputOrigin( double origin[3] )
+{
+    this->reslicer->SetOutputOrigin(origin);
+}
+
+
+void svkObliqueReslice::SetOutputExtent( int extent[6] )
+{
+    this->reslicer->SetOutputExtent(extent);
+}
 
 
 /*!
@@ -484,6 +501,72 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
 
     delete[] tlc0;
     delete[] inputSpacing;
+}
+
+/*!
+ *  Calculate the centerpoint of an image
+ */
+double* svkObliqueReslice::CalculateCenterpoint(svkImageData* image)
+{
+    // Calculate target centerpoint
+    double* imageTLC = new double[3]; 
+    image->GetDcmHeader()->GetOrigin(imageTLC, 0);
+
+    double* imageSpacing = new double[3]; 
+    image->GetDcmHeader()->GetPixelSpacing(imageSpacing); 
+
+    int imageNumVoxels[3]; 
+    image->GetNumberOfVoxels(imageNumVoxels);
+
+    double imageDCos[3][3];
+    image->GetDcmHeader()->GetDataDcos(imageDCos); 
+
+    double imageCenter[3]; 
+    for (int i = 0; i < 3; i++) {
+        imageCenter[i] = imageTLC[i];  
+        for (int j = 0; j < 3; j++) {
+            imageCenter[i] += imageDCos[j][i] * (imageSpacing[j] * ((imageNumVoxels[j]-1)/2.) );
+        }
+    }
+
+    delete[] imageTLC;
+    delete[] imageSpacing;
+
+    return   imageCenter;
+}
+
+/*!
+ *  Check to see if target's and input's centerpoints are alligned
+ */
+bool svkObliqueReslice::AreCenterpointsAligned()
+{
+
+    // Calculate input centerpoint
+    double* inputCenter  = new double[3];
+    inputCenter          = this->CalculateCenterpoint(this->GetImageDataInput(0));
+    double* targetCenter = new double[3];
+    targetCenter         = this->CalculateCenterpoint(this->reslicedImage);
+
+    // Compare centers, and return false if a diff's dimension is >3% the input
+    double* centerDiff = new double[3];
+    bool    aligned    = true;
+    for (int i = 0; i < 3; i++) {
+        centerDiff[i] = inputCenter[i] - targetCenter[i];
+        if (centerDiff[i] > 0.03 * abs(inputCenter[i]))
+        {
+            aligned = false;
+        }
+    }
+    
+    cout << "Input center:  " << inputCenter[0] << " " << inputCenter[1] << " " << inputCenter[2] << endl;
+    cout << "Target center: " << targetCenter[0] << " " << targetCenter[1] << " " << targetCenter[2] << endl;
+    cout << "Centerpoint difference: " << centerDiff[0] << " " << centerDiff[1] << " " << centerDiff[2] << endl;
+
+    // delete[] inputCenter;
+    // delete[] targetCenter;
+    // delete[] centerDiff;
+
+    return   aligned; 
 }
 
 
