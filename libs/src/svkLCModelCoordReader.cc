@@ -42,6 +42,7 @@
 
 #include <svkLCModelCoordReader.h>
 #include <svkImageReaderFactory.h>
+#include <svkMrsZeroFill.h>
 #include <svkString.h>
 #include <svkTypeUtils.h>
 #include <svkFileUtils.h>
@@ -80,6 +81,7 @@ svkLCModelCoordReader::svkLCModelCoordReader()
     this->SetNumberOfInputPorts(1);
 
     this->dataStartDelimiter = "fit to the data follow"; 
+    this->numCoordFreqPoints = 0; 
 }
 
 
@@ -138,36 +140,90 @@ void svkLCModelCoordReader::ExecuteData(vtkDataObject* output)
 
     svkImageData* data = svkMrsImageData::SafeDownCast( this->AllocateOutputData(output) );
 
+    // Make sure the output data has the correct dimmensions: 
+    this->GlobFileNames();
+    this->InitNumFreqPointsFromCoordFile( this->GetFileNames()->GetValue(0) ); 
+    this->InitPPMRangeFromCoordFile( this->GetFileNames()->GetValue(0) ); 
+    this->CheckOutputPtsPerPPM(); 
 
     //  Create the template data object for fitted spectra to be written to
     this->GetOutput()->DeepCopy( this->GetImageDataInput(0) );     
 
-    svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( this->GetOutput() );
-
-    //  initialize all arrays to zero: 
+    //  initialize all output arrays to zero: 
     svkDcmHeader::DimensionVector dimVec = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
     int numCells = svkDcmHeader::GetNumberOfCells( &dimVec );
-    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
-    int numTimePoints = hdr->GetIntValue( "DataPointColumns" );
+
     double zeroTuple[2];
     zeroTuple[0] = 0; 
     zeroTuple[1] = 0; 
-
+    svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( this->GetOutput() );
     for (int cellID = 0; cellID < numCells; cellID++ ) {
         vtkFloatArray* spectrumOut  = static_cast<vtkFloatArray*>( mrsData->GetSpectrum( cellID ) );
-        for (int i = 0; i < numTimePoints; i++ ) {
+        for (int i = 0; i < this->numCoordFreqPoints; i++ ) {
             spectrumOut->SetTuple(i, zeroTuple);
         }
     }
 
     this->ParseCoordFiles(); 
+
+    //  LCModel output is in frequency domain so be sure to set output regardless of the input 
+    //  template value. 
+    string domain("FREQUENCY");
+    this->GetOutput()->GetDcmHeader()->SetValue( "SignalDomainColumns", domain );
+}
+
+
+/*
+ *  Init the number of points in the output data from coord file: 
+ */
+void svkLCModelCoordReader::InitNumFreqPointsFromCoordFile( string coordFileName )
+{
+    struct stat fs;
+    if ( stat( coordFileName.c_str(), &fs) ) {
+        vtkErrorMacro("Unable to open file " << coordFileName );
+        return;
+    }
+    vtkDelimitedTextReader* coordReader = vtkDelimitedTextReader::New();
+    coordReader->SetFieldDelimiterCharacters("  ");
+    coordReader->SetStringDelimiter(' ');
+    coordReader->SetMergeConsecutiveDelimiters(true); 
+    coordReader->SetHaveHeaders(true);
+    coordReader->SetFileName( coordFileName.c_str() ); 
+    coordReader->Update();
+
+    vtkTable* table = coordReader->GetOutput();
+    int numCols = table->GetNumberOfColumns() ; 
+    int numRows = table->GetNumberOfRows() ; 
+
+    //  parse through the rows to find specific pieces of data; 
+    int rowID;  
+    string rowString = ""; 
+
+    int numFreqPoints;
+    for ( rowID = 0; rowID < numRows; rowID++ ) {
+
+        //  Get a row: 
+        this->GetDataRow(table, rowID, &rowString);  
+
+        //  First, find the number of frequency points in fitted spectra: 
+        string pointsDelimiter = "points on ppm-axis"; 
+        size_t foundPtsPos = rowString.find( pointsDelimiter ); 
+        if ( foundPtsPos != string::npos) {
+            //  num points is the first word on this line: 
+            numFreqPoints = table->GetRow(rowID)->GetValue(0).ToInt(); 
+            //cout << "ROW: " << rowString << endl;
+            cout << "COORD POINTS: " << numFreqPoints << endl;
+            this->numCoordFreqPoints = numFreqPoints; 
+        }
+    }
+    coordReader->Delete(); 
 }
 
 
 /*
  *  Parse PPM range from coord file: 
  */
-void svkLCModelCoordReader::ParsePPMFromFile( string fileName )
+void svkLCModelCoordReader::InitPPMRangeFromCoordFile( string fileName )
 {
 
     ifstream* input = new ifstream();
@@ -206,8 +262,127 @@ void svkLCModelCoordReader::ParsePPMFromFile( string fileName )
             keepReading = false; 
         }
     }
+
+    delete iss; 
     input->close(); 
+    delete input; 
     cout << "ST: " << this->ppmStart << " - " << this->ppmEnd << endl; 
+}
+
+
+/*!  
+ *  LCMode can produce output spectra with different PPM/Pt resolution than the inpub data. 
+ *  Get the LCModel output ranges and compare with the input template to determine if the
+ *  template needs to be zero filled to accommodate the LCMode results Hz/pt
+ */
+void svkLCModelCoordReader::CheckOutputPtsPerPPM()
+{
+    svkDcmHeader* hdr = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetDcmHeader();
+    svkSpecPoint* point = svkSpecPoint::New();
+    point->SetDcmHeader( hdr ); 
+
+    // Get ppm range and num freq points of input template data
+    int numSpecPtsIn = hdr->GetIntValue( "DataPointColumns" );
+    float startPPMIn   = point->ConvertPosUnits(0, svkSpecPoint::PTS, svkSpecPoint::PPM);
+    float endPPMIn     = point->ConvertPosUnits(numSpecPtsIn - 1, svkSpecPoint::PTS, svkSpecPoint::PPM);
+    if ( this->GetDebug() ) {
+        cout << "PPM IN: " << startPPMIn << " " << endPPMIn << endl; 
+    }
+
+    //  Does the input template need to be zero filled? Compare the input and outupt
+    //  pts/ppm ratio:         
+    float outputPtsPerPPMRatio = this->numCoordFreqPoints / ( this->ppmStart - this->ppmEnd ); 
+    float inputPtsPerPPMRatio  = numSpecPtsIn / ( startPPMIn - endPPMIn ); 
+
+    int zeroFillFactor = outputPtsPerPPMRatio/inputPtsPerPPMRatio; 
+    cout << "pts/PPM LCMODEL        : " << outputPtsPerPPMRatio << endl;
+    cout << "pts/PPM Input template : " << inputPtsPerPPMRatio << endl;
+    cout << "Zero Fill Factor       : " << zeroFillFactor << endl;
+
+    if ( zeroFillFactor > 1 ) {
+        svkMrsZeroFill* zeroFill = svkMrsZeroFill::New();
+        zeroFill->SetInput( this->GetImageDataInput(0) );
+        zeroFill->SetNumberOfSpecPoints( numSpecPtsIn * zeroFillFactor ); 
+        zeroFill->Update(); 
+    }
+    point->Delete(); 
+}
+
+
+/*!
+ *  Parse the intensity values from the current coord file and initialze a float array of values. 
+ */
+void svkLCModelCoordReader::ParseIntensityValuesFromCoord( vtkTable* coordDataTable, int rowID, float* coordIntensities )
+{ 
+
+    //  ===================================================================
+    //  Init an array for the intensity values: 
+    //  The intensity values follow and are delimited by a string that ends in "follow", e.g. 
+    //
+    //  NY points of the fit to the data follow  
+    //  -1.58078E+08 -1.63007E+08 -1.68433E+08 -1.70633E+08 -1.71649E+08 -1.72759E+08 
+    //  -2.08652E+08 -2.15280E+08 -2.18571E+08 -2.16981E+08 -2.11360E+08 -2.04654E+08 
+    //  -1.85580E+08
+    //  NY phased data points follow
+    //  ===================================================================
+    int numCols = coordDataTable->GetNumberOfColumns(); 
+    int numRows = coordDataTable->GetNumberOfRows(); 
+
+    int freqIndex = 0;  // total of numCoordFreqPoints values
+    for ( int rowIDData = rowID+1; rowIDData < numRows; rowIDData++ ) {
+
+        //cout << "rowID: " << rowIDData << endl;
+        //cout << "ROW: " << rowString << endl;
+        string rowString = ""; 
+        this->GetDataRow(coordDataTable, rowIDData, &rowString);  
+
+        int numValuesInRow = coordDataTable->GetRow(rowIDData)->GetNumberOfValues();
+        //cout << "DEREF: " << *coordDataTable->GetRow(rowIDData) << endl;
+        bool isValid; 
+        for ( int word = 0; word < numValuesInRow; word++ ) {
+            float intensity = coordDataTable->GetRow(rowIDData)->GetValue(word).ToFloat(&isValid); 
+            if ( isValid ) {
+                coordIntensities[freqIndex] = coordDataTable->GetRow(rowIDData)->GetValue(word).ToFloat(); 
+                //cout << "word: " << word << " " << coordIntensities[freqIndex] << endl;
+                freqIndex++; 
+            } else {
+                break; 
+            }
+        }
+        if ( freqIndex >= this->numCoordFreqPoints ) {
+            break; 
+        }
+        //cout << "freqIndex: " << freqIndex << endl;
+    }
+}
+
+
+/*
+ *  Move file pointer to start of fitted data intensities as delimited by 
+ *  the "dataStartDelimiter" string.  
+ *  Returns the rowID in the table 
+ */ 
+int svkLCModelCoordReader::FindStartOfIntensityData( vtkTable* coordDataTable )
+{ 
+    int numCols = coordDataTable->GetNumberOfColumns() ; 
+    int numRows = coordDataTable->GetNumberOfRows() ; 
+
+    int rowID;  
+    string rowString = ""; 
+    for ( rowID = 0; rowID < numRows; rowID++ ) {
+
+        //  Get a row: 
+        this->GetDataRow(coordDataTable, rowID, &rowString);  
+        //cout << "ROW: " << rowString << endl;
+
+        //  Now read on until the start of the intensity values to parse: 
+        string dataFitDelimiter = this->dataStartDelimiter;
+        size_t foundDataPos = rowString.find( dataFitDelimiter ); 
+        if ( foundDataPos != string::npos) {
+            break; 
+        }
+    }
+    return rowID; 
 }
 
 
@@ -217,20 +392,15 @@ void svkLCModelCoordReader::ParsePPMFromFile( string fileName )
 void svkLCModelCoordReader::ParseCoordFiles()
 {
    
-    this->GlobFileNames();
-
     svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( this->GetOutput() );
-
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
-
-    int numTimePoints = hdr->GetIntValue( "DataPointColumns" );
 
     svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector(); 
     int voxels[3];  
     hdr->GetSpatialDimensions( &dimVector, voxels ); 
-    int numVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVector); 
 
-    this->ParsePPMFromFile( this->GetFileNames()->GetValue(0) ); 
+
+    //  Get the point range of the fitted LCModel PPM range
     svkSpecPoint* point = svkSpecPoint::New();
     point->SetDcmHeader( svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetDcmHeader() );
     int startPt = static_cast<int>(point->ConvertPosUnits(this->ppmStart, svkSpecPoint::PPM, svkSpecPoint::PTS));
@@ -238,24 +408,11 @@ void svkLCModelCoordReader::ParseCoordFiles()
     cout << "Start->End " << startPt << " " << endPt << endl;
     point->Delete();
 
+    float* coordIntensities = new float[this->numCoordFreqPoints];     
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
         string coordFileName = this->GetFileNames()->GetValue( fileIndex );
         cout << "Coord NAME: " << fileIndex << " " << coordFileName << endl;
-
-        // ==========================================
-        // Parse the col, row and slice from the file name: 
-        // *_cCol#_rRow#_sSlice#, e.g. 
-        // fileRoot_c10_r8_s4_... csv
-        //
-        // test_1377_c9_r11_s4.csv
-        // ==========================================
-        int col; 
-        int row; 
-        int slice; 
-        this->GetVoxelIndexFromFileName(coordFileName, &col, &row, &slice); 
-
-        cout << "col " << col << " row " << row << " slice " << slice << endl;
  
         struct stat fs;
         if ( stat( coordFileName.c_str(), &fs) ) {
@@ -270,100 +427,55 @@ void svkLCModelCoordReader::ParseCoordFiles()
         coordReader->SetFileName( coordFileName.c_str() ); 
         coordReader->Update();
 
-
-        //vtkStringToNumeric* numeric = vtkStringToNumeric::New();
-        //numeric->SetInputConnection ( coordReader->GetOutputPort());
-        //numeric->Update();
-        //vtkTable* table = vtkTable::SafeDownCast(numeric->GetOutput());
-
         vtkTable* table = coordReader->GetOutput();
         //cout << *table << endl;
         //cout << "==========================================" << endl;
         //table->Dump();
         //cout << "==========================================" << endl;
 
-        int numCols = table->GetNumberOfColumns() ; 
-        int numRows = table->GetNumberOfRows() ; 
+        //  parse through the rows to find the start of the intensity data; 
+        int rowID; 
+        rowID = this->FindStartOfIntensityData( table ); 
 
-        //  parse through the rows to find specific pieces of data; 
-        int rowID;  
-        string rowString = ""; 
-        int numFreqPoints;
-        for ( rowID = 0; rowID < numRows; rowID++ ) {
+        //  parse the coord file starting at this rowID and initialize an array of 
+        //  fitted intensities
+        //  for the voxels encoded in this coord file: 
+        this->ParseIntensityValuesFromCoord( table, rowID, coordIntensities ); 
+      
 
-            //  Get a row: 
-            this->GetDataRow(table, rowID, &rowString);  
-
-            //cout << "ROW: " << rowString << endl;
-
-            //  First, find the number of frequency points in fitted spectra: 
-            string pointsDelimiter = "points on ppm-axis"; 
-            size_t foundPtsPos = rowString.find( pointsDelimiter ); 
-            if ( foundPtsPos != string::npos) {
-                //  num points is the first word on this line: 
-                numFreqPoints = table->GetRow(rowID)->GetValue(0).ToInt(); 
-                //cout << "ROW: " << rowString << endl;
-                //cout << "POINTS: " << numFreqPoints << endl;
-            }
-        
-            //  Now read on until the start of the intensity values to parse: 
-            string dataFitDelimiter = this->dataStartDelimiter;
-            size_t foundDataPos = rowString.find( dataFitDelimiter ); 
-            if ( foundDataPos != string::npos) {
-                break; 
-            }
-        }
-        //cout << "ROW: " << rowString << endl;
-
-        //  
-        //  Create an array for the intensity values: 
-        //  The intensity values follow and are delimited by a string that ends in "follow", e.g. 
-        //
-        //  NY points of the fit to the data follow  
-        //  -1.58078E+08 -1.63007E+08 -1.68433E+08 -1.70633E+08 -1.71649E+08 -1.72759E+08 
-        //  -2.08652E+08 -2.15280E+08 -2.18571E+08 -2.16981E+08 -2.11360E+08 -2.04654E+08 
-        //  -1.85580E+08
-        //  NY phased data points follow
-        //
-        float* coordIntensities = new float[numFreqPoints];     
-        float tuple[2]; 
-        tuple[1] = 0; //imaginary component; 
-        int freqIndex = 0;  // total of numFreqPoints values
-        for ( int rowIDData = rowID+1; rowIDData < numRows; rowIDData++ ) {
-            //cout << "rowID: " << rowIDData << endl;
-
-            this->GetDataRow(table, rowIDData, &rowString);  
-            //cout << "ROW: " << rowString << endl;
-
-            int numValuesInRow = table->GetRow(rowIDData)->GetNumberOfValues();
-            //cout << "DEREF: " << *table->GetRow(rowIDData) << endl;
-            bool isValid; 
-            for ( int word = 0; word < numValuesInRow; word++ ) {
-                float intensity = table->GetRow(rowIDData)->GetValue(word).ToFloat(&isValid); 
-                if ( isValid ) {
-                    coordIntensities[freqIndex] = table->GetRow(rowIDData)->GetValue(word).ToFloat(); 
-                    //cout << "word: " << word << " " << coordIntensities[freqIndex] << endl;
-                    freqIndex++; 
-                } else {
-                    break; 
-                }
-            }
-            if ( freqIndex >= numFreqPoints ) {
-                break; 
-            }
-            //cout << "freqIndex: " << freqIndex << endl;
-        }
-
+        // ==========================================
         //  Set the values back into the output data cell: 
+        // ==========================================
+        
+        // Parse the col, row and slice from the file name: 
+        // *_cCol#_rRow#_sSlice#, e.g. 
+        // fileRoot_c10_r8_s4_... csv
+        // Example: test_1377_c9_r11_s4.csv
+        int col; 
+        int row; 
+        int slice; 
+        this->GetVoxelIndexFromFileName(coordFileName, &col, &row, &slice); 
+        cout << "col " << col << " row " << row << " slice " << slice << endl;
         svkDcmHeader::DimensionVector indexVector = dimVector; 
         svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::COL_INDEX, col);
         svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, row);
         svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, slice);
         int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &indexVector);
         vtkFloatArray* spectrumOut  = static_cast<vtkFloatArray*>( mrsData->GetSpectrum( cellID ) );
+        //cout << "SO: " << *spectrumOut << endl; exit(1); 
 
+        float tuple[2]; 
+        tuple[1] = 0; //imaginary component; 
 
-        for ( int freqIndex = 0; freqIndex < numFreqPoints; freqIndex++ ) {
+        svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( this->GetOutput() );
+        svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+        int numSpecPtsIn = hdr->GetIntValue( "DataPointColumns" );
+
+        float fftNormalizationFactor = pow(this->numCoordFreqPoints, .5);  
+        fftNormalizationFactor = pow(numSpecPtsIn, .5);  
+        fftNormalizationFactor = 1; 
+
+        for ( int freqIndex = 0; freqIndex < this->numCoordFreqPoints; freqIndex++ ) {
 
             //  =============================
             //  Now set these intensity values into the spectrum for this fitted voxel (cellID) 
@@ -373,11 +485,16 @@ void svkLCModelCoordReader::ParseCoordFiles()
             //  =============================
             //cout << "FI: " << freqIndex << endl; 
             tuple[0] = coordIntensities[freqIndex]; //imaginary component; 
-            spectrumOut->SetTuple( freqIndex, tuple );
-            //spectrumOut->SetTuple( (startPt + freqIndex - 1), tuple );
+            //  Scale tuple for FFT normalization factor: 
+            tuple[0] *= fftNormalizationFactor; 
+            //spectrumOut->SetTuple( freqIndex, tuple );
+            spectrumOut->SetTuple( (startPt + freqIndex - 1), tuple );
         }
-        delete [] coordIntensities; 
+
+        coordReader->Delete(); 
     } 
+
+    delete [] coordIntensities; 
 }
 
 
