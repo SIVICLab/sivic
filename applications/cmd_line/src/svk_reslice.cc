@@ -62,15 +62,16 @@ int main (int argc, char** argv)
     usemsg += "svk_reslice -i input_to_resample --target file_to_resample_to -o output_file_name\n"; 
     usemsg += "            -t output_data_type [ --mx magX  --my magY --mz magZ ] [-h]          \n";
     usemsg += "                                                                                 \n";
-    usemsg += "   -i        input_file_name     Name of file to resample.                       \n";
-    usemsg += "   --target  target_file_name    File to resample input to.                      \n";
-    usemsg += "   -o        output_file_root    Root name of outputfile.                        \n";
-    usemsg += "   --mx      magnificationX      Magnification factor for image columns:         \n";
-    usemsg += "                                 >1 downsamples (larger voxel size)              \n";
-    usemsg += "                                 <1 upsamples (smaller voxel size)               \n";
-    usemsg += "   --my      magnificationY      Magnification factor for image rows             \n";
-    usemsg += "   --mz      magnificationZ      Magnification factor for image slices           \n";
-    usemsg += "   -t        output_data_type    Output data type:                               \n";
+    usemsg += "   -i         input_file_name    Name of file to resample.                       \n";
+    usemsg += "   --target   target_file_name   File to resample input to.                      \n";
+    usemsg += "   -s                            Set output scaling, origin, and extent to target\n";
+    usemsg += "   -o         output_file_root   Root name of outputfile.                        \n";
+    usemsg += "   --mx       magnificationX     Magnification factor for image columns:         \n";
+    usemsg += "                                     >1 downsamples (larger voxel size)              \n";
+    usemsg += "                                     <1 upsamples (smaller voxel size)               \n";
+    usemsg += "   --my       magnificationY     Magnification factor for image rows             \n";
+    usemsg += "   --mz       magnificationZ     Magnification factor for image slices           \n";
+    usemsg += "   -t         output_data_type   Output data type:                               \n";
     usemsg += "                                     3 = UCSF IDF                                \n";
     usemsg += "                                     5 = DICOM_MRI                               \n";
     usemsg += "                                     6 = DICOM_Enhanced MRI                      \n";
@@ -84,9 +85,10 @@ int main (int argc, char** argv)
     string inputFileName;
     string targetFileName;
     string outputFileName;
-    float magX = 1; 
-    float magY = 1; 
-    float magZ = 1; 
+    float magX  = 1; 
+    float magY  = 1; 
+    float magZ  = 1; 
+    bool  match = false;
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
@@ -96,7 +98,8 @@ int main (int argc, char** argv)
         FLAG_TARGET_FILE_NAME = 0, 
         FLAG_MAG_COLS, 
         FLAG_MAG_ROWS, 
-        FLAG_MAG_SLICES
+        FLAG_MAG_SLICES,
+        // FLAG_MATCH
     }; 
     
     
@@ -107,6 +110,7 @@ int main (int argc, char** argv)
         {"mx",          required_argument, NULL,  FLAG_MAG_COLS},
         {"my",          required_argument, NULL,  FLAG_MAG_ROWS},
         {"mz",          required_argument, NULL,  FLAG_MAG_SLICES},
+        // {"match",       required_argument, NULL,  FLAG_MATCH},
         {0, 0, 0, 0}
     };
     
@@ -115,7 +119,7 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0;
-    while ( ( i = getopt_long(argc, argv, "i:o:t:h", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:t:sh", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -137,6 +141,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_MAG_SLICES:
                 magZ = atof( optarg );
+                break;
+            case 's':
+                match = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -198,31 +205,35 @@ int main (int argc, char** argv)
         reslicer->SetMagnificationFactors( magX, magY, magZ);
     }
 
-    reslicer->SetOutputSpacing(targetReader->GetOutput()->GetSpacing());
-    // Get the ijk voxel position from the input image that matches the origin of the target
-    // NOTE: GetIndexFromPosition returns a double index, representing fractions of voxels 
-    double index[3];
-    inputReader->GetOutput()->GetIndexFromPosition(targetReader->GetOutput()->GetOrigin(), index);
+    if (match) {
+        reslicer->SetOutputSpacing(targetReader->GetOutput()->GetSpacing());
+        // Get the ijk voxel position from the input image that matches the origin of the target
+        // NOTE: GetIndexFromPosition returns a double index, representing fractions of voxels 
+        double index[3];
+        inputReader->GetOutput()->GetIndexFromPosition(targetReader->GetOutput()->GetOrigin(), index);
 
-    double* inputSpacing = inputReader->GetOutput()->GetSpacing();
-    double* inputOrigin  = inputReader->GetOutput()->GetOrigin();
-    double outputOrigin[3];
+        double* inputSpacing = inputReader->GetOutput()->GetSpacing();
+        double* inputOrigin  = inputReader->GetOutput()->GetOrigin();
+        double outputOrigin[3];
 
-    // See comment in GetIndexFromPosition to understand why 0.5 is subtracted
-    outputOrigin[0] = inputOrigin[0] + (index[0] - 0.5) * inputSpacing[0];
-    outputOrigin[1] = inputOrigin[1] + (index[1] - 0.5) * inputSpacing[1];
-    outputOrigin[2] = inputOrigin[2] + (index[2] - 0.5) * inputSpacing[2];
+        // See comment in GetIndexFromPosition to understand why 0.5 is subtracted
+        outputOrigin[0] = inputOrigin[0] + (index[0] - 0.5) * inputSpacing[0];
+        outputOrigin[1] = inputOrigin[1] + (index[1] - 0.5) * inputSpacing[1];
+        outputOrigin[2] = inputOrigin[2] + (index[2] - 0.5) * inputSpacing[2];
 
-    reslicer->SetOutputOrigin(outputOrigin);
-    reslicer->SetOutputExtent(targetReader->GetOutput()->GetExtent());
+        reslicer->SetOutputOrigin(outputOrigin);
+        reslicer->SetOutputExtent(targetReader->GetOutput()->GetExtent());
+    }
 
     reslicer->Update();
 
-    // Check if input and target/output centerpoints are aligned
-    bool aligned = reslicer->AreCenterpointsAligned();
-    if (!aligned) {
-        cout << "Input and Target centerpoints are not aligned- this is currently unsupported" << endl;
-        exit(1);
+    if (match) {
+        // Check if input and target/output centerpoints are aligned
+        bool aligned = reslicer->AreCenterpointsAligned();
+        if (!aligned) {
+            cout << "Input and Target centerpoints are not aligned- this is currently unsupported" << endl;
+            exit(1);
+        }
     }
 
     vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New();
