@@ -942,6 +942,7 @@ void svkSatBandsXML::GetPRESSBoxParametersVer20( float pressOrigin[3], float pre
     for ( int i = 0; i < 3; i++ ) {
         pressOrigin[i] = 0.; 
     }
+
     for ( int i = 0; i < 3; i++ ) {
         for ( int j = 0; j < 3; j++ ) {
             float tmp = normals[i][j] * (distances[i]); 
@@ -949,10 +950,17 @@ void svkSatBandsXML::GetPRESSBoxParametersVer20( float pressOrigin[3], float pre
         }
     }
     // Invert the second normal in Version 2.0 because of compatibility issues
-    if (normals[1][1] < 0){    
-       normals[1][1] = -normals[1][1];
-       normals[1][2] = -normals[1][2];
+    if (normals[0][0] < 0){
+        normals[0][0] = - normals[0][0];    
     }
+
+    if (normals[1][1] < 0 && normals[1][2] < 0 && normals[2][1] < 0){    
+        normals[1][1] = -normals[1][1];
+        normals[1][2] = -normals[1][2];
+     } 
+     vtkMath::Cross(normals[0], normals[1], normals[2]);
+
+    
     cout << "PRESS ORIGIN ver 2.0: " << pressOrigin[0] << " " << pressOrigin[1] << " " << pressOrigin[2] << endl;    
     //  ===========================================================
     //  The PRESS Thickness is directly loaded from the XML in Version 2.0
@@ -973,21 +981,7 @@ void svkSatBandsXML::GetPRESSBoxParametersVer20( float pressOrigin[3], float pre
     //  ADD PI to the 3rd angle.. this is a bit of a black box operation, but required for the PSD
     //  to get the correct prescription
     pressAngles[2] += vtkMath::Pi();
-    
-/*
-    if (pressAngles[0]< -vtkMath::Pi()/2.){
-        pressAngles[0] += vtkMath::Pi();
-        cout << "smaller " <<endl;
-    }
-    else if (pressAngles[0]> vtkMath::Pi()/2.){
-        pressAngles[0] -= vtkMath::Pi();
-        cout << "bigger " <<endl;
-    } 
-    if (normals[2][1]*normals[1][1]<0){
-        pressAngles[0] =   -pressAngles[0];
-    }*/
-
-
+   
     cout << "PRESS EULERS ver 2.0: " << pressAngles[0] << " " << pressAngles[1] << " " << pressAngles[2] << endl;        
 
 }
