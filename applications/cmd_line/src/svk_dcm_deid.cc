@@ -193,7 +193,11 @@ int main (int argc, char** argv)
     } else {
         image->GetDcmHeader()->SetValue("SeriesInstanceUID", seriesUID );
     }
-    image->GetDcmHeader()->InsertUniqueUID("SOPInstanceUID");
+
+    string newUID = "";
+    newUID = image->GetDcmHeader()->GenerateUniqueUID();
+    image->GetDcmHeader()->ModifyValueRecursive( "MediaStorageSOPInstanceUID",    newUID);
+    image->GetDcmHeader()->ModifyValueRecursive( "SOPInstanceUID",                newUID);
     if ( image->GetDcmHeader()->GetOriginalXFerSyntax() == 22 ) {
         image->GetDcmHeader()->WriteDcmFileCompressed(inputFileName); 
     } else {
