@@ -2722,11 +2722,18 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
     //  These fields are removed from PHI_LIMITED and PHI_DEIDENTIFIED data sets: 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED || phiType == PHI_LIMITED ) {
         string emptyString = "";
-        this->ModifyValueRecursive( "SOPInstanceUID",                studyId); 
+        string newUID = "";
+
+        newUID = this->GenerateUniqueUID(); 
+        this->ModifyValueRecursive( "MediaStorageSOPInstanceUID",    newUID); 
+        this->ModifyValueRecursive( "SOPInstanceUID",                newUID); 
+
         this->ModifyValueRecursive( "AccessionNumber",               studyId); 
         this->ModifyValueRecursive( "InstitutionName",               studyId); 
         this->ModifyValueRecursive( "ReferringPhysicianName",        studyId); 
-        this->ModifyValueRecursive( "ReferencedSOPInstanceUID",      studyId); 
+
+        newUID = this->GenerateUniqueUID(); 
+        this->ModifyValueRecursive( "ReferencedSOPInstanceUID",      newUID); 
         this->ModifyValueRecursive( "PatientName",                   patientId); 
         this->ModifyValueRecursive( "PatientID",                     patientId); 
         if( this->ElementExists( "PatientAddress" ) ) {
@@ -2735,15 +2742,31 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
         if( this->ElementExists( "PatientTelephoneNumbers" ) ) {
             this->ModifyValueRecursive( "PatientTelephoneNumbers",       emptyString); 
         }
-        this->ModifyValueRecursive( "StudyInstanceUID",              studyId); 
-        this->ModifyValueRecursive( "SeriesInstanceUID",             studyId); 
+
+        newUID = this->GenerateUniqueUID(); 
+        this->ModifyValueRecursive( "StudyInstanceUID",              newUID); 
+
+        newUID = this->GenerateUniqueUID(); 
+        this->ModifyValueRecursive( "SeriesInstanceUID",             newUID); 
+
         this->ModifyValueRecursive( "StudyID",                       studyId); 
-        this->ModifyValueRecursive( "FrameOfReferenceUID",           studyId); 
+
+        newUID = this->GenerateUniqueUID(); 
+        this->ModifyValueRecursive( "FrameOfReferenceUID",           newUID); 
+
         this->ModifyValueRecursive( "BurnedInAnnotation",            studyId); 
-        this->ModifyValueRecursive( "UID",                           studyId); 
-        this->ModifyValueRecursive( "StorageMediaFileSetUID",        studyId); 
-        this->ModifyValueRecursive( "ReferencedFrameOfReferenceUID", studyId); 
-        this->ModifyValueRecursive( "RelatedFrameOfReferenceUID",    studyId); 
+
+        newUID = this->GenerateUniqueUID(); 
+        this->ModifyValueRecursive( "UID",                           newUID); 
+
+        newUID = this->GenerateUniqueUID(); 
+        this->ModifyValueRecursive( "StorageMediaFileSetUID",        newUID); 
+
+        newUID = this->GenerateUniqueUID(); 
+        this->ModifyValueRecursive( "ReferencedFrameOfReferenceUID", newUID); 
+
+        newUID = this->GenerateUniqueUID(); 
+        this->ModifyValueRecursive( "RelatedFrameOfReferenceUID",    newUID); 
     }   
 
     //  These fields are not removed from PHI_LIMITED data sets 
