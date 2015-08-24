@@ -65,9 +65,17 @@ svkObliqueReslice::svkObliqueReslice()
 #endif
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
+    this->SetNumberOfInputPorts(2);
+    bool repeatable = true;
+    bool required   = true;
+    this->GetPortMapper()->InitializeInputPort(INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, !repeatable);
+    this->GetPortMapper()->InitializeInputPort(INTERPOLATION_MODE, "INTERPOLATION_MODE", svkAlgorithmPortMapper::SVK_INT, !required);
 
-    this->reslicer      = vtkImageReslice::New(); 
-    this->reslicer->SetInterpolationModeToCubic();
+    this->SetNumberOfOutputPorts(1);
+    this->GetPortMapper()->InitializeOutputPort(RESLICED_IMAGE, "RESLICED_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+
+    this->reslicer = vtkImageReslice::New();
+    
     this->reslicedImage = NULL;  
 
     this->targetDcos[0][0] = 0.; 
@@ -99,6 +107,22 @@ svkObliqueReslice::~svkObliqueReslice()
         this->reslicer->Delete();
         this->reslicer = NULL; 
     }
+}
+
+/*!
+ * Utility setter for input port: Interpolation Mode
+ */
+void svkObliqueReslice::SetInterpolationMode(int interpolationMode)
+{
+    this->GetPortMapper()->SetIntInputPortValue(INTERPOLATION_MODE, interpolationMode);
+}
+
+/*!
+ * Utility getter for input port: Interpolation Mode
+ */
+svkInt* svkObliqueReslice::GetInterpolationMode()
+{
+    return this->GetPortMapper()->GetIntInputPortValue(INTERPOLATION_MODE);
 }
 
 
@@ -170,6 +194,20 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
 {
 
     this->reslicer->SetInput( this->GetImageDataInput(0) ); 
+
+     // Set interpolation mode
+    int interpolationMode = NULL;
+    interpolationMode     = this->GetInterpolationMode()->GetValue();
+    switch (interpolationMode) {
+        case 2:
+            this->reslicer->SetInterpolationModeToLinear();
+            break;
+        case 3:
+            this->reslicer->SetInterpolationModeToNearestNeighbor();
+            break;
+        default:
+            this->reslicer->SetInterpolationModeToCubic();
+    }
 
     //  If target dcos isn't initialized, set it from the output image. 
     if ( ! this->IsDcosInitialized() ) {
@@ -654,9 +692,9 @@ void svkObliqueReslice::Print3x3(double matrix[3][3], string name)
  *  Oblique Reslice only works with image data.  Output will be of the same type as input 
  *  which is the default behavior for an svkImageAlgorithm. 
  */
-int svkObliqueReslice::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
-{
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
-    return 1;
-}
+// int svkObliqueReslice::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+// {
+//     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
+//     return 1;
+// }
 

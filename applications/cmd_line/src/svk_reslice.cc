@@ -58,28 +58,35 @@ int main (int argc, char** argv)
 {
 
     string usemsg("\n") ;
-    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";
-    usemsg += "svk_reslice -i input_to_resample --target file_to_resample_to -o output_file_name\n"; 
-    usemsg += "            -t output_data_type [ --mx magX  --my magY --mz magZ ] [-h]          \n";
-    usemsg += "                                                                                 \n";
-    usemsg += "   -i         input_file_name    Name of file to resample.                       \n";
-    usemsg += "   --target   target_file_name   File to resample input to.                      \n";
-    usemsg += "   -s                            Set output scaling, origin, and extent to target\n";
-    usemsg += "   -o         output_file_root   Root name of outputfile.                        \n";
-    usemsg += "   --mx       magnificationX     Magnification factor for image columns:         \n";
-    usemsg += "                                     >1 downsamples (larger voxel size)              \n";
-    usemsg += "                                     <1 upsamples (smaller voxel size)               \n";
-    usemsg += "   --my       magnificationY     Magnification factor for image rows             \n";
-    usemsg += "   --mz       magnificationZ     Magnification factor for image slices           \n";
-    usemsg += "   -t         output_data_type   Output data type:                               \n";
-    usemsg += "                                     3 = UCSF IDF                                \n";
-    usemsg += "                                     5 = DICOM_MRI                               \n";
-    usemsg += "                                     6 = DICOM_Enhanced MRI                      \n";
-    usemsg += "   -h                            print help mesage.                              \n";
-    usemsg += "                                                                                 \n";
-    usemsg += "Resamples the input file to the orientation params specified in the target file. \n";
-    usemsg += "To up/downsample it is possible to use the same input(-i) and target(--target)   \n"; 
-    usemsg += "and just specify the resample magnification factors.                             \n"; 
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                "\n";
+    usemsg += "svk_reslice -i input_to_resample --target file_to_resample_to             \n";
+    usemsg += "            -o output_file_name -t output_data_type                       \n";
+    usemsg += "            [--mode interpolation_mode] [--mx magX --my magY --mz magZ]   \n";
+    usemsg += "            [-s] [-h]                                                     \n";
+    usemsg += "                                                                          \n";
+    usemsg += "   -i         input_file_name    Name of file to resample.                \n";
+    usemsg += "   --target   target_file_name   File to resample input to.               \n";
+    usemsg += "   -s                            Set output scaling, origin, and extent   \n";
+    usemsg += "                                 to target                                \n";
+    usemsg += "   -o         output_file_root   Root name of outputfile.                 \n";
+    usemsg += "   --mx       magnificationX     Magnification factor for image columns:  \n";
+    usemsg += "                                     >1 downsamples (larger voxel size)   \n";
+    usemsg += "                                     <1 upsamples (smaller voxel size)    \n";
+    usemsg += "   --my       magnificationY     Magnification factor for image rows      \n";
+    usemsg += "   --mz       magnificationZ     Magnification factor for image slices    \n";
+    usemsg += "   -t         output_data_type   Output data type:                        \n";
+    usemsg += "                                     3 = UCSF IDF                         \n";
+    usemsg += "                                     5 = DICOM_MRI                        \n";
+    usemsg += "                                     6 = DICOM_Enhanced MRI               \n";
+    usemsg += "   --mode     interpolation_mode Interpolation algorithm:                 \n";
+    usemsg += "                                     1 = Cubic (Default)                  \n";
+    usemsg += "                                     2 = Linear                           \n";
+    usemsg += "                                     3 = Nearest Neighbor                 \n";
+    usemsg += "   -h                            print help mesage.                       \n";
+    usemsg += "                                                                          \n";
+    usemsg += "Resamples the input file to the orientation params specified in the       \n";
+    usemsg += "target file. To up/downsample it is possible to use the same  input(-i)   \n";
+    usemsg += "and target(--target) and just specify the resample magnification factors. \n";
     usemsg += "\n";
 
     string inputFileName;
@@ -89,6 +96,7 @@ int main (int argc, char** argv)
     float magY  = 1; 
     float magZ  = 1; 
     bool  match = false;
+    int   interpolationMode = 1;
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
@@ -99,7 +107,7 @@ int main (int argc, char** argv)
         FLAG_MAG_COLS, 
         FLAG_MAG_ROWS, 
         FLAG_MAG_SLICES,
-        // FLAG_MATCH
+        FLAG_INTERPOLATION_MODE
     }; 
     
     
@@ -110,7 +118,7 @@ int main (int argc, char** argv)
         {"mx",          required_argument, NULL,  FLAG_MAG_COLS},
         {"my",          required_argument, NULL,  FLAG_MAG_ROWS},
         {"mz",          required_argument, NULL,  FLAG_MAG_SLICES},
-        // {"match",       required_argument, NULL,  FLAG_MATCH},
+        {"mode",        required_argument, NULL,  FLAG_INTERPOLATION_MODE},
         {0, 0, 0, 0}
     };
     
@@ -141,6 +149,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_MAG_SLICES:
                 magZ = atof( optarg );
+                break;
+            case FLAG_INTERPOLATION_MODE:
+                interpolationMode = atof( optarg );
                 break;
             case 's':
                 match = true;
@@ -190,7 +201,8 @@ int main (int argc, char** argv)
 
 
     svkObliqueReslice* reslicer = svkObliqueReslice::New();
-    reslicer->SetInput( inputReader->GetOutput() ); 
+    reslicer->SetInput( inputReader->GetOutput() );
+    reslicer->SetInterpolationMode(interpolationMode);
 
     svkImageReader2* targetReader = readerFactory->CreateImageReader2(targetFileName.c_str());
     if ( targetReader == NULL ) { 

@@ -49,6 +49,7 @@
 #include <vtkImageReslice.h>
 
 #include <svkImageAlgorithm.h>
+#include <svkImageAlgorithmWithPortMapper.h>
 #include <svkImageData.h>
 #include <svkMriImageData.h>
 
@@ -63,10 +64,19 @@ using namespace std;
  *  Class to reslice an svkMriImageData at the specified orientation, set either explicitly by 
  *  providing the target orientatin dcos, or by providing an svkImageData object. 
  */
-class svkObliqueReslice : public svkImageAlgorithm
+class svkObliqueReslice : public svkImageAlgorithmWithPortMapper
 {
 
     public:
+
+        enum {
+            INPUT_IMAGE = 0,
+            INTERPOLATION_MODE
+        } svkObliqueResliceInput;
+
+        enum {
+            RESLICED_IMAGE = 0
+        } svkObliqueResliceOutput;
 
         static svkObliqueReslice* New();
         vtkTypeRevisionMacro( svkObliqueReslice, svkImageAlgorithm );
@@ -78,7 +88,9 @@ class svkObliqueReslice : public svkImageAlgorithm
         void                    SetMagnificationFactors( float x, float y, float z); 
         void                    SetOutputSpacing( double spacing[3] ); 
         void                    SetOutputOrigin( double origin[3] ); 
-        void                    SetOutputExtent( int extent[6] ); 
+        void                    SetOutputExtent( int extent[6] );
+        void                    SetInterpolationMode(int interpolationMode);
+        svkInt*                 GetInterpolationMode();
         bool                    AreCenterpointsAligned();
 
     protected:
@@ -86,7 +98,7 @@ class svkObliqueReslice : public svkImageAlgorithm
         svkObliqueReslice();
         ~svkObliqueReslice();
 
-        virtual int         FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+        // virtual int         FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         virtual int         RequestData(
                                 vtkInformation* request,
                                 vtkInformationVector** inputVector,
