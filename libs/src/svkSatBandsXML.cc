@@ -949,16 +949,23 @@ void svkSatBandsXML::GetPRESSBoxParametersVer20( float pressOrigin[3], float pre
             pressOrigin[j] += tmp;  
         }
     }
+
     // Invert the second normal in Version 2.0 because of compatibility issues
-    if (normals[0][0] < 0){
+     if (normals[0][0] < 0){
         normals[0][0] = - normals[0][0];    
     }
 
-    if (normals[1][1] < 0 && normals[1][2] < 0 && normals[2][1] < 0){    
+    if (normals[1][1] < 0){    
         normals[1][1] = -normals[1][1];
         normals[1][2] = -normals[1][2];
-     } 
-     vtkMath::Cross(normals[0], normals[1], normals[2]);
+    }
+    if (normals[2][2] < 0){    
+        normals[2][1] = -normals[2][1];
+        normals[2][2] = -normals[2][2];
+    }
+/*   else{
+        vtkMath::Cross(normals[0], normals[2], normals[1]);
+    }*/
 
     
     cout << "PRESS ORIGIN ver 2.0: " << pressOrigin[0] << " " << pressOrigin[1] << " " << pressOrigin[2] << endl;    
