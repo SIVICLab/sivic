@@ -69,6 +69,7 @@ int main (int argc, char** argv)
     usemsg += "                                                                             \n";  
     usemsg += "   --i1          input_file_name     Name of input file 1 (numerator)        \n"; 
     usemsg += "   --i2          input_file_name     Name of input file 2 (denominator)      \n"; 
+    usemsg += "   --spec        input_file_name     Name of MRS file with selectin box def  \n"; 
     usemsg += "   -o            output_file_root    Root name of output (no extension)      \n";  
     usemsg += "   -u            threshold           Upper std dev threshold                 \n";  
     usemsg += "   -l            threshold           lower std dev threshold                 \n";  
@@ -80,6 +81,7 @@ int main (int argc, char** argv)
 
     string inputFileName1; 
     string inputFileName2; 
+    string inputFileNameMRS; 
     string outputFileName; 
     int    lowerThreshold = 0;  
     int    upperThreshold = 0;  
@@ -90,13 +92,15 @@ int main (int argc, char** argv)
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
     enum FLAG_NAME {
         FLAG_FILE_1 = 0, 
-        FLAG_FILE_2
+        FLAG_FILE_2, 
+        FLAG_FILE_MRS
     };
 
     static struct option long_options[] =
     {
         {"i1",    required_argument, NULL,  FLAG_FILE_1},
         {"i2",    required_argument, NULL,  FLAG_FILE_2},
+        {"spec",  required_argument, NULL,  FLAG_FILE_MRS},
         {0, 0, 0, 0}
     };
 
@@ -112,6 +116,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_FILE_2:
                 inputFileName2.assign( optarg );
+                break;
+            case FLAG_FILE_MRS:
+                inputFileNameMRS.assign( optarg );
                 break;
             case 'o':
                 outputFileName.assign(optarg);
@@ -168,7 +175,7 @@ int main (int argc, char** argv)
         dataTypeOut = svkImageWriterFactory::IDF;
     }
 
-    readerFactory->Delete(); 
+
     if (reader1 == NULL) {
         cerr << "Can not determine appropriate reader for: " << inputFileName1 << endl;
         exit(1);
@@ -177,10 +184,26 @@ int main (int argc, char** argv)
         cerr << "Can not determine appropriate reader for: " << inputFileName2 << endl;
         exit(1);
     }
+
+    svkImageReader2* readerMRS = NULL; 
+    if ( inputFileNameMRS.length() != 0 ) { 
+        readerMRS = readerFactory->CreateImageReader2(inputFileNameMRS.c_str());
+        if (readerMRS == NULL) {
+            cerr << "Can not determine appropriate reader for: " << inputFileNameMRS << endl;
+            exit(1);
+        }
+    }
+
+    readerFactory->Delete(); 
+
     reader1->SetFileName( inputFileName1.c_str() );
     reader1->Update(); 
     reader2->SetFileName( inputFileName2.c_str() );
     reader2->Update();
+    if (readerMRS != NULL) {
+        readerMRS->SetFileName( inputFileNameMRS.c_str() );
+        readerMRS->Update();
+    }
 
 
     //  Set the input command line into the data set provenance:
@@ -190,7 +213,15 @@ int main (int argc, char** argv)
     svkMetaboliteRatioZScores* zscore = svkMetaboliteRatioZScores::New();
     zscore->SetInputNumerator( reader1->GetOutput() );
     zscore->SetInputDenominator( reader2->GetOutput() );
+    if (readerMRS != NULL) {
+        zscore->SetInputMrsData( readerMRS->GetOutput() );
+        zscore->LimitToSelectedVolume();
+    }
+    if ( lowerThreshold != 0 && upperThreshold != 0 ) {
+        zscore->SetZScoreThresholds( lowerThreshold, upperThreshold); 
+    }
     zscore->Update();
+    int status = zscore->GetErrorCode();
 
     // If the type is supported be svkImageWriterFactory then use it, otherwise use the vtkXMLWriter
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
@@ -201,15 +232,24 @@ int main (int argc, char** argv)
         exit(1);
     }
 
+    //vtkDataArray* out = zscore->GetOutput()->GetPointData()->GetScalars();
+    //for ( int i = 0; i < 800; i++ ) {
+            //cout << " OUT " << i << " " << out->GetTuple1(i) << endl;;
+    //}
+
+
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
     writer->SetInput( zscore->GetOutput() );
     writer->Write();
     writer->Delete();
 
+    zscore->Delete();
     reader1->Delete();
     reader2->Delete();
-    zscore->Delete();
+    if (readerMRS != NULL) {
+        readerMRS->Delete();
+    }
 
     return 0; 
 }
