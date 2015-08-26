@@ -55,6 +55,7 @@ extern "C" {
 #include <svkImageWriterFactory.h>
 #include <svkMetaboliteRatioZScores.h>
 
+#define UNDEFINED_THRESHOLD -999
 
 using namespace svk;
 
@@ -65,26 +66,33 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_zscore --i1 input_file_name  --i2 input_file_name                        \n";  
-    usemsg += "           -o output_file_root -u upperThreshold -l lowerThreshold           \n"; 
+    usemsg += "           -o output_file_root [ --spec input_file_name ]                    \n";  
+    usemsg += "           [-u upperThreshold && -l lowerThreshold ] [ -vh ]                 \n"; 
     usemsg += "                                                                             \n";  
     usemsg += "   --i1          input_file_name     Name of input file 1 (numerator)        \n"; 
     usemsg += "   --i2          input_file_name     Name of input file 2 (denominator)      \n"; 
     usemsg += "   --spec        input_file_name     Name of MRS file with selectin box def  \n"; 
     usemsg += "   -o            output_file_root    Root name of output (no extension)      \n";  
-    usemsg += "   -u            threshold           Upper std dev threshold                 \n";  
-    usemsg += "   -l            threshold           lower std dev threshold                 \n";  
+    usemsg += "   -u            threshold           Upper threshold: number std devs above  \n";  
+    usemsg += "                                     regression                              \n";  
+    usemsg += "   -l            threshold           Lower threshold: number of std devs     \n";  
+    usemsg += "                                     below regression                        \n";  
     usemsg += "   -v                                Verbose output.                         \n";
     usemsg += "   -h                                Print help mesage.                      \n";  
     usemsg += "                                                                             \n";  
-    usemsg += "Computs the z-score of the ratio of the two input metabolite maps.           \n";  
+    usemsg += "Computes the z-score of the ratio of the two input metabolite maps.          \n";  
+    usemsg += "Thrsholds specify the cut off for iterative exclusion of points from         \n";  
+    usemsg += "regression.  Both are specified as positive values, e.g. -l 2 tresholds      \n";  
+    usemsg += "points 2 std deviations below the regression.  Distance is measured normal   \n";  
+    usemsg += "to regression.                                                               \n";  
     usemsg += "                                                                             \n";  
 
     string inputFileName1; 
     string inputFileName2; 
     string inputFileNameMRS; 
     string outputFileName; 
-    int    lowerThreshold = 0;  
-    int    upperThreshold = 0;  
+    int    lowerThreshold = UNDEFINED_THRESHOLD;  
+    int    upperThreshold = UNDEFINED_THRESHOLD;  
     bool   verbose = false;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
@@ -152,10 +160,17 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
+    if ( ( lowerThreshold != UNDEFINED_THRESHOLD &&  upperThreshold == UNDEFINED_THRESHOLD ) || 
+         ( lowerThreshold == UNDEFINED_THRESHOLD &&  upperThreshold != UNDEFINED_THRESHOLD ) )
+    {
+        cout << "If specifying a threshold must specify both upper and lower. " << endl;
+        cout << usemsg << endl;
+    }
     if( verbose ) {
         cout << "INPUT:    " << inputFileName1 << endl;
         cout << "INPUT:    " << inputFileName2 << endl;
         cout << "OUTPUT:   " << outputFileName << endl;
+        cout << "Threshold: " << lowerThreshold << " -> " << upperThreshold << endl;
     }
 
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
@@ -217,7 +232,7 @@ int main (int argc, char** argv)
         zscore->SetInputMrsData( readerMRS->GetOutput() );
         zscore->LimitToSelectedVolume();
     }
-    if ( lowerThreshold != 0 && upperThreshold != 0 ) {
+    if ( lowerThreshold != UNDEFINED_THRESHOLD && upperThreshold != UNDEFINED_THRESHOLD ) {
         zscore->SetZScoreThresholds( lowerThreshold, upperThreshold); 
     }
     zscore->Update();
