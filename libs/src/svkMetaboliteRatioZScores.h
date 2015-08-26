@@ -91,10 +91,10 @@ class svkMetaboliteRatioZScores: public svkImageAlgorithm
         void                    SetVerbose( bool isVerbose );     
         void                    LimitToSelectedVolume(float fraction = 0.5001);
         void                    LimitToSelectedVolume( short* selectedVolumeMask);
-        void                    SetInputDenominator(vtkDataObject *in) { this->SetInput(0, in); }
-        void                    SetInputNumerator(vtkDataObject *in) { this->SetInput(1, in); }
+        void                    SetInputNumerator(vtkDataObject *in) { this->SetInput(0, in); }
+        void                    SetInputDenominator(vtkDataObject *in) { this->SetInput(1, in); }
         void                    SetInputMrsData(vtkDataObject *in) { this->SetInput(2, in); }
-        void                    SetZScoreThreshold( double threshold ); 
+        void                    SetZScoreThresholds( double lowerThreshold, double upperThreshold ); 
 
 
     protected:
@@ -116,6 +116,8 @@ class svkMetaboliteRatioZScores: public svkImageAlgorithm
 
         //  Methods:
         void                    ZeroData(); 
+        void                    InitQuantificationMask(); 
+        int                     GetTotalVoxels(); 
         void                    ComputeZScore(); 
         virtual void            UpdateProvenance();
         double                  GetMean( double* pixels, int numVoxels ); 
@@ -145,7 +147,8 @@ class svkMetaboliteRatioZScores: public svkImageAlgorithm
         float                   useSelectedVolumeFraction;
         short*                  quantificationMask;
         short*                  iterationMask;
-        double                  zscoreThreshold; 
+        double                  zscoreLowerThreshold; 
+        double                  zscoreUpperThreshold; 
         bool                    yInterceptZero;
 
 };

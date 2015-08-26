@@ -71,7 +71,8 @@ svkMetaboliteRatioZScores::svkMetaboliteRatioZScores()
     this->useSelectedVolumeFraction = 0;
     this->quantificationMask    = NULL;
     this->iterationMask         = NULL;
-    this->zscoreThreshold       = 2.25; 
+    this->zscoreUpperThreshold  = 2.25; 
+    this->zscoreLowerThreshold  = 1.25; 
     this->yInterceptZero        = true; 
 
     //  Requires an numerator and denominator    
@@ -109,20 +110,19 @@ void svkMetaboliteRatioZScores::SetSeriesDescription( vtkstd::string newSeriesDe
 }
 
 
-/*!
- *  Generate the z-score image. This method sets up the masks and image templates
+/*
+ *  The quantification mask is the voxels to use in the calculation.
+ *  By default this is all voxels where the numerator and denominator are not zero.
+ *  Alternatively this can be limited to the selected volume.     
  */
-int svkMetaboliteRatioZScores::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+void svkMetaboliteRatioZScores::InitQuantificationMask()
 {
-    int numVoxels[3];
-    this->GetImageDataInput(2)->GetNumberOfVoxels(numVoxels);
-    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
+    int totalVoxels = this->GetTotalVoxels(); 
 
     //  Determines binary mask (quantificationMask) indicating whether a given voxel 
     //  should be quantified (1) or not (0). Usually this is based on whether a 
     //  specified fraction of the voxel inside the selected volume. 
     if ( this->quantificationMask == NULL ) {
-
         // Generate the mask from the svkMrsImageData input (port 2)
         this->quantificationMask = new short[totalVoxels];
         if ( this->useSelectedVolumeFraction ) {
@@ -131,12 +131,32 @@ int svkMetaboliteRatioZScores::RequestData( vtkInformation* request, vtkInformat
                 this->useSelectedVolumeFraction
             );
         } else {
-            //  all voxels are included in calculations:
+            //  all voxels are included in calculations, unless both num and denom are zero:
+            //  GetNumerator and Denominator pixels:
+            vtkDataArray* numeratorArray   = this->GetImageDataInput(0)->GetPointData()->GetScalars(); 
+            vtkDataArray* denominatorArray = this->GetImageDataInput(1)->GetPointData()->GetScalars(); 
             for (int j = 0; j < totalVoxels; j++) {
-                this->quantificationMask[j] = 1;
+                double   numeratorPixel = numeratorArray->GetTuple1(j); 
+                double denominatorPixel = denominatorArray->GetTuple1(j); 
+                if ( numeratorPixel != 0 && denominatorPixel != 0 ) {
+                    this->quantificationMask[j] = 1;
+                } else {
+                    this->quantificationMask[j] = 0;
+                }
             }    
         }
     }
+    
+}
+
+
+/*!
+ *  Generate the z-score image. This method sets up the masks and image templates
+ */
+int svkMetaboliteRatioZScores::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+{
+
+    this->InitQuantificationMask(); 
 
     //  Initialize the iteration mask.  This is a mask showning which voxels to exclude
     //  from the regression analysis (e.g. in GetMean, GetDistanceSD, GetRegression) when determining z-scores.  
@@ -147,6 +167,7 @@ int svkMetaboliteRatioZScores::RequestData( vtkInformation* request, vtkInformat
         delete[] this->iterationMask; 
         this->iterationMask = NULL; 
     }
+    int totalVoxels = this->GetTotalVoxels(); 
     this->iterationMask = new short[totalVoxels];
     memcpy( this->iterationMask, this->quantificationMask, totalVoxels * sizeof(short) ); 
 
@@ -155,7 +176,6 @@ int svkMetaboliteRatioZScores::RequestData( vtkInformation* request, vtkInformat
     hdr->InsertUniqueUID("SeriesInstanceUID");
     hdr->InsertUniqueUID("SOPInstanceUID");
     hdr->SetValue("SeriesDescription", this->newSeriesDescription);
-
     this->ComputeZScore(); 
 
     return 1; 
@@ -181,13 +201,11 @@ void svkMetaboliteRatioZScores::LimitToSelectedVolume(float fraction)
  */
 void svkMetaboliteRatioZScores::LimitToSelectedVolume( short* selectedVolumeMask)
 {
-    int numVoxels[3];
-    this->GetImageDataInput(2)->GetNumberOfVoxels(numVoxels);
-    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
     if ( this->quantificationMask != NULL ) {
         delete[] this->quantificationMask; 
         this->quantificationMask = NULL;
     }
+    int totalVoxels = this->GetTotalVoxels(); 
     this->quantificationMask = new short[totalVoxels];
     memcpy( this->quantificationMask, selectedVolumeMask, totalVoxels * sizeof(short) ); 
 
@@ -226,6 +244,18 @@ void svkMetaboliteRatioZScores::ComputeZScore()
 
 
 /*!
+ *
+ */
+int svkMetaboliteRatioZScores::GetTotalVoxels() 
+{
+    int numVoxels[3]; 
+    this->GetImageDataInput(0)->GetNumberOfVoxels(numVoxels);
+    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
+    return totalVoxels;     
+}
+
+
+/*!
  *  Determins which voxels are outliers in the 
  *  current regression interation, according to 
  *  the specified criteria.  These voxels are 
@@ -238,11 +268,13 @@ int svkMetaboliteRatioZScores::GetOutliers()
 
     int numOutliersInIteration = 0; 
 
-    int numVoxels[3]; 
-    this->GetOutput()->GetNumberOfVoxels(numVoxels);
-    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
+    int totalVoxels = this->GetTotalVoxels(); 
+    vtkDataArray* zscoreArray   = this->GetOutput()->GetPointData()->GetScalars(); 
+    double*  zscores = new double[totalVoxels];  
+    for (int i = 0; i < totalVoxels; i++ ) { 
+        zscores[i] = zscoreArray->GetTuple1(i);      
+    }
 
-    double* zscores = vtkDoubleArray::SafeDownCast(this->GetOutput()->GetPointData()->GetScalars())->GetPointer(0);
 
     for (int i = 0; i < totalVoxels; i++ ) {
        
@@ -252,12 +284,15 @@ int svkMetaboliteRatioZScores::GetOutliers()
             //  if the zscore is an outlier, then remove voxel from 
             //  from iterationMask so it isn't used in the next
             //  regression iteration.     
-            if ( zscores[i] >= this->zscoreThreshold ) {
+            //if ( zscores[i] >= this->zscoreUpperThreshold ) {
+            if ( zscores[i] >= this->zscoreUpperThreshold || zscores[i] <= -1 * this->zscoreLowerThreshold) {
                 this->iterationMask[i] = 0; 
                 numOutliersInIteration++; 
             }
         }
-    }
+    } 
+
+    delete [] zscores; 
 
     return numOutliersInIteration; 
 }
@@ -277,10 +312,13 @@ void svkMetaboliteRatioZScores::GetZScores(double slope, double intercept)
     //cout << "SLOPE INTERCEPT: " << slope << " " << intercept << endl;
     this->GetDistanceFromRegression( slope, intercept ); 
 
-    int numVoxels[3]; 
-    this->GetOutput()->GetNumberOfVoxels(numVoxels);
-    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
-    double* distancePixels = vtkDoubleArray::SafeDownCast(this->GetOutput()->GetPointData()->GetScalars())->GetPointer(0);
+    int totalVoxels = this->GetTotalVoxels(); 
+    vtkDataArray* distanceArray   = this->GetOutput()->GetPointData()->GetScalars(); 
+    double*   distancePixels = new double[totalVoxels];  
+    for (int i = 0; i < totalVoxels; i++ ) { 
+        distancePixels[i] = distanceArray->GetTuple1(i);      
+    }
+
     double distanceMean = this->GetMean( distancePixels, totalVoxels );
     double distanceSD = this->GetDistanceSD( distancePixels, totalVoxels );
     //cout << "DISTANCE MEAN , SD: " << distanceMean << " " << distanceSD << endl;
@@ -289,15 +327,18 @@ void svkMetaboliteRatioZScores::GetZScores(double slope, double intercept)
     for (int i = 0; i < totalVoxels; i++ ) {
         
         if ( this->quantificationMask[i] ) {
+        //if ( this->quantificationMask[i] && this->iterationMask[i] ) {
             zscore = (distancePixels[i] ) / distanceSD;     
             //zscore = (distancePixels[i] - distanceMean) / distanceSD;     
         } else {
             zscore = 0.;      
         }
-        //cout << "ZSCORE: " << i << " distance: " << distancePixels[i] << " zs: " << zscore << endl; 
+        //cout << "ZSCOREOUT: " << i << " distance: " << distancePixels[i] << " zs: " << zscore << endl; 
         this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, zscore);
         
     }
+
+    delete [] distancePixels; 
 }
 
 
@@ -325,12 +366,25 @@ void svkMetaboliteRatioZScores::GetDistanceFromRegression( double slope, double 
     double dataVector[2];   
 
     //  GetNumerator and Denominator pixels:
-    double* denominatorPixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-    double* numeratorPixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(1)->GetPointData()->GetScalars())->GetPointer(0);
+    vtkDataArray* numeratorArray   = this->GetImageDataInput(0)->GetPointData()->GetScalars(); 
+    vtkDataArray* denominatorArray = this->GetImageDataInput(1)->GetPointData()->GetScalars(); 
 
-    int numVoxels[3]; 
-    this->GetOutput()->GetNumberOfVoxels(numVoxels);
-    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
+    int totalVoxels = this->GetTotalVoxels(); 
+    double*   numeratorPixels = new double[totalVoxels];  
+    double* denominatorPixels = new double[totalVoxels];  
+    
+    for (int i = 0; i < totalVoxels; i++ ) { 
+        numeratorPixels[i]   = numeratorArray->GetTuple1(i);      
+        denominatorPixels[i] = denominatorArray->GetTuple1(i);      
+    }
+    //cout << "for xl: " << endl;
+    //for (int i = 0; i < totalVoxels; i++ ) {
+        //if ( this->quantificationMask[i] && this->iterationMask[i] ) {
+            //cout << numeratorPixels[i]  << ", " << denominatorPixels[i] << endl;
+        //}
+    //}
+    //cout << "end for xl: " << endl;
+
     double projection; 
     double distance; 
     for (int i = 0; i < totalVoxels; i++ ) {
@@ -339,10 +393,10 @@ void svkMetaboliteRatioZScores::GetDistanceFromRegression( double slope, double 
         dataVector[0] = denominatorPixels[i] - regressionVectorOrigin[0];   // difference between x values
         dataVector[1] = numeratorPixels[i]   - regressionVectorOrigin[1];   // difference between y values
 
-
         //  Now the perpendicular distnance defined by the dot prouduct of 
         //  these two vectors:
         if ( this->quantificationMask[i] ) {
+        //if ( this->quantificationMask[i] && this->iterationMask[i] ) {
 
             if ( this->yInterceptZero == true ) {
                 //cout << "    no intercept distance" << numeratorPixels << " " << regressionTmp[1] << endl;
@@ -374,6 +428,9 @@ void svkMetaboliteRatioZScores::GetDistanceFromRegression( double slope, double 
 
         this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, distance);
     }
+
+    delete [] numeratorPixels;
+    delete [] denominatorPixels;
 }
 
 
@@ -394,13 +451,19 @@ void svkMetaboliteRatioZScores::GetDistanceFromRegression( double slope, double 
 void svkMetaboliteRatioZScores::GetRegression(double& slope, double& intercept) 
 {
 
-    //  GetNumerator and Denominator pixels:
-    double* denominatorPixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-    double* numeratorPixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(1)->GetPointData()->GetScalars())->GetPointer(0);
+    //  GetNumerator and Denominator pixels as doubles, regardless of input type:
+    vtkDataArray* numeratorArray   = this->GetImageDataInput(0)->GetPointData()->GetScalars(); 
+    vtkDataArray* denominatorArray = this->GetImageDataInput(1)->GetPointData()->GetScalars(); 
 
-    int numVoxels[3]; 
-    this->GetOutput()->GetNumberOfVoxels(numVoxels);
-    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
+    int totalVoxels = this->GetTotalVoxels(); 
+    double*   numeratorPixels = new double[totalVoxels];  
+    double* denominatorPixels = new double[totalVoxels];  
+    
+    for (int i = 0; i < totalVoxels; i++ ) { 
+        numeratorPixels[i]   = numeratorArray->GetTuple1(i);      
+        denominatorPixels[i] = denominatorArray->GetTuple1(i);      
+    }
+
 
     if (this->yInterceptZero == true ) {
         slope  = this->GetRegressionSlopeZeroIntercept( 
@@ -424,6 +487,9 @@ void svkMetaboliteRatioZScores::GetRegression(double& slope, double& intercept)
         //cout << "MEAN:      " << denominatorMean << endl;
     }
 
+    delete [] numeratorPixels;
+    delete [] denominatorPixels;
+
     //cout << "slope:     " << slope << endl;
     //cout << "intercept: " << intercept << endl;
 }
@@ -440,12 +506,10 @@ double svkMetaboliteRatioZScores::GetMean( double* pixels, int numVoxels )
 
     for ( int i = 0; i < numVoxels; i++) { 
         if ( this->quantificationMask[i] && this->iterationMask[i] ) {
-            //cout << "DISTANCE PIXELS(getmean): " << pixels[i] << endl;
             sum += pixels[i]; 
             numPixInCalc++; 
         }
     }
-    //cout << "MEAN: " << sum << " / "  << numPixInCalc << endl;
     return sum/numPixInCalc;  
 }
 
@@ -491,13 +555,13 @@ double svkMetaboliteRatioZScores::GetRegressionSlopeZeroIntercept(double* numera
     double slope; 
     double numerator = 0.; 
     double denominator = 0.; 
-
     for ( int i = 0; i < numVoxels; i++) { 
         if ( this->quantificationMask[i] && this->iterationMask[i] ) {
             numerator   += denominatorPixels[i] *  numeratorPixels[i]; 
             denominator += denominatorPixels[i] *  denominatorPixels[i]; 
         }
     }
+
     slope = numerator/denominator; 
     return slope; 
     
@@ -547,9 +611,7 @@ double svkMetaboliteRatioZScores::GetRegressionIntercept(double slope, double nu
 void svkMetaboliteRatioZScores::ZeroData()
 {
 
-    int numVoxels[3]; 
-    this->GetOutput()->GetNumberOfVoxels(numVoxels);
-    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
+    int totalVoxels = this->GetTotalVoxels(); 
     double zeroValue = 0.;     
     for (int i = 0; i < totalVoxels; i++ ) {
         this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, zeroValue);
@@ -579,24 +641,27 @@ void svkMetaboliteRatioZScores::SetVerbose( bool isVerbose )
 /*!
  *  Set the ZScore threshold for voxels to be included in the 
  *  regression analysis.  Voxels with Zscores ouside this z-score
- *  treshold (+/-) will be removed from regression interations 
+ *  threshold (+/-) will be removed from regression interations 
  *  until all remaining voxels are within this range. 
  */
-void svkMetaboliteRatioZScores::SetZScoreThreshold( double threshold )
+void svkMetaboliteRatioZScores::SetZScoreThresholds( double lowerThreshold, double upperThreshold )
 {
-    this->zscoreThreshold = threshold; 
+    this->zscoreLowerThreshold = lowerThreshold; 
+    this->zscoreUpperThreshold = upperThreshold; 
 }
 
 
 /*!
- *  input ports 0 - 2 are required. Port 3 is for MRS data to 
- *  specify the selection box to limit the compuation spatially. 
+ *  input ports:
+ *      0 & 1 are required (numerator and denominator met maps)
+ *      2 is optional MRS data used for masking by selection box
  */
 int svkMetaboliteRatioZScores::FillInputPortInformation( int port, vtkInformation* info )
 {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
     if (port == 2) {
         info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData");
+        info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 2);
     }
 
     return 1;
