@@ -49,7 +49,6 @@
 #include <svkDSCPeakHeight.h>
 #include <svkDSCRecovery.h>
 #include <svkImageCopy.h>
-#include <svkMetaboliteRatioZScores.h>
 
 #include <time.h>
 #include <sys/stat.h>
