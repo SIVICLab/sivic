@@ -122,7 +122,13 @@ void svkObliqueReslice::SetInterpolationMode(int interpolationMode)
  */
 svkInt* svkObliqueReslice::GetInterpolationMode()
 {
-    return this->GetPortMapper()->GetIntInputPortValue(INTERPOLATION_MODE);
+    svkInt* interpolationMode = this->GetPortMapper()->GetIntInputPortValue(INTERPOLATION_MODE);
+    if (!interpolationMode)
+    {
+        this->SetInterpolationMode(1);
+        interpolationMode = this->GetPortMapper()->GetIntInputPortValue(INTERPOLATION_MODE);
+    }
+    return interpolationMode;
 }
 
 
@@ -197,19 +203,17 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
 
      // Set interpolation mode
     int interpolationMode = NULL;
-    if (this->GetInterpolationMode())
-    {
-        interpolationMode = this->GetInterpolationMode()->GetValue();
-    }
+    interpolationMode     = this->GetInterpolationMode()->GetValue();
     switch (interpolationMode) {
+        case 1:
+            this->reslicer->SetInterpolationModeToCubic();
+            break;
         case 2:
             this->reslicer->SetInterpolationModeToLinear();
             break;
         case 3:
             this->reslicer->SetInterpolationModeToNearestNeighbor();
             break;
-        default:
-            this->reslicer->SetInterpolationModeToCubic();
     }
 
     //  If target dcos isn't initialized, set it from the output image. 
