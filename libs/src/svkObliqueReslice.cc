@@ -197,7 +197,10 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
 
      // Set interpolation mode
     int interpolationMode = NULL;
-    interpolationMode     = this->GetInterpolationMode()->GetValue();
+    if (this->GetInterpolationMode())
+    {
+        interpolationMode = this->GetInterpolationMode()->GetValue();
+    }
     switch (interpolationMode) {
         case 2:
             this->reslicer->SetInterpolationModeToLinear();
