@@ -154,6 +154,8 @@ int main (int argc, char** argv)
 
     svkMriImageData* tmpImage = svkMriImageData::New(); 
     for (int pnt = 0; pnt < numTimePts; pnt++){
+
+        // pseudo code
         currentOutputFile = outputFileName.c_str()".dcm";
 
         svkMrsImageData::SafeDownCast( mrsData )->GetImage(tmpImage, /*point*/, pnt, /*r+i?*/, /*description*/ ); 
