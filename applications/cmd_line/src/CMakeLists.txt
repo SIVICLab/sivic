@@ -524,6 +524,14 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_extract_spec
+    svk_extract_spec.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_extract_spec
+	${SVK_LIBS}
+)
 
 ADD_EXECUTABLE(
     svk_scale_image
@@ -708,6 +716,7 @@ SET(APPS
     svk_integrate_dynamic 
     svk_quantify 
     svk_zscore
+    svk_extract_spec
     svk_reslice 
     svk_transform
     svk_dcmdump 

@@ -58,7 +58,7 @@ extern "C" {
 #else
 #include <getopt.h>
 #endif
-#define UNDEFINED_TEMP -1111
+
 
 using namespace svk;
 
@@ -81,7 +81,11 @@ int main (int argc, char** argv)
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
-
+    static struct option long_options[] =
+    {
+        /* This option sets a flag. */
+        {0, 0, 0, 0}
+    };
     // ===============================================  
     //  Process flags and arguments
     // ===============================================  
@@ -125,7 +129,7 @@ int main (int argc, char** argv)
     // ===============================================  
     vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
 
-    svkImageReader2* mrsReader = svkDcmMrsVolumeReader::SafeDownCast( readerFactory->CreateImageReader2(inputFileName.c_str()) );
+    svkImageReader2* mrsReader = readerFactory->CreateImageReader2(inputFileName.c_str());
     if (mrsReader == NULL) {
         cerr << "Can not determine appropriate reader for test data: " << inputFileName << endl;
         exit(1);
@@ -134,8 +138,8 @@ int main (int argc, char** argv)
     mrsReader->Update(); 
     svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( mrsReader->GetOutput() ); 
 
-    int numTimePts = mrsData->GetDcmHeader()->GetNumberOfTimePoints(); // Or Freq points?
-
+    //int numTimePts = mrsData->GetDcmHeader()->GetNumberOfTimePoints(); // Or Freq points?
+    int numSpecPts = mrsData->GetDcmHeader()->GetIntValue("DataPointColumns" );
 
     // ===============================================   
     //  Use an svkImageWriterFactory to obtain the
@@ -149,18 +153,32 @@ int main (int argc, char** argv)
         exit(1);
     }
 
+    svkDcmHeader::DimensionVector fullDimensionVector = mrsData->GetDcmHeader()->GetDimensionIndexVector();
+    int numChannels = svkDcmHeader::GetDimensionVectorValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
 
+     if ( numChannels > 1 ) {
+        cerr << "Unsuported number of channels found in the header. Currently only 1 channel possible." << endl;
+        exit(1);
+    }
+
+    // include check for the channels
     string currentOutputFile;
 
-    svkMriImageData* tmpImage = svkMriImageData::New(); 
-    for (int pnt = 0; pnt < numTimePts; pnt++){
-
+    svkMriImageData* tmpImage = svkMriImageData::New();
+    numSpecPts = 1; 
+    for (int pnt = 0; pnt < numSpecPts; pnt++){
+        cout << "Specpoint:" << pnt << "/" << numSpecPts << endl;
         // pseudo code
-        currentOutputFile = outputFileName.c_str()".dcm";
+        char numstr[10];
+        sprintf(numstr, "%d", pnt);
+        currentOutputFile.assign(outputFileName.c_str());
+        currentOutputFile.append(numstr);
+       // currentOutputFile.append(".dcm");
 
-        svkMrsImageData::SafeDownCast( mrsData )->GetImage(tmpImage, /*point*/, pnt, /*r+i?*/, /*description*/ ); 
+        // just real for now
+        mrsData->GetImage(tmpImage, pnt, 0, 0, 2, ""); 
 
-        writer->SetFileName( currentOutputFile );
+        writer->SetFileName( currentOutputFile.c_str() );
         writer->SetInput( svkMriImageData::SafeDownCast( tmpImage ) );
         writer->Write();
 
