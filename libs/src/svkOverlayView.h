@@ -248,11 +248,11 @@ class svkOverlayView : public svkDataView
 
         void                            SetSliceOverlay();
         bool                            ResliceImage(svkImageData* input, svkImageData* target, int targetIndex);
+        float                           GetImageToSpecSliceRatio(svkImageData* input, svkImageData* target); 
 
         double                          overlayOpacity;
         double                          overlayThreshold;
 
-        
         //! Stores the interpolation method of the overlay
         InterpolationType               interpolationType; 
 

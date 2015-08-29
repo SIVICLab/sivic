@@ -1696,16 +1696,36 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
         svkDataValidator* validator = svkDataValidator::New();
         bool valid = validator->AreDataCompatible( input, target );
         if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
+            cout << "Reslice image to MRS orientation  " << endl;
             svkObliqueReslice* reslicer = svkObliqueReslice::New();
             reslicer->SetInput( input );
             reslicer->SetTargetDcosFromImage( target );
             reslicer->Update();
+
             string resultInfo = this->GetDataCompatibility( reslicer->GetOutput(), targetIndex );
             if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
                 this->SetInputPostReslice( reslicer->GetOutput(), targetIndex );
                 didReslice = true;
             }
             reslicer->Delete();
+        }
+        //  check to see if image needs to be upsampled to a higher resolution: 
+        float imageToSpecSliceThickness = this->GetImageToSpecSliceRatio(input, target); 
+        if ( imageToSpecSliceThickness > 1 ) { 
+            float magX = 1; 
+            float magY = 1; 
+            float magZ = imageToSpecSliceThickness; 
+            cout << "MRS slice thicknes < MRI slice thickness.  Upsample MRI slice thickness " << endl;
+            cout << "magZ = " << magZ << endl;
+            svkObliqueReslice* reslicer2 = svkObliqueReslice::New();
+            reslicer2->SetInput( input );
+            reslicer2->SetInterpolationMode( VTK_RESLICE_NEAREST );
+            reslicer2->SetTargetDcosFromImage( target );
+            reslicer2->SetMagnificationFactors( magX, magY, 1./magZ);
+            reslicer2->Update();
+            this->SetInputPostReslice( reslicer2->GetOutput(), targetIndex );
+            didReslice = true;
+            reslicer2->Delete(); 
         }
         validator->Delete();
     }
@@ -1715,6 +1735,27 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
     return didReslice;
 }
 
+
+/*
+ *
+ */
+float svkOverlayView::GetImageToSpecSliceRatio(svkImageData* input, svkImageData* target) 
+{
+    float imageToSpecSliceThickness; 
+    double pixelSpacing[3];
+    input->GetDcmHeader()->GetPixelSpacing( pixelSpacing );
+    float imageSliceThickness = pixelSpacing[2]; 
+    target->GetDcmHeader()->GetPixelSpacing( pixelSpacing );
+    float specSliceThickness  = pixelSpacing[2]; 
+    imageToSpecSliceThickness = imageSliceThickness / specSliceThickness; 
+    
+    return imageToSpecSliceThickness; 
+}
+
+
+/*
+ *
+ */
 bool svkOverlayView::CheckDataOrientations()
 {
     bool orientationsOkay = true;

@@ -124,8 +124,8 @@ class svkObliqueReslice : public svkImageAlgorithmWithPortMapper
         void                RotateAxes(double axesIn[3][3], double rotatedAxes[3][3]);
         void                Print3x3(double matrix[3][3], string name);
         bool                IsDcosInitialized(); 
-        bool                magnify(); 
-        double*             CalculateCenterpoint(svkImageData* image);
+        bool                Magnify(); 
+        void                CalculateCenterpoint(svkImageData* image, double* imageCenter);
 
 
 

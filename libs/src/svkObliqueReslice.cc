@@ -95,7 +95,6 @@ svkObliqueReslice::svkObliqueReslice()
 }
 
 
-
 /*!
  *
  */
@@ -110,15 +109,16 @@ svkObliqueReslice::~svkObliqueReslice()
 }
 
 /*!
- * Utility setter for input port: Interpolation Mode
+ *  Utility setter for input port: Interpolation Mode
  */
 void svkObliqueReslice::SetInterpolationMode(int interpolationMode)
 {
     this->GetPortMapper()->SetIntInputPortValue(INTERPOLATION_MODE, interpolationMode);
 }
 
+
 /*!
- * Utility getter for input port: Interpolation Mode
+ *  Utility getter for input port: Interpolation Mode
  */
 svkInt* svkObliqueReslice::GetInterpolationMode()
 {
@@ -136,7 +136,7 @@ svkInt* svkObliqueReslice::GetInterpolationMode()
  *  Check if any of the magnification factors rquire the data to be 
  *  up or down sampled. 
  */
-bool svkObliqueReslice::magnify()
+bool svkObliqueReslice::Magnify()
 {
     bool magnify = false; 
     for ( int i = 0; i < 3; i++ ) {
@@ -202,7 +202,7 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
     this->reslicer->SetInput( this->GetImageDataInput(0) ); 
 
      // Set interpolation mode
-    int interpolationMode = NULL;
+    int interpolationMode;
     interpolationMode     = this->GetInterpolationMode()->GetValue();
     switch (interpolationMode) {
         case 1:
@@ -236,7 +236,7 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
         this->rotation[2][2]
     );
 
-    if ( this->magnify() == true ) { 
+    if ( this->Magnify() == true ) { 
         //  get the and modify the input extent 
         if (this->GetDebug() ) {
             cout << this->GetClassName() << "::RequestInformation() Resample factors: " 
@@ -548,10 +548,11 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
     delete[] inputSpacing;
 }
 
+
 /*!
  *  Calculate the centerpoint of an image
  */
-double* svkObliqueReslice::CalculateCenterpoint(svkImageData* image)
+void svkObliqueReslice::CalculateCenterpoint(svkImageData* image, double* imageCenter )
 {
     // Calculate target centerpoint
     double* imageTLC = new double[3]; 
@@ -566,7 +567,6 @@ double* svkObliqueReslice::CalculateCenterpoint(svkImageData* image)
     double imageDCos[3][3];
     image->GetDcmHeader()->GetDataDcos(imageDCos); 
 
-    double imageCenter[3]; 
     for (int i = 0; i < 3; i++) {
         imageCenter[i] = imageTLC[i];  
         for (int j = 0; j < 3; j++) {
@@ -577,8 +577,8 @@ double* svkObliqueReslice::CalculateCenterpoint(svkImageData* image)
     delete[] imageTLC;
     delete[] imageSpacing;
 
-    return   imageCenter;
 }
+
 
 /*!
  *  Check to see if target's and input's centerpoints are alligned
@@ -588,9 +588,9 @@ bool svkObliqueReslice::AreCenterpointsAligned()
 
     // Calculate input centerpoint
     double* inputCenter  = new double[3];
-    inputCenter          = this->CalculateCenterpoint(this->GetImageDataInput(0));
+    this->CalculateCenterpoint(this->GetImageDataInput(0), inputCenter);
     double* targetCenter = new double[3];
-    targetCenter         = this->CalculateCenterpoint(this->reslicedImage);
+    this->CalculateCenterpoint(this->reslicedImage, targetCenter);
 
     // Compare centers, and return false if a diff's dimension is >3% the input
     double* centerDiff = new double[3];
@@ -607,9 +607,9 @@ bool svkObliqueReslice::AreCenterpointsAligned()
     cout << "Target center: " << targetCenter[0] << " " << targetCenter[1] << " " << targetCenter[2] << endl;
     cout << "Centerpoint difference: " << centerDiff[0] << " " << centerDiff[1] << " " << centerDiff[2] << endl;
 
-    // delete[] inputCenter;
-    // delete[] targetCenter;
-    // delete[] centerDiff;
+    delete[] inputCenter;
+    delete[] targetCenter;
+    delete[] centerDiff;
 
     return   aligned; 
 }
@@ -683,7 +683,6 @@ void svkObliqueReslice::RotateAxes(double axesIn[3][3], double rotatedAxes[3][3]
 }
 
 
-
 /*!
  *
  */
@@ -694,14 +693,4 @@ void svkObliqueReslice::Print3x3(double matrix[3][3], string name)
     cout << name << "3:  " << matrix[2][0] << "    " << matrix[2][1]<<"    "<<matrix[2][2] <<endl << endl; 
 }
 
-
-/*!
- *  Oblique Reslice only works with image data.  Output will be of the same type as input 
- *  which is the default behavior for an svkImageAlgorithm. 
- */
-// int svkObliqueReslice::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
-// {
-//     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
-//     return 1;
-// }
 
