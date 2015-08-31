@@ -1710,22 +1710,24 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
             reslicer->Delete();
         }
         //  check to see if image needs to be upsampled to a higher resolution: 
-        float imageToSpecSliceThickness = this->GetImageToSpecSliceRatio(input, target); 
-        if ( imageToSpecSliceThickness > 1 ) { 
-            float magX = 1; 
-            float magY = 1; 
-            float magZ = imageToSpecSliceThickness; 
-            cout << "MRS slice thicknes < MRI slice thickness.  Upsample MRI slice thickness " << endl;
-            cout << "magZ = " << magZ << endl;
-            svkObliqueReslice* reslicer2 = svkObliqueReslice::New();
-            reslicer2->SetInput( input );
-            reslicer2->SetInterpolationMode( VTK_RESLICE_NEAREST );
-            reslicer2->SetTargetDcosFromImage( target );
-            reslicer2->SetMagnificationFactors( magX, magY, 1./magZ);
-            reslicer2->Update();
-            this->SetInputPostReslice( reslicer2->GetOutput(), targetIndex );
-            didReslice = true;
-            reslicer2->Delete(); 
+        if( target->IsA("svk4DImageData") ) {
+            float imageToSpecSliceThickness = this->GetImageToSpecSliceRatio(input, target); 
+            if ( imageToSpecSliceThickness > 1 ) { 
+                float magX = 1; 
+                float magY = 1; 
+                float magZ = imageToSpecSliceThickness; 
+                cout << "MRS slice thicknes < MRI slice thickness.  Upsample MRI slice thickness " << endl;
+                cout << "magZ = " << magZ << endl;
+                svkObliqueReslice* reslicer2 = svkObliqueReslice::New();
+                reslicer2->SetInput( input );
+                reslicer2->SetInterpolationMode( VTK_RESLICE_NEAREST );
+                reslicer2->SetTargetDcosFromImage( target );
+                reslicer2->SetMagnificationFactors( magX, magY, 1./magZ);
+                reslicer2->Update();
+                this->SetInputPostReslice( reslicer2->GetOutput(), targetIndex );
+                didReslice = true;
+                reslicer2->Delete(); 
+            }
         }
         validator->Delete();
     }
