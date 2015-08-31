@@ -91,8 +91,8 @@ int main (int argc, char** argv)
     string inputFileName2; 
     string inputFileNameMRS; 
     string outputFileName; 
-    int    lowerThreshold = UNDEFINED_THRESHOLD;  
-    int    upperThreshold = UNDEFINED_THRESHOLD;  
+    float  lowerThreshold = UNDEFINED_THRESHOLD;  
+    float  upperThreshold = UNDEFINED_THRESHOLD;  
     bool   verbose = false;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
