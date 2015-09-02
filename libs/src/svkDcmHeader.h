@@ -129,10 +129,10 @@ class svkDcmHeader: public vtkObject
             EPSI_ACQ_INDEX = 3 
         } DimensionIndexLabel;
 
-        typedef vtkstd::vector< vtkstd::map < svkDcmHeader::DimensionIndexLabel, int> > DimensionVector; 
+        typedef vector< map < svkDcmHeader::DimensionIndexLabel, int> > DimensionVector; 
 
         static const float UNKNOWN_TIME;
-        static const vtkstd::string UNKNOWN_STRING;
+        static const string UNKNOWN_STRING;
 
 
 #ifdef SVK_ADAPT_DCMTK
@@ -190,8 +190,9 @@ class svkDcmHeader: public vtkObject
         /*! 
          *  Method to set a DICOM tag by specifying it's name and value. The name should be 
          *  the string representation of the field in the DICOM dictionary being used. 
+         *   \param setMetaInfo, set dataset or metaInfo if true.  
          */
-        virtual void    SetValue(const char *name, string value) = 0;
+        virtual void    SetValue(const char *name, string value, bool setMetaInfo = false) = 0;
 
         /*!
         *   Sets the array of value for a given tag.
@@ -679,8 +680,8 @@ class svkDcmHeader: public vtkObject
         virtual void    ReplaceOldElements( bool replaceElements ) = 0;
 
 
-        vtkstd::string  GetDcmPatientName( vtkstd::string PatientName ); 
-        void            SetDcmPatientName( vtkstd::string PatientName );
+        string  GetDcmPatientName( string PatientName ); 
+        void            SetDcmPatientName( string PatientName );
         void            SetPixelDataType( DcmPixelDataFormat dataType );
         int             GetPixelDataType( int vtkDataType = svkDcmHeader::UNDEFINED );
 
@@ -714,7 +715,7 @@ class svkDcmHeader: public vtkObject
         void            UpdateNumCoils();
 
         int             GetDimensionIndexPosition(string indexLabel); 
-        vtkstd::string  GetDimensionIndexLabel(int dimensionIndexNumber ); 
+        string  GetDimensionIndexLabel(int dimensionIndexNumber ); 
         void            AddDimensionIndex( svkDcmHeader::DimensionVector* dimensionVector, 
                             svkDcmHeader::DimensionIndexLabel indexType, int maxIndex = 0); 
         void            RemoveDimensionIndex( svkDcmHeader::DimensionIndexLabel indexType ); 
@@ -735,8 +736,8 @@ class svkDcmHeader: public vtkObject
                             svkDcmHeader::DimensionIndexLabel label2 
                         ); 
 
-        static DimensionIndexLabel StringToDimensionIndexLabel( vtkstd::string dimensionIndexLabelString );
-        static vtkstd::string      DimensionIndexLabelToString( svkDcmHeader::DimensionIndexLabel label); 
+        static DimensionIndexLabel StringToDimensionIndexLabel( string dimensionIndexLabelString );
+        static string      DimensionIndexLabelToString( svkDcmHeader::DimensionIndexLabel label); 
         static DimensionIndexLabel GetDimensionLabelFromIndex( 
                                         svkDcmHeader::DimensionVector* dimensionVector, 
                                         int index ); 
@@ -776,46 +777,37 @@ class svkDcmHeader: public vtkObject
         //  DICOM IE and macro initialization methods:
         //==================================================
         void            InitPatientModule(
-                                vtkstd::string PatientName,
-                                vtkstd::string patientID,
-                                vtkstd::string PatientBirthDate,
-                                vtkstd::string PatientSex
+                                string PatientName,
+                                string patientID,
+                                string PatientBirthDate,
+                                string PatientSex
                         );
 
         void            InitGeneralStudyModule(
-                                vtkstd::string studyDate,
-                                vtkstd::string studyTime,
-                                vtkstd::string referringPhysiciansName,
-                                vtkstd::string studyID,
-                                vtkstd::string accessionNumber, 
-                                vtkstd::string studyInstanceUID
+                                string studyDate,
+                                string studyTime,
+                                string referringPhysiciansName,
+                                string studyID,
+                                string accessionNumber, 
+                                string studyInstanceUID
                         );
         void            InitGeneralSeriesModule(
-                                vtkstd::string seriesNumber,
-                                vtkstd::string seriesDescription,
-                                vtkstd::string patientPosition
+                                string seriesNumber,
+                                string seriesDescription,
+                                string patientPosition
                         );
         void            InitImagePixelModule( int rows, int columns, svkDcmHeader::DcmPixelDataFormat dataType);
         void            InitImagePlaneModule( 
-                                vtkstd::string imagePositionPatient, 
-                                vtkstd::string pixelSpacing = "", 
-                                vtkstd::string imageOrientationPatient = "", 
-                                vtkstd::string sliceThickness = ""
+                                string imagePositionPatient, 
+                                string pixelSpacing = "", 
+                                string imageOrientationPatient = "", 
+                                string sliceThickness = ""
                         );
-        void            InitMRImageModule( vtkstd::string repetitionTime, vtkstd::string echoTime); 
+        void            InitMRImageModule( string repetitionTime, string echoTime); 
         void            InitPlaneOrientationMacro( double dcos[3][3] ); 
-        void            InitPlaneOrientationMacro( vtkstd::string orientationString );
-        void            InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::string sliceThickness );
-        void            InitMultiFrameDimensionModuleDep( int numSlices, int numTimePts, int numCoils ); 
+        void            InitPlaneOrientationMacro( string orientationString );
+        void            InitPixelMeasuresMacro( string pixelSizes, string sliceThickness );
         void            InitMultiFrameDimensionModule( svkDcmHeader::DimensionVector* dimensionVector); 
-        void            InitPerFrameFunctionalGroupSequenceDep(
-                                double toplc[3], 
-                                double voxelSpacing[3],
-                                double dcos[3][3], 
-                                int numSlices, 
-                                int numTimePts, 
-                                int numCoils
-                        ); 
         void            InitPerFrameFunctionalGroupSequence(
                                 double toplc[3], 
                                 double voxelSpacing[3],
@@ -828,8 +820,8 @@ class svkDcmHeader: public vtkObject
         void            InitMRImagingModifierMacro(
                                 float transmitFreq,
                                 float pixelBandwidth,
-                                vtkstd::string magTransfer = "NONE",
-                                vtkstd::string bloodNulling = "NO"
+                                string magTransfer = "NONE",
+                                string bloodNulling = "NO"
                         );
         void            InitVolumeLocalizationSeq(float size[3], float center[3], float dcos[3][3]);
         void            InitMRTimingAndRelatedParametersMacro(float tr = UNKNOWN_TIME, float flipAngle= -999, int numEchoes = 1);
@@ -842,12 +834,12 @@ class svkDcmHeader: public vtkObject
                         );
         void            InitMRAveragesMacro(int numAverages = 1);
         void            InitRawDataModule(
-                                vtkstd::string contentDate,
-                                vtkstd::string contentTime,
+                                string contentDate,
+                                string contentTime,
                                 void* rawFile
                             );
 
-        int             InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription); 
+        int             InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, string seriesDescription); 
         int             ConvertEnhancedMriToMriHeader( svkDcmHeader* mri, vtkIdType dataType ); 
         virtual string  GetDcmNameFromTag( string groupElementString ) = 0; 
 
@@ -860,7 +852,7 @@ class svkDcmHeader: public vtkObject
         void            Deidentify( PHIType phiType, string id );   
         void            Deidentify( PHIType phyType, string patientId, string studyId );   
 
-        static bool     IsFileDICOM( vtkstd::string fname); 
+        static bool     IsFileDICOM( string fname); 
         static svkDcmHeader::DcmPixelDataFormat  GetVtkDataTypeFromSvkDataType( vtkIdType vtkType); 
         void            Redimension(svkDcmHeader::DimensionVector* dimensionVector);
         void            Redimension(svkDcmHeader::DimensionVector* dimensionVector, double* newToplcOrigin, double* newPixelSpacing );
@@ -913,25 +905,19 @@ class svkDcmHeader: public vtkObject
         void                        UpdatePixelSize();
         void                        UpdateOrigin0();
         void                        UpdateDimensionIndexVector(); 
-
-        void                        InitPlanePositionMacroDep(
-                                             double toplc[3], double voxelSpacing[3],
-                                             double dcos[3][3], int numSlices, int numTimePts, int numCoils
-                                    ); 
         void                        InitPlanePositionMacro(
                                              double toplc[3], double voxelSpacing[3],
-                                             double dcos[3][3], svkDcmHeader::DimensionVector* dimensionVector); 
-
-        void                        InitFrameContentMacroDep( 
-                                        int numSlices = -1, 
-                                        int numTimePts = -1, 
-                                        int numCoils  = -1
+                                             double dcos[3][3], svkDcmHeader::DimensionVector* dimensionVector
                                     ); 
         void                        InitFrameContentMacro( svkDcmHeader::DimensionVector* dimensionVector); 
 
         int                         GetNumberOfFrames(); 
         void                        InsertDimensionIndexLabels( ); 
-
+        void                        GetDimensionIndexPointer( 
+                                        svkDcmHeader::DimensionIndexLabel dimLabel, 
+                                        unsigned short* dimensionIndexPointer, 
+                                        unsigned short* functionalGroupPointer
+                                    ); 
 
                                            
 };

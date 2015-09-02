@@ -83,14 +83,14 @@ class svkDcmtkAdapter: public svkDcmHeader
         virtual void    PrintDcmHeader();
         virtual void    PrintDcmHeader(ostream& os);
 
-        virtual void    InsertEmptyElement(const char* name);
-        virtual void    InsertUniqueUID(const char* name);
+        virtual void    InsertEmptyElement( const char* name );
+        virtual void    InsertUniqueUID( const char* name);
         string          GenerateUniqueUID();
 
         virtual void    SetValue(const char* name, int value);
         virtual void    SetValue(const char* name, float value);
         virtual void    SetValue(const char* name, double value);
-        virtual void    SetValue(const char* name, string value);
+        virtual void    SetValue(const char* name, string value, bool setMetaInfo = false);
         virtual void    SetValue(const char* name, unsigned char* values, int numValues);
         virtual void    SetValue(const char* name, unsigned short* values, int numValues);
         virtual void    SetValue(const char* name, signed short* values, int numValues);

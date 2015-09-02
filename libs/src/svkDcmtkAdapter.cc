@@ -509,26 +509,46 @@ void svkDcmtkAdapter::SetSOPClassUID(DcmIodType iodType)
     vtkDebugMacro(<<this->GetClassName() << "::SetSOPClassUID" << iodType );
 
     if ( iodType == MR_IMAGE ) {          
+        this->dcmFile->getMetaInfo()->putAndInsertString(
+            DCM_MediaStorageSOPClassUID, 
+            UID_MRImageStorage
+        );
         this->dcmFile->getDataset()->putAndInsertString(
             DCM_SOPClassUID, 
             UID_MRImageStorage
         );
     } else if ( iodType == ENHANCED_MR_IMAGE) {
+        this->dcmFile->getMetaInfo()->putAndInsertString(
+            DCM_MediaStorageSOPClassUID, 
+            UID_EnhancedMRImageStorage
+        );
         this->dcmFile->getDataset()->putAndInsertString(
             DCM_SOPClassUID, 
             UID_EnhancedMRImageStorage
         );
     } else if ( iodType == MR_SPECTROSCOPY ) {
+        this->dcmFile->getMetaInfo()->putAndInsertString(
+            DCM_MediaStorageSOPClassUID, 
+            UID_MRSpectroscopyStorage
+        );
         this->dcmFile->getDataset()->putAndInsertString(
             DCM_SOPClassUID, 
             UID_MRSpectroscopyStorage
         );
     } else if ( iodType == SECONDARY_CAPTURE ) {
+        this->dcmFile->getMetaInfo()->putAndInsertString(
+            DCM_MediaStorageSOPClassUID, 
+            UID_SecondaryCaptureImageStorage
+        );
         this->dcmFile->getDataset()->putAndInsertString(
             DCM_SOPClassUID, 
             UID_SecondaryCaptureImageStorage
         );
     } else if ( iodType == RAW_DATA ) {
+        this->dcmFile->getMetaInfo()->putAndInsertString(
+            DCM_MediaStorageSOPClassUID, 
+            UID_RawDataStorage
+        );
         this->dcmFile->getDataset()->putAndInsertString(
             DCM_SOPClassUID, 
             UID_RawDataStorage
@@ -575,14 +595,17 @@ void svkDcmtkAdapter::InsertEmptyElement(const char* name)
  *  Generate and insert a unique UID as the value of the specified tag.
  *
  *  \param name the name of the tag whose value you wish to set
+ *  \param whether to set the UID in the dataset or meta information. 
  *
  */
 void svkDcmtkAdapter::InsertUniqueUID(const char* name)
 {
     char uid[100];
+    string newUID = this->GenerateUniqueUID(); 
+
     this->dcmFile->setValue( 
         GetDcmTag(name), 
-        dcmGenerateUniqueIdentifier(uid, SITE_INSTANCE_UID_ROOT)
+        newUID
     ); 
     this->Modified();
 }
@@ -608,7 +631,7 @@ string svkDcmtkAdapter::GenerateUniqueUID()
  */
 void svkDcmtkAdapter::SetValue(const char* name, int value)
 {
-    this->dcmFile->setValue( GetDcmTag(name), value ); 
+    this->dcmFile->setValue( GetDcmTag(name), value); 
     this->Modified();
 }
 
@@ -647,10 +670,11 @@ void svkDcmtkAdapter::SetValue(const char* name, double value)
  * \param name the name of the tag whose value you wish to set
  *
  * \param value the string value you wish the tag to have 
+ * \param whether to set the value in the dataset or metaInfo
  */
-void svkDcmtkAdapter::SetValue(const char* name, string value)
+void svkDcmtkAdapter::SetValue(const char* name, string value, bool setMetaInfo)
 {
-    this->dcmFile->setValue( GetDcmTag(name), value ); 
+    this->dcmFile->setValue( GetDcmTag(name), value, setMetaInfo ); 
     this->Modified();
 }
 
@@ -1201,7 +1225,7 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
     //  There is already a 2* in the put even for numUints = 1. Very confusing
     //  errorFlag = putValue(uintVals, 2 * sizeof(Uint16) * Uint32(numUints));
     if ( element->ident() == EVR_AT ) {
-        cout << "EVR_AT, divide numValues by 2"<< endl;
+        //cout << "EVR_AT, divide numValues by 2"<< endl;
         numValues = numValues/2; 
     }
 

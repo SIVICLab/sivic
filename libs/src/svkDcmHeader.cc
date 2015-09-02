@@ -55,7 +55,7 @@ vtkCxxRevisionMacro(svkDcmHeader, "$Rev$");
 
 
 const float svkDcmHeader::UNKNOWN_TIME = -1;
-const vtkstd::string svkDcmHeader::UNKNOWN_STRING = "UNKNOWN";
+const string svkDcmHeader::UNKNOWN_STRING = "UNKNOWN";
 
 
 
@@ -102,7 +102,7 @@ svkDcmHeader::~svkDcmHeader()
  *
  *      \param PatientName space delimited patient name string 
  */
-vtkstd::string svkDcmHeader::GetDcmPatientName(vtkstd::string PatientName)
+string svkDcmHeader::GetDcmPatientName(string PatientName)
 {
 
     size_t delim;
@@ -129,10 +129,10 @@ vtkstd::string svkDcmHeader::GetDcmPatientName(vtkstd::string PatientName)
  *
  *      \param PatientName space delimited patient name string 
  */
-void svkDcmHeader::SetDcmPatientName(vtkstd::string PatientName)
+void svkDcmHeader::SetDcmPatientName(string PatientName)
 {
 
-    vtkstd::string dcmPatientName = this->GetDcmPatientName( PatientName ); 
+    string dcmPatientName = this->GetDcmPatientName( PatientName ); 
 
     this->SetValue(
         "PatientName",
@@ -617,7 +617,11 @@ void svkDcmHeader::MakeDerivedDcmHeader(svkDcmHeader* headerCopy, string seriesD
 {
     this->CopyDcmHeader(headerCopy);  
     headerCopy->InsertUniqueUID("SeriesInstanceUID");
-    headerCopy->InsertUniqueUID("SOPInstanceUID");
+
+    string newUID = this->GenerateUniqueUID(); 
+    headerCopy->SetValue("SOPInstanceUID",              newUID.c_str(), false);
+    headerCopy->SetValue("MediaStorageSOPInstanceUID",  newUID.c_str(), true);
+
     headerCopy->SetValue("ImageType", "DERIVED\\SECONDARY");
     headerCopy->SetSliceOrder(this->dataSliceOrder);
     if ( !seriesDescription.empty() ) {
@@ -634,7 +638,11 @@ void svkDcmHeader::MakeDerivedDcmHeader(svkDcmHeader* headerCopy, string seriesD
 void svkDcmHeader::MakeDerivedDcmHeader(string seriesDescription)
 {
     this->InsertUniqueUID("SeriesInstanceUID");
-    this->InsertUniqueUID("SOPInstanceUID");
+
+    string newUID = this->GenerateUniqueUID(); 
+    this->SetValue("SOPInstanceUID",             newUID.c_str(), false);
+    this->SetValue("MediaStorageSOPInstanceUID", newUID.c_str(), true);
+
     this->SetValue("ImageType", "DERIVED\\SECONDARY");
     this->SetSliceOrder(this->dataSliceOrder);
     if ( !seriesDescription.empty() ) {
@@ -955,9 +963,9 @@ int svkDcmHeader::GetDimensionIndexPosition(string indexLabel)
 /*!
  *  Gets the index labe at the specified DimensionIndex position( start index at 0)
  */
-vtkstd::string svkDcmHeader::GetDimensionIndexLabel(int dimensionIndexNumber )    
+string svkDcmHeader::GetDimensionIndexLabel(int dimensionIndexNumber )    
 {
-    vtkstd::string dimensionIndexLabel = ""; 
+    string dimensionIndexLabel = ""; 
 
     int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
     if ( dimensionIndexNumber < numDims ) { 
@@ -1147,7 +1155,7 @@ void svkDcmHeader::SetDimensionIndices(unsigned int* indexValues, int numFrameIn
 /*!
  *  Initializes the DICOM Patient Module (Patient IE)
  */
-void svkDcmHeader::InitPatientModule(vtkstd::string PatientName, vtkstd::string patientID, vtkstd::string PatientBirthDate, vtkstd::string PatientSex)
+void svkDcmHeader::InitPatientModule(string PatientName, string patientID, string PatientBirthDate, string PatientSex)
 {
     if ( !PatientName.empty() ) {
         this->SetValue(
@@ -1180,7 +1188,7 @@ void svkDcmHeader::InitPatientModule(vtkstd::string PatientName, vtkstd::string 
 /*!
  *  Initializes the DICOM Patient Module (Patient IE)
  */
-void svkDcmHeader::InitGeneralStudyModule(vtkstd::string studyDate, vtkstd::string studyTime, vtkstd::string referringPhysiciansName, vtkstd::string studyID, vtkstd::string accessionNumber, vtkstd::string studyInstanceUID)
+void svkDcmHeader::InitGeneralStudyModule(string studyDate, string studyTime, string referringPhysiciansName, string studyID, string accessionNumber, string studyInstanceUID)
 {
 
     if ( !studyDate.empty() ) {
@@ -1231,7 +1239,7 @@ void svkDcmHeader::InitGeneralStudyModule(vtkstd::string studyDate, vtkstd::stri
  *  Initializes the DICOM General Series Module (Series IE)
  *  Modality is set on initialztion of IOD (svkIOD).  
  */
-void svkDcmHeader::InitGeneralSeriesModule(vtkstd::string seriesNumber, vtkstd::string seriesDescription, vtkstd::string patientPosition)
+void svkDcmHeader::InitGeneralSeriesModule(string seriesNumber, string seriesDescription, string patientPosition)
 {
 
     if ( !seriesNumber.empty() ) {
@@ -1313,7 +1321,7 @@ void svkDcmHeader::InitPlaneOrientationMacro( double dcos[3][3] )
 /*!
  *
  */
-void svkDcmHeader::InitPlaneOrientationMacro( vtkstd::string orientationString )
+void svkDcmHeader::InitPlaneOrientationMacro( string orientationString )
 {
 
     this->ClearSequence( "PlaneOrientationSequence" );
@@ -1339,7 +1347,7 @@ void svkDcmHeader::InitPlaneOrientationMacro( vtkstd::string orientationString )
 /*!
  *  Initialize the MR Image Module. 
  */
-void svkDcmHeader::InitMRImageModule( vtkstd::string repetitionTime, vtkstd::string echoTime)
+void svkDcmHeader::InitMRImageModule( string repetitionTime, string echoTime)
 {
     if ( !repetitionTime.empty() ) {
         this->SetValue( "RepetitionTime", repetitionTime);
@@ -1356,7 +1364,7 @@ void svkDcmHeader::InitMRImageModule( vtkstd::string repetitionTime, vtkstd::str
  *  For single frame objects this may be called repeatedly changing only the value of the 
  *  current instance ImagePositionPatient value. 
  */
-void svkDcmHeader::InitImagePlaneModule( vtkstd::string imagePositionPatient, vtkstd::string pixelSpacing, vtkstd::string imageOrientationPatient, vtkstd::string sliceThickness)
+void svkDcmHeader::InitImagePlaneModule( string imagePositionPatient, string pixelSpacing, string imageOrientationPatient, string sliceThickness)
 {
     if ( !pixelSpacing.empty() ) {
         this->SetValue( "PixelSpacing", pixelSpacing);
@@ -1379,7 +1387,7 @@ void svkDcmHeader::InitImagePlaneModule( vtkstd::string imagePositionPatient, vt
 /*!
  *  Initialize the Pixel Measures Macro. 
  */
-void svkDcmHeader::InitPixelMeasuresMacro( vtkstd::string pixelSpacing, vtkstd::string sliceThickness )
+void svkDcmHeader::InitPixelMeasuresMacro( string pixelSpacing, string sliceThickness )
 {
     this->AddSequenceItemElement(
         "SharedFunctionalGroupsSequence",
@@ -1408,24 +1416,6 @@ void svkDcmHeader::InitPixelMeasuresMacro( vtkstd::string pixelSpacing, vtkstd::
 }
 
 
-
-/*!
- *  Initializes the Per Frame Functional Gruop Sequence and attributes derived from 
- *  method args, eg. dcos -> ImageOrientationPatient.  
- */
-void svkDcmHeader::InitPerFrameFunctionalGroupSequenceDep(double toplc[3], double voxelSpacing[3],
-                                             double dcos[3][3], int numSlices, int numTimePts, int numCoils)
-{
-    cout << "Deprecated" << endl;
-    this->ClearSequence( "PerFrameFunctionalGroupsSequence" );
-    this->SetValue( "NumberOfFrames", numSlices * numTimePts * numCoils );  
-    this->InitMultiFrameDimensionModuleDep( numSlices, numTimePts, numCoils ); 
-    this->InitFrameContentMacroDep( numSlices, numTimePts, numCoils ); 
-    this->InitPlaneOrientationMacro( dcos ); 
-    this->InitPlanePositionMacroDep( toplc, voxelSpacing, dcos, numSlices, numTimePts, numCoils); 
-}
-
-
 /*!
  *  Generalized form of method that uses DimensionVector.  
  *  The rows of the dimensionVector contain the max index of that dimension, i.e. size -1. 
@@ -1450,48 +1440,6 @@ void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double v
 }
  
  
-
-/*!
- *
- */
-void svkDcmHeader::InitMultiFrameDimensionModuleDep( int numSlices, int numTimePts, int numCoils )
-{
-
-    cout << "Deprecated" << endl;
-
-    this->ClearSequence( "DimensionIndexSequence" );
-
-    int indexCount = 0;
-
-    this->AddSequenceItemElement(
-        "DimensionIndexSequence",
-        indexCount,
-        "DimensionDescriptionLabel",
-        this->DimensionIndexLabelToString( svkDcmHeader::SLICE_INDEX)
-    );
-
-    if ( numTimePts > 1 ) {
-        indexCount++;
-        this->AddSequenceItemElement(
-            "DimensionIndexSequence",
-            indexCount,
-            "DimensionDescriptionLabel",
-            this->DimensionIndexLabelToString( svkDcmHeader::TIME_INDEX)
-        );
-    }
-
-    if ( numCoils > 1 ) {
-        indexCount++;
-        this->AddSequenceItemElement(
-            "DimensionIndexSequence",
-            indexCount,
-            "DimensionDescriptionLabel",
-            this->DimensionIndexLabelToString( svkDcmHeader::CHANNEL_INDEX)
-        );
-    }
-}
-
-
 /*!
  *  Generalized version of InitMultiFrameDimensionModule that adds an item to the
  *  sequence for each dimension type represented in the DimensionVector. 
@@ -1506,8 +1454,8 @@ void svkDcmHeader::InitMultiFrameDimensionModule( svkDcmHeader::DimensionVector*
     // start from 2, since cols and rows aren't included 
     for ( int dim = 2; dim < numSequenceDims; dim++) {
 
-        vtkstd::map< svkDcmHeader::DimensionIndexLabel, int > row; 
-        vtkstd::map< svkDcmHeader::DimensionIndexLabel, int >::iterator it; 
+        map< svkDcmHeader::DimensionIndexLabel, int > row; 
+        map< svkDcmHeader::DimensionIndexLabel, int >::iterator it; 
 
         row = (*dimensionVector)[dim]; 
         it =   row.begin(); 
@@ -1521,22 +1469,75 @@ void svkDcmHeader::InitMultiFrameDimensionModule( svkDcmHeader::DimensionVector*
         );
 
         unsigned short* dimensionIndexPointer = new unsigned short[2]; 
-        string hexstring; 
+        unsigned short* functionalGroupPointer = new unsigned short[2]; 
+
+        this->GetDimensionIndexPointer( dimLabel, dimensionIndexPointer, functionalGroupPointer); 
+
+        this->AddSequenceItemElement(
+            "DimensionIndexSequence",       //seqName
+            indexCount,                     //seqItemPosition
+            "DimensionIndexPointer",        //elementName
+            dimensionIndexPointer,  
+            2 
+        ); 
+        this->AddSequenceItemElement(
+            "DimensionIndexSequence",       //seqName
+            indexCount,                     //seqItemPosition
+            "FunctionalGroupPointer",       //elementName
+            functionalGroupPointer,  
+            2 
+        ); 
+        
+        delete [] dimensionIndexPointer; 
+        delete [] functionalGroupPointer; 
+
+        indexCount++; 
+    }
+}
+
+
+/*!
+ * 
+ */
+void svkDcmHeader::GetDimensionIndexPointer( svkDcmHeader::DimensionIndexLabel dimLabel, unsigned short* dimensionIndexPointer, unsigned short* functionalGroupPointer)
+{
+
+    string hexstring; 
+    if ( dimLabel == svkDcmHeader::SLICE_INDEX ) {
+        //  (0020,0032) DS [-119.53100\-159.75101\100.95700]        #  32, 3 ImagePositionPatient
         hexstring = "0x0020";
         dimensionIndexPointer[0] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
         hexstring = "0x0032";
         dimensionIndexPointer[1] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
-
-        //this->AddSequenceItemElement(
-            //"DimensionIndexSequence",       //seqName
-            //indexCount,                     //seqItemPosition
-            //"DimensionIndexPointer",        //elementName
-            //dimensionIndexPointer,  
-            //2 
-        //); 
-
-        indexCount++; 
+        //  (0020,9113) SQ (Sequence with undefined length #=1)     # u/l, 1 PlanePositionSequence
+        hexstring = "0x0020";
+        functionalGroupPointer[0] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
+        hexstring = "0x9113";
+        functionalGroupPointer[1] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
+    } else if ( dimLabel == svkDcmHeader::TIME_INDEX ) {
+        //  (0020,9128) #   2, 1 TemporalPositionIndex
+        hexstring = "0x0020";
+        dimensionIndexPointer[0] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
+        hexstring = "0x9128";
+        dimensionIndexPointer[1] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
+        //  (0020,9111) SQ (Sequence with undefined length #=8)     # u/l, 1 FrameContentSequence
+        hexstring = "0x0020";
+        functionalGroupPointer[0] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
+        hexstring = "0x9111";
+        functionalGroupPointer[1] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
+    } else if ( dimLabel == svkDcmHeader::CHANNEL_INDEX ) {
+        //  (0018,9047) SH [1]                                      #   2, 1 MultiCoilElementName
+        hexstring = "0x0018";
+        dimensionIndexPointer[0] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
+        hexstring = "0x9047";
+        dimensionIndexPointer[1] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
+        //  (0018,9045) SQ (Sequence with undefined length #=8)     # u/l, 1 MultiCoilDefinitionSequence
+        hexstring = "0x0018";
+        functionalGroupPointer[0] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
+        hexstring = "0x9045";
+        functionalGroupPointer[1] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
     }
+
 }
 
 
@@ -1745,66 +1746,6 @@ void svkDcmHeader::InitPlanePositionMacro(double toplc[3], double voxelSpacing[3
 }
 
 
-/*!
- *
- */
-void svkDcmHeader::InitPlanePositionMacroDep(double toplc[3], double voxelSpacing[3],
-                                             double dcos[3][3], int numSlices, int numTimePts, int numCoils)
-{
-
-    cout << "Deprecated" << endl;
-
-    int frame = 0;
-
-    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
-        for (int timePt = 0; timePt < numTimePts; timePt++) {
-
-            float displacement[3]={0,0,0};
-            float frameLPSPosition[3]={0,0,0};
-
-            for (int i = 0; i < numSlices; i++) {
-
-                this->AddSequenceItemElement(
-                    "PerFrameFunctionalGroupsSequence",
-                    i,
-                    "PlanePositionSequence"
-                );
-
-                //add displacement along normal vector:
-                for (int j = 0; j < 3; j++) {
-                    displacement[j] = dcos[2][j] * voxelSpacing[2] * i;
-                }
-                for(int j = 0; j < 3; j++) { //L, P, S
-                    frameLPSPosition[j] = toplc[j] +  displacement[j] ;
-                }
-    
-                string imagePositionPatient;
-                for (int j = 0; j < 3; j++) {
-                    ostringstream oss;
-                    oss.setf(ios::fixed);
-                    oss.precision(5);
-                    oss << frameLPSPosition[j];
-                    imagePositionPatient += oss.str();
-                    if (j < 2) {
-                        imagePositionPatient += '\\';
-                    }
-                }
-    
-                this->AddSequenceItemElement(
-                    "PlanePositionSequence",
-                    0,
-                    "ImagePositionPatient",
-                    imagePositionPatient,
-                    "PerFrameFunctionalGroupsSequence",
-                    frame
-                );
-
-                frame++;
-            }
-        }
-    }
-}
-
 
 /*!
  *  Generalized form of Init method using DimensionVector. 
@@ -1825,19 +1766,11 @@ void svkDcmHeader::InitFrameContentMacro( svkDcmHeader::DimensionVector* dimensi
     for ( int frame = 0; frame < numFrames; frame++) {
         
         // get the indices for this frame: 
-
         svkDcmHeader::GetDimensionVectorIndexFromFrame( dimensionVector, &loopIndex, frame); 
         
         for (int i = 0; i < numFrameIndices; i++) {
             indexValues[i] = svkDcmHeader::GetDimensionVectorValue( &loopIndex, i+2); 
         }
-
-        //cout << "INDEX ARRAY : " << frame << " => "; 
-        //for (int i = 0; i<numFrameIndices; i++) {
-            //cout <<  indexValues[i] << " " ; 
-        //}
-        //cout << endl;
-
 
         this->AddSequenceItemElement(
             "PerFrameFunctionalGroupsSequence",
@@ -1859,7 +1792,7 @@ void svkDcmHeader::InitFrameContentMacro( svkDcmHeader::DimensionVector* dimensi
             "FrameContentSequence",
             0,
             "FrameAcquisitionDateTime",
-            "EMPTY_ELEMENT",
+            this->GetStringValue( "StudyDate" ),
             "PerFrameFunctionalGroupsSequence",
             frame
         );
@@ -1868,7 +1801,7 @@ void svkDcmHeader::InitFrameContentMacro( svkDcmHeader::DimensionVector* dimensi
             "FrameContentSequence",
             0,
             "FrameReferenceDateTime",
-            "EMPTY_ELEMENT",
+            this->GetStringValue( "StudyDate" ),
             "PerFrameFunctionalGroupsSequence",
             frame
         );
@@ -1882,98 +1815,9 @@ void svkDcmHeader::InitFrameContentMacro( svkDcmHeader::DimensionVector* dimensi
             frame
         );
 
-        //this->PrintDcmHeader();
     }
 
     this->SetValue( "NumberOfFrames", numFrames); 
-
-    delete[] indexValues;
-}
-
-
-/*!
- *  Mandatory, Must be a per-frame functional group
- */
-void svkDcmHeader::InitFrameContentMacroDep( int numSlices, int numTimePts, int numCoils )
-{
-
-    cout << "Deprecated" << endl;
-
-    if ( numSlices < 0 ) {
-        numSlices = this->GetNumberOfSlices(); 
-    }
-
-    if ( numTimePts < 0 ) {
-        numTimePts = this->GetNumberOfTimePoints(); 
-    }
-
-    if ( numCoils < 0 ) {
-        numCoils = this->GetNumberOfCoils(); 
-    }
-    
-    int numFrameIndices = svkDcmHeader::GetNumberOfDimensionIndices( numTimePts, numCoils ) ;
-
-    unsigned int* indexValues = new unsigned int[numFrameIndices];
-
-    int frame = 0;
-
-    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
-
-        for (int timePt = 0; timePt < numTimePts; timePt++) {
-
-            for (int sliceNum = 0; sliceNum < numSlices; sliceNum++) {
-
-                svkDcmHeader::SetDimensionIndices(
-                    indexValues, numFrameIndices, sliceNum, timePt, coilNum, numTimePts, numCoils
-                );
-
-                this->AddSequenceItemElement(
-                    "PerFrameFunctionalGroupsSequence",
-                    frame,
-                    "FrameContentSequence"
-                );
-
-                this->AddSequenceItemElement(
-                    "FrameContentSequence",
-                    0,
-                    "DimensionIndexValues",
-                    indexValues,        //  array of vals
-                    numFrameIndices,    // num values in array
-                    "PerFrameFunctionalGroupsSequence",
-                    frame
-                );
-
-                this->AddSequenceItemElement(
-                    "FrameContentSequence",
-                    0,
-                    "FrameAcquisitionDateTime",
-                    "EMPTY_ELEMENT",
-                    "PerFrameFunctionalGroupsSequence",
-                    frame
-                );
-
-                this->AddSequenceItemElement(
-                    "FrameContentSequence",
-                    0,
-                    "FrameReferenceDateTime",
-                    "EMPTY_ELEMENT",
-                    "PerFrameFunctionalGroupsSequence",
-                    frame
-                );
-
-                this->AddSequenceItemElement(
-                    "FrameContentSequence",
-                    0,
-                    "FrameAcquisitionDuration",
-                    "-1",
-                    "PerFrameFunctionalGroupsSequence",
-                    frame
-                );
-
-                frame++;
-            }
-        }
-    }
 
     delete[] indexValues;
 }
@@ -2047,7 +1891,7 @@ void svkDcmHeader::InitPixelValueTransformationMacro(double slope, double interc
 /*!
  *  Initialize MR Imaging Modifier Macro
  */
-void svkDcmHeader::InitMRImagingModifierMacro(float transmitFreq, float pixelBandwidth, vtkstd::string magTransfer, vtkstd::string bloodNulling)
+void svkDcmHeader::InitMRImagingModifierMacro(float transmitFreq, float pixelBandwidth, string magTransfer, string bloodNulling)
 {
 
     this->AddSequenceItemElement(
@@ -2078,7 +1922,7 @@ void svkDcmHeader::InitMRImagingModifierMacro(float transmitFreq, float pixelBan
         "MRImagingModifierSequence",
         0,
         "Tagging",
-        vtkstd::string("NONE"),
+        string("NONE"),
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -2185,7 +2029,7 @@ void svkDcmHeader::InitMRTimingAndRelatedParametersMacro(float tr, float flipAng
             "MRTimingAndRelatedParametersSequence",
             0,
             "FlipAngle",
-            "UNKNOWN",
+            "-1",
             "SharedFunctionalGroupsSequence",
             0
         );
@@ -2377,7 +2221,7 @@ void svkDcmHeader::InitMRAveragesMacro(int numAverages)
 /*!
  *  Initialize Raw Data Module. 
  */
-void svkDcmHeader::InitRawDataModule( vtkstd::string contentDate, vtkstd::string contentTime, void* rawFile ) 
+void svkDcmHeader::InitRawDataModule( string contentDate, string contentTime, void* rawFile ) 
 {
 
     if ( !contentDate.empty() ) {
@@ -2525,7 +2369,7 @@ int svkDcmHeader::ConvertEnhancedMriToMriHeader(svkDcmHeader* mri, vtkIdType dat
  *  This is a utility for extracting metabolite maps from MRS data, for example. 
  *  Takes an initialized svkDcmHeader from an svkMriImageData object. 
  */
-int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription)
+int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, string seriesDescription)
 {
 
     //"verify that "this" is an svkMRSpectroscopy Object"
@@ -2602,14 +2446,14 @@ int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, vt
     mri->SetSliceOrder( this->dataSliceOrder );
 
     // Add Pixel Spacing
-    vtkstd::string pixelSizes = this->GetStringSequenceItemElement (
+    string pixelSizes = this->GetStringSequenceItemElement (
                                         "PixelMeasuresSequence",
                                         0,
                                         "PixelSpacing",
                                         "SharedFunctionalGroupsSequence"
                                     );
 
-    vtkstd::string sliceThickness = this->GetStringSequenceItemElement (
+    string sliceThickness = this->GetStringSequenceItemElement (
                                         "PixelMeasuresSequence",
                                         0,
                                         "SliceThickness",
@@ -2817,7 +2661,7 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
 /*!
  *  Check for magic DICM chars at byte 128 to test if the file is a DICOM file. 
  */
-bool svkDcmHeader::IsFileDICOM( vtkstd::string fname)
+bool svkDcmHeader::IsFileDICOM( string fname)
 {
     bool isDICOM = false; 
 
@@ -2841,7 +2685,7 @@ bool svkDcmHeader::IsFileDICOM( vtkstd::string fname)
             //  terminate
             magicDICOMChars[4] = '\0'; 
    
-            vtkstd::string magicString( magicDICOMChars ); 
+            string magicString( magicDICOMChars ); 
 
             if ( magicString.compare("DICM") == 0 ) {
                 isDICOM = true;
@@ -3021,7 +2865,7 @@ svkDcmHeader::DimensionVector  svkDcmHeader::GetDimensionIndexVector()
 void  svkDcmHeader::UpdateDimensionIndexVector()
 {
     svkDcmHeader::DimensionVector dimensionIndexVector; 
-    vtkstd::map < DimensionIndexLabel, int> indexRowMap;  
+    map < DimensionIndexLabel, int> indexRowMap;  
 
     //Start with cols and rows:     
     indexRowMap.insert( pair<DimensionIndexLabel, int>( svkDcmHeader::COL_INDEX, this->GetIntValue("Columns")-1) );
@@ -3036,7 +2880,7 @@ void  svkDcmHeader::UpdateDimensionIndexVector()
     int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
     for (int dimensionIndex = 0; dimensionIndex < numDims; dimensionIndex++) {
 
-        vtkstd::string dimensionLabelString = this->GetDimensionIndexLabel(dimensionIndex); 
+        string dimensionLabelString = this->GetDimensionIndexLabel(dimensionIndex); 
         svkDcmHeader::DimensionIndexLabel dimensionLabel = this->StringToDimensionIndexLabel( dimensionLabelString); 
         int dimensionMaxIndex = this->GetNumberOfFramesInDimension( dimensionIndex ) - 1; 
 
@@ -3083,7 +2927,7 @@ void svkDcmHeader::AddDimensionIndex( svkDcmHeader::DimensionVector* dimensionVe
 
     //  If the dimension is already defined, the just return; 
     if ( ! svkDcmHeader::IsDimensionDefined( dimensionVector, indexType) ) {
-        vtkstd::map < DimensionIndexLabel, int> indexRowMap;  
+        map < DimensionIndexLabel, int> indexRowMap;  
         indexRowMap.insert( pair<DimensionIndexLabel, int>( indexType, maxIndex) );
         dimensionVector->push_back(indexRowMap);                    
         this->Redimension( dimensionVector );
@@ -3195,7 +3039,7 @@ void svkDcmHeader::SetDimensionIndexSize( svkDcmHeader::DimensionIndexLabel inde
  *  Convert between stirng and svkDcmHeader::DimensionIndexLabel 
  *  These are the string representations of the DICOM DimensionIndexLabel attribute. 
  */
-svkDcmHeader::DimensionIndexLabel svkDcmHeader::StringToDimensionIndexLabel( vtkstd::string dimensionIndexLabelString )
+svkDcmHeader::DimensionIndexLabel svkDcmHeader::StringToDimensionIndexLabel( string dimensionIndexLabelString )
 {
 
     DimensionIndexLabel indexLabel;     
@@ -3224,10 +3068,10 @@ svkDcmHeader::DimensionIndexLabel svkDcmHeader::StringToDimensionIndexLabel( vtk
  *  Convert between strng and svkDcmHeader::DimensionIndexLabel 
  *  These are the string representations of the DICOM DimensionIndexLabel attribute. 
  */
-vtkstd::string svkDcmHeader::DimensionIndexLabelToString( svkDcmHeader::DimensionIndexLabel label) 
+string svkDcmHeader::DimensionIndexLabelToString( svkDcmHeader::DimensionIndexLabel label) 
 {
 
-    vtkstd::string indexLabelString = ""; 
+    string indexLabelString = ""; 
     int labelIndex = static_cast<int>(label); 
 
     if ( labelIndex == 0 ) { 
@@ -3453,8 +3297,8 @@ void svkDcmHeader::SwapDimensionIndexLabels(svkDcmHeader::DimensionVector* dimen
         exit(1); 
     }
 
-    vtkstd::map < svkDcmHeader::DimensionIndexLabel, int> targetRow1; 
-    vtkstd::map < svkDcmHeader::DimensionIndexLabel, int> targetRow2; 
+    map < svkDcmHeader::DimensionIndexLabel, int> targetRow1; 
+    map < svkDcmHeader::DimensionIndexLabel, int> targetRow2; 
     targetRow1.insert( pair<svkDcmHeader::DimensionIndexLabel, int>( label1, dimSize2 ) );
     targetRow2.insert( pair<svkDcmHeader::DimensionIndexLabel, int>( label2, dimSize1 ) );
 
