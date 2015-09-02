@@ -90,7 +90,7 @@ svkDcmMriVolumeReader::~svkDcmMriVolumeReader()
 int svkDcmMriVolumeReader::CanReadFile(const char* fname)
 {
 
-    vtkstd::string fileToCheck(fname);
+    string fileToCheck(fname);
 
     bool isDcmMri = false; 
 
@@ -99,7 +99,7 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
         svkImageData* tmp = svkMriImageData::New(); 
 
         tmp->GetDcmHeader()->ReadDcmFileHeaderOnly( fname );
-        vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
+        string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
 
         //verify that this isn't a proprietary use of DICOM MR ImageStorage: 
         if ( this->ContainsProprietaryContent( tmp ) == svkDcmVolumeReader::DICOM_STD_SOP ) {
@@ -137,7 +137,7 @@ void svkDcmMriVolumeReader::InitDcmHeader()
     // Read the first file and load the header as the starting point
     this->GetOutput()->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue(0) );
 
-    vtkstd::string studyInstanceUID( this->GetOutput()->GetDcmHeader()->GetStringValue("StudyInstanceUID"));
+    string studyInstanceUID( this->GetOutput()->GetDcmHeader()->GetStringValue("StudyInstanceUID"));
     int rows    = this->GetOutput()->GetDcmHeader()->GetIntValue( "Rows" ); // Y
     int columns = this->GetOutput()->GetDcmHeader()->GetIntValue( "Columns" ); // X
      
@@ -147,7 +147,6 @@ void svkDcmMriVolumeReader::InitDcmHeader()
     iod->SetReplaceOldElements(false); 
     iod->InitDcmHeader();
     iod->Delete();
-
 
     this->GetOutput()->GetDcmHeader()->SetValue( "StudyInstanceUID", studyInstanceUID.c_str() );
 
@@ -229,7 +228,7 @@ void svkDcmMriVolumeReader::LoadData( svkImageData* data )
 
         ostringstream volNumber;
         volNumber << vol;
-        vtkstd::string arrayNameString("pixels");
+        string arrayNameString("pixels");
         arrayNameString.append(volNumber.str());
         array->SetName( arrayNameString.c_str() );
 
@@ -394,14 +393,14 @@ void svkDcmMriVolumeReader::InitPerFrameFunctionalGroupMacros()
 
     double toplc[3];
     for (int i = 0; i < 3; i++ ) {
-        vtkstd::string pos( tmpImage->GetDcmHeader()->GetStringValue("ImagePositionPatient", i));
+        string pos( tmpImage->GetDcmHeader()->GetStringValue("ImagePositionPatient", i));
         std::istringstream positionInString(pos);
         positionInString >> toplc[i];
     }
 
     double pixelSize[3];
     for (int i = 0; i < 2; i++ ) {
-        vtkstd::string pos( tmpImage->GetDcmHeader()->GetStringValue("PixelSpacing", i));
+        string pos( tmpImage->GetDcmHeader()->GetStringValue("PixelSpacing", i));
         std::istringstream positionInString(pos);
         positionInString >> pixelSize[i];
     }
