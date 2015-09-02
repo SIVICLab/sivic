@@ -236,7 +236,6 @@ void svkImageMathematics::Update()
 
     for ( int vol = 0; vol < numVolumes; vol++ ) {
 
-        cout << "VOL LOOP: " << vol<< endl;
 
         //  input 1 scalar data volume
         string arrayName0;  
@@ -400,7 +399,6 @@ void svkImageMathematics::Update()
         string description = this->GetPortMapper()->GetStringInputPortValue( OUTPUT_SERIES_DESCRIPTION )->GetValue();
         svkMriImageData::SafeDownCast(this->GetOutput())->GetDcmHeader()->SetValue("SeriesDescription", description );
     }
-    cout << "FINAL: " << *this->GetOutput() << endl;
 }
 
 
