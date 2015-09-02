@@ -106,13 +106,13 @@ void svkDcmEnhancedVolumeReader::SetRescalePixels( bool rescalePixels )
 int svkDcmEnhancedVolumeReader::CanReadFile(const char* fname)
 {
 
-    vtkstd::string fileToCheck(fname);
+    string fileToCheck(fname);
 
     if ( svkDcmHeader::IsFileDICOM( fname ) ) {
  
         svkImageData* tmp = svkMriImageData::New(); 
         tmp->GetDcmHeader()->ReadDcmFileHeaderOnly( fname );
-        vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
+        string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
         tmp->Delete(); 
 
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.1" ) {
