@@ -56,15 +56,22 @@ vtkStandardNewMacro(svkImageCopy);
  */
 svkImageCopy::svkImageCopy()
 {
-#if VTK_DEBUG_ON
+#ifdef VTK_DEBUG_ON
     this->DebugOn();
 #endif
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
-    this->dataType = svkDcmHeader::UNDEFINED; 
-    this->newSeriesDescription = ""; 
-    this->zeroCopy = false; 
+
+    this->SetNumberOfInputPorts(4);
+    bool required = true;
+    this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeInputPort( OUTPUT_SERIES_DESCRIPTION, "OUTPUT_SERIES_DESCRIPTION", svkAlgorithmPortMapper::SVK_STRING, !required);
+    this->GetPortMapper()->InitializeInputPort( OUTPUT_SCALAR_TYPE, "OUTPUT_SCALAR_TYPE", svkAlgorithmPortMapper::SVK_INT, !required);
+    this->GetPortMapper()->InitializeInputPort( ZERO_COPY, "ZERO_COPY", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->SetNumberOfOutputPorts(1);
+    this->GetPortMapper()->InitializeOutputPort( 0, "COPY_OUTPUT", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+
 }
 
 
@@ -101,16 +108,16 @@ svkImageCopy::~svkImageCopy()
  */
 void svkImageCopy::SetSeriesDescription( string newSeriesDescription )
 {
-    this->newSeriesDescription = newSeriesDescription;
+    this->GetPortMapper()->SetStringInputPortValue( OUTPUT_SERIES_DESCRIPTION, newSeriesDescription );
 }
 
 
 /*!
  *  Optionally sets the output data type to cast the copy to. 
  */
-void svkImageCopy::SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType)
+void svkImageCopy::SetOutputDataType(int dataType)
 {
-    this->dataType = dataType; 
+    this->GetPortMapper()->SetIntInputPortValue( OUTPUT_SCALAR_TYPE, dataType );
 }
 
 
@@ -120,7 +127,7 @@ void svkImageCopy::SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType)
  */
 void svkImageCopy::SetZeroCopy(bool zeroCopy)
 {
-    this->zeroCopy = zeroCopy;
+    this->GetPortMapper()->SetBoolInputPortValue( ZERO_COPY, zeroCopy );
 }
 
 
@@ -130,11 +137,15 @@ void svkImageCopy::SetZeroCopy(bool zeroCopy)
 int svkImageCopy::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
     this->UpdateHeader(); 
-
-    if ( this->zeroCopy ) {
-        this->GetOutput()->ZeroCopy( this->GetImageDataInput(0), this->dataType ); 
+    int dataType = svkDcmHeader::UNDEFINED;
+    if( this->GetPortMapper()->GetIntInputPortValue(OUTPUT_SCALAR_TYPE) != NULL ) {
+        dataType = this->GetPortMapper()->GetIntInputPortValue(OUTPUT_SCALAR_TYPE)->GetValue();
+    }
+    if ( this->GetPortMapper()->GetBoolInputPortValue(ZERO_COPY) != NULL
+            &&   this->GetPortMapper()->GetBoolInputPortValue(ZERO_COPY)->GetValue() == true) {
+        this->GetOutput()->ZeroCopy( this->GetImageDataInput(0), (svkDcmHeader::DcmPixelDataFormat)dataType );
     } else {
-        this->GetOutput()->DeepCopy( this->GetImageDataInput(0), this->dataType ); 
+        this->GetOutput()->DeepCopy( this->GetImageDataInput(0), (svkDcmHeader::DcmPixelDataFormat)dataType );
     }
 
     return 1; 
@@ -156,19 +167,26 @@ void svkImageCopy::UpdateProvenance()
 void svkImageCopy::UpdateHeader()
 {
 
-    if (this->newSeriesDescription == "") {
+    int dataType = svkDcmHeader::UNDEFINED;
+    if( this->GetPortMapper()->GetIntInputPortValue(OUTPUT_SCALAR_TYPE) != NULL ) {
+        dataType = this->GetPortMapper()->GetIntInputPortValue(OUTPUT_SCALAR_TYPE)->GetValue();
+    }
+    string newSeriesDescription = "";
+    if( this->GetPortMapper()->GetStringInputPortValue(OUTPUT_SERIES_DESCRIPTION)) {
+        newSeriesDescription = this->GetPortMapper()->GetStringInputPortValue(OUTPUT_SERIES_DESCRIPTION)->GetValue();
+    }
+    if (newSeriesDescription == "") {
         cout << "ERROR:  must set target image series description" << endl;
         exit(1); 
     }
-
     //  Copy the DICOM header:     
     this->GetImageDataInput(0)->GetDcmHeader()->MakeDerivedDcmHeader( 
         this->GetOutput()->GetDcmHeader(), 
-        this->newSeriesDescription
+        newSeriesDescription
     );
 
-    if ( this->dataType != svkDcmHeader::UNDEFINED ) {
-        this->GetOutput()->GetDcmHeader()->SetPixelDataType(this->dataType); 
+    if ( dataType != svkDcmHeader::UNDEFINED ) {
+        this->GetOutput()->GetDcmHeader()->SetPixelDataType((svkDcmHeader::DcmPixelDataFormat)dataType);
     }
 }
 

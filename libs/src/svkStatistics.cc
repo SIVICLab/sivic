@@ -108,6 +108,66 @@ double svkStatistics::ComputeModeFromHistogram(vtkDataArray* histogram, double b
 
 }
 
+vector<double> svkStatistics::ComputeQuantilesFromHistogram(int numQuantiles, vtkDataArray* histogram, double binSize, double startBin, int numBins, int smoothBins)
+{
+
+    vector<double> quantiles;
+    // Now let's calculate the percentiles
+    vtkFloatArray* cdf = vtkFloatArray::New();
+    cdf->SetNumberOfComponents(1);
+    cdf->SetNumberOfTuples(numBins);
+
+    // First lets create an cumulative distribution function
+    for( int i = 0; i < numBins; i++ ) {
+        if( i == 0 ) {
+            // First bin special case
+            cdf->SetTuple1(0, histogram->GetTuple1(0));
+        } else {
+            cdf->SetTuple1(i, cdf->GetTuple1(i-1) + histogram->GetTuple1(i));
+        }
+    }
+
+    vtkFloatArray* ncdf = vtkFloatArray::New();
+    ncdf->SetNumberOfComponents(1);
+    ncdf->SetNumberOfTuples(numBins);
+    // Normalize the cdf by the last bin, which contains the total sum of all bins.
+    for( int i = 0; i < numBins; i++ ) {
+        ncdf->SetTuple1(i, cdf->GetTuple1(i)/cdf->GetTuple1(numBins-1));
+    }
+
+    vector<double> intervalUpperBin;
+    vector<double> intervalLowerBin;
+    //Initialize to zeros
+    intervalUpperBin.assign(numQuantiles,0);
+    intervalLowerBin.assign(numQuantiles,0);
+
+    // Let's use the cdf to compute percentiles....
+
+    // Approach from the lower values
+    for( int i = 0; i < numBins; i++ ) {
+        for( int j = 0; j < numQuantiles; j++ ) {
+            double intervalMax = double(j)/numQuantiles;
+            if( ncdf->GetTuple1(i) < intervalMax ) {
+                intervalLowerBin[j] = i;
+            }
+        }
+    }
+
+    // Approach from the upper values
+    for( int i = numBins -1; i >= 0; i-- ) {
+        for( int j = 0; j < numQuantiles; j++ ) {
+            double intervalMin = double(j)/numQuantiles;
+            if( ncdf->GetTuple1(i) > intervalMin ) {
+                intervalUpperBin[j] = i;
+            }
+        }
+    }
+    for( int i = 0; i < numQuantiles; i++ ) {
+        double quantile = binSize*((intervalUpperBin[i] + intervalLowerBin[i])/2.0) + startBin;
+        quantiles.push_back(quantile);
+    }
+    return quantiles;
+}
 
 /*!
  * Generates a histogram for the given vtkDataArray. If smoothBins is greater then one then the histogram is smoothed.

@@ -236,6 +236,9 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
         } else if( string(tag->GetName()) == "svkAlgorithm:svkImageStatistics") {
             algorithm = svkImageStatistics::New();
             portMapper = svkImageStatistics::SafeDownCast( algorithm )->GetPortMapper();
+        } else if( string(tag->GetName()) == "svkAlgorithm:svkImageCopy") {
+            algorithm = svkImageCopy::New();
+            portMapper = svkImageCopy::SafeDownCast( algorithm )->GetPortMapper();
         } else if( string(tag->GetName()) == "svkAlgorithm:svkImageMathematics") {
             algorithm = svkImageMathematics::New();
             portMapper = svkImageMathematics::SafeDownCast( algorithm )->GetPortMapper();

@@ -78,6 +78,7 @@ class svkStatistics : public vtkObject
         static vtkDataArray* GetMaskedPixels( svkMriImageData* image, svkMriImageData* roi, double minIncluded = 1, double maxIncluded = VTK_DOUBLE_MAX);
         static vtkFloatArray* GetHistogram( vtkDataArray* data, double binSize, double startBin, int numBins,  int smoothBins = 0);
         static double ComputeModeFromHistogram(vtkDataArray* histogram, double binSize, double startBin, int smoothBins);
+        static vector<double> ComputeQuantilesFromHistogram(int numQuantiles, vtkDataArray* histogram, double binSize, double startBin, int numBins, int smoothBins);
         static double GetAutoAdjustedBinSize( svkMriImageData* image, double startBinSize, double startBin, int numBins );
 
 

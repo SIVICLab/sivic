@@ -572,6 +572,7 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
         vtkDataArray* histogram = svkStatistics::GetHistogram( pixelsInROI, binSize, startBin, numBins, smoothBins );
         double mean = 0;
         if( pixelsInROI != NULL && histogram != NULL) {
+            //TODO: Move calculation of sum and volume here?
             int numPixels = 0;
             for( int i= 0; i < pixelsInROI->GetNumberOfTuples(); i++) {
                 if(pixelsInROI->GetTuple1(i) != 0 ) {
@@ -608,60 +609,10 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                 }
             }
 
-            // Now let's calculate the percentiles
-            vtkFloatArray* cdf = vtkFloatArray::New();
-            cdf->SetNumberOfComponents(1);
-            cdf->SetNumberOfTuples(numBins);
-
-            // First lets create an cumulative distribution function
-            for( int i = 0; i < numBins; i++ ) {
-                if( i == 0 ) {
-                    // First bin special case
-                    cdf->SetTuple1(0, histogram->GetTuple1(0));
-                } else {
-                    cdf->SetTuple1(i, cdf->GetTuple1(i-1) + histogram->GetTuple1(i));
-                }
-            }
-
-            vtkFloatArray* ncdf = vtkFloatArray::New();
-            ncdf->SetNumberOfComponents(1);
-            ncdf->SetNumberOfTuples(numBins);
-            // Normalize the cdf by the last bin, which contains the total sum of all bins.
-            for( int i = 0; i < numBins; i++ ) {
-                ncdf->SetTuple1(i, cdf->GetTuple1(i)/cdf->GetTuple1(numBins-1));
-            }
-
-            // Now lets find the border of the percentiles be
             int numIntervals = 20; // Compute every 5%
-            vector<double> intervalUpperBin;
-            vector<double> intervalLowerBin;
-            //Initialize to zeros
-            intervalUpperBin.assign(numIntervals,0);
-            intervalLowerBin.assign(numIntervals,0);
-
-            // Let's use the cdf to compute percentiles....
-
-            // Approach from the lower values
-            for( int i = 0; i < numBins; i++ ) {
-                for( int j = 0; j < numIntervals; j++ ) {
-                    double intervalMax = double(j)/numIntervals;
-                    if( ncdf->GetTuple1(i) < intervalMax ) {
-                        intervalLowerBin[j] = i;
-                    }
-                }
-            }
-
-            // Approach from the upper values
-            for( int i = numBins -1; i >= 0; i-- ) {
-                for( int j = 0; j < numIntervals; j++ ) {
-                    double intervalMin = double(j)/numIntervals;
-                    if( ncdf->GetTuple1(i) > intervalMin ) {
-                        intervalUpperBin[j] = i;
-                    }
-                }
-            }
+            vector<double> quantiles = svkStatistics::ComputeQuantilesFromHistogram(numIntervals, histogram, binSize, startBin, numBins, smoothBins);
             for( int i = 0; i < numIntervals; i++ ) {
-                double percentile = binSize*((intervalUpperBin[i] + intervalLowerBin[i])/2.0) + startBin;
+                double percentile = quantiles[i];
                 if( useMeanForAll ) {
                     percentile = mean;
                 }
@@ -699,17 +650,6 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                 this->AddHistogramTag( unSmoothedHist, binSize, startBin, numBins, 0, results);
                 unSmoothedHist->Delete();
             }
-            /*
-             *  This computes 10th percentile exactly.
-            double numPixels = pixelsInROI->GetNumberOfTuples();
-            for( int i = 0; i < numPixels; i++ ) {
-                if( 100.0* ((i+1)/numPixels) > 10){
-                    cout <<"No Histogram:" << 100.0* (i/numPixels) << " value= " << pixelsInROI->GetTuple1(i) << endl;
-                    cout <<"No Histogram:" << 100.0* ((i+1)/numPixels) << " value= " << pixelsInROI->GetTuple1(i+1) << endl;
-                break;
-                }
-            }
-            */
             pixelsInROI->Delete();
 
         }

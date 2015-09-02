@@ -76,14 +76,21 @@ svkImageMathematics::svkImageMathematics()
 
     vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
 
-    this->SetNumberOfInputPorts(7);
+    this->SetNumberOfInputPorts(14);
     bool required = true;
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE_1, "INPUT_IMAGE_1", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE_2, "INPUT_IMAGE_2", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, !required );
     this->GetPortMapper()->InitializeInputPort( MASK, "MASK", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, !required);
+    this->GetPortMapper()->InitializeInputPort( MASK_FOR_MEDIAN, "MASK_FOR_MEDIAN", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, !required);
     this->GetPortMapper()->InitializeInputPort( ADD, "ADD", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( MULTIPLY, "MULTIPLY", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( SUBTRACT, "SUBTRACT", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( MULTIPLY_BY_SCALAR , "MULTIPLY_BY_SCALAR", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
+    this->GetPortMapper()->InitializeInputPort( MULTIPLY_IMAGE_1_BY_IMAGE_2_MEDIAN , "MULTIPLY_IMAGE_1_BY_IMAGE_2_MEDIAN", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( NUM_BINS_FOR_HISTOGRAM , "NUM_BINS_FOR_HISTOGRAM", svkAlgorithmPortMapper::SVK_INT, !required);
+    this->GetPortMapper()->InitializeInputPort( BIN_SIZE_FOR_HISTOGRAM , "BIN_SIZE_FOR_HISTOGRAM", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
+    this->GetPortMapper()->InitializeInputPort( START_BIN_FOR_HISTOGRAM , "START_BIN_FOR_HISTOGRAM", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
+    this->GetPortMapper()->InitializeInputPort( SMOOTH_BINS_FOR_HISTOGRAM , "SMOOTH_BINS_FOR_HISTOGRAM", svkAlgorithmPortMapper::SVK_INT, !required);
     this->GetPortMapper()->InitializeInputPort( OUTPUT_SERIES_DESCRIPTION, "OUTPUT_SERIES_DESCRIPTION", svkAlgorithmPortMapper::SVK_STRING, !required);
 
     this->SetNumberOfOutputPorts(1);
@@ -119,6 +126,12 @@ void svkImageMathematics::SetInputPortsFromXML( )
     }
     if(this->GetPortMapper()->GetBoolInputPortValue(MULTIPLY) && this->GetPortMapper()->GetBoolInputPortValue(MULTIPLY)->GetValue()){
         this->SetOperationToMultiply();
+    }
+    if(this->GetPortMapper()->GetBoolInputPortValue(SUBTRACT) && this->GetPortMapper()->GetBoolInputPortValue(SUBTRACT)->GetValue()){
+        this->SetOperationToSubtract();
+    }
+    if(this->GetPortMapper()->GetBoolInputPortValue(MULTIPLY_IMAGE_1_BY_IMAGE_2_MEDIAN) && this->GetPortMapper()->GetBoolInputPortValue(MULTIPLY_IMAGE_1_BY_IMAGE_2_MEDIAN)->GetValue()){
+        this->SetOperationToMultiplyByK();
     }
 }
 
@@ -249,6 +262,39 @@ void svkImageMathematics::Update()
                 //this->GetImageDataInput(1)->GetPointData()->GetArray(vol1)->GetName()
                 arrayName1.c_str() 
             );
+            if(this->GetPortMapper()->GetBoolInputPortValue(MULTIPLY_IMAGE_1_BY_IMAGE_2_MEDIAN) && this->GetPortMapper()->GetBoolInputPortValue(MULTIPLY_IMAGE_1_BY_IMAGE_2_MEDIAN)->GetValue()){
+                //Default values from historical data
+                double binSize = 10;
+                int numBins = 1000;
+                int smoothBins = 21;
+                double startBin = 10;
+                if( this->GetPortMapper()->GetDoubleInputPortValue(BIN_SIZE_FOR_HISTOGRAM) != NULL ) {
+                    binSize = this->GetPortMapper()->GetDoubleInputPortValue(BIN_SIZE_FOR_HISTOGRAM)->GetValue();
+                }
+                if( this->GetPortMapper()->GetDoubleInputPortValue(START_BIN_FOR_HISTOGRAM) != NULL ) {
+                    startBin = this->GetPortMapper()->GetDoubleInputPortValue(START_BIN_FOR_HISTOGRAM)->GetValue();
+                }
+                if( this->GetPortMapper()->GetIntInputPortValue(NUM_BINS_FOR_HISTOGRAM) != NULL ) {
+                    numBins = this->GetPortMapper()->GetIntInputPortValue(NUM_BINS_FOR_HISTOGRAM)->GetValue();
+                }
+                if( this->GetPortMapper()->GetIntInputPortValue(SMOOTH_BINS_FOR_HISTOGRAM) != NULL ) {
+                    smoothBins = this->GetPortMapper()->GetIntInputPortValue(SMOOTH_BINS_FOR_HISTOGRAM)->GetValue();
+                }
+                vtkDataArray* pixelsImageOne = this->GetImageDataInput(0)->GetPointData()->GetScalars();
+                vtkDataArray* pixelsImageTwo = this->GetImageDataInput(1)->GetPointData()->GetScalars();
+                if (this->GetInput( svkImageMathematics::MASK_FOR_MEDIAN )) {
+                    svkMriImageData* medianMask = svkMriImageData::SafeDownCast(this->GetImageDataInput(svkImageMathematics::MASK_FOR_MEDIAN) );
+                    pixelsImageOne = svkStatistics::GetMaskedPixels(svkMriImageData::SafeDownCast(this->GetImageDataInput(0)), medianMask);
+                    pixelsImageTwo = svkStatistics::GetMaskedPixels(svkMriImageData::SafeDownCast(this->GetImageDataInput(1)), medianMask);
+                }
+                vtkDataArray* histogramImageOne = svkStatistics::GetHistogram(pixelsImageOne, binSize, startBin, numBins, smoothBins);
+                vector<double> imageOneQuantiles = svkStatistics::ComputeQuantilesFromHistogram(20, histogramImageOne, binSize, startBin, numBins, smoothBins);
+                vtkDataArray* histogramImageTwo = svkStatistics::GetHistogram(pixelsImageTwo, binSize, startBin, numBins, smoothBins);
+                vector<double> imageTwoQuantiles = svkStatistics::ComputeQuantilesFromHistogram(20, histogramImageTwo, binSize, startBin, numBins, smoothBins);
+                // We are using floats here for consistency with historical results.
+                this->SetConstantK(((float)(imageTwoQuantiles[10]))/((float)(imageOneQuantiles[10])));
+            }
+
         }    
 
         //this->Superclass::Update(); 

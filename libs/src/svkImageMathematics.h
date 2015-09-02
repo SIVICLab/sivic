@@ -46,6 +46,7 @@
 
 #include <vtkImageMathematics.h>
 #include <svkAlgorithmPortMapper.h>
+#include <svkStatistics.h>
 
 
 namespace svk {
@@ -72,8 +73,15 @@ class svkImageMathematics : public vtkImageMathematics
             INPUT_IMAGE_2,
             MASK,
             ADD,
+            SUBTRACT,
             MULTIPLY,
             MULTIPLY_BY_SCALAR,
+            MULTIPLY_IMAGE_1_BY_IMAGE_2_MEDIAN,
+            NUM_BINS_FOR_HISTOGRAM,
+            BIN_SIZE_FOR_HISTOGRAM,
+            START_BIN_FOR_HISTOGRAM,
+            SMOOTH_BINS_FOR_HISTOGRAM,
+            MASK_FOR_MEDIAN,
             OUTPUT_SERIES_DESCRIPTION
         } svkImageMathematicsParameters;
 

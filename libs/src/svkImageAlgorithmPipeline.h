@@ -60,6 +60,7 @@
 #include <svkImageWriter.h>
 #include <vtkAlgorithmOutput.h>
 #include <svkImageMathematics.h>
+#include <svkImageCopy.h>
 
 namespace svk {
 

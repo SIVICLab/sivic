@@ -51,7 +51,7 @@
 #include <svkImageData.h>
 #include <svkMriImageData.h>
 #include <svkMrsImageData.h>
-#include <svkImageAlgorithm.h>
+#include <svkImageAlgorithmWithPortMapper.h>
 #include <svkDcmHeader.h>
 
 
@@ -65,16 +65,23 @@ using namespace std;
  *  Class to manage copying svkImageData as part of a pipeline, 
  *  updating the header and provenance.   
  */
-class svkImageCopy : public svkImageAlgorithm
+class svkImageCopy : public svkImageAlgorithmWithPortMapper
 {
 
     public:
 
+        enum {
+            INPUT_IMAGE = 0,
+            OUTPUT_SERIES_DESCRIPTION,
+            OUTPUT_SCALAR_TYPE,
+            ZERO_COPY
+        } svkImageCopyParameters;
+
         static svkImageCopy* New();
-        vtkTypeRevisionMacro( svkImageCopy, svkImageAlgorithm);
+        vtkTypeRevisionMacro( svkImageCopy, svkImageAlgorithmWithPortMapper);
 
         void                    SetSeriesDescription(string newSeriesDescription);
-        void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
+        void                    SetOutputDataType(int dataType);
         void                    SetZeroCopy(bool zeroCopy); 
 
 
@@ -95,11 +102,6 @@ class svkImageCopy : public svkImageAlgorithm
         //  Methods:
         virtual void                     UpdateProvenance();
         virtual void                     UpdateHeader();
-
-        //  Members:
-        string                           newSeriesDescription; 
-        svkDcmHeader::DcmPixelDataFormat dataType;
-        bool                             zeroCopy;    
 
 };
 
