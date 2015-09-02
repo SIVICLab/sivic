@@ -413,13 +413,17 @@ void svkMRSCombine::RedimensionData()
     double dcos[3][3]; 
     data->GetDcmHeader()->GetDataDcos( dcos ); 
 
+
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, data->GetDcmHeader()->GetNumberOfSlices()-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::TIME_INDEX, newNumTimePts-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::CHANNEL_INDEX, newNumChannels-1);
+
     data->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( 
         origin,
         voxelSpacing,
         dcos, 
-        data->GetDcmHeader()->GetNumberOfSlices(), 
-        newNumTimePts, 
-        newNumChannels  
+        &dimensionVector
     );
 
     if (this->GetDebug()) { 

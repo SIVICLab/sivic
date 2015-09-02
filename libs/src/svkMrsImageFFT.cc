@@ -396,8 +396,13 @@ void svkMrsImageFFT::UpdateOrigin()
         }
     }
 
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::TIME_INDEX, numTimePts-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::CHANNEL_INDEX, numCoils-1);
+
     data->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
-        toplc, pixelSpacing, dcos, numSlices, numTimePts, numCoils 
+        toplc, pixelSpacing, dcos, &dimensionVector
     );
 
     //  Now displace by 1/2 voxel to get Cell corner for svkImageDataOrigin:

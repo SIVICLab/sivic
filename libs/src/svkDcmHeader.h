@@ -806,9 +806,9 @@ class svkDcmHeader: public vtkObject
         void            InitPlaneOrientationMacro( double dcos[3][3] ); 
         void            InitPlaneOrientationMacro( vtkstd::string orientationString );
         void            InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::string sliceThickness );
-        void            InitMultiFrameDimensionModule( int numSlices, int numTimePts, int numCoils ); 
+        void            InitMultiFrameDimensionModuleDep( int numSlices, int numTimePts, int numCoils ); 
         void            InitMultiFrameDimensionModule( svkDcmHeader::DimensionVector* dimensionVector); 
-        void            InitPerFrameFunctionalGroupSequence(
+        void            InitPerFrameFunctionalGroupSequenceDep(
                                 double toplc[3], 
                                 double voxelSpacing[3],
                                 double dcos[3][3], 
@@ -914,7 +914,7 @@ class svkDcmHeader: public vtkObject
         void                        UpdateOrigin0();
         void                        UpdateDimensionIndexVector(); 
 
-        void                        InitPlanePositionMacro(
+        void                        InitPlanePositionMacroDep(
                                              double toplc[3], double voxelSpacing[3],
                                              double dcos[3][3], int numSlices, int numTimePts, int numCoils
                                     ); 
@@ -922,7 +922,7 @@ class svkDcmHeader: public vtkObject
                                              double toplc[3], double voxelSpacing[3],
                                              double dcos[3][3], svkDcmHeader::DimensionVector* dimensionVector); 
 
-        void                        InitFrameContentMacro( 
+        void                        InitFrameContentMacroDep( 
                                         int numSlices = -1, 
                                         int numTimePts = -1, 
                                         int numCoils  = -1

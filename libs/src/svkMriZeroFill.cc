@@ -280,7 +280,11 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     targetData->GetDcmHeader()->SetValue("Rows", newNumVoxels[1]);
     targetData->GetDcmHeader()->SetValue("NumberOfFrames", newNumVoxels[2]);
     targetData->GetDcmHeader()->InitPixelMeasuresMacro( pixelSpacingString, sliceThicknessString );
-    targetData->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( newOrigin, newSpacing, dcos, numSlices, 1, 1);
+
+    svkDcmHeader::DimensionVector dimensionVector = inputData->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices-1);
+    targetData->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( newOrigin, newSpacing, dcos, &dimensionVector); 
+
     targetData->DeepCopy(pad->GetOutput() );
     targetData->SyncVTKImageDataToDcmHeader(); 
 

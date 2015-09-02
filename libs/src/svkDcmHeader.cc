@@ -868,7 +868,7 @@ void svkDcmHeader::UpdateOrigin0()
 
 
 /*!
- *  Returns the number of time points from the DcmHeader.
+ *  Returns the number of coils the DcmHeader.
  *  Parses FrameContentSequence for the number of 
  *  coils, if specified in the Multi Frame Dimension Module
  */
@@ -1413,16 +1413,16 @@ void svkDcmHeader::InitPixelMeasuresMacro( vtkstd::string pixelSpacing, vtkstd::
  *  Initializes the Per Frame Functional Gruop Sequence and attributes derived from 
  *  method args, eg. dcos -> ImageOrientationPatient.  
  */
-void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double voxelSpacing[3],
+void svkDcmHeader::InitPerFrameFunctionalGroupSequenceDep(double toplc[3], double voxelSpacing[3],
                                              double dcos[3][3], int numSlices, int numTimePts, int numCoils)
 {
-
+    cout << "Deprecated" << endl;
     this->ClearSequence( "PerFrameFunctionalGroupsSequence" );
     this->SetValue( "NumberOfFrames", numSlices * numTimePts * numCoils );  
-    this->InitMultiFrameDimensionModule( numSlices, numTimePts, numCoils ); 
-    this->InitFrameContentMacro( numSlices, numTimePts, numCoils ); 
+    this->InitMultiFrameDimensionModuleDep( numSlices, numTimePts, numCoils ); 
+    this->InitFrameContentMacroDep( numSlices, numTimePts, numCoils ); 
     this->InitPlaneOrientationMacro( dcos ); 
-    this->InitPlanePositionMacro( toplc, voxelSpacing, dcos, numSlices, numTimePts, numCoils); 
+    this->InitPlanePositionMacroDep( toplc, voxelSpacing, dcos, numSlices, numTimePts, numCoils); 
 }
 
 
@@ -1454,8 +1454,10 @@ void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double v
 /*!
  *
  */
-void svkDcmHeader::InitMultiFrameDimensionModule( int numSlices, int numTimePts, int numCoils )
+void svkDcmHeader::InitMultiFrameDimensionModuleDep( int numSlices, int numTimePts, int numCoils )
 {
+
+    cout << "Deprecated" << endl;
 
     this->ClearSequence( "DimensionIndexSequence" );
 
@@ -1517,8 +1519,23 @@ void svkDcmHeader::InitMultiFrameDimensionModule( svkDcmHeader::DimensionVector*
             "DimensionDescriptionLabel",
             this->DimensionIndexLabelToString( dimLabel ) 
         );
-        indexCount++; 
 
+        unsigned short* dimensionIndexPointer = new unsigned short[2]; 
+        string hexstring; 
+        hexstring = "0x0020";
+        dimensionIndexPointer[0] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
+        hexstring = "0x0032";
+        dimensionIndexPointer[1] = (unsigned short)strtol(hexstring.c_str(), NULL, 0);
+
+        //this->AddSequenceItemElement(
+            //"DimensionIndexSequence",       //seqName
+            //indexCount,                     //seqItemPosition
+            //"DimensionIndexPointer",        //elementName
+            //dimensionIndexPointer,  
+            //2 
+        //); 
+
+        indexCount++; 
     }
 }
 
@@ -1731,9 +1748,11 @@ void svkDcmHeader::InitPlanePositionMacro(double toplc[3], double voxelSpacing[3
 /*!
  *
  */
-void svkDcmHeader::InitPlanePositionMacro(double toplc[3], double voxelSpacing[3],
+void svkDcmHeader::InitPlanePositionMacroDep(double toplc[3], double voxelSpacing[3],
                                              double dcos[3][3], int numSlices, int numTimePts, int numCoils)
 {
+
+    cout << "Deprecated" << endl;
 
     int frame = 0;
 
@@ -1875,8 +1894,10 @@ void svkDcmHeader::InitFrameContentMacro( svkDcmHeader::DimensionVector* dimensi
 /*!
  *  Mandatory, Must be a per-frame functional group
  */
-void svkDcmHeader::InitFrameContentMacro( int numSlices, int numTimePts, int numCoils )
+void svkDcmHeader::InitFrameContentMacroDep( int numSlices, int numTimePts, int numCoils )
 {
+
+    cout << "Deprecated" << endl;
 
     if ( numSlices < 0 ) {
         numSlices = this->GetNumberOfSlices(); 
@@ -2612,7 +2633,9 @@ int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, vt
         )
     );
 
-    mri->InitPerFrameFunctionalGroupSequence( toplc, pixelSpacing, dcos, numSlices, 1, 1 );
+    svkDcmHeader::DimensionVector dimensionVector = this->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices-1);
+    mri->InitPerFrameFunctionalGroupSequence( toplc, pixelSpacing, dcos, &dimensionVector );
 
     return 0; 
 }
@@ -3121,7 +3144,7 @@ void svkDcmHeader::Redimension(svkDcmHeader::DimensionVector* newDimensionVector
     //cout << "new voxels: " << newNumVoxels[0] << " " << newNumVoxels[1] << " " << newNumVoxels[2] << endl;
     //cout << "new toplc: " << newToplcOrigin[0] << " " << newToplcOrigin[1] << " " << newToplcOrigin[2] << endl;
        
-    this->InitPerFrameFunctionalGroupSequence(newToplcOrigin, pixelSpacing,  dcos, newDimensionVector) ; 
+    this->InitPerFrameFunctionalGroupSequence(newToplcOrigin, pixelSpacing, dcos, newDimensionVector) ; 
 
     this->InitMultiFrameDimensionModule( newDimensionVector ); 
 

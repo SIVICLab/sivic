@@ -180,8 +180,11 @@ void svkVarianUCSF2DcsiMapper::InitPerFrameFunctionalGroupMacros()
 
     } 
 
+    svkDcmHeader::DimensionVector dimensionVector = this->dcmHeader->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numFrames-1);
+
     this->dcmHeader->InitPerFrameFunctionalGroupSequence(
-        toplc, pixelSpacing, dcos, this->numFrames, 1, 1
+        toplc, pixelSpacing, dcos, &dimensionVector
     );
 
 }

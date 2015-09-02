@@ -1194,6 +1194,17 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
     for (int i = 0; i < numValues; i++) {
         inputArray[i] = (Uint16)values[i]; 
     }
+
+    //  If this is a DcmAttributeTag VR, then the short array represents the two fields of the element, but this is treated 
+    //  as a single 2 element array, so divide
+    //  numValues by 2 (see DcmAttributeTag: DcmAttributeTag::putUint16Array).  
+    //  There is already a 2* in the put even for numUints = 1. Very confusing
+    //  errorFlag = putValue(uintVals, 2 * sizeof(Uint16) * Uint32(numUints));
+    if ( element->ident() == EVR_AT ) {
+        cout << "EVR_AT, divide numValues by 2"<< endl;
+        numValues = numValues/2; 
+    }
+
     status = element->putUint16Array(inputArray, numValues);
     if (status.bad()) {
         cerr << "Error: could not insert element(" << status.text() << ")" << endl;

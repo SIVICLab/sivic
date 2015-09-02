@@ -396,7 +396,13 @@ int svkMrsZeroFill::RequestDataSpatial( vtkInformation* request, vtkInformationV
 
     // And construct the output target's spatial parameters.
     outputData->GetDcmHeader()->InitPixelMeasuresMacro( pixelSpacingString, sliceThicknessString );
-    outputData->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( newOrigin, newSpacing, dcos, newNumVoxels[2], numTimePts, numChannels);
+
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, newNumVoxels[2]-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::TIME_INDEX, numTimePts-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::CHANNEL_INDEX, numChannels-1);
+    outputData->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( newOrigin, newSpacing, dcos, &dimensionVector); 
+
     outputData->SyncVTKImageDataToDcmHeader();
     outputData->Modified();
 

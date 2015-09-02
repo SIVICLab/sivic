@@ -540,8 +540,14 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
     int numSlices = this->GetOutput()->GetDimensions()[2];
     int numTimepoints = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
     int numCoils = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfCoils();
+
+    svkDcmHeader::DimensionVector dimensionVector = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::TIME_INDEX, numTimepoints-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::CHANNEL_INDEX, numCoils-1);
+
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
-        newTlc, this->newSpacing, this->targetDcos, numSlices, numTimepoints, numCoils
+        newTlc, this->newSpacing, this->targetDcos, &dimensionVector
     );
 
     delete[] tlc0;

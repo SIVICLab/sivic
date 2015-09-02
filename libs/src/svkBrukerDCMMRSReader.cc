@@ -251,8 +251,12 @@ void svkBrukerDCMMRSReader::InitPerFrameFunctionalGroupMacros()
         toplc[i] = svkTypeUtils::StringToDouble( hdr->GetStringValue( "ImagePositionPatient", i ) );         
     } 
 
+    svkDcmHeader::DimensionVector dimensionVector = hdr->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numFrames-1);
+
+
     hdr->InitPerFrameFunctionalGroupSequence(
-        toplc, pixelSpacing, dcos, this->numFrames, 1, 1
+        toplc, pixelSpacing, dcos, &dimensionVector
     );
 
 }

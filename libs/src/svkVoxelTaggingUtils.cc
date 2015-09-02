@@ -396,5 +396,9 @@ void svkVoxelTaggingUtils::FixPerFrameFunctionalGroupSequence( svkImageData* vox
 	voxelTagData->GetDcmHeader()->GetOrigin( toplc, 0 );
 	int numVolumes = voxelTagData->GetPointData()->GetNumberOfArrays();
 	//Update the per frames functional group sequence.
-	voxelTagData->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(toplc, pixelSpacing, dcos, numSlices, numVolumes, 1);
+	
+    svkDcmHeader::DimensionVector dimensionVector = voxelTagData->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::TIME_INDEX, numVolumes-1);
+	voxelTagData->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(toplc, pixelSpacing, dcos, &dimensionVector); 
 }

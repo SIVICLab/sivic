@@ -153,7 +153,7 @@ void svkDcmtkUtils::setValue(DcmItem* item, const DcmTag &tag, const long int va
             break;
     
         default:
-            throw svkIncompatibleVR(string("setValue(float): ") +
+            throw svkIncompatibleVR(string("setValue(long): ") +
                             tag.getVR().getVRName());
     }
 }

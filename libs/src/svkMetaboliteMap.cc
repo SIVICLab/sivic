@@ -533,13 +533,21 @@ void svkMetaboliteMap::RedimensionData()
     int numCoils      = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetDcmHeader()->GetNumberOfCoils();
     int numTimePoints = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetDcmHeader()->GetNumberOfTimePoints();
 
+    svkDcmHeader::DimensionVector dimensionVector = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, hdr->GetNumberOfSlices()-1);
+    if ( numTimePoints > 1 ) {
+        svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::TIME_INDEX, numTimePoints-1);
+    } 
+
+    if ( numCoils > 1 ) {
+        svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::CHANNEL_INDEX, numCoils-1);
+    } 
+
     hdr->InitPerFrameFunctionalGroupSequence(
         origin,
         voxelSpacing,
         dcos,
-        hdr->GetNumberOfSlices(),
-        numTimePoints, 
-        numCoils
+        &dimensionVector
     );
 
 }

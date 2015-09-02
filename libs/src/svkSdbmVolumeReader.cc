@@ -768,14 +768,15 @@ void svkSdbmVolumeReader::InitPerFrameFunctionalGroupMacros()
     toplc[1] = -1 * this->GetHeaderValueAsFloat(shfMap, "tlhc_A"); 
     toplc[2] = this->GetHeaderValueAsFloat(shfMap, "tlhc_S"); 
 
+    svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::CHANNEL_INDEX, this->numCoils-1);
 
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
             toplc,
             voxelSpacing,
             this->dcos,
-            this->numSlices,
-            1,
-            this->numCoils
+            &dimensionVector
     );
 
 }

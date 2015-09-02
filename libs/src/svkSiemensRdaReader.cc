@@ -580,8 +580,10 @@ void svkSiemensRdaReader::InitPerFrameFunctionalGroupMacros()
     double dcos[3][3];
     this->GetDcosFromRda(dcos); 
 
+    svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices-1);
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
-        toplc, pixelSize, dcos, this->numSlices, 1, 1
+        toplc, pixelSize, dcos, &dimensionVector
     );
 }
 

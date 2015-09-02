@@ -227,8 +227,11 @@ void svkVarianUCSFEPSI2DMapper::InitPerFrameFunctionalGroupMacros()
 
     } 
 
+    svkDcmHeader::DimensionVector dimensionVector = this->dcmHeader->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numFrames-1);
+
     this->dcmHeader->InitPerFrameFunctionalGroupSequence(
-        toplc, pixelSpacing, dcos, this->numFrames, 1, 1
+        toplc, pixelSpacing, dcos, &dimensionVector
     );
 
 }
@@ -732,13 +735,16 @@ void svkVarianUCSFEPSI2DMapper::RedimensionData( svkImageData* data, int* numVox
     hdr->SetValue( "Rows", numVoxelsReordered[1]);
     hdr->SetValue( "DataPointColumns", numFreqPts );
 
+    svkDcmHeader::DimensionVector dimensionVector = hdr->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numVoxelsReordered[2]-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::TIME_INDEX, numTimePts-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::CHANNEL_INDEX, numCoils-1);
+
     data->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
         newOrigin,
         voxelSpacing,
         dcos,
-        numVoxelsReordered[2], 
-        numTimePts,
-        numCoils 
+        &dimensionVector
     );
 
     data->SyncVTKImageDataToDcmHeader(); 
