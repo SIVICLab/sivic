@@ -21,8 +21,15 @@ SIVIC is an open-source standards-based software framework and application suite
 </ul>
 <b>Command Line Tools:</b> 
 <ul>
+
     <li>
-        <a href="apps/svk_file_convert.html"/>svk_file_convert</a>
+        <a href="apps/svk_interpolate_spectra.html"/>svk_interpolate_spectra</a>
+    </li>
+    <li>
+        <a href="apps/svk_quick_view.html"/>svk_quick_view </a>
+    </li>
+    <li>
+        <a href="apps/svk_multi_view.html"/>svk_multi_view</a>
     </li>
     <li>
         <a href="apps/svk_gepfile_reader.html"/>svk_gepfile_reader</a>
@@ -31,52 +38,76 @@ SIVIC is an open-source standards-based software framework and application suite
         <a href="apps/svk_gepfile_anon.html"/>svk_gepfile_anon</a>
     </li>
     <li>
-        <a href="apps/svk_reslice.html"/>svk_reslice</a>
+        <a href="apps/svk_lcmodel_reader.html"/>svk_lcmodel_reader</a>
     </li>
     <li>
-        <a href="apps/svk_quantify.html"/>svk_quantify</a>
+        <a href="apps/svk_lcmodel_writer.html"/>svk_lcmodel_writer</a>
     </li>
     <li>
         <a href="apps/svk_spec_diff.html"/>svk_spec_diff</a>
     </li>
     <li>
-        <a href="apps/svk_dcmdump.html"/>svk_dcmdump</a>
+        <a href="apps/svk_integrate_dynamic.html"/>svk_integrate_dynamic</a>
     </li>
     <li>
-        <a href="apps/svk_quick_view.html"/>svk_quick_view</a>
+        <a href="apps/svk_quantify.html"/>svk_quantify</a>
     </li>
     <li>
-        <a href="apps/svk_multi_view.html"/>svk_multi_view</a>
+        <a href="apps/svk_zscore.html"/>svk_zscore</a>
     </li>
     <li>
-        <a href="apps/svk_get_filetype.html"/>svk_get_filetype</a>
+        <a href="apps/svk_extract_spec.html"/>svk_extract_spec</a>
     </li>
     <li>
         <a href="apps/svk_reslice.html"/>svk_reslice</a>
     </li>
     <li>
-        <a href="apps/svk_fft.html"/>svk_fft</a>
+        <a href="apps/svk_transform.html"/>svk_transform</a>
     </li>
     <li>
-        <a href="apps/svk_integrate_dynamic.html"/>svk_integrate_dynamic</a>
-    </li>
-    <li>
-        <a href="apps/svk_reorder_epsi.html"/>svk_reorder_epsi</a>
-    </li>
-    <li>
-        <a href="apps/svk_surface_area.html"/>svk_surface_area</a>
-    </li>
-    <li>
-        <a href="apps/svk_svrecon.html"/>svk_svrecon</a>
+        <a href="apps/svk_dcmdump.html"/>svk_dcmdump</a>
     </li>
     <li>
         <a href="apps/svk_point_selector.html"/>svk_point_selector</a>
     </li>
     <li>
-        <a href="apps/svk_create_dcmraw.html"/>svk_create_dcmraw</a>
+        <a href="apps/svk_phase_spec.html"/>svk_phase_spec</a>
     </li>
     <li>
-        <a href="apps/svk_met_kinetics.html"/>svk_met_kinetics</a>
+        <a href="apps/svk_fft.html"/>svk_fft</a>
+    </li>
+    <li>
+        <a href="apps/svk_scale_image.html"/>svk_scale_image</a>
+    </li>
+    <li>
+        <a href="apps/svk_image_mathematics.html"/>svk_image_mathematics</a>
+    </li>
+    <li>
+        <a href="apps/svk_average_spec.html"/>svk_average_spec</a>
+    </li>
+    <li>
+        <a href="apps/svk_noise.html"/>svk_noise</a>
+    </li>
+    <li>
+        <a href="apps/svk_mrs_combine.html"/>svk_mrs_combine</a>
+    </li>
+    <li>
+        <a href="apps/svk_apodize.html"/>svk_apodize</a>
+    </li>
+    <li>
+        <a href="apps/svk_image_stats.html"/>svk_image_stats</a>
+    </li>
+    <li>
+        <a href="apps/svk_image_pipeline.html"/>svk_image_pipeline</a>
+    </li>
+    <li>
+        <a href="apps/svk_peak_pick.html"/>svk_peak_pick</a>
+    </li>
+    <li>
+        <a href="apps/svk_volume_diff.html"/>svk_volume_diff</a>
+    </li>
+    <li>
+        <a href="apps/svk_psd_prescription_convert.html"/>svk_psd_prescription_convert</a>
     </li>
 
 
