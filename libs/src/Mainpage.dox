@@ -21,7 +21,9 @@ SIVIC is an open-source standards-based software framework and application suite
 </ul>
 <b>Command Line Tools:</b> 
 <ul>
-
+    <li>
+        <a href="apps/svk_file_convert.html"/>svk_file_convert</a>
+    </li>
     <li>
         <a href="apps/svk_interpolate_spectra.html"/>svk_interpolate_spectra</a>
     </li>
@@ -109,8 +111,6 @@ SIVIC is an open-source standards-based software framework and application suite
     <li>
         <a href="apps/svk_psd_prescription_convert.html"/>svk_psd_prescription_convert</a>
     </li>
-
-
 </ul>
 
 
