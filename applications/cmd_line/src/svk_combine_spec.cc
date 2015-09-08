@@ -38,7 +38,7 @@
  *      Beck Olson
  *      Stojan Maleschlijski
  *
- *  Utility application for extracting MRSI data from DCM and saving as DCM Image.
+ *  Utility application for combining DCM freq data into MRS DCM Image.
  */
 
 #include <vtkSmartPointer.h>
@@ -69,15 +69,16 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_extract_spec -i input_file_name -o output_root\n";
-    usemsg += "Extracts the MRS data (consisting of N frequency points for each voxel) from a ddf image and saves it as N DCM images, each containing a map of a single frequency point.\n";  
+    usemsg += "svk_combine_spec -i inputMRI_DCMs_root -t originalDDF -o output_ddf\n";
+    usemsg += "Combines the spectra found in the MRI_DCMs and uses the header from original DDF to create a combination DDF and save this in output_ddf\n";  
     usemsg += "\n";  
 
 
-    string inputFileName; 
+    string inputRoot;
+    string originalDDF ;
     string outputFileName;
 
-    svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::IDF;
+    svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DDF;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
@@ -94,11 +95,13 @@ int main (int argc, char** argv)
     while ( ( i = getopt_long(argc, argv, "i:o:t:usah", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
-                inputFileName.assign( optarg );
+                inputRoot.assign( optarg );
                 break;
             case 'o':
-                outputFileName.assign(optarg);
+                outputFileName.assign( optarg );
                 break;
+            case 't':
+                originalDDF.assign( optarg );
             default:
                 ;
         }
@@ -109,19 +112,24 @@ int main (int argc, char** argv)
 
     // ===============================================  
     //  validate that: 
-    //      an output name was supplied
+    //      an target name was supplied
 
     //      
     // ===============================================  
-    if ( argc != 0 ||  inputFileName.length() == 0  
+    if ( argc != 0 ||  inputRoot.length() == 0  
          || outputFileName.length() == 0 
-         || ( dataTypeOut != svkImageWriterFactory::IDF ) 
+         || originalDDF.length() == 0
+         || ( dataTypeOut != svkImageWriterFactory::DDF ) 
         ) {
             cout << usemsg << endl;
             exit(1); 
     }
 
-    cout << "file name: " << inputFileName << endl;
+    cout << "file name: " << originalDDF << endl;
+
+    // Get a reader for target DDF
+    // Get a reader for the MRI images
+    // Save the DDF object with a different name
 
      // ===============================================  
     //  Use a reader factory to get the correct reader  
@@ -129,17 +137,63 @@ int main (int argc, char** argv)
     // ===============================================  
     vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
 
-    svkImageReader2* mrsReader = readerFactory->CreateImageReader2(inputFileName.c_str());
+    svkImageReader2* mrsReader = readerFactory->CreateImageReader2(originalDDF.c_str());
     if (mrsReader == NULL) {
-        cerr << "Can not determine appropriate reader for test data: " << inputFileName << endl;
+        cerr << "Can not determine appropriate reader for test data: " << originalDDF << endl;
         exit(1);
     }
-    mrsReader->SetFileName( inputFileName.c_str() );
+    
+
+    mrsReader->SetFileName( originalDDF.c_str() );
     mrsReader->Update(); 
+
     svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( mrsReader->GetOutput() ); 
 
     //int numTimePts = mrsData->GetDcmHeader()->GetNumberOfTimePoints(); // Or Freq points?
     int numSpecPts = mrsData->GetDcmHeader()->GetIntValue("DataPointColumns" );
+
+    svkDcmHeader::DimensionVector fullDimensionVector = mrsData->GetDcmHeader()->GetDimensionIndexVector();
+    int numChannels = svkDcmHeader::GetDimensionVectorValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
+
+     if ( numChannels > 1 ) {
+        cerr << "Unsuported number of channels found in the header. Currently only 1 channel possible." << endl;
+        exit(1);
+    }
+
+    // include check for the channels
+    string currentInputFile;
+  //  vtkSmartPointer< svkImageReaderFactory > readerFactory2 = vtkSmartPointer< svkImageReaderFactory >::New(); 
+
+  //  numSpecPts = 1; 
+    for (int pnt = 0; pnt < numSpecPts; pnt++){
+        cout << "Specpoint:" << pnt << "/" << numSpecPts << endl;
+
+        char numstr[10];
+        sprintf(numstr, "%d", pnt);
+        currentInputFile.assign(inputRoot.c_str());
+        currentInputFile.append(numstr);
+        currentInputFile.append(".idf");
+       // currentOutputFile.append(".dcm");
+
+        svkImageReader2* mriReader = readerFactory->CreateImageReader2(currentInputFile.c_str());
+
+        if (mriReader == NULL) {
+            cerr << "Can not determine appropriate reader for input data: " << currentInputFile << endl;
+            exit(1);
+        }
+        mriReader->SetFileName( currentInputFile.c_str() );
+        mriReader->OnlyReadOneInputFile();
+ //       cout << currentInputFile <<endl;
+        mriReader->Update(); 
+
+        svkMriImageData* mriData = svkMriImageData::SafeDownCast( mriReader->GetOutput() ); 
+
+        // just real for now
+        mrsData->SetImage(mriData, pnt, 0); 
+        mriReader->Delete();
+
+    }
+ 
 
     // ===============================================   
     //  Use an svkImageWriterFactory to obtain the
@@ -153,37 +207,11 @@ int main (int argc, char** argv)
         exit(1);
     }
 
-    svkDcmHeader::DimensionVector fullDimensionVector = mrsData->GetDcmHeader()->GetDimensionIndexVector();
-    int numChannels = svkDcmHeader::GetDimensionVectorValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
 
-     if ( numChannels > 1 ) {
-        cerr << "Unsuported number of channels found in the header. Currently only 1 channel possible." << endl;
-        exit(1);
-    }
+    writer->SetFileName( outputFileName.c_str() );
+    writer->SetInput( svkMrsImageData::SafeDownCast( mrsData ) );
+    writer->Write();
 
-    // include check for the channels
-    string currentOutputFile;
-
-    svkMriImageData* tmpImage = svkMriImageData::New();
-   // numSpecPts = 1; 
-    for (int pnt = 0; pnt < numSpecPts; pnt++){
-        cout << "Specpoint:" << pnt << "/" << numSpecPts << endl;
-        // pseudo code
-        char numstr[10];
-        sprintf(numstr, "%d", pnt);
-        currentOutputFile.assign(outputFileName.c_str());
-        currentOutputFile.append(numstr);
-       // currentOutputFile.append(".dcm");
-
-        // just real for now
-        mrsData->GetImage(tmpImage, pnt, 0, 0, 0, ""); 
-
-        writer->SetFileName( currentOutputFile.c_str() );
-        writer->SetInput( svkMriImageData::SafeDownCast( tmpImage ) );
-        writer->Write();
-
-    }
-    tmpImage->Delete();
 
 // Obtain representaiton
 
