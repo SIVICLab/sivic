@@ -170,6 +170,7 @@ LINK_DIRECTORIES(
     ../../../libs/${PLATFORM}
     ../${PLATFORM}
     ${DCMTK_DIR}/lib
+    ${ADD_LINK_DIRS}
 )
 
 if ( BUILD_ITK )
