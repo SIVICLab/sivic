@@ -38,10 +38,10 @@
 # 
 
 
-if [ -d '/Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin' ]; then
-    plugin_path='/Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin/Contents/Resources'
-elif [ -d '/Applications/SIVIC.app' ]; then
+if [ -d '/Applications/SIVIC.app' ]; then
     plugin_path='/Applications/SIVIC.app/Contents/Resources'
+elif [ -d '/Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin' ]; then
+    plugin_path='/Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin/Contents/Resources'
 else
     plugin_path_tmp="/Users/${USER}/Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin/Contents/Resources"
     plugin_path=`echo ${plugin_path_tmp} | sed 's/ /\\ /'`
