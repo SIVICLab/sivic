@@ -55,7 +55,7 @@
 		921B50FB109BA6E500134C22 /* DicomSeries.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DicomSeries.h; sourceTree = "<group>"; };
 		921B50FC109BA6E500134C22 /* DicomImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DicomImage.h; sourceTree = "<group>"; };
 		921B50FD109BA6E500134C22 /* browserController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = browserController.h; sourceTree = "<group>"; };
-		921B5142109BAF0700134C22 /* sivic */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = sivic; path = ../sivic_app/Darwin_i386/sivic; sourceTree = SOURCE_ROOT; };
+		921B5142109BAF0700134C22 /* sivic */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = sivic; path = ../../working/release/trunk/applications/sivic_app/Darwin_i386/sivic; sourceTree = SOURCE_ROOT; };
 		92A2BAF810B3D48A00877E0F /* dicom.dic */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = dicom.dic; path = /usr/local/dicom/share/dcmtk/dicom.dic; sourceTree = "<absolute>"; };
 		92A2BD29109AAA8200A29D8F /* sivic.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = sivic.sh; sourceTree = "<group>"; };
 		92AB22E1187C8FB1001AF20E /* auto.tcl */ = {isa = PBXFileReference; lastKnownFileType = text; path = auto.tcl; sourceTree = "<group>"; };
@@ -901,7 +901,7 @@
 				PRODUCT_NAME = SIVIC_MRSI;
 				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
-				USER_HEADER_SEARCH_PATHS = "/Users/jasonc/freeware/clapack-3.2.1-CMAKE/INCLUDE /usr/X11R6/include /usr/local/include/KWWidgets /usr/local/include/vtk-5.6 /usr/local/dicom/include /Users/jasonc/sivic/trunk/libs/src /Users/jasonc/sivic/trunk/applications/sivic_app/src";
+				USER_HEADER_SEARCH_PATHS = "/Users/jasonc/freeware/clapack-3.2.1-CMAKE/INCLUDE /usr/X11R6/include /usr/local/include/KWWidgets /usr/local/include/vtk-5.6 /usr/local/dicom/include /Users/jasonc/sourceforge/sivic/trunk/libs/src /Users/jasonc/sourceforge/sivic/trunk/applications/sivic_app/src";
 				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = (
 					"-Wmost",
