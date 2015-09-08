@@ -95,7 +95,7 @@
     }  
 	
 	//Determine if the plugin is installed at the system or user level
- 	NSString* sivicPath = @"/Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin/Contents/Resources/sivic.sh";
+ 	NSString* sivicPath = @"/Applications/SIVIC.app/Contents/Resources/sivic.sh";
 	NSLog(@"TRY TO OPEN");
 	NSLog(@"%@", sivicPath);
 
