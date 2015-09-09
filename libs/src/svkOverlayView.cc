@@ -1709,6 +1709,44 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
             }
             reslicer->Delete();
         }
+
+        //================================================================================
+       
+        if( target->IsA("svk4DImageData") ) {
+            double targetOrigin[3]; 
+            if ( this->OriginShiftRequired(input, target, targetOrigin) == true ) {
+                cout << "SHIFT ORIGIN!!!" << endl;
+                //  the origin shift doesn't work right now, so just upsample image data slightly
+                //
+                
+                //svkObliqueReslice* reslicer3 = svkObliqueReslice::New();
+                //reslicer3->SetInput( input );
+                //reslicer3->SetTargetDcosFromImage( target );
+                //reslicer3->SetOutputOrigin( targetOrigin );
+                //reslicer3->Update();
+                ////double oo[3]; 
+                ////reslicer3->GetOutputOrigin(oo); 
+                ////cout << "INPUT " << *input << endl;
+                ////cout << "OO : " << oo[0]  << " " << oo[1] << " " << oo[2] << endl;
+                //this->SetInputPostReslice( reslicer3->GetOutput(), targetIndex );
+                //didReslice = true;
+                //reslicer3->Delete(); 
+
+                float magX = 1; 
+                float magY = 1; 
+                float magZ = 1.01; 
+                svkObliqueReslice* reslicer3 = svkObliqueReslice::New();
+                reslicer3->SetInput( input );
+                reslicer3->SetInterpolationMode( VTK_RESLICE_NEAREST );
+                reslicer3->SetTargetDcosFromImage( target );
+                reslicer3->SetMagnificationFactors( magX, magY, 1./magZ);
+                reslicer3->Update();
+                this->SetInputPostReslice( reslicer3->GetOutput(), targetIndex );
+                didReslice = true;
+                reslicer3->Delete(); 
+            }  
+        }  
+
         //  check to see if image needs to be upsampled to a higher resolution: 
         if( target->IsA("svk4DImageData") ) {
             float imageToSpecSliceThickness = this->GetImageToSpecSliceRatio(input, target); 
@@ -1735,6 +1773,63 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
         cout << "RESLICED INDEX: " << targetIndex << endl;
     }
     return didReslice;
+}
+
+
+/*!  
+ *  If the slice thickness fo the image and spec are the same but offset by 1/2 voxel,
+ *  then reslice to have the same origins: 
+ *  Check the delta by projeting both onto the normal    
+ */
+bool svkOverlayView::OriginShiftRequired(svkImageData* input, svkImageData* target, double* targetOrigin)
+{
+
+    bool originShiftRequired = false; 
+
+    double specPixelSpacing[3];
+    target->GetDcmHeader()->GetPixelSpacing( specPixelSpacing );
+    double imagePixelSpacing[3];
+    input->GetDcmHeader()->GetPixelSpacing( imagePixelSpacing );
+    double tol = .001; 
+
+    cout << "FABS: " <<  fabs( specPixelSpacing[2] - imagePixelSpacing[2] ) << endl; 
+    if ( fabs( specPixelSpacing[2] - imagePixelSpacing[2] ) < tol ) {
+
+        double normal[3];
+        input->GetSliceNormal( normal, this->orientation);
+
+        int slice = 0;
+        double specCenter[3];
+        double imagCenter[3];
+        target->GetSliceCenter( slice, specCenter, this->orientation );
+        input->GetSliceCenter(  slice, imagCenter, this->orientation );
+            
+        cout << "NML: " << normal[0] << " " << normal[1] << " " << normal[2] << endl;
+        cout << "SSC: " << specCenter[0] << " " << specCenter[1] << " " << specCenter[2] << endl;
+        cout << "ISC: " << imagCenter[0] << " " << imagCenter[1] << " " << imagCenter[2] << endl;
+        
+        double projectedSpecCenter = vtkMath::Dot( specCenter, normal );
+        double projectedImagCenter = vtkMath::Dot( imagCenter, normal );
+        cout << "PSPEC: " << projectedSpecCenter << endl;
+        cout << "PIMAG: " << projectedImagCenter << endl;
+    
+        //  number of slice thickness between the 2 origins: 
+        //  If the number is within tol of 1/2 slice thickness then shift origin:  
+        double normalizedSliceCenterDiff = fabs( projectedSpecCenter - projectedImagCenter )  /  specPixelSpacing[2] ; 
+        int    intDiff = (int) normalizedSliceCenterDiff; 
+        cout << "NSCD: " << normalizedSliceCenterDiff <<  " " << intDiff << endl; 
+            
+        cout << "BOO:  " <<   fabs( normalizedSliceCenterDiff - intDiff  ) << endl;
+        cout << "BOO2: " <<   fabs(  fabs( normalizedSliceCenterDiff - intDiff ) - .5  )   << endl;
+        if (  fabs(  fabs( normalizedSliceCenterDiff - intDiff ) - .5 )  < tol ) {
+            cout << "NEED TOSHIFT ORIGIN: " <<  normalizedSliceCenterDiff << endl;
+            originShiftRequired = true; 
+            targetOrigin[0] = specCenter[0];     
+            targetOrigin[1] = specCenter[1];     
+            targetOrigin[2] = specCenter[2];     
+        }
+    }
+    return originShiftRequired; 
 }
 
 

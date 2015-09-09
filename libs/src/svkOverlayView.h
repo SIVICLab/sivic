@@ -249,6 +249,8 @@ class svkOverlayView : public svkDataView
         void                            SetSliceOverlay();
         bool                            ResliceImage(svkImageData* input, svkImageData* target, int targetIndex);
         float                           GetImageToSpecSliceRatio(svkImageData* input, svkImageData* target); 
+        bool                            OriginShiftRequired(svkImageData* input, svkImageData* target, double* targetOrigin); 
+
 
         double                          overlayOpacity;
         double                          overlayThreshold;
