@@ -299,17 +299,34 @@ void svkObliqueReslice::SetMagnificationFactors( float x, float y, float z)
     this->magnification[2] = z; 
 }
 
+
+/*!
+ *
+ */
 void svkObliqueReslice::SetOutputSpacing( double spacing[3] )
 {
     this->reslicer->SetOutputSpacing(spacing);
 }
 
 
+/*!
+ *
+ */
 void svkObliqueReslice::SetOutputOrigin( double origin[3] )
 {
     this->reslicer->SetOutputOrigin(origin);
 }
 
+
+/*!
+ *
+ */
+void svkObliqueReslice::GetOutputOrigin( double origin[3] )
+{
+    origin[0] = this->reslicer->GetOutputOrigin()[0];
+    origin[1] = this->reslicer->GetOutputOrigin()[1];
+    origin[2] = this->reslicer->GetOutputOrigin()[2];
+}
 
 void svkObliqueReslice::SetOutputExtent( int extent[6] )
 {

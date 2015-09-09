@@ -88,6 +88,7 @@ class svkObliqueReslice : public svkImageAlgorithmWithPortMapper
         void                    SetMagnificationFactors( float x, float y, float z); 
         void                    SetOutputSpacing( double spacing[3] ); 
         void                    SetOutputOrigin( double origin[3] ); 
+        void                    GetOutputOrigin( double origin[3] ); 
         void                    SetOutputExtent( int extent[6] );
         void                    SetInterpolationMode(int interpolationMode);
         svkInt*                 GetInterpolationMode();
