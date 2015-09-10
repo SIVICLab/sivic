@@ -74,18 +74,19 @@ class svkLCModelCSVReader : public svkLCModelReader
         svkLCModelCSVReader();
         ~svkLCModelCSVReader();
 
-        virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
-        virtual void                             ExecuteData(vtkDataObject *output);
+        virtual int             FillOutputPortInformation(int port, vtkInformation* info);
+        virtual void            ExecuteData(vtkDataObject *output);
 
 
     private:
 
         //  Methods:
-        void            ParseCSVFiles();
+        void                    ParseCSVFiles();
 
         //  Members:
         void*                                   pixelData; 
-        vtkDoubleArray*                         csvPixelValues; 
+        //vtkDoubleArray*                         csvPixelValues; 
+        vtkAbstractArray*                         csvPixelValues; 
         vtkIntArray*                            csvColIndex; 
         vtkIntArray*                            csvRowIndex; 
 

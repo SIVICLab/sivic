@@ -1792,7 +1792,7 @@ bool svkOverlayView::OriginShiftRequired(svkImageData* input, svkImageData* targ
     input->GetDcmHeader()->GetPixelSpacing( imagePixelSpacing );
     double tol = .001; 
 
-    cout << "FABS: " <<  fabs( specPixelSpacing[2] - imagePixelSpacing[2] ) << endl; 
+    //cout << "FABS: " <<  fabs( specPixelSpacing[2] - imagePixelSpacing[2] ) << endl; 
     if ( fabs( specPixelSpacing[2] - imagePixelSpacing[2] ) < tol ) {
 
         double normal[3];
@@ -1804,23 +1804,23 @@ bool svkOverlayView::OriginShiftRequired(svkImageData* input, svkImageData* targ
         target->GetSliceCenter( slice, specCenter, this->orientation );
         input->GetSliceCenter(  slice, imagCenter, this->orientation );
             
-        cout << "NML: " << normal[0] << " " << normal[1] << " " << normal[2] << endl;
-        cout << "SSC: " << specCenter[0] << " " << specCenter[1] << " " << specCenter[2] << endl;
-        cout << "ISC: " << imagCenter[0] << " " << imagCenter[1] << " " << imagCenter[2] << endl;
+        //cout << "NML: " << normal[0] << " " << normal[1] << " " << normal[2] << endl;
+        //cout << "SSC: " << specCenter[0] << " " << specCenter[1] << " " << specCenter[2] << endl;
+        //cout << "ISC: " << imagCenter[0] << " " << imagCenter[1] << " " << imagCenter[2] << endl;
         
         double projectedSpecCenter = vtkMath::Dot( specCenter, normal );
         double projectedImagCenter = vtkMath::Dot( imagCenter, normal );
-        cout << "PSPEC: " << projectedSpecCenter << endl;
-        cout << "PIMAG: " << projectedImagCenter << endl;
+        //cout << "PSPEC: " << projectedSpecCenter << endl;
+        //cout << "PIMAG: " << projectedImagCenter << endl;
     
         //  number of slice thickness between the 2 origins: 
         //  If the number is within tol of 1/2 slice thickness then shift origin:  
         double normalizedSliceCenterDiff = fabs( projectedSpecCenter - projectedImagCenter )  /  specPixelSpacing[2] ; 
         int    intDiff = (int) normalizedSliceCenterDiff; 
-        cout << "NSCD: " << normalizedSliceCenterDiff <<  " " << intDiff << endl; 
+        //cout << "NSCD: " << normalizedSliceCenterDiff <<  " " << intDiff << endl; 
             
-        cout << "BOO:  " <<   fabs( normalizedSliceCenterDiff - intDiff  ) << endl;
-        cout << "BOO2: " <<   fabs(  fabs( normalizedSliceCenterDiff - intDiff ) - .5  )   << endl;
+        //cout << "BOO:  " <<   fabs( normalizedSliceCenterDiff - intDiff  ) << endl;
+        //cout << "BOO2: " <<   fabs(  fabs( normalizedSliceCenterDiff - intDiff ) - .5  )   << endl;
         if (  fabs(  fabs( normalizedSliceCenterDiff - intDiff ) - .5 )  < tol ) {
             cout << "NEED TOSHIFT ORIGIN: " <<  normalizedSliceCenterDiff << endl;
             originShiftRequired = true; 

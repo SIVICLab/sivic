@@ -211,8 +211,11 @@ void svkLCModelCSVReader::ParseCSVFiles()
         }
 
         vtkDelimitedTextReader* csvReader = vtkDelimitedTextReader::New();
-        csvReader->SetFieldDelimiterCharacters(", ");
-        csvReader->SetStringDelimiter(' ');
+        csvReader->SetFieldDelimiterCharacters(",");
+        //csvReader->SetStringDelimiter(', ');
+        // produces | Col|
+//csvReader->SetFieldDelimiterCharacters(",");
+//csvReader->SetStringDelimiter(',');
         csvReader->SetMergeConsecutiveDelimiters(true); 
         csvReader->SetHaveHeaders(true);
         //csvReader->DetectNumericColumnsOn();
@@ -234,9 +237,15 @@ void svkLCModelCSVReader::ParseCSVFiles()
 
         //cout << "NC: " << numCols  << endl; 
         //cout << "NR: " << numRows  << endl; 
-        //for ( int i = 0; i < numCols; i++ ) {
-            ////cout << "COL NAME: |" << table->GetColumnName(i) << "|" << endl;
-        //}
+        for ( int i = 0; i < numCols; i++ ) {
+            string colName( table->GetColumn(i)->GetName() ); 
+            table->GetColumn(i)->SetName( this->StripWhite( colName ).c_str() ); 
+            //cout << "COL NAME: |" << table->GetColumnName(i) << "|" << endl;
+            //cout << table->GetColumn(i)->GetName() << endl; 
+            //cout << *table->GetColumn(i) << endl; 
+        }
+
+
 
         //  =============================
         //  initialize the row vals 
@@ -265,13 +274,16 @@ void svkLCModelCSVReader::ParseCSVFiles()
         //  initialize the pixel values
         //  =============================
         string colName = this->metName; 
-        if (!vtkDoubleArray::SafeDownCast(table->GetColumnByName(colName.c_str() )) ) {
+        if ( !table->GetColumnByName(colName.c_str() ) ) {
             cout << "Warning:  no column " << colName << endl;
             //exit(1); 
             continue; 
         } else {
-            this->csvPixelValues = vtkDoubleArray::SafeDownCast( table->GetColumnByName(colName.c_str() )) ; 
+            this->csvPixelValues = table->GetColumnByName(colName.c_str() ) ; 
         }
+        int csvPixelDataType = this->csvPixelValues->GetDataType();  
+
+        
 
         //  =============================
         //  initialize a slice index from 
@@ -290,11 +302,18 @@ void svkLCModelCSVReader::ParseCSVFiles()
         //  the metMapArray for that index.  
 
 
+        float voxelValue;
         svkDcmHeader::DimensionVector indexVector = dimVector; 
+        //cout << "NUM ROWS: " << numRows << endl;
         for (int i = 0; i < numRows; i++ ) {
             int rowIndex     = this->csvRowIndex->GetTuple1(i) - 1;
             int colIndex     = this->csvColIndex->GetTuple1(i) - 1;
-            float voxelValue =  this->csvPixelValues->GetTuple1(i) ;
+            if ( csvPixelDataType == VTK_DOUBLE ) {
+                voxelValue = vtkDoubleArray::SafeDownCast( this->csvPixelValues )->GetTuple1(i) ;
+            } else if ( csvPixelDataType == VTK_INT ) {
+                voxelValue = vtkIntArray::SafeDownCast( this->csvPixelValues )->GetTuple1(i) ;
+            }
+            //cout << "PV: " << voxelValue << endl;
             svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::COL_INDEX, colIndex);
             svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, rowIndex);
             svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, sliceIndex);

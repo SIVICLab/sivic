@@ -142,8 +142,8 @@ void svkLCModelCoordReader::ExecuteData(vtkDataObject* output)
 
     // Make sure the output data has the correct dimmensions: 
     this->GlobFileNames();
-    this->InitNumFreqPointsFromCoordFile( this->GetFileNames()->GetValue(0) ); 
-    this->InitPPMRangeFromCoordFile( this->GetFileNames()->GetValue(0) ); 
+    this->InitNumFreqPointsFromCoordFile(); 
+    this->InitPPMRangeFromCoordFile(); 
     this->CheckOutputPtsPerPPM(); 
 
     //  Create the template data object for fitted spectra to be written to
@@ -176,97 +176,129 @@ void svkLCModelCoordReader::ExecuteData(vtkDataObject* output)
 /*
  *  Init the number of points in the output data from coord file: 
  */
-void svkLCModelCoordReader::InitNumFreqPointsFromCoordFile( string coordFileName )
+void svkLCModelCoordReader::InitNumFreqPointsFromCoordFile()
 {
-    struct stat fs;
-    if ( stat( coordFileName.c_str(), &fs) ) {
-        vtkErrorMacro("Unable to open file " << coordFileName );
-        return;
-    }
-    vtkDelimitedTextReader* coordReader = vtkDelimitedTextReader::New();
-    coordReader->SetFieldDelimiterCharacters("  ");
-    coordReader->SetStringDelimiter(' ');
-    coordReader->SetMergeConsecutiveDelimiters(true); 
-    coordReader->SetHaveHeaders(true);
-    coordReader->SetFileName( coordFileName.c_str() ); 
-    coordReader->Update();
 
-    vtkTable* table = coordReader->GetOutput();
-    int numCols = table->GetNumberOfColumns() ; 
-    int numRows = table->GetNumberOfRows() ; 
+    //  Loop through files until the num points on ppm scale can be detected.  For 
+    //  error voxels, this info isn't written to the file, so it may be necessar to try 
+    //  a few. 
+    bool foundNumFreqPoints = false; 
+    for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
-    //  parse through the rows to find specific pieces of data; 
-    int rowID;  
-    string rowString = ""; 
+        string coordFileName = this->GetFileNames()->GetValue( fileIndex ); 
 
-    int numFreqPoints;
-    for ( rowID = 0; rowID < numRows; rowID++ ) {
+        struct stat fs;
+        if ( stat( coordFileName.c_str(), &fs) ) {
+            vtkErrorMacro("Unable to open file " << coordFileName );
+            return;
+        }
+        vtkDelimitedTextReader* coordReader = vtkDelimitedTextReader::New();
+        coordReader->SetFieldDelimiterCharacters("  ");
+        coordReader->SetStringDelimiter(' ');
+        coordReader->SetMergeConsecutiveDelimiters(true); 
+        coordReader->SetHaveHeaders(true);
+        coordReader->SetFileName( coordFileName.c_str() ); 
+        coordReader->Update();
 
-        //  Get a row: 
-        this->GetDataRow(table, rowID, &rowString);  
+        vtkTable* table = coordReader->GetOutput();
+        int numCols = table->GetNumberOfColumns() ; 
+        int numRows = table->GetNumberOfRows() ; 
 
-        //  First, find the number of frequency points in fitted spectra: 
-        string pointsDelimiter = "points on ppm-axis"; 
-        size_t foundPtsPos = rowString.find( pointsDelimiter ); 
-        if ( foundPtsPos != string::npos) {
-            //  num points is the first word on this line: 
-            numFreqPoints = table->GetRow(rowID)->GetValue(0).ToInt(); 
-            //cout << "ROW: " << rowString << endl;
-            cout << "COORD POINTS: " << numFreqPoints << endl;
-            this->numCoordFreqPoints = numFreqPoints; 
+        //  parse through the rows to find specific pieces of data; 
+        int rowID;  
+        string rowString = ""; 
+
+        int numFreqPoints;
+        for ( rowID = 0; rowID < numRows; rowID++ ) {
+
+            //  Get a row: 
+            this->GetDataRow(table, rowID, &rowString);  
+
+            //  First, find the number of frequency points in fitted spectra: 
+            string pointsDelimiter = "points on ppm-axis"; 
+            size_t foundPtsPos = rowString.find( pointsDelimiter ); 
+            if ( foundPtsPos != string::npos) {
+                //  num points is the first word on this line: 
+                numFreqPoints = table->GetRow(rowID)->GetValue(0).ToInt(); 
+                //cout << "ROW: " << rowString << endl;
+                cout << "COORD POINTS: " << numFreqPoints << endl;
+                this->numCoordFreqPoints = numFreqPoints; 
+                foundNumFreqPoints = true;
+            }
+        }
+        coordReader->Delete(); 
+        if ( foundNumFreqPoints == true ) {
+            break;     
         }
     }
-    coordReader->Delete(); 
+    if ( foundNumFreqPoints == false ) {
+        cout << "ERROR(svkLCModelCoordReader): Could not determine the number of points on ppm-axis" << endl;
+        exit(1); 
+    }
 }
 
 
 /*
  *  Parse PPM range from coord file: 
  */
-void svkLCModelCoordReader::InitPPMRangeFromCoordFile( string fileName )
+void svkLCModelCoordReader::InitPPMRangeFromCoordFile()
 {
+    //  Loop through files until the num points on ppm scale can be detected.  For 
+    //  error voxels, this info isn't written to the file, so it may be necessar to try 
+    //  a few. 
+    bool foundPPMRangeEnd   = false; 
+    bool foundPPMRangeStart = false; 
+    for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
-    ifstream* input = new ifstream();
-    input->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
-    input->open( fileName.c_str(), ifstream::in );
+        string fileName = this->GetFileNames()->GetValue( fileIndex ); 
 
-    if ( ! input->is_open() ) {
-        throw runtime_error( "Could not open coord file: " + fileName );
-    }
+        ifstream* input = new ifstream();
+        input->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+        input->open( fileName.c_str(), ifstream::in );
 
-    istringstream* iss = new istringstream();
-    bool keepReading = true; 
-    size_t pos; 
-    while ( keepReading ) {
-
-        try {
-            svkFileUtils::ReadLine(input, iss); 
-            string aLine = iss->str(); 
-
-            if ( aLine.find("PPMEND") != string::npos) { 
-                size_t posVal = aLine.find("="); 
-                if ( posVal != string::npos ) {
-                    //cout << "aLine: found: " << aLine << endl;
-                    //cout << "sub" <<  aLine.substr(posVal+2) << endl; 
-                    this->ppmEnd = svkTypeUtils::StringToFloat( aLine.substr(posVal+2) ); 
-                }
-            } else if ( aLine.find("PPMST") != string::npos) { 
-                size_t posVal = aLine.find("="); 
-                if ( posVal != string::npos ) {
-                    //cout << "aLine: found: " << aLine << endl;
-                    //cout << "sub" <<  aLine.substr(posVal+2) << endl; 
-                    this->ppmStart = svkTypeUtils::StringToFloat( aLine.substr(posVal+2) ); 
-                }
-            }
-        } catch (const exception& e) {
-            keepReading = false; 
+        if ( ! input->is_open() ) {
+            throw runtime_error( "Could not open coord file: " + fileName );
         }
-    }
 
-    delete iss; 
-    input->close(); 
-    delete input; 
-    cout << "ST: " << this->ppmStart << " - " << this->ppmEnd << endl; 
+        istringstream* iss = new istringstream();
+        bool keepReading = true; 
+        size_t pos; 
+        while ( keepReading ) {
+
+            try {
+                svkFileUtils::ReadLine(input, iss); 
+                string aLine = iss->str(); 
+
+                if ( aLine.find("PPMEND") != string::npos) { 
+                    size_t posVal = aLine.find("="); 
+                    if ( posVal != string::npos ) {
+                        //cout << "aLine: found: " << aLine << endl;
+                        //cout << "sub" <<  aLine.substr(posVal+2) << endl; 
+                        this->ppmEnd = svkTypeUtils::StringToFloat( aLine.substr(posVal+2) ); 
+                        foundPPMRangeEnd   = true; 
+                    }
+                } else if ( aLine.find("PPMST") != string::npos) { 
+                    size_t posVal = aLine.find("="); 
+                    if ( posVal != string::npos ) {
+                        //cout << "aLine: found: " << aLine << endl;
+                        //cout << "sub" <<  aLine.substr(posVal+2) << endl; 
+                        this->ppmStart = svkTypeUtils::StringToFloat( aLine.substr(posVal+2) ); 
+                        foundPPMRangeStart = true; 
+                    }
+                }
+            } catch (const exception& e) {
+                keepReading = false; 
+            }
+        }
+
+        delete iss; 
+        input->close(); 
+        delete input; 
+        if ( foundPPMRangeStart && foundPPMRangeEnd ) {
+            break; 
+        }
+        cout << "ST: " << this->ppmStart << " - " << this->ppmEnd << endl; 
+    }
 }
 
 
@@ -304,6 +336,7 @@ void svkLCModelCoordReader::CheckOutputPtsPerPPM()
         zeroFill->SetInput( this->GetImageDataInput(0) );
         zeroFill->SetNumberOfSpecPoints( numSpecPtsIn * zeroFillFactor ); 
         zeroFill->Update(); 
+        zeroFill->Delete();
     }
     point->Delete(); 
 }
@@ -407,7 +440,6 @@ void svkLCModelCoordReader::ParseCoordFiles()
     int endPt = static_cast<int>(point->ConvertPosUnits(this->ppmEnd, svkSpecPoint::PPM, svkSpecPoint::PTS));
     cout << "Start->End " << startPt << " " << endPt << endl;
     point->Delete();
-
     float* coordIntensities = new float[this->numCoordFreqPoints];     
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
@@ -419,7 +451,12 @@ void svkLCModelCoordReader::ParseCoordFiles()
             vtkErrorMacro("Unable to open file " << coordFileName );
             return;
         }
-        vtkDelimitedTextReader* coordReader = vtkDelimitedTextReader::New();
+        vtkDelimitedTextReader* coordReader = NULL; 
+        coordReader = vtkDelimitedTextReader::New();
+        if ( coordReader == NULL ) {
+            cout << "ERROR: could not allocate coord reader" << endl;
+            exit(1);    
+        }
         coordReader->SetFieldDelimiterCharacters("  ");
         coordReader->SetStringDelimiter(' ');
         coordReader->SetMergeConsecutiveDelimiters(true); 
@@ -490,7 +527,7 @@ void svkLCModelCoordReader::ParseCoordFiles()
             //spectrumOut->SetTuple( freqIndex, tuple );
             spectrumOut->SetTuple( (startPt + freqIndex - 1), tuple );
         }
-
+        cout << "HErE: " << fileIndex << endl;
         coordReader->Delete(); 
     } 
 

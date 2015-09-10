@@ -83,8 +83,8 @@ class svkLCModelCoordReader : public svkLCModelReader
         //  Methods:
         void            ParseCoordFiles();
         void            GetDataRow(vtkTable* table, int rowID, string* rowString); 
-        void            InitPPMRangeFromCoordFile( string fileName ); 
-        void            InitNumFreqPointsFromCoordFile( string fileName ); 
+        void            InitPPMRangeFromCoordFile(); 
+        void            InitNumFreqPointsFromCoordFile(); 
         void            CheckOutputPtsPerPPM(); 
         int             FindStartOfIntensityData( vtkTable* coordDataTable ); 
         void            ParseIntensityValuesFromCoord( 
