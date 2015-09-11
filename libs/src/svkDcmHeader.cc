@@ -2479,6 +2479,8 @@ int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, st
 
     svkDcmHeader::DimensionVector dimensionVector = this->GetDimensionIndexVector();
     svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::TIME_INDEX, 0);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::CHANNEL_INDEX, 0);
     mri->InitPerFrameFunctionalGroupSequence( toplc, pixelSpacing, dcos, &dimensionVector );
 
     return 0; 
