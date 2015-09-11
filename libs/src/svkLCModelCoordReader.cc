@@ -402,6 +402,7 @@ int svkLCModelCoordReader::FindStartOfIntensityData( vtkTable* coordDataTable )
 
     int rowID;  
     string rowString = ""; 
+    bool foundDelimiter = false; 
     for ( rowID = 0; rowID < numRows; rowID++ ) {
 
         //  Get a row: 
@@ -412,8 +413,12 @@ int svkLCModelCoordReader::FindStartOfIntensityData( vtkTable* coordDataTable )
         string dataFitDelimiter = this->dataStartDelimiter;
         size_t foundDataPos = rowString.find( dataFitDelimiter ); 
         if ( foundDataPos != string::npos) {
+            foundDelimiter = true; 
             break; 
         }
+    }
+    if ( foundDelimiter == false ) {
+        cout << "WARNING, could not find the coord file delimiter " << this->dataStartDelimiter << endl;
     }
     return rowID; 
 }
@@ -444,7 +449,10 @@ void svkLCModelCoordReader::ParseCoordFiles()
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
         string coordFileName = this->GetFileNames()->GetValue( fileIndex );
-        cout << "Coord NAME: " << fileIndex << " " << coordFileName << endl;
+        vtkDebugMacro( << this->GetClassName() << " Coord NAME: " << fileIndex << " " << coordFileName);
+        if ( this->GetDebug() ) {
+            cout  << " Coord NAME: " << fileIndex << " " << coordFileName << endl;
+        }
  
         struct stat fs;
         if ( stat( coordFileName.c_str(), &fs) ) {
@@ -527,7 +535,6 @@ void svkLCModelCoordReader::ParseCoordFiles()
             //spectrumOut->SetTuple( freqIndex, tuple );
             spectrumOut->SetTuple( (startPt + freqIndex - 1), tuple );
         }
-        cout << "HErE: " << fileIndex << endl;
         coordReader->Delete(); 
     } 
 
