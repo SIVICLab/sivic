@@ -233,9 +233,13 @@ int main (int argc, char** argv)
         vector<string> coordStrings;  
         coordStrings.push_back("phased data points follow"); 
         coordStrings.push_back("fit to the data follow"); 
+        coordStrings.push_back("NAA Conc");     //multiple spaces are removed from coord file when parsed so on 1 space between NAA and Conc.
+        coordStrings.push_back("PCh Conc");     //  shoudl probably do this programatically to merge consecutive delimiters of coordStrings
         vector<string> suffixStrings;  
         suffixStrings.push_back("_LCM_phased"); 
         suffixStrings.push_back("_LCM_fit"); 
+        suffixStrings.push_back("_LCM_NAA"); 
+        suffixStrings.push_back("_LCM_PCh"); 
         for ( int i = 0; i < coordStrings.size(); i++ ) {
 
             svkLCModelCoordReader* coordReader = svkLCModelCoordReader::New(); 
