@@ -1714,8 +1714,9 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
        
         if( target->IsA("svk4DImageData") ) {
             double targetOrigin[3]; 
+            float imageToSpecSliceThickness;
             if ( this->OriginShiftRequired(input, target, targetOrigin) == true ) {
-                cout << "SHIFT ORIGIN!!!" << endl;
+                cout << "SHIFT ORIGIN!!! spacings identical and 1/2 voxel center diff" << endl;
                 //  the origin shift doesn't work right now, so just upsample image data slightly
                 //
                 
@@ -1734,7 +1735,8 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
 
                 float magX = 1; 
                 float magY = 1; 
-                float magZ = 1.01; 
+                float magZ = 1.01; //this decreases the imag slice spacing.  
+                cout << "reduce image slice spacing by factor of: " << magZ << endl;
                 svkObliqueReslice* reslicer3 = svkObliqueReslice::New();
                 reslicer3->SetInput( input );
                 reslicer3->SetInterpolationMode( VTK_RESLICE_NEAREST );
@@ -1744,18 +1746,13 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
                 this->SetInputPostReslice( reslicer3->GetOutput(), targetIndex );
                 didReslice = true;
                 reslicer3->Delete(); 
-            }  
-        }  
-
-        //  check to see if image needs to be upsampled to a higher resolution: 
-        if( target->IsA("svk4DImageData") ) {
-            float imageToSpecSliceThickness = this->GetImageToSpecSliceRatio(input, target); 
-            if ( imageToSpecSliceThickness > 1 ) { 
+            }  else if ( ( imageToSpecSliceThickness = this->GetImageToSpecSliceRatio(input, target) ) > 1. ) {
+                //  check to see if image needs to be upsampled to a higher resolution: 
                 float magX = 1; 
                 float magY = 1; 
                 float magZ = imageToSpecSliceThickness; 
                 cout << "MRS slice thicknes < MRI slice thickness.  Upsample MRI slice thickness " << endl;
-                cout << "magZ = " << magZ << endl;
+                cout << "upsample factor: = " << magZ << endl;
                 svkObliqueReslice* reslicer2 = svkObliqueReslice::New();
                 reslicer2->SetInput( input );
                 reslicer2->SetInterpolationMode( VTK_RESLICE_NEAREST );
@@ -1793,6 +1790,7 @@ bool svkOverlayView::OriginShiftRequired(svkImageData* input, svkImageData* targ
     double tol = .001; 
 
     //cout << "FABS: " <<  fabs( specPixelSpacing[2] - imagePixelSpacing[2] ) << endl; 
+    //  spacing of both images is the same within tolerance
     if ( fabs( specPixelSpacing[2] - imagePixelSpacing[2] ) < tol ) {
 
         double normal[3];
@@ -1817,10 +1815,8 @@ bool svkOverlayView::OriginShiftRequired(svkImageData* input, svkImageData* targ
         //  If the number is within tol of 1/2 slice thickness then shift origin:  
         double normalizedSliceCenterDiff = fabs( projectedSpecCenter - projectedImagCenter )  /  specPixelSpacing[2] ; 
         int    intDiff = (int) normalizedSliceCenterDiff; 
-        //cout << "NSCD: " << normalizedSliceCenterDiff <<  " " << intDiff << endl; 
             
-        //cout << "BOO:  " <<   fabs( normalizedSliceCenterDiff - intDiff  ) << endl;
-        //cout << "BOO2: " <<   fabs(  fabs( normalizedSliceCenterDiff - intDiff ) - .5  )   << endl;
+        //  centers are off by 1/2 a voxel within tolerance
         if (  fabs(  fabs( normalizedSliceCenterDiff - intDiff ) - .5 )  < tol ) {
             cout << "NEED TOSHIFT ORIGIN: " <<  normalizedSliceCenterDiff << endl;
             originShiftRequired = true; 
@@ -1845,7 +1841,6 @@ float svkOverlayView::GetImageToSpecSliceRatio(svkImageData* input, svkImageData
     target->GetDcmHeader()->GetPixelSpacing( pixelSpacing );
     float specSliceThickness  = pixelSpacing[2]; 
     imageToSpecSliceThickness = imageSliceThickness / specSliceThickness; 
-    
     return imageToSpecSliceThickness; 
 }
 
