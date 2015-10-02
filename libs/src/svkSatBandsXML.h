@@ -130,6 +130,7 @@ class svkSatBandsXML: public vtkObject
                                     ); 
 
         int                         ConvertDatToXML( string rootName ); 
+        int                         ConvertDatToXML2( string rootName ); 
 
         vtkXMLDataElement*          GetXMLDataElement(); 
 
@@ -165,6 +166,7 @@ class svkSatBandsXML: public vtkObject
         void                        TransposeNormals( float normals[3][3] );
         void                        PSDAutSatAnglesToNormal( float angle1, float angle2, float normal[3] ); 
         int                         InitPressBoxFromDat( string rootName ); 
+        int                         InitPressBoxFromDat2( string rootName );
         int                         InitSatsFromDat( string rootName ); 
         void                        SortNormalArrayRLAPSI( float  normals[3][3] ); 
         // out of 6 plane representation
@@ -173,7 +175,7 @@ class svkSatBandsXML: public vtkObject
                                         float pressThickness[3], 
                                         float pressAngles[3] 
                                     ); 
-        // out of 2 plane representation
+        // out of 3 plane representation
         void                        GetPRESSBoxParametersVer20( 
                                         float pressOrigin[3], 
                                         float pressThickness[3], 

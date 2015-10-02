@@ -70,18 +70,22 @@ int main (int argc, char** argv)
     usemsg += "                                             this is the prefix to:                      \n"; 
     usemsg += "                                                 _press_box.dat or _sat_bands.dat        \n"; 
     usemsg += "   -o            output_prescription_root    Root name of output prescriptin file.       \n";  
+    usemsg += "   -x            version_of_xml              Numerical version of the XML file:          \n"; 
+    usemsg += "                                             1: 6 plane representation of the PRESS box  \n";
+    usemsg += "                                             2: 3 plane representation of the PRESS box  \n"; 
     usemsg += "   -v                                        Verbose output.                             \n";
     usemsg += "   -h                                        Print help mesage.                          \n";  
     usemsg += "                                                                                         \n";  
     usemsg += "Converts the input prescription file to an XML prescription.                             \n";  
     usemsg += "                                                                                         \n";  
-    usemsg += "EXAMPLE: svk_psd_prescription_convert -i P12345 -o P12345                                \n";  
+    usemsg += "EXAMPLE: svk_psd_prescription_convert -i P12345 -o P12345 -x 1                           \n";  
     usemsg += "this would read in P12345_press_box.dat and P12345_sat_bands.dat and export              \n";  
-    usemsg += "P12345_box_satbands_atlasbased.xml                                                       \n";  
+    usemsg += "P12345_box_satbands_atlasbased.xml defining the PRESS box with 6 planes.                  \n";  
     usemsg += "                                                                                         \n";  
 
     string  inputRoot; 
     string  outputRoot; 
+    string  xmlVer;
     bool    verbose = false;
 
     enum FLAG_NAME {
@@ -100,13 +104,16 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:o:t:hv", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:o:x:t:hv", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
                 inputRoot.assign( optarg );
                 break;
             case 'o':
                 outputRoot.assign(optarg);
+                break;
+            case 'x':
+                xmlVer.assign(optarg);
                 break;
             case 'v':
                 verbose = true;
@@ -126,11 +133,14 @@ int main (int argc, char** argv)
     /*
      *  Validate required input: 
      */
-    if ( argc != 0 || inputRoot.length() == 0 || outputRoot.length() == 0 ) { 
+    if ( argc != 0 || inputRoot.length() == 0 || outputRoot.length() == 0 || xmlVer.length() == 0) { 
         cout << usemsg << endl;
         exit(1); 
     }
-
+    if ( !xmlVer.compare("1") && !xmlVer.compare("2")) { 
+        cout << "Unsupported XML version provided." << endl;
+        exit(1); 
+    }
     if( verbose ) {
         cout << inputRoot << endl;
         cout << outputRoot << endl;
@@ -147,18 +157,22 @@ int main (int argc, char** argv)
     xmlFileName.append(xmlExtension); 
 
     int status = xml->SetXMLFileName( xmlFileName.c_str() );
-
+    cout << "here:status" << status <<endl;
     if ( status == 1 ) {
         //  couldn't read XML version, so check for legacy version of .dat file: 
         cout << "WARNING: couldn't read XML prescription file: " << xmlFileName  << endl;
-        status = xml->ConvertDatToXML( inputRoot ); 
+        if ( !xmlVer.compare("1")){
+            status = xml->ConvertDatToXML( inputRoot ); 
+        }
+        else{
+            status = xml->ConvertDatToXML2( inputRoot ); 
+        }
     }
 
     if ( status != 0 ) {
         cout << "ERROR: couldn't read legacy prescription files." << endl;
         return status; 
     }
-
     //  Write out new XML version of prescription file: 
     string outputXMLFileName = outputRoot;   
     outputXMLFileName.append(xmlSuffix); 
