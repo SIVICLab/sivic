@@ -151,6 +151,7 @@ class vtkSivicController : public vtkObject
         void                       SetMainWindow( vtkKWWindowBase* mainWindow );
         //void                       SetView( svkInspectingWidget* );
         void                       SetViewRenderingWidget( sivicViewRenderingWidget* viewRenderingWidget);
+        int*                       GetRenderWindowSize();  
         void                       SetProcessingWidget( sivicProcessingWidget* processingWidget );
         void                       SetPhaseWidget( sivicPhaseWidget* phaseWidget );
         void                       SetPreprocessingWidget( sivicPreprocessingWidget* preprocessingWidget );

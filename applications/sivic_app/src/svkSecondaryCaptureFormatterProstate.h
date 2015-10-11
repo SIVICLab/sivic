@@ -85,6 +85,15 @@ class svkSecondaryCaptureFormatterProstate : public svkSecondaryCaptureFormatter
         ~svkSecondaryCaptureFormatterProstate();
 
 
+        virtual void WriteCombinedWithSummaryCapture( 
+                vtkImageWriter* writer, 
+                string fileNameString, 
+                int outputOption, 
+                svkImageData* outputImage, 
+                bool print, 
+                bool preview = 0 );
+
+
     protected:
         virtual void RenderCombinedImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
         virtual void PopulateInfoText( vtkTextActor* specText1, vtkTextActor* specText2, vtkTextActor* imageText );

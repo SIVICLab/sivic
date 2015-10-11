@@ -2264,6 +2264,16 @@ void vtkSivicController::WriteSpectraCapture( vtkImageWriter* writer, string fil
 }
 
 
+/*
+ *
+ */
+int* vtkSivicController::GetRenderWindowSize()
+{
+    return this->viewRenderingWidget->specViewerWidget->GetRenderWindow()->GetSize(); 
+}
+
+
+
 #if defined( SVK_USE_GL2PS )
 /*!
  *

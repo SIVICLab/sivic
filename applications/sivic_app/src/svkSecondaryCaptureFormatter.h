@@ -110,7 +110,13 @@ class svkSecondaryCaptureFormatter : public vtkObject
         void WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
         void WriteCombinedCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
         void WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, int instanceNumber = 0 );
-        void WriteCombinedWithSummaryCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, bool preview = 0 );
+        virtual void WriteCombinedWithSummaryCapture( 
+                vtkImageWriter* writer, 
+                string fileNameString, 
+                int outputOption, 
+                svkImageData* outputImage, 
+                bool print, 
+                bool preview = 0 );
 
     protected:
 
@@ -124,7 +130,13 @@ class svkSecondaryCaptureFormatter : public vtkObject
         svkDcmHeader::Orientation      orientation;
 
         virtual void PopulateInfoText( vtkTextActor* specText1, vtkTextActor* specText2, vtkTextActor* imageText );
-        virtual void RenderCombinedImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
+        virtual void RenderCombinedImage( 
+            int firstFrame, 
+            int lastFrame, 
+            svkImageData* outputImage, 
+            bool flipImage, 
+            bool print );
+        static void PreviewImage( svkImageData* image );
 
     private:
    
@@ -134,7 +146,6 @@ class svkSecondaryCaptureFormatter : public vtkObject
         void RenderSpectraImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage );
         void RenderSummaryImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
         void PrintImages( string fileNameString, int startImage, int endImage );
-        static void PreviewImage( svkImageData* image );
 
 
 };

@@ -58,6 +58,7 @@ svkSecondaryCaptureFormatter::svkSecondaryCaptureFormatter()
     spectraHalfSize[0] = 500;
     spectraHalfSize[1] = 500;
     this->orientation = svkDcmHeader::AXIAL;
+    this->aspect = LANDSCAPE;
 }
 
 
