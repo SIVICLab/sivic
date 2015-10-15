@@ -388,7 +388,7 @@ int svkSatBandsXML::InitPressBoxFromDat2( string rootName )
 
                     vtkXMLDataElement* distanceElement = vtkXMLDataElement::New();
                     distanceString = svkTypeUtils::DoubleToString( distance ); 
-                    distanceElement->SetName("distance"); 
+                    distanceElement->SetName("distance_from_origin"); 
                     distanceElement->SetCharacterData(distanceString.c_str(), distanceString.length()); 
                     satBandElement->AddNestedElement( distanceElement );
                 }
@@ -714,7 +714,7 @@ int svkSatBandsXML::InitPressBoxFromDat( string rootName )
 
                     vtkXMLDataElement* distanceElement = vtkXMLDataElement::New();
                     distanceString = svkTypeUtils::DoubleToString( distance ); 
-                    distanceElement->SetName("distanceFromOrigin"); 
+                    distanceElement->SetName("distance_from_origin"); 
                     distanceElement->SetCharacterData(distanceString.c_str(), distanceString.length()); 
                     satBandElement->AddNestedElement( distanceElement ); 
 
@@ -874,7 +874,7 @@ int svkSatBandsXML::InitSatsFromDat( string rootName )
                     satBandElement->AddNestedElement( thicknessElement ); 
 
                     vtkXMLDataElement* distanceElement = vtkXMLDataElement::New();
-                    distanceElement->SetName("distance"); 
+                    distanceElement->SetName("distance_from_origin"); 
                     distanceElement->SetCharacterData(distance.c_str(), distance.length()); 
                     satBandElement->AddNestedElement( distanceElement ); 
                 
@@ -1030,7 +1030,7 @@ void svkSatBandsXML::InitSatBandInfo( vtkXMLDataElement* satBandElement, string*
     *thickness = this->GetFloatElementData( satBandElement->
                     FindNestedElementWithName( "thickness" ) ); 
     *distance  = this->GetFloatElementData( satBandElement->
-                    FindNestedElementWithName( "distance" ) ); 
+                    FindNestedElementWithName( "distance_from_origin" ) ); 
             
     if( this->GetDebug() ) {
         //satBandElement->PrintXML(cout, vtkIndent());
