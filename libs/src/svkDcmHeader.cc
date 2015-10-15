@@ -3278,6 +3278,10 @@ void svkDcmHeader::SwapDimensionIndexLabels(svkDcmHeader::DimensionVector* dimen
     int dimSize1; 
     int dimSize2; 
 
+    // Booleans to determine if one of the swap dimensions is missing 
+    bool label1IsMissing = false;
+    bool label2IsMissing = false;
+
     for ( int i = 0; i < dimensionVector->size(); i++ ) {
 
         svkDcmHeader::DimensionIndexLabel dimLabel = (*(*dimensionVector)[i].begin()).first;
@@ -3294,9 +3298,17 @@ void svkDcmHeader::SwapDimensionIndexLabels(svkDcmHeader::DimensionVector* dimen
 
     }
 
-    if ( index1 == -100 || index2 == -100 ) {
+    // Check for missing labels 
+    if ( index1 == -100 && index2 == -100 ) {
+        // If both labels are missing we can't swap them.
         cout << "ERROR, can't find dimension labels" << endl;
         exit(1); 
+    } else if ( index1 == -100 ) {
+        index1 = dimensionVector->size();
+        label1IsMissing = true;
+    } else if ( index2 == -100 ) {
+        index2 = dimensionVector->size();
+        label2IsMissing = true;
     }
 
     map < svkDcmHeader::DimensionIndexLabel, int> targetRow1; 
@@ -3304,9 +3316,26 @@ void svkDcmHeader::SwapDimensionIndexLabels(svkDcmHeader::DimensionVector* dimen
     targetRow1.insert( pair<svkDcmHeader::DimensionIndexLabel, int>( label1, dimSize2 ) );
     targetRow2.insert( pair<svkDcmHeader::DimensionIndexLabel, int>( label2, dimSize1 ) );
 
+    // If one of the indecies doesn't exist, add it before swapping.
+    if( label1IsMissing ) {
+        map < svkDcmHeader::DimensionIndexLabel, int> row1;
+        row1.insert( pair<svkDcmHeader::DimensionIndexLabel, int>( label1, 1 ) );
+        dimensionVector->push_back(row1);
+    } else if( label2IsMissing ) {
+        map < svkDcmHeader::DimensionIndexLabel, int> row2;
+        row2.insert( pair<svkDcmHeader::DimensionIndexLabel, int>( label2, 1 ) );
+        dimensionVector->push_back(row2);
+    }
+    svkDcmHeader::PrintDimensionIndexVector( dimensionVector );
     (*dimensionVector)[index1].swap( targetRow2 ); 
     (*dimensionVector)[index2].swap( targetRow1 ); 
     
+    svkDcmHeader::PrintDimensionIndexVector( dimensionVector );
+
+    // If one label is missing then the last dimension should be removed
+    if(label1IsMissing || label2IsMissing) {
+        dimensionVector->pop_back();
+    }
 }
                            
 

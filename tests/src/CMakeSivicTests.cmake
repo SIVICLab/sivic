@@ -1166,6 +1166,20 @@ ADD_TEST(${TEST_NAME}  perl ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --diff ${DIF
 SET_TESTS_PROPERTIES(TEST_FLOAT_DCMENH_2_DCMENH_DIFF PROPERTIES DEPENDS TEST_MCHK_FLOAT_DCMENH_2_DCMENH)
 
 ########################
+#   multi-channel IDF 2 multi-timepoint DICOM Enhanced test: 
+########################
+SET( TEST_NAME TEST_MCHK_CHANNEL_TO_TIME)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+file( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/multi_volume)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_channel2time -i ${TEST_CASE_ROOT}/input/vol_1.idf -o ${TEST_RESULTS_PATH}/out )
+
+SET( TEST_NAME TEST_CHANNEL_TO_TIME_DIFF)
+ADD_TEST(${TEST_NAME}  perl ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --diff ${DIFF_COMMAND} --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/output_channel2time --bin_dir ${DCMTK_DIR}/bin --diff_opts ${DIFF_OPT_DCM_STR} )
+SET_TESTS_PROPERTIES(TEST_CHANNEL_TO_TIME_DIFF PROPERTIES DEPENDS TEST_MCHK_CHANNEL_TO_TIME)
+
+########################
 #   Reorder flyback data
 ########################
 SET( TEST_NAME TEST_MCHK_REORDER_FLYBACK)
