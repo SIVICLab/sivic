@@ -83,7 +83,9 @@ int main (int argc, char** argv)
     usemsg += "   --csv     name        Name of csv file to convert.                                \n";
     usemsg += "                         (specify 1 and all will be read.)                           \n";
     usemsg += "   --coord   name        Name of coord file to convert                               \n";
-    usemsg += "                         (specify 1 and all will be read.)                           \n";
+    usemsg += "                         (specify 1 coord file and all will be read.)                \n";
+    usemsg += "                         By default background, fit and phased data will be read.    \n";
+    usemsg += "                         To read a specific fitted basis component use --met as well.\n";
     usemsg += "   --met     met_name    Name of met to convert (specify 1 and all will be read.)    \n";
     usemsg += "   -b                    Set up for selection box analysis only.                     \n";
     usemsg += "   -h                    Print this help mesage.                                     \n";  
@@ -92,6 +94,10 @@ int main (int argc, char** argv)
     usemsg += "LCModel .coord files and converts the fitted spectra and phased data into MRS DCM    \n";  
     usemsg += "output files.                                                                        \n";  
     usemsg += "                                                                                     \n";  
+    usemsg += "Examples:                                                                            \n";  
+    usemsg += "read in fitted NAA fit from coord files.                                             \n";  
+    usemsg += "svk_lcmodel_reader -i t1234.ddf --coord t1234_c1_r1_s1_sl4_10-8.coord -o t1234       \n";  
+    usemsg += "                   -o t1234 -b --met 'NAA Conc'                                      \n";  
 
     string  inputFileName; 
     string  outputFileName;
@@ -154,7 +160,7 @@ int main (int argc, char** argv)
         argc != 0 ||  inputFileName.length() == 0  
         || outputFileName.length() == 0 
         || ( csvFileName.length() == 0 && coordFileName.length() == 0 ) 
-        || metName.length() == 0 
+        || ( csvFileName.length() != 0 && metName.length() == 0)    // metName required for csv parsing
     ) {
         cout << usemsg << endl;
         exit(1); 
@@ -228,18 +234,35 @@ int main (int argc, char** argv)
 
 
         // ===============================================  
-        //  Write out the phased input data, fitted data, and residual: 
+        //  Write out the phased input data, fitted data, and residual, or the explicitly specified basis fit: 
         // ===============================================  
         vector<string> coordStrings;  
-        coordStrings.push_back("phased data points follow"); 
-        coordStrings.push_back("fit to the data follow"); 
-        coordStrings.push_back("NAA Conc");     //multiple spaces are removed from coord file when parsed so on 1 space between NAA and Conc.
-        coordStrings.push_back("PCh Conc");     //  shoudl probably do this programatically to merge consecutive delimiters of coordStrings
         vector<string> suffixStrings;  
-        suffixStrings.push_back("_LCM_phased"); 
-        suffixStrings.push_back("_LCM_fit"); 
-        suffixStrings.push_back("_LCM_NAA"); 
-        suffixStrings.push_back("_LCM_PCh"); 
+        if ( metName.length() != 0 ) {
+            string newString;  
+            int nPos;
+            nPos = metName.find_first_of(" ");
+            if ( nPos != string::npos ) {
+                newString = "_LCM_"; 
+                newString.append ( metName.substr(0,nPos) );
+            } else {
+                newString = metName; 
+            }
+
+            coordStrings.push_back("metName");     
+            suffixStrings.push_back( newString ); 
+        } else {
+            coordStrings.push_back("phased data points follow"); 
+            coordStrings.push_back("fit to the data follow"); 
+            coordStrings.push_back("background values follow");
+            suffixStrings.push_back("_LCM_phased"); 
+            suffixStrings.push_back("_LCM_fit"); 
+            suffixStrings.push_back("_LCM_baseline"); 
+        }
+        //coordStrings.push_back("NAA Conc");     //multiple spaces are removed from coord file when parsed so on 1 space between NAA and Conc.
+        //coordStrings.push_back("PCh Conc");     //  shoudl probably do this programatically to merge consecutive delimiters of coordStrings
+        //suffixStrings.push_back("_LCM_NAA"); 
+        //suffixStrings.push_back("_LCM_PCh"); 
         for ( int i = 0; i < coordStrings.size(); i++ ) {
 
             svkLCModelCoordReader* coordReader = svkLCModelCoordReader::New(); 
