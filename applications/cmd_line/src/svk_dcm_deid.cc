@@ -182,7 +182,9 @@ int main (int argc, char** argv)
         image->GetDcmHeader()->Deidentify(svkDcmHeader::PHI_DEIDENTIFIED, deidID); 
     } else if ( patDeidID.length() !=0 ) {
         image->GetDcmHeader()->Deidentify(svkDcmHeader::PHI_DEIDENTIFIED, patDeidID, studyDeidID); 
-    } 
+    } else {
+        image->GetDcmHeader()->Deidentify(svkDcmHeader::PHI_DEIDENTIFIED); 
+    }
     if ( studyUID.size() == 0 ) {
         image->GetDcmHeader()->InsertUniqueUID("StudyInstanceUID");
     } else {
