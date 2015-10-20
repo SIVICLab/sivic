@@ -74,18 +74,20 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_spec_diff -t test_file_name -r ref_file_name -o output_file_name  \n"; 
-    usemsg += "                   [ -v ] \n";
-    usemsg += "                   [ -h ] \n";
-    usemsg += "\n";  
-    usemsg += "   -t    name   Name of file to test. \n"; 
-    usemsg += "   -r    name   Name of reference file. \n"; 
-    usemsg += "   -o    name   Name of outputfile. \n";
-    usemsg += "   -v           verbose  print diff pixels   \n"; 
-    usemsg += "   -h           Print this help mesage. \n";  
-    usemsg += "\n";  
-    usemsg += "Application that diffs two MRS data files. \n"; 
-    usemsg += "\n";  
+    usemsg += "svk_spec_diff --s1 test_file_name --s2 ref_file_name -o output_file_name \n"; 
+    usemsg += "              [ -t dataTypeOut ] [ -vh ]                                 \n";
+    usemsg += "                                                                         \n";  
+    usemsg += "   --s1  name                Name of MRS file 1.                         \n"; 
+    usemsg += "   --s2  name                Name of MRS file 2.                         \n"; 
+    usemsg += "   -o    name                Name of outputfile.                         \n";
+    usemsg += "   -t    output_data_type    Output data type:                           \n";
+    usemsg += "                                     2 = UCSF DDF (default)              \n";
+    usemsg += "                                     4 = DICOM_MRS                       \n";
+    usemsg += "   -v           verbose  print diff pixels                               \n"; 
+    usemsg += "   -h           Print this help mesage.                                  \n";  
+    usemsg += "                                                                         \n";  
+    usemsg += "Application that diffs two MRS data files: s2 - s1.                      \n"; 
+    usemsg += "                                                                         \n";  
 
 
     string testFileName; 
@@ -97,12 +99,16 @@ int main (int argc, char** argv)
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
+        FLAG_SPEC_1 = 0,
+        FLAG_SPEC_2 
     }; 
 
 
     static struct option long_options[] =
     {
         /* This option sets a flag. */
+        {"s1",          required_argument, NULL,  FLAG_SPEC_1},
+        {"s2",          required_argument, NULL,  FLAG_SPEC_2},
         {0, 0, 0, 0}
     };
 
@@ -111,16 +117,19 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "t:r:o:hv", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "t:o:hv", long_options, &option_index) ) != EOF) {
         switch (i) {
-            case 't':
+            case FLAG_SPEC_1:
                 testFileName.assign( optarg );
                 break;
-            case 'r':
+            case FLAG_SPEC_2:
                 refFileName.assign( optarg );
                 break;
             case 'o':
                 outputFileName.assign(optarg);
+                break;
+            case 't':
+                dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
                 break;
             case 'v':
                 isVerbose = true; 
@@ -163,7 +172,7 @@ int main (int argc, char** argv)
     // ===============================================  
     vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
 
-    svkImageReader2* testReader = svkDdfVolumeReader::SafeDownCast( readerFactory->CreateImageReader2(testFileName.c_str()) );
+    svkImageReader2* testReader = readerFactory->CreateImageReader2(testFileName.c_str());
     if (testReader == NULL) {
         cerr << "Can not determine appropriate reader for test data: " << testFileName << endl;
         exit(1);
@@ -173,7 +182,7 @@ int main (int argc, char** argv)
     svkMrsImageData* testData = svkMrsImageData::SafeDownCast( testReader->GetOutput() ); 
 
 
-    svkImageReader2* refReader = svkDdfVolumeReader::SafeDownCast( readerFactory->CreateImageReader2(refFileName.c_str()) );
+    svkImageReader2* refReader = readerFactory->CreateImageReader2(refFileName.c_str());
     if (refReader == NULL) {
         cerr << "Can not determine appropriate reader for ref data: " << refFileName << endl;
         exit(1);
