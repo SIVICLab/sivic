@@ -69,11 +69,11 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_extract_spec -i input_file_name -o output_root\n";
-    usemsg += "Extracts the MRS data (consisting of N frequency points for each voxel) from a ddf image and saves it as N DCM images, each containing a map of a single frequency point.\n";  
+    usemsg += "svk_extract_spec -i input_file_name -o output_root -c\n";
+    usemsg += "Extracts the MRS data (consisting of N frequency points for each voxel) from a ddf image and saves it as N DCM images, each containing a map of a single frequency point. -c specifies to convert both real and imag components. Default is real only.\n";  
     usemsg += "\n";  
 
-
+    bool   handleComplex = false;
     string inputFileName; 
     string outputFileName;
 
@@ -91,13 +91,16 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "i:o:t:usah", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:ch", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
                 break;
             case 'o':
                 outputFileName.assign(optarg);
+                break;
+            case 'c':
+                handleComplex = true;
                 break;
             default:
                 ;
@@ -172,15 +175,27 @@ int main (int argc, char** argv)
         char numstr[10];
         sprintf(numstr, "%d", pnt);
         currentOutputFile.assign(outputFileName.c_str());
+        currentOutputFile.append("_real");
         currentOutputFile.append(numstr);
        // currentOutputFile.append(".dcm");
-
         // just real for now
         mrsData->GetImage(tmpImage, pnt, 0, 0, 0, ""); 
 
         writer->SetFileName( currentOutputFile.c_str() );
         writer->SetInput( svkMriImageData::SafeDownCast( tmpImage ) );
         writer->Write();
+        if ( handleComplex ){
+            currentOutputFile.assign(outputFileName.c_str());
+            currentOutputFile.append("_imag");
+            currentOutputFile.append(numstr);
+
+            // imaginary
+            mrsData->GetImage(tmpImage, pnt, 0, 0, 1, ""); 
+
+            writer->SetFileName( currentOutputFile.c_str() );
+            writer->SetInput( svkMriImageData::SafeDownCast( tmpImage ) );
+            writer->Write();
+        }
 
     }
     tmpImage->Delete();

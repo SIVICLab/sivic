@@ -117,6 +117,7 @@ class svk4DImageData: public svkImageData
                                  int vtkDataType = VTK_VOID );
 
         void           SetImage( vtkImageData* image, int point,  int* indexArray = NULL );
+        void           SetImageComponent( vtkImageData* image, int point,  int* indexArray = NULL, int component = 0 ); //real
         virtual void   UpdateRange(int component );
         int            GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation);
         virtual void   EstimateDataRange( 

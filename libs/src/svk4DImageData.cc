@@ -391,7 +391,9 @@ void  svk4DImageData::GetImage(  svkImageData* image,
 						pixelData->SetComponent(linearIndex - firstIndex, j, array->GetComponent(point, j ));
 					}
 				} else {
-					pixelData->SetComponent(linearIndex - firstIndex, component, array->GetComponent( point, component));
+                    // Second parameter should be hardcoded to 0 if only one component is required, since pixelData contains 
+                    // only one component and setting the imaginary part (1) creates unexpected results.
+					pixelData->SetComponent(linearIndex - firstIndex, 0, array->GetComponent( point, component));
 				}
 				linearIndex++;
 			}
@@ -519,6 +521,39 @@ void  svk4DImageData::SetImage( vtkImageData* image, int point, int* indexArray 
         }
     }
 }
+
+
+/*!
+ *   Method will set a spectral point from a vtkImageData object representing
+ *   a single point in the spectra. This is usefull for spatial FFT's.
+ *
+ *  \param image the point image 
+ *  \param point the point in the array you wish operate on 
+ *  \param timePoint the time point to operate on 
+ *  \param channel the the channel to operate on 
+ *  \param component the component Re or Im
+ *
+ */
+void  svk4DImageData::SetImageComponent( vtkImageData* image, int point, int* indexArray, int component )
+{
+    if( image != NULL ) {
+        vtkDataArray* imageScalars = image->GetPointData()->GetScalars();
+        int numComponents = this->GetCellData()->GetArray(0)->GetNumberOfComponents();
+        vtkDataArray* array = NULL;
+		int i = 0;
+
+		// Lets loop through using the linear index for speed
+        int linearIndex = this->GetIDFromIndex(0, 0, 0, indexArray );
+        int numVoxels = this->Extent[5] * this->Extent[3] * this->Extent[1];
+        for( i = 0; i < numVoxels; i++ ) {
+			array = this->GetArray( linearIndex );
+			array->SetComponent( point, component,  imageScalars->GetComponent( i, 0) ); // the first component in the source
+			linearIndex++;
+        }
+    }
+}
+
+
 
 
 /*!

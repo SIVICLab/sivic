@@ -163,6 +163,21 @@ void svkMrsImageData::SetImage( vtkImageData* image, int point, int timePoint, i
 
 }
 
+/*!
+ * Sets the point volume image for the given index.
+ *
+ * @param image
+ * @param point
+ * @param timePoint
+ * @param channel
+ */
+void svkMrsImageData::SetImageComponent( vtkImageData* image, int point, int timePoint, int channel, int component )
+{
+    int indexArray[2] = { -1, -1 };
+    this->GetIndexArray( timePoint, channel, indexArray );
+    this->Superclass::SetImageComponent( image, point, indexArray, component );
+
+}
 
 /*!
  *  Gets the closests slice for a given LPS coordinate, and a sliceOrientation.

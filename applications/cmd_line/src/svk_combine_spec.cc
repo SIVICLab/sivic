@@ -69,11 +69,11 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_combine_spec -i inputMRI_DCMs_root -t originalDDF -o output_ddf\n";
-    usemsg += "Combines the spectra found in the MRI_DCMs and uses the header from original DDF to create a combination DDF and save this in output_ddf\n";  
+    usemsg += "svk_combine_spec -i inputMRI_DCMs_root -t originalDDF -o output_ddf -c\n";
+    usemsg += "Combines the spectra found in the MRI_DCMs and uses the header from original DDF to create a combination DDF and save this in output_ddf. Per default only real files are handled, if -c option not specified.\n";  
     usemsg += "\n";  
 
-
+    bool    handleComplex = false;
     string inputRoot;
     string originalDDF ;
     string outputFileName;
@@ -92,16 +92,24 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "i:o:t:usah", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:t:ch", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputRoot.assign( optarg );
+                break;
+            case 'c':
+                handleComplex = true;
                 break;
             case 'o':
                 outputFileName.assign( optarg );
                 break;
             case 't':
                 originalDDF.assign( optarg );
+                break;
+            case 'h':
+                cout << usemsg << endl;
+                exit(1);  
+                break;
             default:
                 ;
         }
@@ -159,26 +167,28 @@ int main (int argc, char** argv)
         cerr << "Unsuported number of channels found in the header. Currently only 1 channel possible." << endl;
         exit(1);
     }
-
+        
     // include check for the channels
     string currentInputFile;
   //  vtkSmartPointer< svkImageReaderFactory > readerFactory2 = vtkSmartPointer< svkImageReaderFactory >::New(); 
 
-  //  numSpecPts = 1; 
+   // numSpecPts = 1024; 
+
+
     for (int pnt = 0; pnt < numSpecPts; pnt++){
         cout << "Specpoint:" << pnt << "/" << numSpecPts << endl;
-
         char numstr[10];
         sprintf(numstr, "%d", pnt);
         currentInputFile.assign(inputRoot.c_str());
+        currentInputFile.append("_real");
         currentInputFile.append(numstr);
         currentInputFile.append(".idf");
        // currentOutputFile.append(".dcm");
-
+        
         svkImageReader2* mriReader = readerFactory->CreateImageReader2(currentInputFile.c_str());
 
         if (mriReader == NULL) {
-            cerr << "Can not determine appropriate reader for input data: " << currentInputFile << endl;
+            cerr << "Can not determine appropriate resader for input data: " << currentInputFile << endl;
             exit(1);
         }
         mriReader->SetFileName( currentInputFile.c_str() );
@@ -187,14 +197,43 @@ int main (int argc, char** argv)
         mriReader->Update(); 
 
         svkMriImageData* mriData = svkMriImageData::SafeDownCast( mriReader->GetOutput() ); 
-
-        // just real for now
-        mrsData->SetImage(mriData, pnt, 0); 
+         // just real for now
+        mrsData->SetImageComponent(mriData, pnt, 0, 0, 0); 
         mriReader->Delete();
+       
+        if ( handleComplex ){
+            currentInputFile.assign(inputRoot.c_str());
+            currentInputFile.append("_imag");
+            currentInputFile.append(numstr);
+            currentInputFile.append(".idf");
+            
+            svkImageReader2* mriReader1 = readerFactory->CreateImageReader2(currentInputFile.c_str());
+
+            if (mriReader1 == NULL) {
+                cerr << "Can not determine appropriate reader for input data: " << currentInputFile << endl;
+                exit(1);
+            }
+            mriReader1->SetFileName( currentInputFile.c_str() );
+            mriReader1->OnlyReadOneInputFile();
+            mriReader1->Update(); 
+
+            svkMriImageData* mriData1 = svkMriImageData::SafeDownCast( mriReader1->GetOutput() ); 
+
+            // imag
+            mrsData->SetImageComponent(mriData1, pnt, 0, 0, 1); 
+            /*
+            svkImageWriterFactory::WriterType dataTypeOut1 = svkImageWriterFactory::IDF;
+            vtkSmartPointer< svkImageWriterFactory > writerFactory1 = vtkSmartPointer< svkImageWriterFactory >::New(); 
+            svkImageWriter* writer1 = static_cast<svkImageWriter*>( writerFactory1->CreateImageWriter( dataTypeOut1 ) ); 
+            writer1->SetFileName( "test.ddf");
+            writer1->SetInput( svkMriImageData::SafeDownCast( mriData1 ) );
+            writer1->Write();*/
+
+
+            mriReader1->Delete();        
+        }
 
     }
- 
-
     // ===============================================   
     //  Use an svkImageWriterFactory to obtain the
     //  correct writer type. 
