@@ -1067,6 +1067,8 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                     this->SetLUTCallback( svkLookupTable::REVERSE_COLOR );
                 } else if ( lut == "Fixed CNI LUT" ) {
                     this->SetLUTCallback( svkLookupTable::CNI_FIXED );
+                } else if ( lut == "Fixed CBF LUT" ) {
+                    this->SetLUTCallback( svkLookupTable::CBF_FIXED );
                 }
                 int currentVolume = static_cast<int>(this->imageViewWidget->overlayVolumeSlider->GetValue());
                 int numVolumes = data->GetPointData()->GetNumberOfArrays();
@@ -2876,6 +2878,9 @@ void vtkSivicController::SetLUTCallback( int type )
     } else if ( type == svkLookupTable::CNI_FIXED ) {
         static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::CNI_FIXED );
         static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::CNI_FIXED );
+    } else if ( type == svkLookupTable::CBF_FIXED ) {
+        static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::CBF_FIXED );
+        static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::CBF_FIXED );
     }
 	this->imageViewWidget->UpdateThreshold();
 }

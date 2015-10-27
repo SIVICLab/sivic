@@ -68,6 +68,7 @@ class svkLookupTable : public vtkLookupTable
             CYAN_HOT,
             FIRE,
             CNI_FIXED,
+            CBF_FIXED,
             NONE
         } svkLookupTableType;
 
@@ -85,6 +86,7 @@ class svkLookupTable : public vtkLookupTable
         double             GetAlphaThresholdValue();
 
         void               PrintLUT();
+        bool               IsLUTFixed();
         void               SetLUTType(svkLookupTableType type);
         svkLookupTableType GetLUTType();
         
