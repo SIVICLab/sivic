@@ -411,7 +411,11 @@ bool svkUtils::UncompressFile( vtkstd::string filename )
 #ifndef WIN32
 	if( svkUtils::IsFileCompressed( filename ) ) {
 		stringstream uncompressCommand;
+#ifdef UCSF_INTERNAL
+		uncompressCommand << "group_gunzip " << filename << ".gz";
+#else
 		uncompressCommand << "gunzip " << filename;
+#endif
 		cout << "UNCOMPRESSING FILE " << uncompressCommand.str() << endl;
 		int result = system( uncompressCommand.str().c_str() );
 		if( result != 0 ) {
