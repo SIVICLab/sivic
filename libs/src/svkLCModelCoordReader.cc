@@ -326,7 +326,7 @@ void svkLCModelCoordReader::CheckOutputPtsPerPPM()
     float outputPtsPerPPMRatio = this->numCoordFreqPoints / ( this->ppmStart - this->ppmEnd ); 
     float inputPtsPerPPMRatio  = numSpecPtsIn / ( startPPMIn - endPPMIn ); 
 
-    int zeroFillFactor = outputPtsPerPPMRatio/inputPtsPerPPMRatio; 
+    int zeroFillFactor = roundf( outputPtsPerPPMRatio/inputPtsPerPPMRatio ); 
     cout << "pts/PPM LCMODEL        : " << outputPtsPerPPMRatio << endl;
     cout << "pts/PPM Input template : " << inputPtsPerPPMRatio << endl;
     cout << "Zero Fill Factor       : " << zeroFillFactor << endl;
