@@ -42,7 +42,7 @@ SET( DEFAULT_TEST_PLATFORM Linux_x86_64 )
 #############################################################
 #   Paths to binary applications and scripts
 #############################################################
-SET( TEST_SCRIPT_PATH ${CMAKE_SOURCE_DIR}/trunk/tests/scripts)
+SET( TEST_SCRIPT_PATH ${CMAKE_SOURCE_DIR}/../tests/scripts)
 IF(WIN32)
 	SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/trunk/applications/cmd_line/src/${PLATFORM})
     SET( DIFF_COMMAND ${GNU_DIFFUTILS_PATH}/bin/diff.exe )

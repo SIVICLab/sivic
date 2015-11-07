@@ -31,8 +31,8 @@ cmake_minimum_required(VERSION 2.4)
 PROJECT( sivic )
 option( BUILD_TESTING "Build tests." FALSE )
 
-add_subdirectory ( trunk )
-include(trunk/CMakeSivicInclude.cmake)
+add_subdirectory ( .. trunk )
+include(../CMakeSivicInclude.cmake)
 include(CMakeSivicInstall.cmake)
 include(CPack)
 
@@ -42,13 +42,13 @@ include(CPack)
     SET(MEMORYCHECK_COMMAND_OPTIONS "--tool=memcheck --leak-check=yes
 --show-reachable=yes --workaround-gcc296-bugs=yes --num-callers=50")
 
-    SET(MEMORYCHECK_SUPPRESSIONS_FILE ${CMAKE_CURRENT_SOURCE_DIR}/trunk/tests/all.sup)
+    SET(MEMORYCHECK_SUPPRESSIONS_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../tests/all.sup)
 
 if( BUILD_TESTING )
     INCLUDE(CTest)
     ENABLE_TESTING()
 
-    add_subdirectory( trunk/tests/src )
+    add_subdirectory( ../tests/src trunk/tests/src )
     FIND_PATH(SVK_TEST_ROOT "path to testing data root" )
     option( BUILD_TESTING "Build tests." TRUE)
     SET (BUILD_TESTING TRUE)
