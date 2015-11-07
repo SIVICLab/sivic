@@ -256,6 +256,8 @@ void svkAlgorithmPortMapper::SetInputPortFromXML( int port, vtkXMLDataElement* p
         this->SetMRSImageInputPortValue( port, parameterStringValue );
     } else if ( dataType == SVK_XML ) {
         this->SetXMLInputPortValue( port, parameterElement );
+    } else {
+        cerr << "ERROR: Unsupported data type:" << dataType << endl;
     }
 
 }
@@ -519,6 +521,20 @@ void svkAlgorithmPortMapper::SetMRSImageInputPortValue( int port, string filenam
 /*!
  * Simple input port getter.
  */
+svkImageData* svkAlgorithmPortMapper::GetImageInputPortValue( int port, int connection )
+{
+    if( this->GetInputPortType(port) == SVK_IMAGE_DATA ) {
+        return svkImageData::SafeDownCast( this->GetAlgorithmInputPort(port, connection) );
+    } else {
+        cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type svkImageData. " << endl;
+        return NULL;
+    }
+}
+
+
+/*!
+ * Simple input port getter.
+ */
 svkMriImageData* svkAlgorithmPortMapper::GetMRImageInputPortValue( int port, int connection )
 {
     if( this->GetInputPortType(port) == SVK_MR_IMAGE_DATA ) {
@@ -558,9 +574,11 @@ string svkAlgorithmPortMapper::GetClassTypeFromDataType( int type )
         classType = "svkString";
     } else if ( type == SVK_BOOL ) {
         classType = "svkBool";
+    } else if ( type == SVK_IMAGE_DATA ) {
+        classType = "svkImageData";
     } else if ( type == SVK_MR_IMAGE_DATA ) {
         classType = "svkMriImageData";
-    } else if ( type == SVK_MR_IMAGE_DATA ) {
+    } else if ( type == SVK_MRS_IMAGE_DATA ) {
         classType = "svkMrsImageData";
     } else if ( type == SVK_XML ) {
         classType = "svkXML";
@@ -722,6 +740,8 @@ string svkAlgorithmPortMapper::GetXSD( )
         } else if ( dataType == SVK_BOOL ) {
             // for now bools have no type, either they are present or they are not
             oss << "\"xs:boolean\"";
+        } else if ( dataType == SVK_IMAGE_DATA ) {
+            oss << "\"svkTypes:input_port\"";
         } else if ( dataType == SVK_MR_IMAGE_DATA ) {
             oss << "\"svkTypes:input_port\"";
         } else if ( dataType == SVK_MRS_IMAGE_DATA ) {
