@@ -1699,7 +1699,7 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
             cout << "Reslice image to MRS orientation  " << endl;
             svkObliqueReslice* reslicer = svkObliqueReslice::New();
             reslicer->SetInput( input );
-            reslicer->SetTargetDcosFromImage( target );
+            reslicer->SetTarget( target );
             reslicer->Update();
 
             string resultInfo = this->GetDataCompatibility( reslicer->GetOutput(), targetIndex );
@@ -1740,7 +1740,7 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
                 svkObliqueReslice* reslicer3 = svkObliqueReslice::New();
                 reslicer3->SetInput( input );
                 reslicer3->SetInterpolationMode( VTK_RESLICE_NEAREST );
-                reslicer3->SetTargetDcosFromImage( target );
+                reslicer3->SetTarget( target );
                 reslicer3->SetMagnificationFactors( magX, magY, 1./magZ);
                 reslicer3->Update();
                 this->SetInputPostReslice( reslicer3->GetOutput(), targetIndex );
@@ -1756,7 +1756,7 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
                 svkObliqueReslice* reslicer2 = svkObliqueReslice::New();
                 reslicer2->SetInput( input );
                 reslicer2->SetInterpolationMode( VTK_RESLICE_NEAREST );
-                reslicer2->SetTargetDcosFromImage( target );
+                reslicer2->SetTarget( target );
                 reslicer2->SetMagnificationFactors( magX, magY, 1./magZ);
                 reslicer2->Update();
                 this->SetInputPostReslice( reslicer2->GetOutput(), targetIndex );

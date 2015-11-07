@@ -239,7 +239,7 @@ int main ( int argc, char** argv )
 			cout << "WARNING: Alternate image is being resliced to primary image " << endl;
 			svkObliqueReslice* reslicer = svkObliqueReslice::New();
 			reslicer->SetInput( globalVars.alternateImage );
-			reslicer->SetTargetDcosFromImage( globalVars.data );
+			reslicer->SetTarget( globalVars.data );
 			reslicer->Update();
 			globalVars.alternateImage = reslicer->GetOutput();
 		}
@@ -268,7 +268,7 @@ int main ( int argc, char** argv )
 			cout << "WARNING: Overlay is being resliced to image " << endl;
 			svkObliqueReslice* reslicer = svkObliqueReslice::New();
 			reslicer->SetInput( globalVars.overlayData );
-			reslicer->SetTargetDcosFromImage( globalVars.data );
+			reslicer->SetTarget( globalVars.data );
 			reslicer->Update();
 			globalVars.overlayData = reslicer->GetOutput();
 		}

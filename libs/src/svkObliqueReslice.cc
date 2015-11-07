@@ -65,10 +65,12 @@ svkObliqueReslice::svkObliqueReslice()
 #endif
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
-    this->SetNumberOfInputPorts(2);
+    this->SetNumberOfInputPorts(4);
     bool repeatable = true;
     bool required   = true;
     this->GetPortMapper()->InitializeInputPort(INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, !repeatable);
+    this->GetPortMapper()->InitializeInputPort(TARGET_IMAGE, "TARGET_IMAGE", svkAlgorithmPortMapper::SVK_IMAGE_DATA, !required, !repeatable);
+    this->GetPortMapper()->InitializeInputPort(MATCH_SPACING_AND_FOV, "MATCH_SPACING_AND_FOV", svkAlgorithmPortMapper::SVK_BOOL, !required, !repeatable);
     this->GetPortMapper()->InitializeInputPort(INTERPOLATION_MODE, "INTERPOLATION_MODE", svkAlgorithmPortMapper::SVK_INT, !required);
 
     this->SetNumberOfOutputPorts(1);
@@ -149,11 +151,13 @@ bool svkObliqueReslice::Magnify()
 
 
 /*!
- * 
+ * Sets the target image. By default the target dcos will be used to simply
+ * reslice the input into the orientation of the target.
  */
-void svkObliqueReslice::SetTargetDcosFromImage(svkImageData* image)
+void svkObliqueReslice::SetTarget(svkImageData* image)
 {
     image->GetDcmHeader()->GetDataDcos(this->targetDcos); 
+    this->SetInput(TARGET_IMAGE, image);
 }
 
 
@@ -215,26 +219,13 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
             this->reslicer->SetInterpolationModeToNearestNeighbor();
             break;
     }
-
-    //  If target dcos isn't initialized, set it from the output image. 
-    if ( ! this->IsDcosInitialized() ) {
-        this->SetTargetDcosFromImage( this->GetOutput() ); 
-    }
-
     double rotation[3][3];   
     this->SetRotationMatrix(); 
 
-    this->reslicer->SetResliceAxesDirectionCosines(
-        this->rotation[0][0],
-        this->rotation[0][1],
-        this->rotation[0][2],
-        this->rotation[1][0],
-        this->rotation[1][1],
-        this->rotation[1][2],
-        this->rotation[2][0],
-        this->rotation[2][1],
-        this->rotation[2][2]
-    );
+    if( this->Magnify() && this->GetMatchSpacingAndFovOn() ) {
+        cerr << "ERROR: svkObliqueReslice does not support magnification and matching of FOV." << endl;
+    }
+
 
     if ( this->Magnify() == true ) { 
         //  get the and modify the input extent 
@@ -269,14 +260,77 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
             cout << "OUTPUT SPACING: " << spacing[0] << " " << spacing[1] << " " << spacing[2] << endl;
         }
         this->reslicer->SetOutputSpacing( spacing ); 
-    }
+    } else if (this->GetMatchSpacingAndFovOn() ) {
 
+        // Set Output Extent
+        int numVoxels[3];
+        this->GetPortMapper()->GetImageInputPortValue(TARGET_IMAGE)->GetNumberOfVoxels(numVoxels);
+        int outputExtent[6] = {0,0,0,0,0,0};
+        outputExtent[1] = numVoxels[0] -1;
+        outputExtent[3] = numVoxels[1] -1;
+        outputExtent[5] = numVoxels[2] -1;
+        this->reslicer->SetOutputExtent(outputExtent);
+
+        // Set Output Spacing
+        double outputSpacing[3];
+        this->GetPortMapper()->GetImageInputPortValue(TARGET_IMAGE)->GetSpacing(outputSpacing);
+        this->reslicer->SetOutputSpacing(outputSpacing);
+
+        // Set Output Origin
+        double inputOrigin[3];
+        this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE)->GetDcmHeader()->GetOrigin(inputOrigin);
+
+        // Get the output origin
+        double targetOrigin[3];
+        this->GetPortMapper()->GetImageInputPortValue(TARGET_IMAGE)->GetDcmHeader()->GetOrigin(targetOrigin);
+
+        // Get the input spacing
+        double inputSpacing[3];
+        this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE)->GetSpacing(inputSpacing);
+
+        /*
+         * This next block of code is to *trick* the vtkImageReslice into doing the correct transformation
+         * for us. The vtkImageReslice algorithm does not use the dcos in the svkImageData objects so
+         * for the transformation to be correct we need to transform the target origin into the "vtk" space,
+         * meaning the space assuming our data has an identity dcos. Then we have to pass this target position
+         * through the the inverse of the transformation matrix being used. This is because vtkImageReslice
+         * will transform the given output origin as part of the process. This is a three stop process:
+         *
+         * Step 1: Convert the LPS coordinate of the target origin into the ijk index of that location
+         *         in the source image.
+         *
+         * Step 2: Convert the ijk index of the target origin in the input data to an LPS' location assuming
+         *         an identity dcos.
+         *
+         * Step 3: Take the LPS' location and inverse transform it using the current transformation matrix.
+         */
+
+        // Step1: Get the index of the target origin in the input image frame.
+        double targetOriginInInputIndex[3];
+        this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE)->GetIndexFromPosition(targetOrigin,targetOriginInInputIndex);
+
+        // Step2: Get the position of the given index assuming a unity dcos: LPS'
+        double targetUnityDcosOrigin[3];
+        targetUnityDcosOrigin[0] = inputOrigin[0] + inputSpacing[0]*(targetOriginInInputIndex[0]-0.5);
+        targetUnityDcosOrigin[1] = inputOrigin[1] + inputSpacing[1]*(targetOriginInInputIndex[1]-0.5);
+        targetUnityDcosOrigin[2] = inputOrigin[2] + inputSpacing[2]*(targetOriginInInputIndex[2]-0.5);
+
+        // Step3: Use the inverse of the transformation matrix to compute the location PRE-transformation.
+        vtkTransform* transform = vtkTransform::New();
+        transform->SetMatrix(this->reslicer->GetResliceAxes());
+        double outputOrigin[3];
+        transform->GetInverse()->TransformPoint(targetUnityDcosOrigin, outputOrigin);
+        this->reslicer->SetOutputOrigin(outputOrigin);
+        transform->Delete();
+
+    }
     reslicer->Update();
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
 
     // These values are not quite right... we only know the correct origin after request data is run
     outInfo->Set(vtkDataObject::SPACING(), this->reslicer->GetOutput()->GetSpacing(), 3);
+    outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),this->reslicer->GetOutput()->GetExtent() , 6);
 
     return 1;
 
@@ -301,36 +355,27 @@ void svkObliqueReslice::SetMagnificationFactors( float x, float y, float z)
 
 
 /*!
- *
+ * Setter to turn on the matching of the spacing and fov to the target image.
+ * A target image must be set for this option.
  */
-void svkObliqueReslice::SetOutputSpacing( double spacing[3] )
+void svkObliqueReslice::SetMatchSpacingAndFovOn( )
 {
-    this->reslicer->SetOutputSpacing(spacing);
+    this->GetPortMapper()->SetBoolInputPortValue( MATCH_SPACING_AND_FOV, true );
 }
 
 
 /*!
- *
+ * Convenience method for checking of spacing and fov matching is on.
  */
-void svkObliqueReslice::SetOutputOrigin( double origin[3] )
+bool svkObliqueReslice::GetMatchSpacingAndFovOn( )
 {
-    this->reslicer->SetOutputOrigin(origin);
-}
+    bool matchSpacingAndFov =  false;
+    svkBool* matchSpacingAndFovObject = this->GetPortMapper()->GetBoolInputPortValue( MATCH_SPACING_AND_FOV );
+    if( matchSpacingAndFovObject != NULL ) {
+        matchSpacingAndFov = matchSpacingAndFovObject->GetValue();
+    }
+    return matchSpacingAndFov;
 
-
-/*!
- *
- */
-void svkObliqueReslice::GetOutputOrigin( double origin[3] )
-{
-    origin[0] = this->reslicer->GetOutputOrigin()[0];
-    origin[1] = this->reslicer->GetOutputOrigin()[1];
-    origin[2] = this->reslicer->GetOutputOrigin()[2];
-}
-
-void svkObliqueReslice::SetOutputExtent( int extent[6] )
-{
-    this->reslicer->SetOutputExtent(extent);
 }
 
 
@@ -400,14 +445,35 @@ int svkObliqueReslice::RequestData( vtkInformation* request, vtkInformationVecto
  */
 void svkObliqueReslice::SetRotationMatrix( )
 {
+    if( this->GetPortMapper()->GetImageInputPortValue(TARGET_IMAGE) != NULL ) {
+        this->GetPortMapper()->GetImageInputPortValue(TARGET_IMAGE)->GetDcos(this->targetDcos);
+    }
+
+    //  If target dcos isn't initialized, set it from the output image. 
+    if ( ! this->IsDcosInitialized() ) {
+        this->SetTarget( svkImageData::SafeDownCast(this->GetImageDataInput(0)) );
+        svkImageData::SafeDownCast(this->GetImageDataInput(0))->GetDcos(this->targetDcos);
+    }
+
 
     double dcosIn[3][3];   
     this->GetImageDataInput(0)->GetDcmHeader()->GetDataDcos(dcosIn); 
 
     double dcosInInverse[3][3];   
     vtkMath::Invert3x3(dcosIn, dcosInInverse);
-
-    vtkMath::Multiply3x3(targetDcos, dcosInInverse, this->rotation);
+    double rotation[3][3];
+    vtkMath::Multiply3x3(this->targetDcos, dcosInInverse, rotation);
+    this->reslicer->SetResliceAxesDirectionCosines(
+        rotation[0][0],
+        rotation[0][1],
+        rotation[0][2],
+        rotation[1][0],
+        rotation[1][1],
+        rotation[1][2],
+        rotation[2][0],
+        rotation[2][1],
+        rotation[2][2]
+    );
 
 }
 
@@ -528,30 +594,30 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
     double dcosIn[3][3];
     this->GetImageDataInput(0)->GetDcmHeader()->GetDataDcos(dcosIn); 
 
-    //  Now calculate the volumetric center by displacing by 1/2 fov - 1/2 voxel from tlc position: 
-    double origin[3]; 
-    for (int i = 0; i < 3; i++) {
-        origin[i] = tlc0[i];  
-        for (int j = 0; j < 3; j++) {
-            origin[i] += dcosIn[j][i] * (inputSpacing[j] * ((numVoxels[j]-1)/2.) );
+    double newTlc[3];
+    if( !this->GetMatchSpacingAndFovOn()) {
+        //  Now calculate the volumetric center by displacing by 1/2 fov - 1/2 voxel from tlc position:
+        double origin[3];
+        for (int i = 0; i < 3; i++) {
+            origin[i] = tlc0[i];
+            for (int j = 0; j < 3; j++) {
+                origin[i] += dcosIn[j][i] * (inputSpacing[j] * ((numVoxels[j]-1)/2.) );
+            }
         }
-    }
 
-    //  Now calculate the NEW tlc: 
-    //  this->targetDcos 
-    //  this->newSpacing
-    //  this->newNumVoxels
-    double newTlc[3]; 
-    for (int i = 0; i < 3; i++) {
-        newTlc[i] = origin[i];  
-        for (int j = 0; j < 3; j++) {
-            newTlc[i] -= targetDcos[j][i] * (this->newSpacing[j] * ((this->newNumVoxels[j] - 1)/2.) );
+        //  Now calculate the NEW tlc:
+        //  this->targetDcos
+        //  this->newSpacing
+        //  this->newNumVoxels
+        for (int i = 0; i < 3; i++) {
+            newTlc[i] = origin[i];
+            for (int j = 0; j < 3; j++) {
+                newTlc[i] -= targetDcos[j][i] * (this->newSpacing[j] * ((this->newNumVoxels[j] - 1)/2.) );
+            }
         }
+    } else {
+        this->GetPortMapper()->GetImageInputPortValue(TARGET_IMAGE)->GetDcmHeader()->GetOrigin(newTlc);
     }
-    double reslicedTlc[3]; 
-    this->reslicedImage->GetOrigin( reslicedTlc );
-
-    this->reslicedImage->SetOrigin( newTlc );
     this->reslicedImage->SetOrigin( newTlc );
 
     int numSlices = this->GetOutput()->GetDimensions()[2];
@@ -570,73 +636,6 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
     delete[] tlc0;
     delete[] inputSpacing;
 }
-
-
-/*!
- *  Calculate the centerpoint of an image
- */
-void svkObliqueReslice::CalculateCenterpoint(svkImageData* image, double* imageCenter )
-{
-    // Calculate target centerpoint
-    double* imageTLC = new double[3]; 
-    image->GetDcmHeader()->GetOrigin(imageTLC, 0);
-
-    double* imageSpacing = new double[3]; 
-    image->GetDcmHeader()->GetPixelSpacing(imageSpacing); 
-
-    int imageNumVoxels[3]; 
-    image->GetNumberOfVoxels(imageNumVoxels);
-
-    double imageDCos[3][3];
-    image->GetDcmHeader()->GetDataDcos(imageDCos); 
-
-    for (int i = 0; i < 3; i++) {
-        imageCenter[i] = imageTLC[i];  
-        for (int j = 0; j < 3; j++) {
-            imageCenter[i] += imageDCos[j][i] * (imageSpacing[j] * ((imageNumVoxels[j]-1)/2.) );
-        }
-    }
-
-    delete[] imageTLC;
-    delete[] imageSpacing;
-
-}
-
-
-/*!
- *  Check to see if target's and input's centerpoints are alligned
- */
-bool svkObliqueReslice::AreCenterpointsAligned()
-{
-
-    // Calculate input centerpoint
-    double* inputCenter  = new double[3];
-    this->CalculateCenterpoint(this->GetImageDataInput(0), inputCenter);
-    double* targetCenter = new double[3];
-    this->CalculateCenterpoint(this->reslicedImage, targetCenter);
-
-    // Compare centers, and return false if a diff's dimension is >3% the input
-    double* centerDiff = new double[3];
-    bool    aligned    = true;
-    for (int i = 0; i < 3; i++) {
-        centerDiff[i] = inputCenter[i] - targetCenter[i];
-        if (centerDiff[i] > 0.03 * abs(inputCenter[i]))
-        {
-            aligned = false;
-        }
-    }
-    
-    cout << "Input center:  " << inputCenter[0] << " " << inputCenter[1] << " " << inputCenter[2] << endl;
-    cout << "Target center: " << targetCenter[0] << " " << targetCenter[1] << " " << targetCenter[2] << endl;
-    cout << "Centerpoint difference: " << centerDiff[0] << " " << centerDiff[1] << " " << centerDiff[2] << endl;
-
-    delete[] inputCenter;
-    delete[] targetCenter;
-    delete[] centerDiff;
-
-    return   aligned; 
-}
-
 
 
 /*!
@@ -686,23 +685,6 @@ void svkObliqueReslice::SetReslicedHeaderOrientation()
     this->reslicedImage->GetDcmHeader()->SetSliceOrder( dataSliceOrder );
     math->Delete();
 
-}
-
-
-/*
- *  Applies calculated rotation matrix to rotate coordinate system 
- *  vectors (dcos, with matrix with rows representing axes), needs
- *  to be transposed to apply rotation
- */
-void svkObliqueReslice::RotateAxes(double axesIn[3][3], double rotatedAxes[3][3])
-{
-    //double axesInTsp[3][3]; 
-    //vtkMath::Transpose3x3(axesIn, axesInTsp); 
-
-    //double rotatedAxes[3][3]; 
-    vtkMath::Multiply3x3(this->rotation, axesIn, rotatedAxes); 
-
-    //vtkMath::Transpose3x3(rotatedAxesTsp, rotatedAxes); 
 }
 
 

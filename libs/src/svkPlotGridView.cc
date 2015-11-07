@@ -1399,7 +1399,7 @@ void svkPlotGridView::ResliceImage(svkImageData* input, svkImageData* target)
     //  if (orthogonal orientations) {
     svkObliqueReslice* reslicer = svkObliqueReslice::New();
     reslicer->SetInput( input );
-    reslicer->SetTargetDcosFromImage( target );
+    reslicer->SetTarget( target );
     reslicer->Update();
     this->SetInput( reslicer->GetOutput(), MET );
     //}
