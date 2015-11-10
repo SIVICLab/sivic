@@ -42,19 +42,19 @@ SET( DEFAULT_TEST_PLATFORM Linux_x86_64 )
 #############################################################
 #   Paths to binary applications and scripts
 #############################################################
-SET( TEST_SCRIPT_PATH ${CMAKE_SOURCE_DIR}/../tests/scripts)
+SET( TEST_SCRIPT_PATH ${CMAKE_SOURCE_DIR}/tests/scripts)
 IF(WIN32)
-	SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/trunk/applications/cmd_line/src/${PLATFORM})
+	SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/applications/cmd_line/src/${PLATFORM})
     SET( DIFF_COMMAND ${GNU_DIFFUTILS_PATH}/bin/diff.exe )
     SET( TEST_PLATFORM Win32 )
 ELSE(WIN32)
-    SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/trunk/applications/cmd_line/${PLATFORM})
+    SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/applications/cmd_line/${PLATFORM})
     SET( DIFF_COMMAND diff )
     SET( TEST_PLATFORM ${PLATFORM} )
 ENDIF(WIN32)
 
 SET( DCM_2_XML_COMMAND ${DCMTK_DIR}/bin/dcm2xml )
-SET( TEST_BIN_PATH_TESTS ${CMAKE_BINARY_DIR}/trunk/tests/${PLATFORM})
+SET( TEST_BIN_PATH_TESTS ${CMAKE_BINARY_DIR}/tests/${PLATFORM})
 
 #############################################################
 #   Location where output files from individual tests 
