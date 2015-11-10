@@ -10,7 +10,7 @@ KWW_DIR     	= /netopt/kwwidgets_2.0_56/lib/KWWidgets
 DCMTK_DIR       = /netopt/dicom
 # check test_data out of radiology trac into trunk/test_data
 SIVIC_ROOT      = $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
-SVK_TEST_ROOT   = ${SIVIC_ROOT}/trunk/test_data
+SVK_TEST_ROOT   = ${SIVIC_ROOT}/test_data
 OUTPUT_LOG      = ${PWD}/ctest_logs/atom 
 #CMAKE_DIR       = /netopt/bin
 CMAKE_DIR       = /usr/bin

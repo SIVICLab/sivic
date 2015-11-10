@@ -36,7 +36,7 @@ include(../CMakeSivicInclude.cmake)
 include(CMakeSivicInstall.cmake)
 include(CPack)
 
-    SET(MEMORYCHECK_COMMAND "/netopt/bin/valgrind")
+    SET(MEMORYCHECK_COMMAND "/usr/bin/valgrind")
     SET(CTEST_MEMORYCHECK_COMMAND_OPTIONS "--tool=memcheck --leak-check=yes
 --show-reachable=yes --workaround-gcc296-bugs=yes --num-callers=50")
     SET(MEMORYCHECK_COMMAND_OPTIONS "--tool=memcheck --leak-check=yes
