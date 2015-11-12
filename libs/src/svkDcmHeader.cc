@@ -2418,6 +2418,10 @@ int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, st
         dcmDataType = svkDcmHeader::SIGNED_FLOAT_8;
     } else if ( dataType == VTK_FLOAT ) {
         dcmDataType = svkDcmHeader::SIGNED_FLOAT_4;
+    } else if ( dataType == VTK_SHORT ) {
+        dcmDataType = svkDcmHeader::SIGNED_INT_2;
+    } else if ( dataType == VTK_UNSIGNED_SHORT ) {
+        dcmDataType = svkDcmHeader::UNSIGNED_INT_2;
     } else {
         cout << this->GetClassName() << ": Unsupported ScalarType " << dataType << endl;
         exit(1);
