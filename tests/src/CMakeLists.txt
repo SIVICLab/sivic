@@ -51,7 +51,7 @@ option( USE_OFF_SCREEN_TESTING "Use offscreen rendering if available." TRUE )
 #
 IF (CMAKE_SYSTEM_NAME MATCHES Linux)
     IF (USE_OFF_SCREEN_TESTING )
-        SET( GRAPHICS_WRAPPER ${CMAKE_SOURCE_DIR}/../tests/scripts/xvfb-run )
+        SET( GRAPHICS_WRAPPER ${CMAKE_SOURCE_DIR}/tests/scripts/xvfb-run )
     ENDIF (USE_OFF_SCREEN_TESTING )
     IF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
         SET(PLATFORM Linux_i686)
@@ -142,8 +142,8 @@ INCLUDE(CTest)
 
 
 LINK_DIRECTORIES(
-    ../trunk/${PLATFORM}
-    ../trunk/lib/${PLATFORM}
+    ../${PLATFORM}
+    ../lib/${PLATFORM}
     ${DCMTK_DIR}/lib
 )
 

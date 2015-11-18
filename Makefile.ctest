@@ -8,13 +8,13 @@
 VTK_DIR         = /netopt/lib/vtk-5.6
 KWW_DIR     	= /netopt/kwwidgets_2.0_56/lib/KWWidgets
 DCMTK_DIR       = /netopt/dicom
-# check test_data out of radiology trac into trunk/test_data
+# check test_data out of radiology trac into test_data
 SIVIC_ROOT      = $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 SVK_TEST_ROOT   = ${SIVIC_ROOT}/test_data
 OUTPUT_LOG      = ${PWD}/ctest_logs/atom 
 #CMAKE_DIR       = /netopt/bin
 CMAKE_DIR       = /usr/bin
-XVFB_RUN        = ${SIVIC_ROOT}/../tests/scripts/xvfb-run
+XVFB_RUN        = ${SIVIC_ROOT}/tests/scripts/xvfb-run
 SVN_COMMAND     = /netopt/bin/svn 
 CLAPACK_DIR     = /opt/src/freeware/clapack/clapack-3.2.1-CMAKE
 ITK_DIR         = /netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4
