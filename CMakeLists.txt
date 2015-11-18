@@ -28,6 +28,32 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 
+PROJECT( sivic )
+option( BUILD_TESTING "Build tests." FALSE )
+
+include(CMakeSivicInstall.cmake)
+include(CPack)
+
+    SET(MEMORYCHECK_COMMAND "/usr/bin/valgrind")
+    SET(CTEST_MEMORYCHECK_COMMAND_OPTIONS "--tool=memcheck --leak-check=yes
+--show-reachable=yes --workaround-gcc296-bugs=yes --num-callers=50")
+    SET(MEMORYCHECK_COMMAND_OPTIONS "--tool=memcheck --leak-check=yes
+--show-reachable=yes --workaround-gcc296-bugs=yes --num-callers=50")
+
+    SET(MEMORYCHECK_SUPPRESSIONS_FILE ${CMAKE_CURRENT_SOURCE_DIR}/tests/all.sup)
+
+if( BUILD_TESTING )
+    INCLUDE(CTest)
+    ENABLE_TESTING()
+
+    add_subdirectory( tests/src )
+    FIND_PATH(SVK_TEST_ROOT "path to testing data root" )
+    option( BUILD_TESTING "Build tests." TRUE)
+    SET (BUILD_TESTING TRUE)
+
+endif ( BUILD_TESTING )
+
+
 file( MAKE_DIRECTORY Build )
 file( MAKE_DIRECTORY Build/Release )
 file( MAKE_DIRECTORY Build/Debug)
