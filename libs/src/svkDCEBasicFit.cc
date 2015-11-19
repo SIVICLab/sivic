@@ -556,12 +556,14 @@ void svkDCEBasicFit::ScaleParams(float imageRate, double voxelBaseHt, double* vo
     if (voxelBaseHt <= 0 || slope <= 0) {
         peakHt  = 0.0;
         slope   = 0.0;
-        washout = -150;
+        // washout = -150;
+        washout = 0;
     }
     else {
         peakHt  = 10 * peakHt / voxelBaseHt * 100;
         slope   = 10 * (slope / voxelBaseHt) / imageRate * 60 * 100;
-        washout = 10 * (washout / voxelBaseHt) / imageRate * 60 * 100;
+        // washout = 10 * (washout / voxelBaseHt) / imageRate * 60 * 100;
+        washout = (10 * (washout / voxelBaseHt) / imageRate * 60 * 100) + 150;
     }
 
     if (peakHt < peakMin ) {

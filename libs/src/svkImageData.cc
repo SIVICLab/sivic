@@ -342,6 +342,22 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
                 }
                 break;
 
+            case svkDcmHeader::SIGNED_INT_2:
+                dataTypeVtk = VTK_SHORT;
+                // We only accept certain casts
+                if( !(pointArrayType == VTK_UNSIGNED_CHAR || pointArrayType == VTK_DOUBLE || pointArrayType == VTK_FLOAT) ) {
+                    pointArrayType = -1;
+                }
+                
+
+                /* Point and cell arrays are seperated because there could
+                 * potentially be two different types.
+                 */
+                if( !(cellArrayType == VTK_UNSIGNED_CHAR || cellArrayType == VTK_DOUBLE || cellArrayType == VTK_FLOAT)) {
+                    cellArrayType = -1;
+                }
+                break;
+
             case svkDcmHeader::SIGNED_FLOAT_4:
                 dataTypeVtk = VTK_FLOAT;
 
