@@ -49,7 +49,7 @@ int main(const int argc, const char **argv)
 {
     int   status; 
     void* xml = svkSatBandsXML_New( argv[1], &status );
-    char* outputfile = argv[2]; 
+    const char* outputfile = argv[2];
 
     int numberPressBoxSats = svkSatBandsXML_GetNumberOfPressBoxSats( xml ); 
     printf("Number of PressBox Sats = %d\n", numberPressBoxSats); 
