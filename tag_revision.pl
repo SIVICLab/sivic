@@ -14,6 +14,7 @@ GetOptions(
     "b=s"         =>\my $tag_branch,
     "s"           =>\my $skip_repo_check,
     "c"           =>\my $create_and_push,
+    "e=s"         =>\my $execute_update_command,
     "h"           =>\my $help,
     "v"           =>\my $verbose
 ) or pod2usage(-verbose=>2, -exitval=>2);
@@ -68,7 +69,13 @@ for( my $i = $index_to_increment; $i <= $#revision; $i++ ) {
 print "New Revision: @revision\n";
 my $new_tag = join('.', @revision );
 print "New tag: $new_tag\n";
-
+if( defined($execute_update_command) ) {
+    $execute_update_command .= " $new_tag";
+    if( system("$execute_update_command") != 0 ) {
+        print "ERROR: Could not execute update command: $execute_update_command.\n";
+        exit(1);
+    } 
+}
 if( defined($create_and_push) ) {
     create_git_tag($new_tag);
 }
@@ -185,16 +192,23 @@ tag_revision.pl
     
     tag_revision.pl [-i index -b branch -c -s -v]
 
-        -c                 Create and push the tag to the remote repository. 
-        -i  index          The revision index to increment.
-                           (default=2)
+        -c                   Create and push the tag to the remote repository. 
+        -i  index            The revision index to increment.
+                             (default=2)
 
-        -b  branch         The branch that tags should be made on.
-        				   (default=develop)
+        -b  branch           The branch that tags should be made on.
+        				     (default=develop)
 
-        -s                 Skip repository check for branch and local changes.
-        -v                 Verbose output.
-        -h                 Print this message.
+        -e  execute_command  An optional command to be run before the tag 
+                             is created. It is assumed that this executable
+                             will accept the version number as an argument.
+                             This is designed to allow the project to be
+                             updated after the new tag is determined but before
+                             it is created.
+
+        -s                   Skip repository check for branch and local changes.
+        -v                   Verbose output.
+        -h                   Print this message.
 
 =head1 DESCRIPTION 
 
