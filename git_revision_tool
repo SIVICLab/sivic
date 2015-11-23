@@ -222,7 +222,7 @@ sub create_git_tag($)
 
 =head1 NAME
 
-git_revision_tool.pl
+git_revision_tool
 
 =head1 SYNOPSIS
     
