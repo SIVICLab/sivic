@@ -47,6 +47,7 @@
 #include <svkImageReader2.h>
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
+#include <svkImageCopy.h>
 
 //  Insert your algorithm here in place of "AlgoTemplate":
 //#include <svkDynamicMRIAlgoTemplate.h>
@@ -256,11 +257,43 @@ int main (int argc, char** argv)
     maxSlopeWriter->SetFileName(maxSlopeFile.c_str());
     washoutWriter->SetFileName(washoutFile.c_str());
 
-    baseHtWriter->SetInput(dceQuant->GetOutput(0));      // port 0 is baseline map
-    peakHtWriter->SetInput(dceQuant->GetOutput(1));      // port 1 is peakHt map 
-    peakTimeWriter->SetInput(dceQuant->GetOutput(2));      // port 2 is peakTimet map 
-    maxSlopeWriter->SetInput(dceQuant->GetOutput(3));      // port 3 is max slope map  
-    washoutWriter->SetInput(dceQuant->GetOutput(4));       // port 4 is washout map
+    // Hack to use ImageCopy to write out integer value dicoms
+    svkImageCopy* baseHtCopier = svkImageCopy::New();
+    baseHtCopier->SetInput(dceQuant->GetOutput(0));  // port 0 is baseline ma
+    baseHtCopier->SetSeriesDescription("DCE Baseline");
+    baseHtCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
+    baseHtCopier->Update();
+
+    svkImageCopy* peakHtCopier = svkImageCopy::New();
+    peakHtCopier->SetInput(dceQuant->GetOutput(1));  // port 1 is peakHt map
+    peakHtCopier->SetSeriesDescription("DCE Peak Value");
+    peakHtCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
+    peakHtCopier->Update();
+
+    svkImageCopy* peakTimeCopier = svkImageCopy::New();
+    peakTimeCopier->SetInput(dceQuant->GetOutput(2));  // port 2 is peakTimet map
+    peakTimeCopier->SetSeriesDescription("DCE Peak Time");
+    peakTimeCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
+    peakTimeCopier->Update();
+
+    svkImageCopy* maxSlopeCopier = svkImageCopy::New();
+    maxSlopeCopier->SetInput(dceQuant->GetOutput(3));  // port 3 is max slope map 
+    maxSlopeCopier->SetSeriesDescription("DCE Slope");
+    maxSlopeCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
+    maxSlopeCopier->Update();
+
+    svkImageCopy* washoutCopier = svkImageCopy::New();
+    washoutCopier->SetInput(dceQuant->GetOutput(4));  // port 4 is washout map
+    washoutCopier->SetSeriesDescription("DCE Washout");
+    washoutCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
+    washoutCopier->Update();
+
+
+    baseHtWriter->SetInput(baseHtCopier->GetOutput());
+    peakHtWriter->SetInput(peakHtCopier->GetOutput());
+    peakTimeWriter->SetInput(peakTimeCopier->GetOutput());
+    maxSlopeWriter->SetInput(maxSlopeCopier->GetOutput());
+    washoutWriter->SetInput(washoutCopier->GetOutput());
 
     baseHtWriter->Write();
     peakHtWriter->Write();
@@ -278,6 +311,11 @@ int main (int argc, char** argv)
     peakTimeWriter->Delete();
     maxSlopeWriter->Delete();
     washoutWriter->Delete();
+    baseHtCopier->Delete();
+    peakHtCopier->Delete();
+    peakTimeCopier->Delete();
+    maxSlopeCopier->Delete();
+    washoutCopier->Delete();
 
     reader->Delete();
 
