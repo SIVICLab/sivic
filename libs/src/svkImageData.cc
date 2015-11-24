@@ -57,7 +57,7 @@ vtkCxxRevisionMacro(svkImageData, "$Rev$");
 svkImageData::svkImageData()
 {
 
-#if VTK_DEBUG_ON
+#ifdef VTK_DEBUG_ON
     this->DebugOn();
 #endif
 
