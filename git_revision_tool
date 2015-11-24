@@ -32,6 +32,7 @@ use Pod::Usage;
 use strict;
 
 sub get_last_revision();
+sub get_index_from_name($);
 sub check_repository_status($);
 sub create_git_tag($);
 
@@ -62,6 +63,7 @@ my $revision_tag = join('.', @revision );
 my $output_string = $revision_tag;
 
 if (defined($increment_index) ){
+    $increment_index = get_index_from_name($increment_index);
 
     my $current_commit = `git rev-parse HEAD`;
     chomp($current_commit);
@@ -110,6 +112,7 @@ if (defined($increment_index) ){
 } 
 
 if( defined($print_index) ) { 
+    $print_index = get_index_from_name($print_index);
     if( $print_index >= 0 && $print_index <= $#revision ) {
         $output_string = $revision[$print_index];
     } else {
@@ -214,6 +217,31 @@ sub create_git_tag($)
      
 }
 
+
+###############################################################################
+#  Utility method to convert a named revision index to a numerical index.
+###############################################################################
+sub get_index_from_name($)
+{
+    my( $requested_index ) = @_;
+    if(lc($requested_index) eq "major") {
+        $requested_index = 0;
+    } elsif(lc($requested_index) eq "minor") {
+        $requested_index = 1;
+    } elsif(lc($requested_index) eq "patch") {
+        $requested_index = 2;
+    }
+
+    # Throw an error if its not a number. 
+    if ($requested_index =~ /\D/) {
+        print "ERROR: Not a valid index: $requested_index\n";
+        exit(1);
+    }
+    return $requested_index;
+
+}
+    
+
 ###############################################################################
 #
 #   POD usage docs
@@ -226,10 +254,22 @@ git_revision_tool
 
 =head1 SYNOPSIS
     
-    git_revision_tool.pl [-i increment_index -p print_index -b branch -n -v -h]
+    git_revision_tool [-i increment_index -p print_index -b branch -n -v -h]
 
-        -i  increment_index  Increment the revision by the given index.
+        -i  increment_index  Increment the revision by the given index. 
+                             This must either be an integer or one of the
+                             following options:
+                                major (first index)
+                                minor (second index)
+                                patch (third index)
+
         -p  print_index      Just print the given index of the current revision.
+                             This must either be an integer or one of the
+                             following options:
+                                major (first index)
+                                minor (second index)
+                                patch (third index)
+
         -b  branch           The branch that tags should be made on.
         				     (default=develop)
         -o                   Override the repository check. If not set the
