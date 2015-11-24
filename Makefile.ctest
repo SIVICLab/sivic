@@ -69,7 +69,7 @@ update_test_cases:
 #   Configure build for Experimental / Nightly
 #
 configure_testing: clean_results 
-	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_DEBUG} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
+	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 #
 # 	Configure for debug, but no testing
