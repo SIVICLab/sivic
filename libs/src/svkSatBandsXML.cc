@@ -309,7 +309,7 @@ int svkSatBandsXML::InitPressBoxFromDat2( string rootName )
                         float theta = svkTypeUtils::StringToFloat( values[1] ); 
                         float phi   = svkTypeUtils::StringToFloat( values[2] ); 
                         // I hate this mystery factor
-                        //phi += vtkMath::Pi(); 
+                        phi -= vtkMath::Pi();
    
                         //  row 0:  
                         normals[0][0] = cos(theta) * cos(phi); 
@@ -325,10 +325,10 @@ int svkSatBandsXML::InitPressBoxFromDat2( string rootName )
                         normals[0][2] = -1 * sin(theta); 
                         normals[1][2] = sin(psi) * cos(theta);
                         normals[2][2] = cos(psi) * cos(theta);
-                        
 
-                        //phi -= vtkMath::Pi(); 
-                      /*  if (normals[0][0] >0){
+
+                       /* phi -= vtkMath::Pi();
+                       if (normals[0][0] >0){
                             normals[0][0] = - normals[0][0];    
                         }
 
@@ -339,7 +339,7 @@ int svkSatBandsXML::InitPressBoxFromDat2( string rootName )
                         if (normals[2][2] > 0){    
                             normals[2][1] = -normals[2][1];
                             normals[2][2] = -normals[2][2];
-                        }*/
+                        } */
                     }
                 } 
 
@@ -352,45 +352,57 @@ int svkSatBandsXML::InitPressBoxFromDat2( string rootName )
 
                 for ( int kk = 0; kk<3; kk++){
 
-                    //  Use this info to initialize a sat band element in an XML file: 
-                    vtkXMLDataElement* satBandElement = vtkXMLDataElement::New(); 
-                    satBandElement->SetName("sat_band"); 
-                    satBandElement->SetAttribute( "id", svkTypeUtils::IntToString( kk+1 ).c_str() );
-                    satBandElement->SetId( svkTypeUtils::IntToString( kk+1 ).c_str() );
-                    satBandElement->SetAttribute("label", planeLabels[kk].c_str() );
-                    this->pressBoxElement->AddNestedElement( satBandElement ); 
-
-                    vtkXMLDataElement* normalXElement = vtkXMLDataElement::New();
-                    normalXElement->SetName("normal_x"); 
-                    normalString = svkTypeUtils::DoubleToString(normals[kk][0]); 
-                    normalXElement->SetCharacterData(normalString.c_str(), normalString.length() ); 
-                    satBandElement->AddNestedElement( normalXElement ); 
-
-                    vtkXMLDataElement* normalYElement = vtkXMLDataElement::New();
-                    normalYElement->SetName("normal_y"); 
-                    normalString = svkTypeUtils::DoubleToString(normals[kk][1]); 
-                    normalYElement->SetCharacterData(normalString.c_str(), normalString.length() ); 
-                    satBandElement->AddNestedElement( normalYElement ); 
-
-                    vtkXMLDataElement* normalZElement = vtkXMLDataElement::New();
-                    normalZElement->SetName("normal_z"); 
-                    normalString = svkTypeUtils::DoubleToString(normals[kk][2]); 
-                    normalZElement->SetCharacterData(normalString.c_str(), normalString.length() ); 
-                    satBandElement->AddNestedElement( normalZElement ); 
-
-                    vtkXMLDataElement* thicknessElement = vtkXMLDataElement::New();
-                    thicknessString = svkTypeUtils::DoubleToString(boxSize[kk]);
-                    thicknessElement->SetCharacterData(thicknessString.c_str(), thicknessString.length()); 
-                    thicknessElement->SetName("thickness"); 
-                    satBandElement->AddNestedElement( thicknessElement ); 
 
                     distance = vtkMath::Dot(normals[kk], boxCenter); 
 
-                    vtkXMLDataElement* distanceElement = vtkXMLDataElement::New();
-                    distanceString = svkTypeUtils::DoubleToString( distance ); 
-                    distanceElement->SetName("distance_from_origin"); 
-                    distanceElement->SetCharacterData(distanceString.c_str(), distanceString.length()); 
-                    satBandElement->AddNestedElement( distanceElement );
+					if (distance < 0){
+						if ( kk == 0){
+							normals[kk][0] = -1* normals[kk][0];
+						}
+						else{
+							normals[kk][1] = -1*normals[kk][1];
+							normals[kk][2] = -1*normals[kk][2];
+						}
+						distance = -1*distance;
+					}
+
+					//  Use this info to initialize a sat band element in an XML file:
+					vtkXMLDataElement* satBandElement = vtkXMLDataElement::New();
+					satBandElement->SetName("sat_band");
+					satBandElement->SetAttribute( "id", svkTypeUtils::IntToString( kk+1 ).c_str() );
+					satBandElement->SetId( svkTypeUtils::IntToString( kk+1 ).c_str() );
+					satBandElement->SetAttribute("label", planeLabels[kk].c_str() );
+					this->pressBoxElement->AddNestedElement( satBandElement );
+
+					vtkXMLDataElement* normalXElement = vtkXMLDataElement::New();
+					normalXElement->SetName("normal_x");
+					normalString = svkTypeUtils::DoubleToString(normals[kk][0]);
+					normalXElement->SetCharacterData(normalString.c_str(), normalString.length() );
+					satBandElement->AddNestedElement( normalXElement );
+
+					vtkXMLDataElement* normalYElement = vtkXMLDataElement::New();
+					normalYElement->SetName("normal_y");
+					normalString = svkTypeUtils::DoubleToString(normals[kk][1]);
+					normalYElement->SetCharacterData(normalString.c_str(), normalString.length() );
+					satBandElement->AddNestedElement( normalYElement );
+
+					vtkXMLDataElement* normalZElement = vtkXMLDataElement::New();
+					normalZElement->SetName("normal_z");
+					normalString = svkTypeUtils::DoubleToString(normals[kk][2]);
+					normalZElement->SetCharacterData(normalString.c_str(), normalString.length() );
+					satBandElement->AddNestedElement( normalZElement );
+
+					vtkXMLDataElement* thicknessElement = vtkXMLDataElement::New();
+					thicknessString = svkTypeUtils::DoubleToString(boxSize[kk]);
+					thicknessElement->SetCharacterData(thicknessString.c_str(), thicknessString.length());
+					thicknessElement->SetName("thickness");
+					satBandElement->AddNestedElement( thicknessElement );
+
+					vtkXMLDataElement* distanceElement = vtkXMLDataElement::New();
+					distanceString = svkTypeUtils::DoubleToString( distance );
+					distanceElement->SetName("distance_from_origin");
+					distanceElement->SetCharacterData(distanceString.c_str(), distanceString.length());
+					satBandElement->AddNestedElement( distanceElement );
                 }
 
             } else {                     

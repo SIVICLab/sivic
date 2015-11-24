@@ -157,7 +157,7 @@ int main (int argc, char** argv)
     xmlFileName.append(xmlExtension); 
 
     int status = xml->SetXMLFileName( xmlFileName.c_str() );
-    cout << "here:status" << status <<endl;
+
     if ( status == 1 ) {
         //  couldn't read XML version, so check for legacy version of .dat file: 
         cout << "WARNING: couldn't read XML prescription file: " << xmlFileName  << endl;
