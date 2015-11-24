@@ -41,17 +41,18 @@ endif
 #   Add flags for source code coverage determination 
 #
 
-CMAKE_CXX_FLAGS = "-g -O0 -fprofile-arcs -ftest-coverage"
+CMAKE_CXX_FLAGS_TEST = "-g -O0 -fprofile-arcs -ftest-coverage"
 
 RM_CACHE          = ${RM} CMakeCache.txt;
-CONFIG_BASE       = ${CMAKE_DIR}/cmake -DVTK_DIR=${VTK_DIR} -DKWWidgets_DIR=${KWW_DIR} -DBUILD_CLAPACK=ON -DBUILD_ITK=ON -DITK_DIR=${ITK_DIR} -DCLAPACK_DIR=${CLAPACK_DIR} -DDCMTK_DIR=${DCMTK_DIR} -DBUILD_APPS=ON -DBUILD_EXAMPLES=OFF -DGETOPT_LIB=${GETOPT_LIB} -DBUILD_SIVIC=ON -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -DSVNCOMMAND=${SVN_COMMAND} -DCMAKE_VERBOSE_MAKEFILE=ON  -DDART_TESTING_TIMEOUT=6000 -DMAKECOMMAND="/usr/bin/gmake -i -j4" 
-CONFIG_TEST_ON    = -DUSE_OFF_SCREEN_TESTING=ON  -DBUILD_TESTING=ON  -DBUILD_GRAPHICS_TESTING=ON -DSVK_TEST_ROOT=${SVK_TEST_ROOT} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} 
+CONFIG_BASE       = ${CMAKE_DIR}/cmake -DVTK_DIR=${VTK_DIR} -DKWWidgets_DIR=${KWW_DIR} -DBUILD_CLAPACK=ON -DBUILD_ITK=ON -DITK_DIR=${ITK_DIR} -DCLAPACK_DIR=${CLAPACK_DIR} -DDCMTK_DIR=${DCMTK_DIR} -DBUILD_APPS=ON -DBUILD_EXAMPLES=OFF -DGETOPT_LIB=${GETOPT_LIB} -DBUILD_SIVIC=ON -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -DSVNCOMMAND=${SVN_COMMAND} -DCMAKE_VERBOSE_MAKEFILE=ON -DMAKECOMMAND="/usr/bin/gmake -i -j4" 
+CONFIG_TEST_ON    = -DUSE_OFF_SCREEN_TESTING=ON  -DBUILD_TESTING=ON  -DBUILD_GRAPHICS_TESTING=ON -DSVK_TEST_ROOT=${SVK_TEST_ROOT} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS_TEST} -DDART_TESTING_TIMEOUT=6000
 CONFIG_TEST_OFF   = -DUSE_OFF_SCREEN_TESTING=OFF -DBUILD_TESTING=OFF -DBUILD_GRAPHICS_TESTING=OFF 
 CONFIG_UCSF_ON    = -DUCSF_INTERNAL=ON  -DBUILD_CREATE_RAW=ON 
 CONFIG_UCSF_OFF   = -DUCSF_INTERNAL=OFF -DBUILD_CREATE_RAW=OFF 
 CONFIG_OSIRIX     = -DBUILD_OSIRIX=OFF 
 CONFIG_GE_CONSOLE = -DBUILD_GE_CONSOLE=ON
 CONFIG_RELEASE    = -DCMAKE_BUILD_TYPE=Release
+CONFIG_DEBUG      = -DCMAKE_BUILD_TYPE=Debug
 TEST_ROOT = ${SVK_TEST_ROOT}/results_tmp
 
 
@@ -65,31 +66,32 @@ update_test_cases:
 
 
 #
-#   Release build without testing
-#
-configure_no_test: clean_results 
-	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
-
-#
 #   Configure build for Experimental / Nightly
 #
-configure: clean_results 
-	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${SIVIC_ROOT}/) 
+configure_testing: clean_results 
+	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 #
-# configure for sourceforge release (not OsiriX)
+# 	Configure for debug, but no testing
+#
+configure_debug: clean_results 
+	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_DEBUG} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
+
+#
+# 	configure for sourceforge release (not OsiriX)
 #
 configure_dist: clean_results 
-	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${SIVIC_ROOT}/) 
-
-configure_debug: clean_results 
-	(${RM} CMakeCache.txt; ${CMAKE_DIR}/cmake -DVTK_DIR=${VTK_DIR} -DKWWidgets_DIR=${KWW_DIR} -DCMAKE_BUILD_TYPE=Debug -DDCMTK_DIR=${DCMTK_DIR} -DUCSF_INTERNAL=OFF -DBUILD_CREATE_RAW=OFF -DBUILD_APPS=ON -DBUILD_EXAMPLES=OFF -DBUILD_OSIRIX=OFF -DUSE_OFF_SCREEN_TESTING=OFF -DBUILD_SIVIC=ON -DBUILD_TESTING=OFF -DBUILD_GRAPHICS_TESTING=OFF -DGETOPT_LIB=${GETOPT_LIB} -DBUILD_CLAPACK=ON -DBUILD_ITK=ON -DITK_DIR=${ITK_DIR} -DCLAPACK_DIR=${CLAPACK_DIR} -DCMAKE_VERBOSE_MAKEFILE=ON -DMAKECOMMAND="/usr/bin/gmake -i -j4" ${SIVIC_ROOT}/)
-
-configure_release: clean_results 
-	(${RM} CMakeCache.txt; ${CMAKE_DIR}/cmake -DVTK_DIR=${VTK_DIR} -DKWWidgets_DIR=${KWW_DIR} -DCMAKE_BUILD_TYPE=Release -DDCMTK_DIR=${DCMTK_DIR} -DUCSF_INTERNAL=OFF -DBUILD_CREATE_RAW=OFF -DBUILD_APPS=ON -DBUILD_EXAMPLES=OFF -DBUILD_OSIRIX=OFF -DUSE_OFF_SCREEN_TESTING=OFF -DBUILD_SIVIC=ON -DBUILD_TESTING=OFF -DBUILD_GRAPHICS_TESTING=OFF -DGETOPT_LIB=${GETOPT_LIB} -DBUILD_CLAPACK=ON -DBUILD_ITK=ON -DITK_DIR=${ITK_DIR} -DCLAPACK_DIR=${CLAPACK_DIR} -DCMAKE_VERBOSE_MAKEFILE=ON -DMAKECOMMAND="/usr/bin/gmake -i -j4" ${SIVIC_ROOT}/)
+	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 
-# configure for sourceforge standard distribution (not OsiriX)
+#
+# 	configure for UCSF release (not OsiriX)
+#
+configure_dist_UCSF: clean_results 
+	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
+
+
+
 #
 # configure for sourceforge release of GE Console version (not OsiriX)
 #
@@ -113,7 +115,7 @@ GE_dist: configure_GE_dist
 #   
 #   Run odd numbered tests through memory check (dynamic analysis)      
 #   
-experimental: configure
+experimental: configure_testing
 	${XVFB_RUN} ${CMAKE_DIR}/ctest -D ExperimentalStart     --verbose --output-log ${OUTPUT_LOG} 
 	${XVFB_RUN} ${CMAKE_DIR}/ctest -D ExperimentalConfigure --verbose --output-log ${OUTPUT_LOG} 
 	${XVFB_RUN} ${CMAKE_DIR}/ctest -D ExperimentalBuild     --verbose --output-log ${OUTPUT_LOG} 
@@ -123,9 +125,9 @@ experimental: configure
 	${XVFB_RUN} ${CMAKE_DIR}/ctest -D ExperimentalSubmit    --verbose --output-log ${OUTPUT_LOG}
 
 #   Does not perform memory checking
-experimental_fast: configure
+experimental_fast: configure_testing
 	${XVFB_RUN} ${CMAKE_DIR}/ctest -D Experimental --output-log ${OUTPUT_LOG} 
 
-nightly: configure
+nightly: configure_testing
 	${XVFB_RUN} ${CMAKE_DIR}/ctest -D Nightly --verbose --build-nocmake --output-log ${OUTPUT_LOG} 
 
