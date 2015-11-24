@@ -328,16 +328,32 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
 
             case svkDcmHeader::UNSIGNED_INT_2:
                 dataTypeVtk = VTK_UNSIGNED_SHORT;
-                
                 // We only accept certain casts
-                if( pointArrayType != VTK_UNSIGNED_CHAR ) {
+                if( !(pointArrayType == VTK_UNSIGNED_CHAR || pointArrayType == VTK_DOUBLE || pointArrayType == VTK_FLOAT) ) {
                     pointArrayType = -1;
                 }
+                
 
                 /* Point and cell arrays are seperated because there could
                  * potentially be two different types.
                  */
-                if( cellArrayType != VTK_UNSIGNED_CHAR ) {
+                if( !(cellArrayType == VTK_UNSIGNED_CHAR || cellArrayType == VTK_DOUBLE || cellArrayType == VTK_FLOAT)) {
+                    cellArrayType = -1;
+                }
+                break;
+
+            case svkDcmHeader::SIGNED_INT_2:
+                dataTypeVtk = VTK_SHORT;
+                // We only accept certain casts
+                if( !(pointArrayType == VTK_UNSIGNED_CHAR || pointArrayType == VTK_DOUBLE || pointArrayType == VTK_FLOAT) ) {
+                    pointArrayType = -1;
+                }
+                
+
+                /* Point and cell arrays are seperated because there could
+                 * potentially be two different types.
+                 */
+                if( !(cellArrayType == VTK_UNSIGNED_CHAR || cellArrayType == VTK_DOUBLE || cellArrayType == VTK_FLOAT)) {
                     cellArrayType = -1;
                 }
                 break;
@@ -388,6 +404,12 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
         if ( pointArrayType != -1 ) {
             this->CastDataArrays(dataTypeVtk, this->GetPointData()); 
         }
+    
+        if( pointArrayType == -1 && cellArrayType == -1 ) {
+            vtkErrorWithObjectMacro(this, "Can't perform requested downcast cast to: " << castToFormat);
+            exit(1); 
+        }
+
         this->GetDcmHeader()->SetPixelDataType( castToFormat );
         this->SetScalarType( dataTypeVtk );
     } else {
