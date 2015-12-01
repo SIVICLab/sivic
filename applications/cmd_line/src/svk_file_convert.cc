@@ -75,7 +75,7 @@ int main (int argc, char** argv)
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_file_convert -i input_file_name -o output_file_name -t output_data_type  \n"; 
     usemsg += "                 [ --deid_type type [ --deid_id id ] ]                       \n";
-    usemsg += "                 [ --list_files ] [ --wl mode ] ] [-vh]                      \n";
+    usemsg += "                 [ --list_files ] [ --info ] ] [-vh]                         \n";
     usemsg += "                                                                             \n";  
     usemsg += "   -i            input_file_name     Name of file to convert.                \n"; 
     usemsg += "   -o            output_file_name    Name of outputfile.                     \n";  
@@ -95,10 +95,8 @@ int main (int argc, char** argv)
     usemsg += "   --single                          Only converts specified file if         \n"; 
     usemsg += "   --list_files                      Only list files comprising the data set.\n"; 
     usemsg += "                                     multiple in series.                     \n";
-    usemsg += "   --wl          mode                Print(p) only, or encode(e) window &    \n";                                        
-    usemsg += "                                     level in output image. e not yet        \n";
-    usemsg += "                                     mode = e is not yet supported. p only   \n";
-    usemsg += "                                     requirs the -i input_file_name.         \n";
+    usemsg += "   --info                            Print info about the images, only       \n";                                        
+    usemsg += "                                     requires the -i flag.                   \n";
 #if defined( UCSF_INTERNAL )
     usemsg += "   -b                                Burn UCSF Radiology Research into pixels of each image. \n";  
 #endif
@@ -118,7 +116,7 @@ int main (int argc, char** argv)
     bool   verbose = false;
     bool   onlyLoadSingleFile = false;
     bool   onlyListFiles = false;
-    string windowLevelMode = "n";   //  do not print or encode (default)
+    bool   infoMode = false;   
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -127,7 +125,7 @@ int main (int argc, char** argv)
         FLAG_DEID_STUDY_ID, 
         FLAG_SINGLE, 
         FLAG_LIST_FILES, 
-        FLAG_WL_MODE
+        FLAG_INFO_MODE
     };
 
 
@@ -137,7 +135,7 @@ int main (int argc, char** argv)
         {"deid_id",     required_argument, NULL,  FLAG_DEID_STUDY_ID},
         {"single",      no_argument,       NULL,  FLAG_SINGLE},
         {"list_files",  no_argument,       NULL,  FLAG_LIST_FILES},
-        {"wl",          required_argument, NULL,  FLAG_WL_MODE},
+        {"info",        no_argument,       NULL,  FLAG_INFO_MODE},
         {0, 0, 0, 0}
     };
 
@@ -171,8 +169,8 @@ int main (int argc, char** argv)
             case FLAG_LIST_FILES:
                 onlyListFiles = true;
                 break;
-            case FLAG_WL_MODE:
-                windowLevelMode.assign( optarg );
+            case FLAG_INFO_MODE:
+                infoMode = true;
                 break;
 #if defined( UCSF_INTERNAL )
             case 'b':
@@ -203,7 +201,7 @@ int main (int argc, char** argv)
      * return it so we must instantiate it outside of the factory. To account for this extra
      * type we will support a dataTypeOut equal to svkImageWriterFactory::LAST_TYPE + 1.
      */
-    if ( windowLevelMode.compare("n") == 0 ) {
+    if ( infoMode == false ) {
         //  this is the standard validation
         if ( argc != 0 || inputFileName.length() == 0 || outputFileName.length() == 0 ||
             dataTypeOut < 0 || dataTypeOut > svkImageWriterFactory::LAST_TYPE + 1 ) {
@@ -211,11 +209,6 @@ int main (int argc, char** argv)
             exit(1); 
         }
     } else {
-        //  if neigher n or p, then exit: 
-        if ( windowLevelMode.compare("n") != 0  && windowLevelMode.compare("p") != 0 ) {
-            cout << usemsg << endl;
-            exit(1); 
-        }
         if ( argc != 0 || inputFileName.length() == 0 ) {
             cout << usemsg << endl;
             exit(1); 
@@ -284,13 +277,33 @@ int main (int argc, char** argv)
     }
     reader->Update(); 
 
-    if ( windowLevelMode.compare("p") == 0 ) {
+    if ( infoMode == true ) {
         double window; 
         double level; 
         svkMriImageData::SafeDownCast(reader->GetOutput())->GetAutoWindowLevel( window, level);
-        cout << "AUTO WINDOW: " << window << endl;
-        cout << "AUTO LEVEL:  " << level  << endl;
-        exit(1); 
+
+        ostringstream info;
+
+        info << "=====================================================================" << endl; 
+        info << "IMAGE INFO: "                                                          << endl; 
+        info << "=====================================================================" << endl; 
+        info << "AUTO WINDOW: " << window << endl;
+        info << "AUTO LEVEL:  " << level  << endl;
+
+        if ( outputFileName.length() > 0 ) {
+
+            ofstream infoFile( outputFileName.c_str() );
+            if( ! infoFile)  {
+                throw runtime_error("Cannot open info file for writing");
+            }
+            
+            infoFile <<  info.str();
+            infoFile.close();
+
+        } else  {
+            cout << info << endl;
+        }
+        exit(0); 
     }
 
     // ===============================================
