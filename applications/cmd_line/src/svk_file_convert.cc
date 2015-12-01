@@ -94,6 +94,9 @@ int main (int argc, char** argv)
     usemsg += "   --single                          Only converts specified file if         \n"; 
     usemsg += "   --list_files                      Only list files comprising the data set.\n"; 
     usemsg += "                                     multiple in series.                     \n";
+    usemsg += "   --wl          mode                Print(p) only, or encode(e) window &    \n";                                        
+    usemsg += "                                     level in output image. e not yet        \n";
+    usemsg += "                                     mode = e is not yet supported.          \n";
 #if defined( UCSF_INTERNAL )
     usemsg += "   -b                                Burn UCSF Radiology Research into pixels of each image. \n";  
 #endif
@@ -113,6 +116,7 @@ int main (int argc, char** argv)
     bool   verbose = false;
     bool   onlyLoadSingleFile = false;
     bool   onlyListFiles = false;
+    string windowLevelMode = "n";   //  do not print or encode (default)
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -120,7 +124,8 @@ int main (int argc, char** argv)
         FLAG_DEID_TYPE, 
         FLAG_DEID_STUDY_ID, 
         FLAG_SINGLE, 
-        FLAG_LIST_FILES
+        FLAG_LIST_FILES, 
+        FLAG_WL_MODE
     };
 
 
@@ -130,6 +135,7 @@ int main (int argc, char** argv)
         {"deid_id",     required_argument, NULL,  FLAG_DEID_STUDY_ID},
         {"single",      no_argument,       NULL,  FLAG_SINGLE},
         {"list_files",  no_argument,       NULL,  FLAG_LIST_FILES},
+        {"wl",          required_argument, NULL,  FLAG_WL_MODE},
         {0, 0, 0, 0}
     };
 
@@ -162,6 +168,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_LIST_FILES:
                 onlyListFiles = true;
+                break;
+            case FLAG_WL_MODE:
+                windowLevelMode.assign( optarg );
                 break;
 #if defined( UCSF_INTERNAL )
             case 'b':
@@ -259,6 +268,14 @@ int main (int argc, char** argv)
         reader->OnlyGlobFiles();
     }
     reader->Update(); 
+
+    if ( windowLevelMode.compare("p") == 0 ) {
+        double window; 
+        double level; 
+        svkMriImageData::SafeDownCast(reader->GetOutput())->GetAutoWindowLevel( window, level);
+        cout << "WL: " << window << " " << level << endl;
+        exit(1); 
+    }
 
     // ===============================================
     //  Set up deidentification options:
