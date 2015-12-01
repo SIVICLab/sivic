@@ -74,7 +74,8 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_file_convert -i input_file_name -o output_file_name -t output_data_type  \n"; 
-    usemsg += "                 [ --deid_type type [ --deid_id id ] ] [-h]                  \n";
+    usemsg += "                 [ --deid_type type [ --deid_id id ] ]                       \n";
+    usemsg += "                 [ --list_files ] [ --wl mode ] ] [-vh]                      \n";
     usemsg += "                                                                             \n";  
     usemsg += "   -i            input_file_name     Name of file to convert.                \n"; 
     usemsg += "   -o            output_file_name    Name of outputfile.                     \n";  
@@ -96,7 +97,8 @@ int main (int argc, char** argv)
     usemsg += "                                     multiple in series.                     \n";
     usemsg += "   --wl          mode                Print(p) only, or encode(e) window &    \n";                                        
     usemsg += "                                     level in output image. e not yet        \n";
-    usemsg += "                                     mode = e is not yet supported.          \n";
+    usemsg += "                                     mode = e is not yet supported. p only   \n";
+    usemsg += "                                     requirs the -i input_file_name.         \n";
 #if defined( UCSF_INTERNAL )
     usemsg += "   -b                                Burn UCSF Radiology Research into pixels of each image. \n";  
 #endif
@@ -201,10 +203,23 @@ int main (int argc, char** argv)
      * return it so we must instantiate it outside of the factory. To account for this extra
      * type we will support a dataTypeOut equal to svkImageWriterFactory::LAST_TYPE + 1.
      */
-    if ( argc != 0 || inputFileName.length() == 0 || outputFileName.length() == 0 ||
-        dataTypeOut < 0 || dataTypeOut > svkImageWriterFactory::LAST_TYPE + 1 ) {
-        cout << usemsg << endl;
-        exit(1); 
+    if ( windowLevelMode.compare("n") == 0 ) {
+        //  this is the standard validation
+        if ( argc != 0 || inputFileName.length() == 0 || outputFileName.length() == 0 ||
+            dataTypeOut < 0 || dataTypeOut > svkImageWriterFactory::LAST_TYPE + 1 ) {
+            cout << usemsg << endl;
+            exit(1); 
+        }
+    } else {
+        //  if neigher n or p, then exit: 
+        if ( windowLevelMode.compare("n") != 0  && windowLevelMode.compare("p") != 0 ) {
+            cout << usemsg << endl;
+            exit(1); 
+        }
+        if ( argc != 0 || inputFileName.length() == 0 ) {
+            cout << usemsg << endl;
+            exit(1); 
+        }
     }
 
     if( ! svkUtils::FilePathExists( inputFileName.c_str() ) ) {
@@ -273,7 +288,8 @@ int main (int argc, char** argv)
         double window; 
         double level; 
         svkMriImageData::SafeDownCast(reader->GetOutput())->GetAutoWindowLevel( window, level);
-        cout << "WL: " << window << " " << level << endl;
+        cout << "AUTO WINDOW: " << window << endl;
+        cout << "AUTO LEVEL:  " << level  << endl;
         exit(1); 
     }
 
