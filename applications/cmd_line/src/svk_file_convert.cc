@@ -301,7 +301,7 @@ int main (int argc, char** argv)
             infoFile.close();
 
         } else  {
-            cout << info << endl;
+            cout << info.str() << endl;
         }
         exit(0); 
     }
