@@ -82,7 +82,8 @@ class svkImageMathematics : public vtkImageMathematics
             START_BIN_FOR_HISTOGRAM,
             SMOOTH_BINS_FOR_HISTOGRAM,
             MASK_FOR_MEDIAN,
-            OUTPUT_SERIES_DESCRIPTION
+            OUTPUT_SERIES_DESCRIPTION,
+            OUTPUT_FLOAT
         } svkImageMathematicsParameters;
 
 
@@ -99,6 +100,10 @@ class svkImageMathematics : public vtkImageMathematics
 
         //! Prints all input parameters set.
         void                    PrintSelf( ostream &os, vtkIndent indent );
+
+        //  Explicitly specify float output
+        void                    SetOutputToFloat(bool outputFloat);
+        bool                    GetOutputToFloat();
 
     protected:
 

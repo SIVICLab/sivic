@@ -77,6 +77,7 @@ int main (int argc, char** argv)
     usemsg += "                                         4 = /                               \n";  
     usemsg += "                                         5 = * k (Scale by constant)         \n";  
     usemsg += "   -s            scale factor        float scaling factor                    \n";
+    usemsg += "   -f            float_out           output float data                       \n";
     usemsg += "   -v                                Verbose output.                         \n";
     usemsg += "   -h                                Print help mesage.                      \n";  
     usemsg += "                                                                             \n";  
@@ -86,9 +87,10 @@ int main (int argc, char** argv)
     string inputFileName1; 
     string inputFileName2; 
     string outputFileName; 
-    int    operation = 0;  
+    int    operation     = 0;  
     float  scalingFactor = 1;
-    bool   verbose = false;
+    bool   verbose       = false;
+    bool   floatOutput   = false;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
 
@@ -126,6 +128,9 @@ int main (int argc, char** argv)
                 break;
             case 's':
                 scalingFactor = atof(optarg);
+                break;
+            case 'f':
+                floatOutput = true;
                 break;
             case 'v':
                 verbose = true;
@@ -194,12 +199,13 @@ int main (int argc, char** argv)
     //  Set the input command line into the data set provenance:
     reader1->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
 
-    //  Scale image by constant factor: 
+    //  Set up math operations: 
     svkImageMathematics* math = svkImageMathematics::New();
     math->SetInput1( reader1->GetOutput() );
     if ( reader2 != NULL ) {
         math->SetInput2( reader2->GetOutput() ); 
     }
+
     if ( operation == 1 ) {
         math->SetOperationToAdd();   
     } else if ( operation == 2 ) {
@@ -211,7 +217,13 @@ int main (int argc, char** argv)
     } else if ( operation == 5 ) {
         math->SetOperationToMultiplyByK();   
         math->SetConstantK( scalingFactor );
-    } 
+    }
+
+    //  By default, output is the greater of the input datatypes
+    //  Explicity request float math on two integer inputs for float results
+    if(floatOutput) {
+        math->SetOutputToFloat(floatOutput);
+    }
     math->Update();
 
     // If the type is supported be svkImageWriterFactory then use it, otherwise use the vtkXMLWriter

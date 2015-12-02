@@ -92,6 +92,7 @@ svkImageMathematics::svkImageMathematics()
     this->GetPortMapper()->InitializeInputPort( START_BIN_FOR_HISTOGRAM , "START_BIN_FOR_HISTOGRAM", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
     this->GetPortMapper()->InitializeInputPort( SMOOTH_BINS_FOR_HISTOGRAM , "SMOOTH_BINS_FOR_HISTOGRAM", svkAlgorithmPortMapper::SVK_INT, !required);
     this->GetPortMapper()->InitializeInputPort( OUTPUT_SERIES_DESCRIPTION, "OUTPUT_SERIES_DESCRIPTION", svkAlgorithmPortMapper::SVK_STRING, !required);
+    this->GetPortMapper()->InitializeInputPort( OUTPUT_FLOAT, "OUTPUT_FLOAT", svkAlgorithmPortMapper::SVK_BOOL, !required);
 
     this->SetNumberOfOutputPorts(1);
     this->GetPortMapper()->InitializeOutputPort( 0, "MATH_OUTPUT", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
@@ -150,6 +151,24 @@ svkAlgorithmPortMapper* svkImageMathematics::GetPortMapper()
 
 
 /*!
+ * Utility setter for input port: Output float
+ */
+void svkImageMathematics::SetOutputToFloat(bool outputFloat)
+{
+    this->GetPortMapper()->SetBoolInputPortValue(OUTPUT_FLOAT, outputFloat);
+}
+
+
+/*!
+ * Utility getter for input port: Output float
+ */
+bool svkImageMathematics::GetOutputToFloat()
+{
+    return this->GetPortMapper()->GetBoolInputPortValue(OUTPUT_FLOAT);
+}
+
+
+/*!
  *  PrintSelf method calls parent class PrintSelf, then prints all parameters using the port mapper.
  *
  */
@@ -192,6 +211,12 @@ void svkImageMathematics::CheckDataTypeMatch()
 
             svkImageData::SafeDownCast(this->GetImageDataInput(0))->CastDataFormat( svkDcmHeader::SIGNED_FLOAT_4); 
         }
+    }
+
+    // By default, output datatype is the greater of the input datatypes
+    // With two integer inputs, you must explicitly request float output
+    if (this->GetPortMapper()->GetBoolInputPortValue(OUTPUT_FLOAT)) {
+        svkImageData::SafeDownCast(this->GetImageDataInput(0))->CastDataFormat( svkDcmHeader::SIGNED_FLOAT_4);
     }
 
     this->GetOutput()->DeepCopy( this->GetImageDataInput(0) ); 
