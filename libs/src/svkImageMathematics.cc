@@ -76,7 +76,7 @@ svkImageMathematics::svkImageMathematics()
 
     vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
 
-    this->SetNumberOfInputPorts(14);
+    this->SetNumberOfInputPorts(15);
     bool required = true;
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE_1, "INPUT_IMAGE_1", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE_2, "INPUT_IMAGE_2", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, !required );

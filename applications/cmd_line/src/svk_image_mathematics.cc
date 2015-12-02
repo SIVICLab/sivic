@@ -112,7 +112,7 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:o:s:p:hv", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:o:s:p:fhv", long_options, &option_index)) != EOF) {
         switch (i) {
             case FLAG_FILE_1:
                 inputFileName1.assign( optarg );
