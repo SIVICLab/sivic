@@ -1732,7 +1732,7 @@ vtkXMLDataElement* svkSatBandsXML::GetXMLDataElement()
 /*! 
  * External C interface: 
  */
-void* svkSatBandsXML_New(char* xmlFileName, int *status)
+void* svkSatBandsXML_New(const char* xmlFileName, int *status)
 {
     svkSatBandsXML* xml = svkSatBandsXML::New();     
     *status = xml->SetXMLFileName(xmlFileName); 
