@@ -84,6 +84,7 @@ class svkSatBandsXML: public vtkObject
         vtkTypeRevisionMacro( svkSatBandsXML, vtkObject);
 
         int                         SetXMLFileName( vtkstd::string xmlFileName );     
+        int                         ParseXML( vtkXMLDataElement* satBandsElement );
         vtkstd::string              GetXMLFileName( );
         void                        ClearXMLFile( );
         void                        SetVerbose( bool isVerbose );     
