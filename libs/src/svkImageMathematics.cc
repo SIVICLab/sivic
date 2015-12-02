@@ -182,7 +182,7 @@ void svkImageMathematics::PrintSelf( ostream &os, vtkIndent indent )
 /*!
  *  If 2 inputs, they must have the same data types.  IF the data types differ, upcast the smaller data type 
  */
-void svkImageMathematics::CheckDataTypeMatch()
+void svkImageMathematics::SetDatatypes()
 {
     if (this->GetInput(1)) {
         int outType0 = this->GetImageDataInput(0)->GetScalarType();
@@ -231,7 +231,7 @@ void svkImageMathematics::Update()
 {
 
     // if there are 2 inputs of different types, upcast to the larger: 
-    this->CheckDataTypeMatch();  
+    this->SetDatatypes();  
 
     //  Determine how many vtkPointData arrays are in the input data
     //  Require the first input to have at least as many volumes as the 2nd input if a binary 

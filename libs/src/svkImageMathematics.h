@@ -117,7 +117,7 @@ class svkImageMathematics : public vtkImageMathematics
         svkAlgorithmPortMapper* portMapper;
 
     private: 
-        void                CheckDataTypeMatch(); 
+        void                SetDatatypes(); 
 
 
 };
