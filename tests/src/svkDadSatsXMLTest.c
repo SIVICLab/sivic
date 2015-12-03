@@ -99,7 +99,7 @@ int main(const int argc, const char **argv)
 
     FILE* f = fopen( outputfile, "w" ); 
     if (f == NULL) {
-        printf("Error opening file!\n");
+        printf("Error opening file: %s!\n", outputfile );
         exit(1);
     }
 
