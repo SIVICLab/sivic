@@ -78,10 +78,11 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         void                        SetVerbose( bool isVerbose );     
         int                         GetXMLVersion(); 
         vtkXMLDataElement*          FindNestedElementWithPath( string xmlPath);
-        vtkstd::string              GetNestedElementCharacterDataWithPath( string xmlPath );
-        void                        SetNestedElementWithPath( string xmlPath, string value );
+        const char*                 GetDataWithPath( const char* xmlPath );
+        int                         SetDataWithPath( const char* xmlPath, const char* value );
+        vtkXMLDataElement*          CreateNestedElementWithPath( string xmlPath);
 
-        vtkXMLDataElement*          GetXMLDataElement(); 
+        vtkXMLDataElement*          GetRootXMLDataElement();
 
         void                        GetEncodedSpace( int matrixSize[3], float fov[3] );
         svkSatBandsXML*             GetSatBandsXML();
@@ -143,6 +144,12 @@ void*       svkDataAcquisitionDescriptionXML_New();
 void*       svkDataAcquisitionDescriptionXML_Delete( void* dataAcquisitionDescriptionXML );
 void*       svkDataAcquisitionDescriptionXML_Read(const char* xmlFileName, int* status);
 int         svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xml );
+
+// Generic Getter
+const char* svkDataAcquisitionDescriptionXML_GetDataWithPath( void* xml, const char* path );
+
+// Generic Setter
+int         svkDataAcquisitionDescriptionXML_SetDataWithPath( void* xml, const char* path, const char* data );
 
 void*       svkDataAcquisitionDescriptionXML_GetSatBandsXML( void* dataAcquisitionDescriptionXML ); 
 void        svkDataAcquisitionDescriptionXML_SetTrajectory(const char* type, const char* id, const char* comment, void* xml); 

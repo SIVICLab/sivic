@@ -103,7 +103,7 @@ svkDataAcquisitionDescriptionXML::~svkDataAcquisitionDescriptionXML()
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryType( vtkstd::string type )
 {
-	this->SetNestedElementWithPath("encoding/trajectory", type );
+	this->SetDataWithPath("encoding/trajectory", type.c_str() );
 }
 
 
@@ -112,7 +112,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryType( vtkstd::string type )
  */
 vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryType( )
 {
-	return this->GetNestedElementCharacterDataWithPath( "encoding/trajectory" );
+	return this->GetDataWithPath( "encoding/trajectory" );
 }
 
 
@@ -121,7 +121,7 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryType( )
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryID( vtkstd::string ID )
 {
-    this->SetNestedElementWithPath("encoding/trajectoryDescription/identifier", ID);
+    this->SetDataWithPath("encoding/trajectoryDescription/identifier", ID.c_str());
 }
 
 
@@ -130,7 +130,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryID( vtkstd::string ID )
  */
 vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryID( )
 {
-	return this->GetNestedElementCharacterDataWithPath( "encoding/trajectoryDescription/identifier" );
+	return this->GetDataWithPath( "encoding/trajectoryDescription/identifier" );
 }
 
 
@@ -139,7 +139,7 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryID( )
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryComment( vtkstd::string comment )
 {
-    this->SetNestedElementWithPath("encoding/trajectoryDescription/comment", comment);
+    this->SetDataWithPath("encoding/trajectoryDescription/comment", comment.c_str());
 }
 
 
@@ -148,7 +148,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryComment( vtkstd::string comm
  */
 vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryComment( )
 {
-	return this->GetNestedElementCharacterDataWithPath( "encoding/trajectoryDescription/comment" );
+	return this->GetDataWithPath( "encoding/trajectoryDescription/comment" );
 }
 
 
@@ -458,14 +458,14 @@ vtkXMLDataElement* svkDataAcquisitionDescriptionXML::FindNestedElementWithPath( 
 /*!
  * Returns the character data at a specific path. Reports an error if the path is not found.
  */
-vtkstd::string svkDataAcquisitionDescriptionXML::GetNestedElementCharacterDataWithPath( string xmlPath )
+const char * svkDataAcquisitionDescriptionXML::GetDataWithPath( const char* xmlPath )
 {
 	string data = "";
 	bool foundData = svkUtils::GetNestedElementCharacterDataWithPath( this->dataAcquisitionDescriptionXML, xmlPath, data );
 	if( !foundData ) {
 		cout << "ERROR: Could get character data at path: " << xmlPath << endl;
 	}
-	return data;
+	return data.c_str();
 }
 
 
@@ -473,11 +473,14 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetNestedElementCharacterDataWi
  *  Sets the character data for an xml element. Reports an error and returns
  *  null if nothing is found at the given xpath.
  */
-void svkDataAcquisitionDescriptionXML::SetNestedElementWithPath( string xmlPath, string value )
+int svkDataAcquisitionDescriptionXML::SetDataWithPath( const char* xmlPath, const char* value )
 {
 	bool wasSet = svkUtils::SetNestedElementWithPath( this->dataAcquisitionDescriptionXML, xmlPath, value);
 	if( !wasSet ) {
 		cout << "ERROR: Could not set value <" << value << "> for element " << xmlPath << endl;
+		return -1;
+	} else {
+        return 0;
 	}
 }
 
@@ -494,7 +497,7 @@ svkSatBandsXML* svkDataAcquisitionDescriptionXML::GetSatBandsXML( )
 /*!
  * Get the main XML data object.
  */
-vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetXMLDataElement()
+vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetRootXMLDataElement()
 {
     return this->dataAcquisitionDescriptionXML;
 }
@@ -554,6 +557,34 @@ int svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xm
     	printf(NULL_XML_ERROR);
     	return false;
     }
+}
+
+
+/*!
+ * Generic Getter
+ */
+const char* svkDataAcquisitionDescriptionXML_GetDataWithPath( void* xml, const char* path )
+{
+	if( xml != NULL ) {
+		return ((svkDataAcquisitionDescriptionXML*)xml)->GetDataWithPath( path );
+	} else {
+    	printf(NULL_XML_ERROR);
+        return NULL;
+	}
+}
+
+
+/*!
+ * Generic Setter
+ */
+int svkDataAcquisitionDescriptionXML_SetDataWithPath( void* xml, const char* path, const char* data )
+{
+	if( xml != NULL ) {
+		return ((svkDataAcquisitionDescriptionXML*)xml)->SetDataWithPath( path, data );
+	} else {
+    	printf(NULL_XML_ERROR);
+        return -1;
+	}
 }
 
 

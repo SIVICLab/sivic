@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/tests/src/svkSatBandsXML.c $
- *  $Rev: 2083 $
- *  $Author: jccrane $
- *  $Date: 2014-10-20 18:48:28 -0700 (Mon, 20 Oct 2014) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -48,13 +48,12 @@
  
 int main(const int argc, const char **argv)
 {
-    int   status; 
+    int   status = 0;
     void* dadXml = svkDataAcquisitionDescriptionXML_New( );
     
     svkDataAcquisitionDescriptionXML_SetTrajectory("cartesian", "cartesian2342", "This is an undersampled dataset..", dadXml ); 
     svkDataAcquisitionDescriptionXML_SetTrajectoryLongParameter("myLongParam", 5, dadXml ); 
     svkDataAcquisitionDescriptionXML_SetTrajectoryDoubleParameter("myDoubleParam", 5.56, dadXml ); 
-    svkDataAcquisitionDescriptionXML_WriteXMLFile( argv[1], dadXml ); 
     const char* trajectoryType = svkDataAcquisitionDescriptionXML_GetTrajectoryType(dadXml );
     printf("Trajectory Type   : %s\n", trajectoryType);
     const char* trajectoryID = svkDataAcquisitionDescriptionXML_GetTrajectoryID(dadXml );
@@ -65,9 +64,17 @@ int main(const int argc, const char **argv)
     printf("Trajectory Long   : %d\n", myLongParam);
     double myDoubleParam = svkDataAcquisitionDescriptionXML_GetTrajectoryDoubleParameter("myDoubleParam", dadXml );
     printf("Trajectory Double : %f\n", myDoubleParam);
+    const char* newID = "MyNewID";
+    int result = svkDataAcquisitionDescriptionXML_SetDataWithPath(dadXml, "encoding/trajectoryDescription/identifier", newID );
+    const char* currentID = svkDataAcquisitionDescriptionXML_GetDataWithPath(dadXml, "encoding/trajectoryDescription/identifier" );
+    if(strcmp( newID, currentID ) == 0 ){
+    	printf("ERROR: Identified could not be set.");
+    	status = -1;
+    }
+    svkDataAcquisitionDescriptionXML_WriteXMLFile( argv[1], dadXml );
     svkDataAcquisitionDescriptionXML_Delete( dadXml );
 
-    return (0);
+    return status;
 }
 
 
