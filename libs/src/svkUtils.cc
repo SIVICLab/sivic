@@ -608,14 +608,52 @@ vtkXMLDataElement* svkUtils::FindNestedElementWithPath( vtkXMLDataElement* root,
 {
     vector<string> elements = svkUtils::SplitString( xmlPath, "/");
     vtkXMLDataElement* elem = root;
-    for( int i = 0; i < elements.size(); i++ ) {
-        if( elem != NULL ) {
-            elem = elem->FindNestedElementWithName(elements[i].c_str());
-        } else {
-            break;
+    if( elements.size() > 0 ) {
+        for( int i = 0; i < elements.size(); i++ ) {
+            if( elem != NULL ) {
+                elem = elem->FindNestedElementWithName(elements[i].c_str());
+            } else {
+                break;
+            }
         }
+    } else {
+        elem = NULL;
     }
     return elem;
+}
+
+
+/*!
+ * Method finds a nested element and then grabs the character data and puts it
+ * into the data string provided as an argument. If the character data is
+ * retrieved then the method returns true, otherwise false.
+ */
+bool svkUtils::GetNestedElementCharacterDataWithPath( vtkXMLDataElement* root, string xmlPath, string data )
+{
+	bool dataFound = false;
+	vtkXMLDataElement* elem = svkUtils::FindNestedElementWithPath(root, xmlPath );
+	if( elem != NULL ) {
+		data = elem->GetCharacterData();
+		dataFound = true;
+	}
+	return dataFound;
+}
+
+
+/*!
+ * Sets the character data for a given xml path relative to a root element. If
+ * the element exists then it will be set and true will be returned. Otherwise
+ * false will be returned.
+ */
+bool svkUtils::SetNestedElementWithPath( vtkXMLDataElement* root, string xmlPath, string value)
+{
+	bool wasSet = false; // Assume failure
+	vtkXMLDataElement* elem = svkUtils::FindNestedElementWithPath(root, xmlPath );
+	if( elem != NULL ) {
+		elem->SetCharacterData(value.c_str(), value.size());
+		wasSet = true;
+	}
+	return wasSet;
 }
 
 
