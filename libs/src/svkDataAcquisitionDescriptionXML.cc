@@ -50,6 +50,7 @@
 #include <vtkXMLDataParser.h>
 #include <vtkMath.h>
 #include <stdexcept>
+#define NULL_XML_ERROR "ERROR: Data Acquisition Description XML is NULL!\n"
 
 using namespace svk;
 
@@ -515,7 +516,11 @@ void* svkDataAcquisitionDescriptionXML_New()
  */
 void* svkDataAcquisitionDescriptionXML_Delete( void* xml )
 {
-    ((svkDataAcquisitionDescriptionXML*)xml)->Delete();
+	if( xml != NULL ) {
+        ((svkDataAcquisitionDescriptionXML*)xml)->Delete();
+	} else {
+    	printf(NULL_XML_ERROR);
+	}
     return NULL;
 }
 
@@ -530,6 +535,8 @@ void* svkDataAcquisitionDescriptionXML_Read(const char* xmlFileName, int *status
     if (*status == 1 ) {
         xml->Delete();
         xml = NULL;
+    } else {
+    	printf("Error reading file: %s!\n", xmlFileName);
     }
     return ((void*)xml);
 };
@@ -544,6 +551,7 @@ int svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xm
 	if( xml != NULL ) {
 		return ((svkDataAcquisitionDescriptionXML*)xml)->WriteXMLFile( filepath );
     } else {
+    	printf(NULL_XML_ERROR);
     	return false;
     }
 }
@@ -558,6 +566,8 @@ void* svkDataAcquisitionDescriptionXML_GetSatBandsXML( void* dataAcquisitionDesc
     svkDataAcquisitionDescriptionXML* dadXML =(svkDataAcquisitionDescriptionXML*)dataAcquisitionDescriptionXML;
     if( dadXML != NULL ) {
         satBandsXML = dadXML->GetSatBandsXML();
+    } else {
+    	printf(NULL_XML_ERROR);
     }
     return satBandsXML;
 }
@@ -568,9 +578,13 @@ void* svkDataAcquisitionDescriptionXML_GetSatBandsXML( void* dataAcquisitionDesc
  */
 void svkDataAcquisitionDescriptionXML_SetTrajectory(const char* type, const char* id, const char* comment, void* xml)
 {
-    ((svkDataAcquisitionDescriptionXML*)xml)->SetTrajectoryType( type );
-    ((svkDataAcquisitionDescriptionXML*)xml)->SetTrajectoryID( id );
-    ((svkDataAcquisitionDescriptionXML*)xml)->SetTrajectoryComment( comment );
+	if( xml != NULL ) {
+        ((svkDataAcquisitionDescriptionXML*)xml)->SetTrajectoryType( type );
+        ((svkDataAcquisitionDescriptionXML*)xml)->SetTrajectoryID( id );
+        ((svkDataAcquisitionDescriptionXML*)xml)->SetTrajectoryComment( comment );
+    } else {
+    	printf(NULL_XML_ERROR);
+    }
 }
 
 
@@ -579,7 +593,12 @@ void svkDataAcquisitionDescriptionXML_SetTrajectory(const char* type, const char
  */
 const char* svkDataAcquisitionDescriptionXML_GetTrajectoryType(void* xml)
 {
-    return (((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryType( )).c_str();
+	if( xml != NULL ) {
+        return (((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryType( )).c_str();
+	} else {
+    	printf(NULL_XML_ERROR);
+		return NULL;
+	}
 }
 
 
@@ -588,7 +607,12 @@ const char* svkDataAcquisitionDescriptionXML_GetTrajectoryType(void* xml)
  */
 const char* svkDataAcquisitionDescriptionXML_GetTrajectoryID(void* xml)
 {
-    return (((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryID( )).c_str();
+	if( xml != NULL ) {
+        return (((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryID( )).c_str();
+	} else {
+    	printf(NULL_XML_ERROR);
+		return NULL;
+	}
 }
 
 
@@ -597,7 +621,12 @@ const char* svkDataAcquisitionDescriptionXML_GetTrajectoryID(void* xml)
  */
 const char* svkDataAcquisitionDescriptionXML_GetTrajectoryComment(void* xml)
 {
-    return (((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryComment( )).c_str();
+	if( xml != NULL ) {
+        return (((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryComment( )).c_str();
+	} else {
+    	printf(NULL_XML_ERROR);
+		return NULL;
+	}
 }
 
 /*!
@@ -605,7 +634,11 @@ const char* svkDataAcquisitionDescriptionXML_GetTrajectoryComment(void* xml)
  */
 void svkDataAcquisitionDescriptionXML_SetTrajectoryLongParameter(const char* name, long value, void* xml )
 {
-    ((svkDataAcquisitionDescriptionXML*)xml)->SetTrajectoryParameter( name, value );
+	if( xml != NULL ) {
+        ((svkDataAcquisitionDescriptionXML*)xml)->SetTrajectoryParameter( name, value );
+	} else {
+    	printf(NULL_XML_ERROR);
+	}
 }
 
 
@@ -614,7 +647,12 @@ void svkDataAcquisitionDescriptionXML_SetTrajectoryLongParameter(const char* nam
  */
 long svkDataAcquisitionDescriptionXML_GetTrajectoryLongParameter(const char* name, void* xml )
 {
-    return ((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryLongParameter( name );
+	if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryLongParameter( name );
+	} else {
+    	printf(NULL_XML_ERROR);
+		return VTK_LONG_MIN;
+	}
 }
 
 
@@ -623,7 +661,11 @@ long svkDataAcquisitionDescriptionXML_GetTrajectoryLongParameter(const char* nam
  */
 void svkDataAcquisitionDescriptionXML_SetTrajectoryDoubleParameter(const char* name, double value, void* xml )
 {
-    ((svkDataAcquisitionDescriptionXML*)xml)->SetTrajectoryParameter( name, value );
+	if( xml != NULL ) {
+        ((svkDataAcquisitionDescriptionXML*)xml)->SetTrajectoryParameter( name, value );
+	} else {
+    	printf(NULL_XML_ERROR);
+	}
 }
 
 
@@ -632,7 +674,10 @@ void svkDataAcquisitionDescriptionXML_SetTrajectoryDoubleParameter(const char* n
  */
 double svkDataAcquisitionDescriptionXML_GetTrajectoryDoubleParameter(const char* name, void* xml )
 {
-    return ((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryDoubleParameter( name );
+	if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryDoubleParameter( name );
+	} else {
+    	printf(NULL_XML_ERROR);
+		return VTK_DOUBLE_MIN;
+	}
 }
-
-
