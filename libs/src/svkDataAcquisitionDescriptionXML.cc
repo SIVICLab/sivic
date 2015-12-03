@@ -75,6 +75,7 @@ svkDataAcquisitionDescriptionXML::svkDataAcquisitionDescriptionXML()
     this->versionElement = NULL;     
     this->satBandsElement = NULL;     
     this->satBandsXML = NULL;     
+    this->xmlFileName ="";
     
     this->versionNumber = -0.0;
 }
@@ -90,6 +91,9 @@ svkDataAcquisitionDescriptionXML::~svkDataAcquisitionDescriptionXML()
     if( this->satBandsXML != NULL ) {
         this->satBandsXML->Delete();
     }
+    if( this->dataAcquisitionDescriptionXML != NULL ) {
+        this->dataAcquisitionDescriptionXML->Delete();
+    }
 }
 
 
@@ -98,8 +102,7 @@ svkDataAcquisitionDescriptionXML::~svkDataAcquisitionDescriptionXML()
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryType( vtkstd::string type )
 {
-   vtkXMLDataElement* trajectoryDescElem = svkUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, "encoding/trajectory");
-    trajectoryDescElem->SetCharacterData(type.c_str(),type.size());
+	this->SetNestedElementWithPath("encoding/trajectory", type );
 }
 
 
@@ -108,8 +111,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryType( vtkstd::string type )
  */
 vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryType( )
 {
-    vtkXMLDataElement* trajectoryDescElem = svkUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, "encoding/trajectory");
-    return trajectoryDescElem->GetCharacterData();
+	return this->GetNestedElementCharacterDataWithPath( "encoding/trajectory" );
 }
 
 
@@ -118,8 +120,7 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryType( )
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryID( vtkstd::string ID )
 {
-   vtkXMLDataElement* idElem = svkUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, "encoding/trajectoryDescription/identifier");
-    idElem->SetCharacterData(ID.c_str(),ID.size());
+    this->SetNestedElementWithPath("encoding/trajectoryDescription/identifier", ID);
 }
 
 
@@ -128,8 +129,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryID( vtkstd::string ID )
  */
 vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryID( )
 {
-    vtkXMLDataElement* trajectoryIDElem = svkUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, "encoding/trajectoryDescription/identifier");
-    return trajectoryIDElem->GetCharacterData();
+	return this->GetNestedElementCharacterDataWithPath( "encoding/trajectoryDescription/identifier" );
 }
 
 
@@ -138,8 +138,7 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryID( )
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryComment( vtkstd::string comment )
 {
-   vtkXMLDataElement* commentElem = svkUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, "encoding/trajectoryDescription/comment");
-    commentElem->SetCharacterData(comment.c_str(),comment.size());
+    this->SetNestedElementWithPath("encoding/trajectoryDescription/comment", comment);
 }
 
 
@@ -148,8 +147,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryComment( vtkstd::string comm
  */
 vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryComment( )
 {
-    vtkXMLDataElement* trajectoryCommentElem = svkUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, "encoding/trajectoryDescription/comment");
-    return trajectoryCommentElem->GetCharacterData();
+	return this->GetNestedElementCharacterDataWithPath( "encoding/trajectoryDescription/comment" );
 }
 
 
@@ -158,13 +156,8 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryComment( )
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string name, long value  )
 {
-    vtkXMLDataElement* trajDescElem  = svkUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, "encoding/trajectoryDescription");
-    vtkXMLDataElement* paramElem =  svkUtils::CreateNestedXMLDataElement(trajDescElem, "userParameterLong", "");
-    vtkXMLDataElement* nameElem =  svkUtils::CreateNestedXMLDataElement(paramElem, "name", name);
-    vtkXMLDataElement* valueElem =  svkUtils::CreateNestedXMLDataElement(paramElem, "value", svkTypeUtils::IntToString(value));
-    paramElem->Delete();
-    nameElem->Delete();
-    valueElem->Delete();
+    vtkstd::string valueString = svkTypeUtils::IntToString(value);
+    this->SetTrajectoryParameter("userParameterLong", name, valueString );
 }
 
 
@@ -173,20 +166,8 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string na
  */
 long svkDataAcquisitionDescriptionXML::GetTrajectoryLongParameter( vtkstd::string name  )
 {
-    vtkXMLDataElement* trajDescElem  = svkUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, "encoding/trajectoryDescription");
-    for( int i = 0; i < trajDescElem->GetNumberOfNestedElements(); i++ ) {
-        vtkXMLDataElement* paramElem = trajDescElem->GetNestedElement(i);
-        vtkstd::string paramElemName = paramElem->GetName();
-        if( paramElemName == "userParameterLong" ) {
-            vtkXMLDataElement* nameElem =  svkUtils::FindNestedElementWithPath(paramElem, "name");
-            vtkstd::string paramName = nameElem->GetCharacterData();
-            vtkXMLDataElement* valueElem =  svkUtils::FindNestedElementWithPath(paramElem, "value");
-            if( paramName == name ) {
-                return svkTypeUtils::StringToLInt( valueElem->GetCharacterData() );
-            }
-        } 
-    }
-    return VTK_LONG_MAX;
+	vtkstd::string parameterString = this->GetTrajectoryParameter("userParameterLong", name );
+	return svkTypeUtils::StringToLInt( parameterString );
 }
 
 
@@ -195,21 +176,8 @@ long svkDataAcquisitionDescriptionXML::GetTrajectoryLongParameter( vtkstd::strin
  */
 double svkDataAcquisitionDescriptionXML::GetTrajectoryDoubleParameter( vtkstd::string name  )
 {
-    vtkXMLDataElement* trajDescElem  = svkUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, "encoding/trajectoryDescription");
-    for( int i = 0; i < trajDescElem->GetNumberOfNestedElements(); i++ ) {
-        vtkXMLDataElement* paramElem = trajDescElem->GetNestedElement(i);
-        vtkstd::string paramElemName = paramElem->GetName();
-        if( paramElemName == "userParameterDouble" ) {
-            vtkXMLDataElement* nameElem =  svkUtils::FindNestedElementWithPath(paramElem, "name");
-            vtkstd::string paramName = nameElem->GetCharacterData();
-            vtkXMLDataElement* valueElem =  svkUtils::FindNestedElementWithPath(paramElem, "value");
-            if( paramName == name ) {
-                double value = svkTypeUtils::StringToDouble( valueElem->GetCharacterData() );
-                return value;
-            }
-        } 
-    }
-    return -1;
+	vtkstd::string parameterString = this->GetTrajectoryParameter("userParameterDouble", name );
+	return svkTypeUtils::StringToDouble( parameterString );
 }
 
 
@@ -218,13 +186,8 @@ double svkDataAcquisitionDescriptionXML::GetTrajectoryDoubleParameter( vtkstd::s
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string name, double value  )
 {
-    vtkXMLDataElement* trajDescElem  = svkUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, "encoding/trajectoryDescription");
-    vtkXMLDataElement* paramElem =  svkUtils::CreateNestedXMLDataElement(trajDescElem, "userParameterDouble", "");
-    vtkXMLDataElement* nameElem =  svkUtils::CreateNestedXMLDataElement(paramElem, "name", name);
-    vtkXMLDataElement* valueElem =  svkUtils::CreateNestedXMLDataElement(paramElem, "value", svkTypeUtils::DoubleToString(value));
-    paramElem->Delete();
-    nameElem->Delete();
-    valueElem->Delete();
+    vtkstd::string valueString = svkTypeUtils::DoubleToString(value);
+    this->SetTrajectoryParameter("userParameterDouble", name, valueString );
 }
 
 
@@ -236,6 +199,9 @@ void svkDataAcquisitionDescriptionXML::InitializeEmptyXMLFile()
     this->ClearXMLFile();
 
     // Create Root element
+    if( this->dataAcquisitionDescriptionXML != NULL ) {
+    	this->dataAcquisitionDescriptionXML->Delete();
+    }
     this->dataAcquisitionDescriptionXML = vtkXMLDataElement::New();
     this->dataAcquisitionDescriptionXML->SetName("svk_data_acquisition_description");
 
@@ -282,26 +248,46 @@ int svkDataAcquisitionDescriptionXML::SetXMLFileName( string xmlFileName )
     this->xmlFileName = xmlFileName;  
     // Now we have to remove the old xml file
     this->ClearXMLFile();
+    if( !svkUtils::FilePathExists( this->xmlFileName.c_str() ) ) {
+        cout << "ERROR, XML file not found:" << this->xmlFileName << endl;
+        return 1;
+
+    }
     this->dataAcquisitionDescriptionXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
     if (this->dataAcquisitionDescriptionXML == NULL ) { 
-        cout << "ERROR, could not parse element from " << this->xmlFileName << endl;
+        cout << "ERROR: xml file could not be parsed:" << this->xmlFileName << endl;
         return 1; 
     } 
 
     // parse the 3 top level elements: 
-    this->versionElement = this->dataAcquisitionDescriptionXML->FindNestedElementWithName("version");
     this->satBandsElement = this->dataAcquisitionDescriptionXML->FindNestedElementWithName("svk_sat_bands");
     if( this->satBandsElement != NULL ) {
         this->satBandsXML = svkSatBandsXML::New();
-        vtkstd::string other_test = this->satBandsXML->GetXMLFileName( );
-        int test = this->satBandsXML->ParseXML(this->satBandsElement ); 
-    } 
+        int result = this->satBandsXML->ParseXML(this->satBandsElement );
+        if( result != 0 ) {
+        	cout << "WARNING: Could not parse sat bands element from xml file " << this->xmlFileName << endl;
+        	this->satBandsXML->Delete();
+        	this->satBandsXML = NULL;
 
-    this->versionNumber = this->GetFloatElementData(this->versionElement);
+        }
+    } 
+    this->versionElement = this->dataAcquisitionDescriptionXML->FindNestedElementWithName("version");
+    if( this->versionElement != NULL ) {
+        this->versionNumber = svkTypeUtils::StringToFloat(string( versionElement->GetCharacterData() ));
+    } else {
+    	cout << "ERROR: Could not find version element in xml file: " << this->xmlFileName << endl;
+    	return 1;
+    }
     if( this->GetDebug() ) {
-        this->dataAcquisitionDescriptionXML->PrintXML(cout, vtkIndent());
-        this->versionElement->PrintXML(cout, vtkIndent());
-        this->satBandsElement->PrintXML(cout, vtkIndent());
+    	if(this->dataAcquisitionDescriptionXML != NULL ) {
+            this->dataAcquisitionDescriptionXML->PrintXML(cout, vtkIndent());
+    	}
+    	if( this->versionElement != NULL ) {
+            this->versionElement->PrintXML(cout, vtkIndent());
+    	}
+    	if( this->satBandsElement != NULL ) {
+            this->satBandsElement->PrintXML(cout, vtkIndent());
+    	}
     }
 
     return 0; 
@@ -318,6 +304,10 @@ void svkDataAcquisitionDescriptionXML::ClearXMLFile( )
     if( this->dataAcquisitionDescriptionXML != NULL ) {
         this->dataAcquisitionDescriptionXML->Delete();
         this->dataAcquisitionDescriptionXML = NULL;
+    }
+    if( this->satBandsXML != NULL ) {
+        this->satBandsXML->Delete();
+        this->satBandsXML = NULL;
     }
 
 }
@@ -342,24 +332,102 @@ void svkDataAcquisitionDescriptionXML::SetVerbose( bool isVerbose )
 
 
 /*!
- * Write out the XML file.
+ * Write out the XML file. Returns 0 if the file is successfully written
+ * otherwise returns -1.
 */
-void svkDataAcquisitionDescriptionXML::WriteXMLFile( string xmlFileName )
+int svkDataAcquisitionDescriptionXML::WriteXMLFile( string xmlFileName )
 {
-    vtkIndent indent;
-    this->dataAcquisitionDescriptionXML->PrintXML(cout, vtkIndent());
-    vtkXMLUtilities::WriteElementToFile( this->dataAcquisitionDescriptionXML, xmlFileName.c_str(), &indent );
+    int status = -1;
+    if( this->dataAcquisitionDescriptionXML != NULL ) {
+        vtkIndent indent;
+        if( this->GetDebug() ) {
+            this->dataAcquisitionDescriptionXML->PrintXML(cout, vtkIndent());
+        }
+        vtkXMLUtilities::WriteElementToFile( this->dataAcquisitionDescriptionXML, xmlFileName.c_str(), &indent );
+        if( svkUtils::FilePathExists(xmlFileName.c_str())) {
+        	status = 0;
+        }
+    }
+    return status;
 }
 
 
 /*!
- *  Convenience method.
+ * Generically sets a trajectory parameter.
  */
-float svkDataAcquisitionDescriptionXML::GetFloatElementData( vtkXMLDataElement* element )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string type, vtkstd::string name, vtkstd::string value  )
 {
-    return svkTypeUtils::StringToFloat(
-            string( element->GetCharacterData() )
-            ); 
+	// Assume failure
+    bool errorFound = true;
+	if( type == "userParameterLong" || type == "userParameterDouble") {
+        vtkXMLDataElement* trajDescElem  = this->FindNestedElementWithPath("encoding/trajectoryDescription");
+        vtkXMLDataElement* paramElem = NULL;
+        vtkXMLDataElement* nameElem = NULL;
+        vtkXMLDataElement* valueElem = NULL;
+        if( trajDescElem != NULL ) {
+            paramElem =  svkUtils::CreateNestedXMLDataElement(trajDescElem, type, "");
+            nameElem =  svkUtils::CreateNestedXMLDataElement(paramElem, "name", name);
+            valueElem =  svkUtils::CreateNestedXMLDataElement(paramElem, "value", value);
+            errorFound = false;
+        }
+        if( paramElem != NULL ) {
+            paramElem->Delete();
+        } else {
+            errorFound = true;
+        }
+        if( nameElem != NULL ) {
+            nameElem->Delete();
+        } else {
+            errorFound = true;
+        }
+        if( valueElem != NULL ) {
+            valueElem->Delete();
+        } else {
+            errorFound = true;
+        }
+	}
+    if( errorFound ) {
+        cout << "ERROR: Could not set trajectory parameter of type " << type << " with name " << name << " to value " << value << endl;
+    }
+}
+
+
+/*!
+ * Get a string representation of a trajectory parameter.
+ */
+vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryParameter( vtkstd::string type, vtkstd::string name )
+{
+    bool parameterFound = false;
+    vtkstd::string parameterValue = "";
+    vtkXMLDataElement* trajDescElem  = this->FindNestedElementWithPath("encoding/trajectoryDescription");
+    if(trajDescElem != NULL ) {
+        for( int i = 0; i < trajDescElem->GetNumberOfNestedElements(); i++ ) {
+            vtkXMLDataElement* paramElem = trajDescElem->GetNestedElement(i);
+            vtkstd::string paramElemName = "";
+            if( paramElem != NULL ) {
+            	paramElemName = paramElem->GetName();
+            }
+            if( !paramElemName.empty() && paramElemName == type ) {
+                vtkXMLDataElement* nameElem =  svkUtils::FindNestedElementWithPath(paramElem, "name");
+                vtkstd::string paramName = "";
+                if( nameElem != NULL ) {
+                	paramName = nameElem->GetCharacterData();
+                }
+                vtkXMLDataElement* valueElem =  svkUtils::FindNestedElementWithPath(paramElem, "value");
+                if( !paramName.empty() && paramName == name && valueElem != NULL ) {
+                    parameterValue = valueElem->GetCharacterData();
+                    parameterFound = true;
+                    break;
+                }
+            }
+        }
+    } else {
+    	parameterFound = false;
+    }
+    if(!parameterFound ) {
+    	cout << "ERROR: Could not find parameter of type  " << type << " and name " << name << endl;
+    }
+    return parameterValue;
 }
 
 
@@ -369,6 +437,47 @@ float svkDataAcquisitionDescriptionXML::GetFloatElementData( vtkXMLDataElement* 
 int svkDataAcquisitionDescriptionXML::GetXMLVersion() 
 {
     return this->versionNumber; 
+}
+
+
+/*!
+ *  Finds an xml element. Reports an error and returns null if nothing is found at the given xpath.
+ */
+vtkXMLDataElement* svkDataAcquisitionDescriptionXML::FindNestedElementWithPath( string xmlPath )
+{
+	vtkXMLDataElement* elem = NULL;
+    elem = svkUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, xmlPath );
+    if( elem == NULL ) {
+    	cout << "ERROR: Could not locate element at path: " << xmlPath << endl;
+    }
+	return elem;
+}
+
+
+/*!
+ * Returns the character data at a specific path. Reports an error if the path is not found.
+ */
+vtkstd::string svkDataAcquisitionDescriptionXML::GetNestedElementCharacterDataWithPath( string xmlPath )
+{
+	string data = "";
+	bool foundData = svkUtils::GetNestedElementCharacterDataWithPath( this->dataAcquisitionDescriptionXML, xmlPath, data );
+	if( !foundData ) {
+		cout << "ERROR: Could get character data at path: " << xmlPath << endl;
+	}
+	return data;
+}
+
+
+/*!
+ *  Sets the character data for an xml element. Reports an error and returns
+ *  null if nothing is found at the given xpath.
+ */
+void svkDataAcquisitionDescriptionXML::SetNestedElementWithPath( string xmlPath, string value )
+{
+	bool wasSet = svkUtils::SetNestedElementWithPath( this->dataAcquisitionDescriptionXML, xmlPath, value);
+	if( !wasSet ) {
+		cout << "ERROR: Could not set value <" << value << "> for element " << xmlPath << endl;
+	}
 }
 
 
@@ -430,9 +539,13 @@ void* svkDataAcquisitionDescriptionXML_Read(const char* xmlFileName, int *status
 /*!
  * C method for writing the xml to disk.
  */
-void svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xml )
+int svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xml )
 {
-    ((svkDataAcquisitionDescriptionXML*)xml)->WriteXMLFile( filepath );
+	if( xml != NULL ) {
+		return ((svkDataAcquisitionDescriptionXML*)xml)->WriteXMLFile( filepath );
+    } else {
+    	return false;
+    }
 }
 
 

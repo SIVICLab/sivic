@@ -77,6 +77,9 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         void                        InitializeEmptyXMLFile( );
         void                        SetVerbose( bool isVerbose );     
         int                         GetXMLVersion(); 
+        vtkXMLDataElement*          FindNestedElementWithPath( string xmlPath);
+        vtkstd::string              GetNestedElementCharacterDataWithPath( string xmlPath );
+        void                        SetNestedElementWithPath( string xmlPath, string value );
 
         vtkXMLDataElement*          GetXMLDataElement(); 
 
@@ -98,7 +101,8 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         void                        SetTrajectoryParameter( vtkstd::string name, double value  );
         double                      GetTrajectoryDoubleParameter( vtkstd::string name );
 
-        void                        WriteXMLFile( string xmlFileName);
+
+        int                         WriteXMLFile( string xmlFileName );
 
 
     protected:
@@ -109,7 +113,8 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
 
     private:
 
-        float                       GetFloatElementData( vtkXMLDataElement* element ); 
+        void                        SetTrajectoryParameter( vtkstd::string type, vtkstd::string name, vtkstd::string value  );
+        vtkstd::string              GetTrajectoryParameter( vtkstd::string type, vtkstd::string name );
         
         //  Members:
         float                       versionNumber;
@@ -137,7 +142,7 @@ extern "C" {
 void*       svkDataAcquisitionDescriptionXML_New();
 void*       svkDataAcquisitionDescriptionXML_Delete( void* dataAcquisitionDescriptionXML );
 void*       svkDataAcquisitionDescriptionXML_Read(const char* xmlFileName, int* status);
-void        svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xml );
+int         svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xml );
 
 void*       svkDataAcquisitionDescriptionXML_GetSatBandsXML( void* dataAcquisitionDescriptionXML ); 
 void        svkDataAcquisitionDescriptionXML_SetTrajectory(const char* type, const char* id, const char* comment, void* xml); 
