@@ -521,7 +521,7 @@ int svkDataAcquisitionDescriptionXML::RemoveElementWithParentPath( const char* p
 		if( parent->GetNumberOfNestedElements() == numChildren -1 ) {
             status = 0;
 		} else {
-			status = -1
+			status = -1;
 		}
 	}  else {
 		status = -1;

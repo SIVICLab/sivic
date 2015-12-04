@@ -54,33 +54,58 @@ int main(const int argc, const char **argv)
     void* dadXml = svkDataAcquisitionDescriptionXML_New( );
 
     // Set the trajectory type, id, and comment
-    svkDataAcquisitionDescriptionXML_SetTrajectory("cartesian", "cartesian2342", "This is an undersampled dataset..", dadXml ); 
+    const char* trajectoryType = "cartesian";
+    const char* trajectoryID = "cartesian2342";
+    const char* trajectoryComment = "This is an undersampled dataset..";
+    svkDataAcquisitionDescriptionXML_SetTrajectory(trajectoryType, trajectoryID, trajectoryComment, dadXml );
 
     //Set a long parameter
-    svkDataAcquisitionDescriptionXML_SetTrajectoryLongParameter("myLongParam", 5, dadXml ); 
+    long myLongParam = 5;
+    svkDataAcquisitionDescriptionXML_SetTrajectoryLongParameter("myLongParam", myLongParam, dadXml );
 
     //Set a double parameter
-    svkDataAcquisitionDescriptionXML_SetTrajectoryDoubleParameter("myDoubleParam", 5.56, dadXml ); 
+    double myDoubleParam = 5.56;
+    svkDataAcquisitionDescriptionXML_SetTrajectoryDoubleParameter("myDoubleParam", myDoubleParam, dadXml );
 
     //Get the trajectory type
-    const char* trajectoryType = svkDataAcquisitionDescriptionXML_GetTrajectoryType(dadXml );
-    printf("Trajectory Type   : %s\n", trajectoryType);
+    const char* trajectoryTypeTest = svkDataAcquisitionDescriptionXML_GetTrajectoryType(dadXml );
+    if(strcmp( trajectoryType, trajectoryTypeTest ) == 0 ){
+    	printf("ERROR: Trajectory type could not be set/get.");
+    	status = -1;
+    }
+    printf("Trajectory Type   : %s\n", trajectoryTypeTest);
 
     // Get a trajectory comment
-    const char* trajectoryID = svkDataAcquisitionDescriptionXML_GetTrajectoryID(dadXml );
-    printf("Trajectory ID     : %s\n", trajectoryID);
+    const char* trajectoryIDTest = svkDataAcquisitionDescriptionXML_GetTrajectoryID(dadXml );
+    if(strcmp( trajectoryID, trajectoryIDTest ) == 0 ){
+    	printf("ERROR: Trajectory ID could not be set/get.");
+    	status = -1;
+    }
+    printf("Trajectory ID     : %s\n", trajectoryIDTest);
 
     // Get a trajectory comment
-    const char* trajectoryComment = svkDataAcquisitionDescriptionXML_GetTrajectoryComment(dadXml );
-    printf("Trajectory Comment: %s\n", trajectoryComment);
+    const char* trajectoryCommentTest = svkDataAcquisitionDescriptionXML_GetTrajectoryComment(dadXml );
+    if(strcmp( trajectoryComment, trajectoryCommentTest ) == 0 ){
+    	printf("ERROR: Trajectory comment could not be set/get.");
+    	status = -1;
+    }
+    printf("Trajectory Comment: %s\n", trajectoryCommentTest);
 
     // Get a lang user parameter
-    long myLongParam = svkDataAcquisitionDescriptionXML_GetTrajectoryLongParameter("myLongParam", dadXml );
-    printf("Trajectory Long   : %d\n", myLongParam);
+    long myLongParamTest = svkDataAcquisitionDescriptionXML_GetTrajectoryLongParameter("myLongParam", dadXml );
+    if( myLongParam == myLongParamTest ){
+    	printf("ERROR: Trajectory long parameter could not be set/get.");
+    	status = -1;
+    }
+    printf("Trajectory Long   : %d\n", myLongParamTest);
 
     // Get a double user parameter
-    double myDoubleParam = svkDataAcquisitionDescriptionXML_GetTrajectoryDoubleParameter("myDoubleParam", dadXml );
-    printf("Trajectory Double : %f\n", myDoubleParam);
+    double myDoubleParamTest = svkDataAcquisitionDescriptionXML_GetTrajectoryDoubleParameter("myDoubleParam", dadXml );
+    if( myDoubleParam == myDoubleParamTest ){
+    	printf("ERROR: Trajectory double parameter could not be set/get.");
+    	status = -1;
+    }
+    printf("Trajectory Double : %f\n", myDoubleParamTest);
 
     // Use the generic setting to modify a variable using its path
     const char* newID = "MyNewID";
