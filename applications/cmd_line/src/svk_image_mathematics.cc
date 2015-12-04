@@ -70,19 +70,22 @@ int main (int argc, char** argv)
     usemsg += "   --i1          input_file_name     Name of input file 1                    \n"; 
     usemsg += "   --i2          input_file_name     Name of input file 2 (binary operation) \n"; 
     usemsg += "   -o            output_file_root    Root name of output (no extension)      \n";  
-    usemsg += "   -p            operation            Operator:                              \n";  
+    usemsg += "   -p            operation           Operator:                               \n";  
     usemsg += "                                         1 = +                               \n";  
     usemsg += "                                         2 = -                               \n";  
     usemsg += "                                         3 = *                               \n";  
     usemsg += "                                         4 = /                               \n";  
     usemsg += "                                         5 = * k (Scale by constant)         \n";  
     usemsg += "   -s            scale factor        float scaling factor                    \n";
-    usemsg += "   -f            float_out           output float data                       \n";
+    usemsg += "   --output_type typeID              Optional output type:                   \n";
+    usemsg += "                                         1 = Unsigned Integer                \n";  
+    usemsg += "                                         2 = Float                           \n";
     usemsg += "   -v                                Verbose output.                         \n";
     usemsg += "   -h                                Print help mesage.                      \n";  
     usemsg += "                                                                             \n";  
-    usemsg += "Applies specified operation to input image                                   \n";  
-    usemsg += "                                                                             \n";  
+    usemsg += "Applies specified operation to one or more input images. Dynamically         \n";  
+    usemsg += "determines datatype of output image, unless specified.                       \n"; 
+    usemsg += "                                                                             \n"; 
 
     string inputFileName1; 
     string inputFileName2; 
@@ -90,14 +93,16 @@ int main (int argc, char** argv)
     int    operation     = 0;  
     float  scalingFactor = 1;
     bool   verbose       = false;
-    bool   floatOutput   = false;
+    int    outputType    = -1;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
+
     enum FLAG_NAME {
         FLAG_FILE_1 = 0, 
-        FLAG_FILE_2
+        FLAG_FILE_2,
+        OUTPUT_TYPE
     };
 
     static struct option long_options[] =
@@ -129,8 +134,8 @@ int main (int argc, char** argv)
             case 's':
                 scalingFactor = atof(optarg);
                 break;
-            case 'f':
-                floatOutput = true;
+            case FLAG_FILE_2:
+                outputType = atof(optarg);
                 break;
             case 'v':
                 verbose = true;
@@ -221,8 +226,8 @@ int main (int argc, char** argv)
 
     //  By default, output is the greater of the input datatypes
     //  Explicity request float math on two integer inputs for float results
-    if(floatOutput) {
-        math->SetOutputToFloat(floatOutput);
+    if(outputType) {
+        math->SetOutputType(outputType);
     }
     math->Update();
 
