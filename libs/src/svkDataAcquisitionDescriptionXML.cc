@@ -464,7 +464,7 @@ vtkXMLDataElement* svkDataAcquisitionDescriptionXML::FindNestedElementWithPath( 
 const char * svkDataAcquisitionDescriptionXML::GetDataWithPath( const char* xmlPath )
 {
 	string data = "";
-	bool foundData = svkUtils::GetNestedElementCharacterDataWithPath( this->dataAcquisitionDescriptionXML, xmlPath, data );
+	bool foundData = svkUtils::GetNestedElementCharacterDataWithPath( this->dataAcquisitionDescriptionXML, xmlPath, &data );
 	if( !foundData ) {
 		cout << "ERROR: Could get character data at path: " << xmlPath << endl;
 	}
