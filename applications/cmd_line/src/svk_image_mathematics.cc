@@ -136,9 +136,7 @@ int main (int argc, char** argv)
                 scalingFactor = atof(optarg);
                 break;
             case OUTPUT_TYPE:
-                cout << optarg << endl;
-                // outputType = atoi(optarg);
-                outputType.assign( optarg );
+                outputType = atoi(optarg);
                 break;
             case 'v':
                 verbose = true;
@@ -164,6 +162,11 @@ int main (int argc, char** argv)
         cout << "Invalid operation: " << operation << endl;
         cout << usemsg << endl;
         exit(1); 
+    }
+
+    if (outputType && (outputType != 1 && outputType != 2) ) {
+        cout << "Output type must be 1 for Integer, 2 for Float." << endl;
+        exit(1);
     }
 
     if( verbose ) {
@@ -230,7 +233,6 @@ int main (int argc, char** argv)
     //  By default, output is the greater of the input datatypes
     //  Explicity request float math on two integer inputs for float results
     if(outputType) {
-        cout << "Output type: " << outputType << endl;
         math->SetOutputType(outputType);
     }
     math->Update();

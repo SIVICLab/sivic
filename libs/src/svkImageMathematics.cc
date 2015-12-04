@@ -188,7 +188,6 @@ void svkImageMathematics::SetDatatypes()
     // With two integer inputs, you must explicitly request float output
     if (this->GetPortMapper()->GetIntInputPortValue(OUTPUT_TYPE)) {
         int outputType = this->GetOutputType()->GetValue();
-        cout << "Internal Output Type: " << outputType << endl;
         switch (outputType) {
             case UNDEFINED:
                 break;
