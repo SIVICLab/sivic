@@ -80,7 +80,8 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         vtkXMLDataElement*          FindNestedElementWithPath( string xmlPath);
         const char*                 GetDataWithPath( const char* xmlPath );
         int                         SetDataWithPath( const char* xmlPath, const char* value );
-        vtkXMLDataElement*          CreateNestedElementWithPath( string xmlPath);
+        vtkXMLDataElement*          AddElementWithParentPath( const char* xmlPath, const char* name );
+        int                         RemoveElementWithParentPath( const char* xmlPath, const char* name );
 
         vtkXMLDataElement*          GetRootXMLDataElement();
 
@@ -150,6 +151,12 @@ const char* svkDataAcquisitionDescriptionXML_GetDataWithPath( void* xml, const c
 
 // Generic Setter
 int         svkDataAcquisitionDescriptionXML_SetDataWithPath( void* xml, const char* path, const char* data );
+
+// Generic Add Element
+int         svkDataAcquisitionDescriptionXML_AddElementWithParentPath( void* xml, const char* path, const char* name );
+
+// Generic Remove Element
+int         svkDataAcquisitionDescriptionXML_RemoveElementWithParentPath( void* xml, const char* path, const char* name );
 
 void*       svkDataAcquisitionDescriptionXML_GetSatBandsXML( void* dataAcquisitionDescriptionXML ); 
 void        svkDataAcquisitionDescriptionXML_SetTrajectory(const char* type, const char* id, const char* comment, void* xml); 

@@ -51,6 +51,7 @@
 #include <vtkMath.h>
 #include <stdexcept>
 #define NULL_XML_ERROR "ERROR: Data Acquisition Description XML is NULL!\n"
+#define XML_VERSION "0"
 
 using namespace svk;
 
@@ -207,6 +208,7 @@ void svkDataAcquisitionDescriptionXML::InitializeEmptyXMLFile()
     this->dataAcquisitionDescriptionXML->SetName("svk_data_acquisition_description");
 
     // Create Encoding Element
+    vtkXMLDataElement* versionElem = svkUtils::CreateNestedXMLDataElement( this->dataAcquisitionDescriptionXML, "version" , XML_VERSION );
     vtkXMLDataElement* encodingElem = svkUtils::CreateNestedXMLDataElement( this->dataAcquisitionDescriptionXML, "encoding" , "" );
     vtkXMLDataElement* trajectoryElem = svkUtils::CreateNestedXMLDataElement( encodingElem, "trajectory" , "" );
     vtkXMLDataElement* trajectoryDescElem = svkUtils::CreateNestedXMLDataElement( encodingElem, "trajectoryDescription" , "" );
@@ -222,6 +224,7 @@ void svkDataAcquisitionDescriptionXML::InitializeEmptyXMLFile()
     vtkXMLDataElement* fovYElem = svkUtils::CreateNestedXMLDataElement( fovElem, "y" , "" );
     vtkXMLDataElement* fovZElem = svkUtils::CreateNestedXMLDataElement( fovElem, "z" , "" );
 
+    versionElem->Delete();
     encodingElem->Delete();
     trajectoryElem->Delete();
     trajectoryDescElem->Delete();
@@ -486,6 +489,51 @@ int svkDataAcquisitionDescriptionXML::SetDataWithPath( const char* xmlPath, cons
 
 
 /*!
+ * Adds an xml data element. Note the xmlPath is of the parent where you wish
+ * to add the named element.
+ */
+vtkXMLDataElement* svkDataAcquisitionDescriptionXML::AddElementWithParentPath( const char* parentPath, const char* name )
+{
+	vtkXMLDataElement* parent = this->FindNestedElementWithPath(parentPath);
+	vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( parent, name, "" );
+	if( elem == NULL ) {
+		cout << "ERROR: Could not add element " << name << " with parent path " << parentPath << endl;
+	}
+	return elem;
+}
+
+
+/*!
+ * Remove an xml data element. Note the xmlPath is of the parent where you wish
+ * to add the named element.
+ */
+int svkDataAcquisitionDescriptionXML::RemoveElementWithParentPath( const char* parentPath, const char* name )
+{
+	int status = -1;
+	vtkXMLDataElement* parent = this->FindNestedElementWithPath(parentPath);
+	string targetPath = parentPath;
+	targetPath.append("/");
+	targetPath.append(name);
+	vtkXMLDataElement* target = this->FindNestedElementWithPath(targetPath);
+	if( parent != NULL && target != NULL ) {
+		int numChildren = parent->GetNumberOfNestedElements();
+        parent->RemoveNestedElement(target);
+		if( parent->GetNumberOfNestedElements() == numChildren -1 ) {
+            status = 0;
+		} else {
+			status = -1
+		}
+	}  else {
+		status = -1;
+	}
+	if(status != 0) {
+		cout << "ERROR: Could not remove element " << name << " with parent path " << parentPath << endl;
+	}
+	return status;
+}
+
+
+/*!
  *  Get the svkSatBandsXML object.
  */
 svkSatBandsXML* svkDataAcquisitionDescriptionXML::GetSatBandsXML( )
@@ -538,7 +586,6 @@ void* svkDataAcquisitionDescriptionXML_Read(const char* xmlFileName, int *status
     if (*status == 1 ) {
         xml->Delete();
         xml = NULL;
-    } else {
     	printf("Error reading file: %s!\n", xmlFileName);
     }
     return ((void*)xml);
@@ -585,6 +632,44 @@ int svkDataAcquisitionDescriptionXML_SetDataWithPath( void* xml, const char* pat
     	printf(NULL_XML_ERROR);
         return -1;
 	}
+}
+
+
+/*!
+ * Add a data element with the given parent path and name.
+ */
+int svkDataAcquisitionDescriptionXML_AddElementWithParentPath( void* xml, const char* path, const char* name )
+{
+	int status = -1;
+	if( xml != NULL ) {
+		void* elem = ((svkDataAcquisitionDescriptionXML*)xml)->AddElementWithParentPath( path, name );
+		if( elem == NULL  ){
+			status = -1;
+		} else {
+			status = 0;
+		}
+	} else {
+    	printf(NULL_XML_ERROR);
+        status = -1;
+	}
+	return status;
+
+}
+
+/*!
+ * Remove a data element with the given parent path and name.
+ */
+int svkDataAcquisitionDescriptionXML_RemoveElementWithParentPath( void* xml, const char* path, const char* name )
+{
+	int status = -1;
+	if( xml != NULL ) {
+		return ((svkDataAcquisitionDescriptionXML*)xml)->RemoveElementWithParentPath( path, name );
+	} else {
+    	printf(NULL_XML_ERROR);
+        status = -1;
+	}
+	return status;
+
 }
 
 
