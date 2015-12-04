@@ -1790,7 +1790,7 @@ SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 file( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_image_mathematics )
-ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_image_mathematics --i1 ${TEST_CASE_ROOT}/input/integer.idf -o ${TEST_RESULTS_PATH}/svk_image_mathematics_scl -p 5 -s 1.5 -f)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_image_mathematics --i1 ${TEST_CASE_ROOT}/input/integer.idf -o ${TEST_RESULTS_PATH}/svk_image_mathematics_scl -p 5 -s 1.5 --output_type 2)
 
 SET( TEST_NAME TEST_SVK_IMAGE_MATHEMATICS_SCL_DIFF)
 ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH}/svk_image_mathematics_scl.real ${TEST_CASE_ROOT}/output/scale/scale.real )

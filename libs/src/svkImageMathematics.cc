@@ -153,7 +153,7 @@ svkAlgorithmPortMapper* svkImageMathematics::GetPortMapper()
 /*!
  * Utility setter for input port: Output float
  */
-void svkImageMathematics::SetOutputType(bool outputType)
+void svkImageMathematics::SetOutputType(int outputType)
 {
     this->GetPortMapper()->SetIntInputPortValue(OUTPUT_TYPE, outputType);
 }
@@ -162,7 +162,7 @@ void svkImageMathematics::SetOutputType(bool outputType)
 /*!
  * Utility getter for input port: Output float
  */
-bool svkImageMathematics::GetOutputType()
+svkInt* svkImageMathematics::GetOutputType()
 {
     return this->GetPortMapper()->GetIntInputPortValue(OUTPUT_TYPE);
 }
@@ -187,7 +187,8 @@ void svkImageMathematics::SetDatatypes()
     // By default, output datatype is the greater of the input datatypes
     // With two integer inputs, you must explicitly request float output
     if (this->GetPortMapper()->GetIntInputPortValue(OUTPUT_TYPE)) {
-        int outputType = this->GetOutputType();
+        int outputType = this->GetOutputType()->GetValue();
+        cout << "Internal Output Type: " << outputType << endl;
         switch (outputType) {
             case UNDEFINED:
                 break;

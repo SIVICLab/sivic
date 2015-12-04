@@ -93,7 +93,7 @@ int main (int argc, char** argv)
     int    operation     = 0;  
     float  scalingFactor = 1;
     bool   verbose       = false;
-    int    outputType    = -1;
+    int    outputType;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
 
@@ -107,8 +107,9 @@ int main (int argc, char** argv)
 
     static struct option long_options[] =
     {
-        {"i1",    required_argument, NULL,  FLAG_FILE_1},
-        {"i2",    required_argument, NULL,  FLAG_FILE_2},
+        {"i1",          required_argument, NULL,  FLAG_FILE_1},
+        {"i2",          required_argument, NULL,  FLAG_FILE_2},
+        {"output_type", required_argument, NULL,  OUTPUT_TYPE},
         {0, 0, 0, 0}
     };
 
@@ -134,8 +135,10 @@ int main (int argc, char** argv)
             case 's':
                 scalingFactor = atof(optarg);
                 break;
-            case FLAG_FILE_2:
-                outputType = atof(optarg);
+            case OUTPUT_TYPE:
+                cout << optarg << endl;
+                // outputType = atoi(optarg);
+                outputType.assign( optarg );
                 break;
             case 'v':
                 verbose = true;
@@ -227,6 +230,7 @@ int main (int argc, char** argv)
     //  By default, output is the greater of the input datatypes
     //  Explicity request float math on two integer inputs for float results
     if(outputType) {
+        cout << "Output type: " << outputType << endl;
         math->SetOutputType(outputType);
     }
     math->Update();

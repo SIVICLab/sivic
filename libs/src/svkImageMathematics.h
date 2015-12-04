@@ -87,8 +87,8 @@ class svkImageMathematics : public vtkImageMathematics
         } svkImageMathematicsParameters;
 
         typedef enum {
-            UNDEFINED = -1,
-            UNSIGNED_INT_2 = 0,
+            UNDEFINED = 0,
+            UNSIGNED_INT_2 = 1,
             SIGNED_FLOAT_4,
         } svkImageMathematicsOutputType;
 
@@ -106,8 +106,8 @@ class svkImageMathematics : public vtkImageMathematics
         void                    PrintSelf( ostream &os, vtkIndent indent );
 
         //  Explicitly specify float output
-        void                    SetOutputType(bool outputType);
-        int                     GetOutputType();
+        void                    SetOutputType(int outputType);
+        svkInt*                 GetOutputType();
 
     protected:
 
