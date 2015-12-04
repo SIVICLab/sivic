@@ -628,12 +628,12 @@ vtkXMLDataElement* svkUtils::FindNestedElementWithPath( vtkXMLDataElement* root,
  * into the data string provided as an argument. If the character data is
  * retrieved then the method returns true, otherwise false.
  */
-bool svkUtils::GetNestedElementCharacterDataWithPath( vtkXMLDataElement* root, string xmlPath, string data )
+bool svkUtils::GetNestedElementCharacterDataWithPath( vtkXMLDataElement* root, string xmlPath, string* data )
 {
 	bool dataFound = false;
-	vtkXMLDataElement* elem = svkUtils::FindNestedElementWithPath(root, xmlPath );
+	vtkXMLDataElement* elem = svkUtils::FindNestedElementWithPath( root, xmlPath );
 	if( elem != NULL ) {
-		data = elem->GetCharacterData();
+		*data = elem->GetCharacterData();
 		dataFound = true;
 	}
 	return dataFound;

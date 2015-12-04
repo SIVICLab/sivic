@@ -132,7 +132,7 @@ class svkUtils : public vtkObject
                                     vector<string> xmlVariables 
                                   );
         static vtkXMLDataElement* FindNestedElementWithPath( vtkXMLDataElement* root, string xmlPath);
-        static bool               GetNestedElementCharacterDataWithPath( vtkXMLDataElement* root, string xmlPath, string data );
+        static bool               GetNestedElementCharacterDataWithPath( vtkXMLDataElement* root, string xmlPath, string* data );
         static bool               SetNestedElementWithPath( vtkXMLDataElement* root, string xmlPath, string value );
         static void               ReadLine(ifstream* fs, istringstream* iss);   
 
