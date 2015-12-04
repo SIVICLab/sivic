@@ -83,10 +83,14 @@ class svkImageMathematics : public vtkImageMathematics
             SMOOTH_BINS_FOR_HISTOGRAM,
             MASK_FOR_MEDIAN,
             OUTPUT_SERIES_DESCRIPTION,
-            OUTPUT_FLOAT
+            OUTPUT_TYPE
         } svkImageMathematicsParameters;
 
-
+        typedef enum {
+            UNDEFINED = -1,
+            UNSIGNED_INT_2 = 0,
+            SIGNED_FLOAT_4,
+        } svkImageMathematicsOutputType;
 
         //! Uses port mapper to parse an XML element and convert it into input port data objects.
         void                    SetInputPortsFromXML( );
@@ -102,8 +106,8 @@ class svkImageMathematics : public vtkImageMathematics
         void                    PrintSelf( ostream &os, vtkIndent indent );
 
         //  Explicitly specify float output
-        void                    SetOutputToFloat(bool outputFloat);
-        bool                    GetOutputToFloat();
+        void                    SetOutputType(bool outputType);
+        int                     GetOutputType();
 
     protected:
 
