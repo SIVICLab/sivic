@@ -283,9 +283,9 @@ void svkDataAcquisitionDescriptionXML::InitializeEmptyXMLFile()
 int svkDataAcquisitionDescriptionXML::SetXMLFileName( string xmlFileName )
 {
 
-    this->xmlFileName = xmlFileName;  
     // Now we have to remove the old xml file
     this->ClearXMLFile();
+    this->xmlFileName = xmlFileName;
     if( !svkUtils::FilePathExists( this->xmlFileName.c_str() ) ) {
         cout << "ERROR, XML file not found:" << this->xmlFileName << endl;
         return 1;
