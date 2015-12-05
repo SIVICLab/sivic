@@ -65,7 +65,8 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_image_mathematics --i1 input_file_name [ --i2 input_file_name ]          \n";  
-    usemsg += "                      -o output_file_root -p operation                       \n"; 
+    usemsg += "                      -o output_file_root -p operation                       \n";
+    usemsg += "                      [-s scale_factor] [--output_type typeID]               \n"; 
     usemsg += "                                                                             \n";  
     usemsg += "   --i1          input_file_name     Name of input file 1                    \n"; 
     usemsg += "   --i2          input_file_name     Name of input file 2 (binary operation) \n"; 
@@ -76,7 +77,7 @@ int main (int argc, char** argv)
     usemsg += "                                         3 = *                               \n";  
     usemsg += "                                         4 = /                               \n";  
     usemsg += "                                         5 = * k (Scale by constant)         \n";  
-    usemsg += "   -s            scale factor        float scaling factor                    \n";
+    usemsg += "   -s            scale_factor        float scaling factor                    \n";
     usemsg += "   --output_type typeID              Optional output type:                   \n";
     usemsg += "                                         1 = Unsigned Integer                \n";  
     usemsg += "                                         2 = Float                           \n";
