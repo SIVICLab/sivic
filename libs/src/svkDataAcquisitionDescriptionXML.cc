@@ -100,7 +100,9 @@ svkDataAcquisitionDescriptionXML::~svkDataAcquisitionDescriptionXML()
 
 
 /*!
- * Set the trajectory type
+ * Sets the contents of the encoding/trajectory element.
+ * \param type the desired contents of the encoding/trajectory element
+ *
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryType( vtkstd::string type )
 {
@@ -109,7 +111,8 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryType( vtkstd::string type )
 
 
 /*!
- * Get the trajectory type
+ * Get the contents of the encoding/trajectory element.
+ * \return the contents of the encoding/trajectory element
  */
 vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryType( )
 {
@@ -118,7 +121,9 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryType( )
 
 
 /*!
- * Set the trajectory id
+ * Sets the contents of the encoding/trajectoryDescription/identifier element.
+ * \param ID the desired contents of the encoding/trajectoryDescription/identifier element
+ *
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryID( vtkstd::string ID )
 {
@@ -127,7 +132,8 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryID( vtkstd::string ID )
 
 
 /*!
- * Get the trajectory id
+ * Get the contents of the encoding/trajectoryDescription/identifier element.
+ * \return the contents of the encoding/trajectoryDescription/identifier element
  */
 vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryID( )
 {
@@ -136,7 +142,9 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryID( )
 
 
 /*!
- * Set the trajectory comment
+ * Sets the contents of the encoding/trajectoryDescription/comment element.
+ * \param comment the desired contents of the encoding/trajectoryDescription/comment element
+ *
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryComment( vtkstd::string comment )
 {
@@ -145,7 +153,8 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryComment( vtkstd::string comm
 
 
 /*!
- * Get the trajectory comment
+ * Get the contents of the encoding/trajectoryDescription/comment element.
+ * \return the contents of the encoding/trajectoryDescription/comment element
  */
 vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryComment( )
 {
@@ -154,7 +163,11 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryComment( )
 
 
 /*!
- * Set a trajectory user parameter long
+ * Creates a new encoding/trajectoryDescription/userParameterLong element and
+ * creates its child elements 'name' and 'value' with the given values.
+ * \param name the of the new user parameter element
+ * \param value the value of the new user parameter
+ *
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string name, long value  )
 {
@@ -164,7 +177,9 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string na
 
 
 /*!
- * Get a trajectory user parameter long
+ * Gets the contents of an encoding/trajectoryDescription/userParameterLong element.
+ * \param name the name of the user parameter
+ * \return the value of the user parameter
  */
 long svkDataAcquisitionDescriptionXML::GetTrajectoryLongParameter( vtkstd::string name  )
 {
@@ -174,7 +189,9 @@ long svkDataAcquisitionDescriptionXML::GetTrajectoryLongParameter( vtkstd::strin
 
 
 /*!
- * Get a trajectory user parameter double
+ * Gets the contents of an encoding/trajectoryDescription/userParameterDouble element.
+ * \param name the name of the user parameter
+ * \return the value of the user parameter
  */
 double svkDataAcquisitionDescriptionXML::GetTrajectoryDoubleParameter( vtkstd::string name  )
 {
@@ -184,7 +201,11 @@ double svkDataAcquisitionDescriptionXML::GetTrajectoryDoubleParameter( vtkstd::s
 
 
 /*!
- * Set a trajectory user parameter double
+ * Creates a new encoding/trajectoryDescription/userParameterDouble element and
+ * creates its child elements 'name' and 'value' with the given values.
+ * \param name the of the new user parameter element
+ * \param value the value of the new user parameter
+ *
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string name, double value  )
 {
@@ -194,16 +215,27 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string na
 
 
 /*!
- * Initialize the skeleton of the xml file.
+ * Initialize the skeleton of the xml file. This will create the following elements:
+ * svk_data_acquisition_description
+ * svk_data_acquisition_description/version
+ * svk_data_acquisition_description/encoding
+ * svk_data_acquisition_description/encoding/trajectory
+ * svk_data_acquisition_description/encoding/trajectoryDescription
+ * svk_data_acquisition_description/encoding/trajectoryDescription/identifier
+ * svk_data_acquisition_description/encoding/trajectoryDescription/comment
+ * svk_data_acquisition_description/encoding/encodedSpace
+ * svk_data_acquisition_description/encoding/encodedSpace/matrixSize
+ * svk_data_acquisition_description/encoding/encodedSpace/matrixSize/x
+ * svk_data_acquisition_description/encoding/encodedSpace/matrixSize/y
+ * svk_data_acquisition_description/encoding/encodedSpace/matrixSize/z
+ * svk_data_acquisition_description/encoding/encodedSpace/fieldOfView_mm/x
+ * svk_data_acquisition_description/encoding/encodedSpace/fieldOfView_mm/y
+ * svk_data_acquisition_description/encoding/encodedSpace/fieldOfView_mm/z
  */
 void svkDataAcquisitionDescriptionXML::InitializeEmptyXMLFile()
 {
     this->ClearXMLFile();
 
-    // Create Root element
-    if( this->dataAcquisitionDescriptionXML != NULL ) {
-    	this->dataAcquisitionDescriptionXML->Delete();
-    }
     this->dataAcquisitionDescriptionXML = vtkXMLDataElement::New();
     this->dataAcquisitionDescriptionXML->SetName("svk_data_acquisition_description");
 
@@ -243,7 +275,9 @@ void svkDataAcquisitionDescriptionXML::InitializeEmptyXMLFile()
 
 
 /*!
- *  set the path/name to xml file and parse.
+ *  Set the path/name to an xml file, parse the file and initialize the object.
+ *  \param xmlFileName the path of the file to be read
+ *  \return 0 for success
  *      
  */
 int svkDataAcquisitionDescriptionXML::SetXMLFileName( string xmlFileName )
@@ -300,8 +334,7 @@ int svkDataAcquisitionDescriptionXML::SetXMLFileName( string xmlFileName )
 
 
 /*!
- *  Sets the current XML data to NULL
- *  so the file will be re-read.
+ * Deletes the internal XML objects.
  */
 void svkDataAcquisitionDescriptionXML::ClearXMLFile( )
 {
@@ -313,12 +346,14 @@ void svkDataAcquisitionDescriptionXML::ClearXMLFile( )
         this->satBandsXML->Delete();
         this->satBandsXML = NULL;
     }
+    this->xmlFileName = "";
 
 }
 
 
 /*!
- *  Get the path to the current XML file
+ *  Get the path to the current XML file.
+ *  \return the path to the current xml file;
  */
 string svkDataAcquisitionDescriptionXML::GetXMLFileName( )
 {
@@ -328,6 +363,7 @@ string svkDataAcquisitionDescriptionXML::GetXMLFileName( )
 
 /*!
  * Set the verbose flag.
+ * \param verbose boolean flag
  */
 void svkDataAcquisitionDescriptionXML::SetVerbose( bool isVerbose )
 {
@@ -336,8 +372,9 @@ void svkDataAcquisitionDescriptionXML::SetVerbose( bool isVerbose )
 
 
 /*!
- * Write out the XML file. Returns 0 if the file is successfully written
- * otherwise returns -1.
+ * Write out the internal XML object to file.
+ * \param xmlFileName target file name to be written to
+ * \return 0 on success otherwise -1
 */
 int svkDataAcquisitionDescriptionXML::WriteXMLFile( string xmlFileName )
 {
@@ -357,7 +394,12 @@ int svkDataAcquisitionDescriptionXML::WriteXMLFile( string xmlFileName )
 
 
 /*!
- * Generically sets a trajectory parameter.
+ * Creates a new encoding/trajectoryDescription/userParameter[Double|Long] element and
+ * creates its child elements 'name' and 'value' with the given input.
+ * \param type the of type new user parameter element. Must be userParameterLong or userParameterDouble
+ * \param name the of the new user parameter element
+ * \param value the value of the new user parameter
+ *
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string type, vtkstd::string name, vtkstd::string value  )
 {
@@ -397,7 +439,10 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string ty
 
 
 /*!
- * Get a string representation of a trajectory parameter.
+ * Gets the contents of an encoding/trajectoryDescription/userParameter[Double|Long] element.
+ * \param type the of type new user parameter element. Must be userParameterLong or userParameterDouble
+ * \param name the name of the user parameter
+ * \return the value of the user parameter
  */
 vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryParameter( vtkstd::string type, vtkstd::string name )
 {
@@ -437,6 +482,7 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryParameter( vtkstd:
 
 /*!
  *  Get the version of the xml file
+ *  \return the version of the xml file
  */
 int svkDataAcquisitionDescriptionXML::GetXMLVersion() 
 {
@@ -446,6 +492,8 @@ int svkDataAcquisitionDescriptionXML::GetXMLVersion()
 
 /*!
  *  Finds an xml element. Reports an error and returns null if nothing is found at the given xpath.
+ *  \param xmlPath the xpath to the element
+ *  \return the element or NULL if not found
  */
 vtkXMLDataElement* svkDataAcquisitionDescriptionXML::FindNestedElementWithPath( string xmlPath )
 {
@@ -460,6 +508,8 @@ vtkXMLDataElement* svkDataAcquisitionDescriptionXML::FindNestedElementWithPath( 
 
 /*!
  * Returns the character data at a specific path. Reports an error if the path is not found.
+ *  \param xmlPath the xpath to the element
+ *  \return the contents of the element at the given path
  */
 const char * svkDataAcquisitionDescriptionXML::GetDataWithPath( const char* xmlPath )
 {
@@ -475,6 +525,9 @@ const char * svkDataAcquisitionDescriptionXML::GetDataWithPath( const char* xmlP
 /*!
  *  Sets the character data for an xml element. Reports an error and returns
  *  null if nothing is found at the given xpath.
+ *  \param xmlPath the xpath to the element
+ *  \param value the value to set into the element at the given path
+ *  \return 0 on success otherwise -1
  */
 int svkDataAcquisitionDescriptionXML::SetDataWithPath( const char* xmlPath, const char* value )
 {
@@ -491,6 +544,8 @@ int svkDataAcquisitionDescriptionXML::SetDataWithPath( const char* xmlPath, cons
 /*!
  * Adds an xml data element. Note the xmlPath is of the parent where you wish
  * to add the named element.
+ *  \param parentPath the xpath to the parent element
+ *  \param name the name of the element to add
  */
 vtkXMLDataElement* svkDataAcquisitionDescriptionXML::AddElementWithParentPath( const char* parentPath, const char* name )
 {
@@ -506,6 +561,9 @@ vtkXMLDataElement* svkDataAcquisitionDescriptionXML::AddElementWithParentPath( c
 /*!
  * Remove an xml data element. Note the xmlPath is of the parent where you wish
  * to add the named element.
+ *  \param parentPath the xpath to the parent element
+ *  \param name the name of the element to remove
+ *  \return 0 on success otherwise -1
  */
 int svkDataAcquisitionDescriptionXML::RemoveElementWithParentPath( const char* parentPath, const char* name )
 {
@@ -534,7 +592,8 @@ int svkDataAcquisitionDescriptionXML::RemoveElementWithParentPath( const char* p
 
 
 /*!
- *  Get the svkSatBandsXML object.
+ *  Get the internal svk::svkSatBandsXML object.
+ *  \return the internal svk::svkSatBandsXML object
  */
 svkSatBandsXML* svkDataAcquisitionDescriptionXML::GetSatBandsXML( )
 {
@@ -543,7 +602,8 @@ svkSatBandsXML* svkDataAcquisitionDescriptionXML::GetSatBandsXML( )
 
 
 /*!
- * Get the main XML data object.
+ * Get the root XML data object.
+ * \return the root XML data object.
  */
 vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetRootXMLDataElement()
 {
@@ -552,7 +612,11 @@ vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetRootXMLDataElement()
 
 
 /*!
- * C method for instantiating the object:
+ * C method for instantiating a new svk::svkDataAcquisitionDescriptionXML object.
+ * This will initialized the root xml data element.
+ *
+ * \return a void pointer to the svk::svkDataAcquisitionDescriptionXML object
+ *
  */
 void* svkDataAcquisitionDescriptionXML_New()
 {
@@ -563,7 +627,10 @@ void* svkDataAcquisitionDescriptionXML_New()
 
 
 /*!
- * C method for releasing the object:
+ * C method for releasing an svk::svkDataAcquisitionDescriptionXML object.
+ *
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML to be deleted
+ * \return always NULL
  */
 void* svkDataAcquisitionDescriptionXML_Delete( void* xml )
 {
@@ -577,7 +644,12 @@ void* svkDataAcquisitionDescriptionXML_Delete( void* xml )
 
 
 /*!
- * C method reading in an xml file:
+ * C method for a new svk::svkDataAcquisitionDescriptionXML object and initializing
+ * it from a file.
+ *
+ * \param xmlFileName the xml file to be read
+ * \param status reference to a status variable. Will be set to 1 on error.
+ * \return a void pointer to the svk::svkDataAcquisitionDescriptionXML object
  */
 void* svkDataAcquisitionDescriptionXML_Read(const char* xmlFileName, int *status)
 {
@@ -595,6 +667,9 @@ void* svkDataAcquisitionDescriptionXML_Read(const char* xmlFileName, int *status
 
 /*!
  * C method for writing the xml to disk.
+ *
+ * \param filepath the path to the file to be written.
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML to be written
  */
 int svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xml )
 {
@@ -608,7 +683,11 @@ int svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xm
 
 
 /*!
- * Generic Getter
+ * Generic getter for pulling the data or contents of an xml element.
+ *
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML object
+ * \param path the xpath of the requested XML element
+ * \return the contents of the requested element
  */
 const char* svkDataAcquisitionDescriptionXML_GetDataWithPath( void* xml, const char* path )
 {
@@ -622,7 +701,12 @@ const char* svkDataAcquisitionDescriptionXML_GetDataWithPath( void* xml, const c
 
 
 /*!
- * Generic Setter
+ * Generic setter for the data or contents of a given xml element.
+ *
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML object
+ * \param path the xpath of the requested element to set the contents of
+ * \param data the data to set into the requested elment.
+ * \return 0 on success
  */
 int svkDataAcquisitionDescriptionXML_SetDataWithPath( void* xml, const char* path, const char* data )
 {
@@ -636,7 +720,14 @@ int svkDataAcquisitionDescriptionXML_SetDataWithPath( void* xml, const char* pat
 
 
 /*!
- * Add a data element with the given parent path and name.
+ * Add an xml element with the given parent path and name. The element will be
+ * initially empty but its value should be set with
+ * svkDataAcquisitionDescriptionXML_SetDataWithPath().
+ *
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML object
+ * \param path the xpath of the parent to which you wish add the element to
+ * \param name the name of the element to add
+ * \return 0 on success
  */
 int svkDataAcquisitionDescriptionXML_AddElementWithParentPath( void* xml, const char* path, const char* name )
 {
@@ -656,8 +747,14 @@ int svkDataAcquisitionDescriptionXML_AddElementWithParentPath( void* xml, const 
 
 }
 
+
 /*!
  * Remove a data element with the given parent path and name.
+ *
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML object
+ * \param path the xpath of the parent from which you wish to remove an element
+ * \param name the name of the element to remove
+ * \return 0 on success
  */
 int svkDataAcquisitionDescriptionXML_RemoveElementWithParentPath( void* xml, const char* path, const char* name )
 {
@@ -674,12 +771,14 @@ int svkDataAcquisitionDescriptionXML_RemoveElementWithParentPath( void* xml, con
 
 
 /*!
- * C method for getting the sat bands xml
+ * C method for getting the internal svk::svkSatBandsXML object.
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML object
+ * \return a void pointer to the internal svk::svkSatBandsXML object.
  */
-void* svkDataAcquisitionDescriptionXML_GetSatBandsXML( void* dataAcquisitionDescriptionXML )
+void* svkDataAcquisitionDescriptionXML_GetSatBandsXML( void* xml )
 {
     void* satBandsXML = NULL;
-    svkDataAcquisitionDescriptionXML* dadXML =(svkDataAcquisitionDescriptionXML*)dataAcquisitionDescriptionXML;
+    svkDataAcquisitionDescriptionXML* dadXML =(svkDataAcquisitionDescriptionXML*)xml;
     if( dadXML != NULL ) {
         satBandsXML = dadXML->GetSatBandsXML();
     } else {
@@ -690,7 +789,13 @@ void* svkDataAcquisitionDescriptionXML_GetSatBandsXML( void* dataAcquisitionDesc
 
 
 /*!
- * C method for setting the trajectory element.
+ * C method for setting the basic trajectory element. This includes setting the
+ * encoding/trajectory element the encoding/trajectoryDescription/identifier
+ * element and the encoding/trajectoryDescription/comment element.
+ * \param type the contents of the trajectory element
+ * \param id the contents of the encoding/trajectoryDescription/identifier element
+ * \param comment the contents of the encoding/trajectoryDescription/comment element
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML
  */
 void svkDataAcquisitionDescriptionXML_SetTrajectory(const char* type, const char* id, const char* comment, void* xml)
 {
@@ -705,7 +810,10 @@ void svkDataAcquisitionDescriptionXML_SetTrajectory(const char* type, const char
 
 
 /*!
- * C method for getting the trajectory type.
+ * C method for getting the contents of the encoding/trajectory element.
+ *
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML object
+ * \return the contents of the encoding/trajectory element
  */
 const char* svkDataAcquisitionDescriptionXML_GetTrajectoryType(void* xml)
 {
@@ -719,7 +827,9 @@ const char* svkDataAcquisitionDescriptionXML_GetTrajectoryType(void* xml)
 
 
 /*!
- * C method for getting the trajectory id.
+ * C method for getting the contents of the encoding/trajectoryDescription/identifier element.
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML object
+ * \return the contents of the encoding/trajectoryDescription/identifier element
  */
 const char* svkDataAcquisitionDescriptionXML_GetTrajectoryID(void* xml)
 {
@@ -733,7 +843,9 @@ const char* svkDataAcquisitionDescriptionXML_GetTrajectoryID(void* xml)
 
 
 /*!
- * C method for getting the trajectory comment.
+ * C method for getting the contents of the encoding/trajectoryDescription/comment element.
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML object
+ * \return the contents of the encoding/trajectoryDescription/comment element
  */
 const char* svkDataAcquisitionDescriptionXML_GetTrajectoryComment(void* xml)
 {
@@ -745,8 +857,13 @@ const char* svkDataAcquisitionDescriptionXML_GetTrajectoryComment(void* xml)
 	}
 }
 
+
 /*!
- * C method for setting a user parameter long.
+ * C method for setting the contents of an encoding/trajectoryDescription/userParameterLong
+ * element. This includes setting name and value child elements.
+ * \param name the name of the user parameter
+ * \param value the value of the user parameter
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML
  */
 void svkDataAcquisitionDescriptionXML_SetTrajectoryLongParameter(const char* name, long value, void* xml )
 {
@@ -759,7 +876,11 @@ void svkDataAcquisitionDescriptionXML_SetTrajectoryLongParameter(const char* nam
 
 
 /*!
- * C method for getting a user parameter long.
+ * C method for getting the contents of an encoding/trajectoryDescription/userParameterLong
+ * element.
+ * \param name the name of the user parameter
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML
+ * \return the value of the user element as a long
  */
 long svkDataAcquisitionDescriptionXML_GetTrajectoryLongParameter(const char* name, void* xml )
 {
@@ -773,7 +894,11 @@ long svkDataAcquisitionDescriptionXML_GetTrajectoryLongParameter(const char* nam
 
 
 /*!
- * C method for setting a user parameter double.
+ * C method for setting the contents of an encoding/trajectoryDescription/userParameterDouble
+ * element. This includes setting name and value child elements.
+ * \param name the name of the user parameter
+ * \param value the value of the user parameter
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML
  */
 void svkDataAcquisitionDescriptionXML_SetTrajectoryDoubleParameter(const char* name, double value, void* xml )
 {
@@ -785,8 +910,13 @@ void svkDataAcquisitionDescriptionXML_SetTrajectoryDoubleParameter(const char* n
 }
 
 
+
 /*!
- * C method for setting a user parameter double.
+ * C method for getting the contents of an encoding/trajectoryDescription/userParameterDouble
+ * element.
+ * \param name the name of the user parameter
+ * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML
+ * \return the value of the user element as a double
  */
 double svkDataAcquisitionDescriptionXML_GetTrajectoryDoubleParameter(const char* name, void* xml )
 {

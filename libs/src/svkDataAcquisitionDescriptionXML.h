@@ -43,6 +43,13 @@
 #ifndef SVK_DATA_ACQUISITION_DESCRIPTION_XML_H
 #define SVK_DATA_ACQUISITION_DESCRIPTION_XML_H
 
+/*!\file
+ *  This header file contains the declaration of the
+ *  svk::svkDataAcquisitionDescriptionXML class. Additionally it contains a set
+ *  of C methods for creating, deleting and interacting with the object. This
+ *  is to provide access to the functionality of the class in C programs.
+ *
+ */
 
 #ifdef __cplusplus
 
@@ -60,7 +67,26 @@ using namespace std;
 
 
 /*! 
- *  Class to manage IO to/from XML data acquisition description files. 
+ *  Class to manage IO for XML data acquisition description files. These
+ *  files are intended to be used to describe acquisitions in such a way that
+ *  when they are coupled with a raw data file they can be used to determine all
+ *  necessary information to reconstruct the data. Our initial development will
+ *  be to use an XML format on the ISMRMRD XML header. Details of the ISMRMRD
+ *  can be found here: http://ismrmrd.github.io/
+ *
+ *  This class uses XML path (xpath) style notation for referencing specific
+ *  elements. Currently only the most basic syntax is supported which is to refer
+ *  to an element by its location which is defined as a '/' separated list of
+ *  all parent elements followed by the element itself. For example if you had
+ *  the following xml data:
+    \code{.xml}
+    <encoding>
+        <trajectory>cartesian</trajectory>
+    </encoding>
+    \endcode
+ *
+ *  The 'trajectory' element would be found at the path 'encoding/trajectory'.
+ *
  * 
  */
 class svkDataAcquisitionDescriptionXML: public vtkObject
@@ -140,22 +166,14 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
 extern "C" {
 #endif
 
-
 void*       svkDataAcquisitionDescriptionXML_New();
 void*       svkDataAcquisitionDescriptionXML_Delete( void* dataAcquisitionDescriptionXML );
 void*       svkDataAcquisitionDescriptionXML_Read(const char* xmlFileName, int* status);
 int         svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xml );
 
-// Generic Getter
 const char* svkDataAcquisitionDescriptionXML_GetDataWithPath( void* xml, const char* path );
-
-// Generic Setter
 int         svkDataAcquisitionDescriptionXML_SetDataWithPath( void* xml, const char* path, const char* data );
-
-// Generic Add Element
 int         svkDataAcquisitionDescriptionXML_AddElementWithParentPath( void* xml, const char* path, const char* name );
-
-// Generic Remove Element
 int         svkDataAcquisitionDescriptionXML_RemoveElementWithParentPath( void* xml, const char* path, const char* name );
 
 void*       svkDataAcquisitionDescriptionXML_GetSatBandsXML( void* dataAcquisitionDescriptionXML ); 
