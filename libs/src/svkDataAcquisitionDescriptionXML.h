@@ -143,6 +143,7 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
 
         void                        SetTrajectoryParameter( vtkstd::string type, vtkstd::string name, vtkstd::string value  );
         vtkstd::string              GetTrajectoryParameter( vtkstd::string type, vtkstd::string name );
+        vtkXMLDataElement*          GetTrajectoryParameterElement( vtkstd::string type, vtkstd::string name );
         
         //  Members:
         float                       versionNumber;

@@ -394,8 +394,10 @@ int svkDataAcquisitionDescriptionXML::WriteXMLFile( string xmlFileName )
 
 
 /*!
- * Creates a new encoding/trajectoryDescription/userParameter[Double|Long] element and
- * creates its child elements 'name' and 'value' with the given input.
+ * Sets the value of an encoding/trajectoryDescription/userParameter[Double|Long] element
+ * If it does not exist it is created as well as its child elements 'name' and
+ * 'value' with the given input.
+ *
  * \param type the of type new user parameter element. Must be userParameterLong or userParameterDouble
  * \param name the of the new user parameter element
  * \param value the value of the new user parameter
@@ -403,35 +405,48 @@ int svkDataAcquisitionDescriptionXML::WriteXMLFile( string xmlFileName )
  */
 void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string type, vtkstd::string name, vtkstd::string value  )
 {
-	// Assume failure
+    // Assume failure
     bool errorFound = true;
-	if( type == "userParameterLong" || type == "userParameterDouble") {
+    if( type == "userParameterLong" || type == "userParameterDouble") {
         vtkXMLDataElement* trajDescElem  = this->FindNestedElementWithPath("encoding/trajectoryDescription");
-        vtkXMLDataElement* paramElem = NULL;
-        vtkXMLDataElement* nameElem = NULL;
+        vtkXMLDataElement* paramElem = this->GetTrajectoryParameterElement( type, name );
+        vtkXMLDataElement* nameElem  = NULL;
         vtkXMLDataElement* valueElem = NULL;
         if( trajDescElem != NULL ) {
-            paramElem =  svkUtils::CreateNestedXMLDataElement(trajDescElem, type, "");
-            nameElem =  svkUtils::CreateNestedXMLDataElement(paramElem, "name", name);
-            valueElem =  svkUtils::CreateNestedXMLDataElement(paramElem, "value", value);
-            errorFound = false;
-        }
-        if( paramElem != NULL ) {
-            paramElem->Delete();
+            // Check if the named element exists
+            if( paramElem != NULL ) {
+                valueElem = paramElem->FindNestedElementWithName("value");
+                if( valueElem != NULL ) {
+                    valueElem->SetCharacterData(value.c_str(), value.size());
+                } else {
+                	cout << "ERROR: " << type << " " << name << " does not contain a value tag." << endl;
+                    errorFound = true;
+                }
+            } else {
+                paramElem =  svkUtils::CreateNestedXMLDataElement(trajDescElem, type, "");
+                nameElem =  svkUtils::CreateNestedXMLDataElement(paramElem, "name", name);
+                valueElem =  svkUtils::CreateNestedXMLDataElement(paramElem, "value", value);
+                errorFound = false;
+                if( paramElem != NULL ) {
+                    paramElem->Delete();
+                } else {
+                    errorFound = true;
+                }
+                if( nameElem != NULL ) {
+                    nameElem->Delete();
+                } else {
+                    errorFound = true;
+                }
+                if( valueElem != NULL ) {
+                    valueElem->Delete();
+                } else {
+                    errorFound = true;
+                }
+            }
         } else {
             errorFound = true;
         }
-        if( nameElem != NULL ) {
-            nameElem->Delete();
-        } else {
-            errorFound = true;
-        }
-        if( valueElem != NULL ) {
-            valueElem->Delete();
-        } else {
-            errorFound = true;
-        }
-	}
+    }
     if( errorFound ) {
         cout << "ERROR: Could not set trajectory parameter of type " << type << " with name " << name << " to value " << value << endl;
     }
@@ -446,8 +461,27 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string ty
  */
 vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryParameter( vtkstd::string type, vtkstd::string name )
 {
-    bool parameterFound = false;
     vtkstd::string parameterValue = "";
+    vtkXMLDataElement* userParamElem = this->GetTrajectoryParameterElement(type, name);
+    vtkXMLDataElement* valueElem =  svkUtils::FindNestedElementWithPath(userParamElem, "value");
+    if( valueElem != NULL ) {
+        parameterValue = valueElem->GetCharacterData();
+    } else {
+    	cout << "ERROR: Could not find parameter of type  " << type << " and name " << name << endl;
+    }
+    return parameterValue;
+}
+
+
+/*!
+ * Gets an encoding/trajectoryDescription/userParameter[Double|Long] element.
+ * \param type the of type new user parameter element. Must be userParameterLong or userParameterDouble
+ * \param name the name of the user parameter
+ * \return the vtkXMLDataElement of the user parameter. NULL is returned if the parameter is not found.
+ */
+vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetTrajectoryParameterElement( vtkstd::string type, vtkstd::string name )
+{
+	vtkXMLDataElement* userParamElem = NULL;
     vtkXMLDataElement* trajDescElem  = this->FindNestedElementWithPath("encoding/trajectoryDescription");
     if(trajDescElem != NULL ) {
         for( int i = 0; i < trajDescElem->GetNumberOfNestedElements(); i++ ) {
@@ -464,19 +498,13 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryParameter( vtkstd:
                 }
                 vtkXMLDataElement* valueElem =  svkUtils::FindNestedElementWithPath(paramElem, "value");
                 if( !paramName.empty() && paramName == name && valueElem != NULL ) {
-                    parameterValue = valueElem->GetCharacterData();
-                    parameterFound = true;
+                	userParamElem = paramElem;
                     break;
                 }
             }
         }
-    } else {
-    	parameterFound = false;
     }
-    if(!parameterFound ) {
-    	cout << "ERROR: Could not find parameter of type  " << type << " and name " << name << endl;
-    }
-    return parameterValue;
+    return userParamElem;
 }
 
 
