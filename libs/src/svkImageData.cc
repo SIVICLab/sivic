@@ -329,7 +329,7 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
             case svkDcmHeader::UNSIGNED_INT_2:
                 dataTypeVtk = VTK_UNSIGNED_SHORT;
                 // We only accept certain casts
-                if( !(pointArrayType == VTK_UNSIGNED_CHAR || pointArrayType == VTK_DOUBLE || pointArrayType == VTK_FLOAT) ) {
+                if( !(pointArrayType == VTK_UNSIGNED_CHAR || pointArrayType == VTK_DOUBLE || pointArrayType == VTK_FLOAT || pointArrayType == VTK_UNSIGNED_SHORT) ) {
                     pointArrayType = -1;
                 }
                 
@@ -337,7 +337,7 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
                 /* Point and cell arrays are seperated because there could
                  * potentially be two different types.
                  */
-                if( !(cellArrayType == VTK_UNSIGNED_CHAR || cellArrayType == VTK_DOUBLE || cellArrayType == VTK_FLOAT)) {
+                if( !(cellArrayType == VTK_UNSIGNED_CHAR || cellArrayType == VTK_DOUBLE || cellArrayType == VTK_FLOAT || cellArrayType == VTK_UNSIGNED_SHORT)) {
                     cellArrayType = -1;
                 }
                 break;
@@ -345,7 +345,7 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
             case svkDcmHeader::SIGNED_INT_2:
                 dataTypeVtk = VTK_SHORT;
                 // We only accept certain casts
-                if( !(pointArrayType == VTK_UNSIGNED_CHAR || pointArrayType == VTK_DOUBLE || pointArrayType == VTK_FLOAT) ) {
+                if( !(pointArrayType == VTK_UNSIGNED_CHAR || pointArrayType == VTK_DOUBLE || pointArrayType == VTK_FLOAT || pointArrayType == VTK_SHORT) ) {
                     pointArrayType = -1;
                 }
                 
@@ -353,7 +353,7 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
                 /* Point and cell arrays are seperated because there could
                  * potentially be two different types.
                  */
-                if( !(cellArrayType == VTK_UNSIGNED_CHAR || cellArrayType == VTK_DOUBLE || cellArrayType == VTK_FLOAT)) {
+                if( !(cellArrayType == VTK_UNSIGNED_CHAR || cellArrayType == VTK_DOUBLE || cellArrayType == VTK_FLOAT || cellArrayType == VTK_SHORT)) {
                     cellArrayType = -1;
                 }
                 break;
@@ -362,14 +362,14 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
                 dataTypeVtk = VTK_FLOAT;
 
                 // We only accept certain casts
-                if( pointArrayType != VTK_UNSIGNED_CHAR && pointArrayType != VTK_UNSIGNED_SHORT  ) {
+                if( !(pointArrayType == VTK_UNSIGNED_CHAR || pointArrayType == VTK_UNSIGNED_SHORT || pointArrayType == VTK_DOUBLE || pointArrayType == VTK_FLOAT)  ) {
                     pointArrayType = -1;
                 } 
 
                 /* Point and cell arrays are seperated because there could
                  * potentially be two different types.
                  */
-                if( cellArrayType != VTK_UNSIGNED_CHAR && cellArrayType != VTK_UNSIGNED_SHORT  ) {
+                if( !(cellArrayType == VTK_UNSIGNED_CHAR || cellArrayType == VTK_UNSIGNED_SHORT || cellArrayType == VTK_DOUBLE || cellArrayType == VTK_FLOAT)  ) {
                     cellArrayType = -1;
                 }
                 break;
@@ -378,14 +378,14 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
                 dataTypeVtk = VTK_DOUBLE;
 
                 // We only accept certain casts
-                if( pointArrayType != VTK_UNSIGNED_CHAR && pointArrayType != VTK_UNSIGNED_SHORT && pointArrayType != VTK_FLOAT) {
+                if( !(pointArrayType == VTK_UNSIGNED_CHAR || pointArrayType == VTK_UNSIGNED_SHORT || pointArrayType == VTK_FLOAT || pointArrayType == VTK_DOUBLE)) {
                     pointArrayType = -1;
                 } 
 
                 /* Point and cell arrays are seperated because there could
                  * potentially be two different types.
                  */
-                if( cellArrayType != VTK_UNSIGNED_CHAR && cellArrayType != VTK_UNSIGNED_SHORT && cellArrayType != VTK_FLOAT ) {
+                if( !(cellArrayType == VTK_UNSIGNED_CHAR || cellArrayType == VTK_UNSIGNED_SHORT || cellArrayType == VTK_FLOAT || cellArrayType == VTK_DOUBLE) ) {
                     cellArrayType = -1;
                 }
                 break;

@@ -76,7 +76,7 @@ svkImageMathematics::svkImageMathematics()
 
     vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
 
-    this->SetNumberOfInputPorts(14);
+    this->SetNumberOfInputPorts(15);
     bool required = true;
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE_1, "INPUT_IMAGE_1", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE_2, "INPUT_IMAGE_2", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, !required );
@@ -92,6 +92,7 @@ svkImageMathematics::svkImageMathematics()
     this->GetPortMapper()->InitializeInputPort( START_BIN_FOR_HISTOGRAM , "START_BIN_FOR_HISTOGRAM", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
     this->GetPortMapper()->InitializeInputPort( SMOOTH_BINS_FOR_HISTOGRAM , "SMOOTH_BINS_FOR_HISTOGRAM", svkAlgorithmPortMapper::SVK_INT, !required);
     this->GetPortMapper()->InitializeInputPort( OUTPUT_SERIES_DESCRIPTION, "OUTPUT_SERIES_DESCRIPTION", svkAlgorithmPortMapper::SVK_STRING, !required);
+    this->GetPortMapper()->InitializeInputPort( OUTPUT_TYPE, "OUTPUT_TYPE", svkAlgorithmPortMapper::SVK_INT, !required);
 
     this->SetNumberOfOutputPorts(1);
     this->GetPortMapper()->InitializeOutputPort( 0, "MATH_OUTPUT", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
@@ -150,6 +151,24 @@ svkAlgorithmPortMapper* svkImageMathematics::GetPortMapper()
 
 
 /*!
+ * Utility setter for input port: Output float
+ */
+void svkImageMathematics::SetOutputType(int outputType)
+{
+    this->GetPortMapper()->SetIntInputPortValue(OUTPUT_TYPE, outputType);
+}
+
+
+/*!
+ * Utility getter for input port: Output float
+ */
+svkInt* svkImageMathematics::GetOutputType()
+{
+    return this->GetPortMapper()->GetIntInputPortValue(OUTPUT_TYPE);
+}
+
+
+/*!
  *  PrintSelf method calls parent class PrintSelf, then prints all parameters using the port mapper.
  *
  */
@@ -163,8 +182,27 @@ void svkImageMathematics::PrintSelf( ostream &os, vtkIndent indent )
 /*!
  *  If 2 inputs, they must have the same data types.  IF the data types differ, upcast the smaller data type 
  */
-void svkImageMathematics::CheckDataTypeMatch()
+void svkImageMathematics::SetDatatypes()
 {
+    // By default, output datatype is the greater of the input datatypes
+    // With two integer inputs, you must explicitly request float output
+    if (this->GetPortMapper()->GetIntInputPortValue(OUTPUT_TYPE)) {
+        int outputType = this->GetOutputType()->GetValue();
+        switch (outputType) {
+            case UNDEFINED:
+                break;
+            case UNSIGNED_INT_2:
+                svkImageData::SafeDownCast(this->GetImageDataInput(0))->CastDataFormat(svkDcmHeader::UNSIGNED_INT_2);
+                if (this->GetInput(1)) {
+                    svkImageData::SafeDownCast(this->GetImageDataInput(1))->CastDataFormat(svkDcmHeader::UNSIGNED_INT_2);
+                }
+            case SIGNED_FLOAT_4:
+                svkImageData::SafeDownCast(this->GetImageDataInput(0))->CastDataFormat(svkDcmHeader::SIGNED_FLOAT_4);
+            default:
+                break;
+        }
+    }
+
     if (this->GetInput(1)) {
         int outType0 = this->GetImageDataInput(0)->GetScalarType();
         int outType1 = this->GetImageDataInput(1)->GetScalarType();
@@ -183,7 +221,7 @@ void svkImageMathematics::CheckDataTypeMatch()
         }
         if ( outType1 > outType0 ) {
             cout << "Cast image 0 to image 1 type: " << outType1 << endl;
-            //  target cast type should depent on outTYpe1: 
+            //  target cast type should depend on outType1: 
             //cast->SetOutputScalarType( outType1 );
             //cast->SetInput( this->GetImageDataInput(0) ); 
             //cast->ClampOverflowOn();
@@ -194,6 +232,7 @@ void svkImageMathematics::CheckDataTypeMatch()
         }
     }
 
+    // Sets output type from Input 0
     this->GetOutput()->DeepCopy( this->GetImageDataInput(0) ); 
 }
 
@@ -206,7 +245,7 @@ void svkImageMathematics::Update()
 {
 
     // if there are 2 inputs of different types, upcast to the larger: 
-    this->CheckDataTypeMatch();  
+    this->SetDatatypes();  
 
     //  Determine how many vtkPointData arrays are in the input data
     //  Require the first input to have at least as many volumes as the 2nd input if a binary 
