@@ -79,6 +79,7 @@ class svkImageReader2 : public vtkImageReader2
         void                   OnlyGlobFiles();
         void                   GlobFileNames(); 
         static long            GetFileSize(ifstream* fs); 
+        void                   OnlyReadHeader(bool onlyReadHeader);
 
 
     protected:
@@ -118,11 +119,14 @@ class svkImageReader2 : public vtkImageReader2
         vtkDataArray*                            dataArray;
         bool                                     readOneInputFile;
         bool                                     onlyGlobFiles;
+        bool                                     onlyReadHeader;
 
 
     private:
 
         virtual void                            InitDcmHeader() = 0;
+        string                                  GetFileSeriesDescription( string fileName ); 
+
 
 };
 

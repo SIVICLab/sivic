@@ -90,7 +90,6 @@ class svkIdfVolumeReader : public svkImageReader2
 
         //  Methods:
         virtual int             CanReadFile(const char* fname);
-        void                    OnlyReadHeader(bool onlyReadHeader);
         void                    SetReadIntAsSigned(bool readIntAsSigned);
 
     protected:
@@ -146,7 +145,6 @@ class svkIdfVolumeReader : public svkImageReader2
         vtkstd::map <vtkstd::string, vtkstd::string>                    
                                                 idfMap; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
-        bool                                    onlyReadHeader; 
         bool                                    readIntAsSigned;
         svkEnhancedMRIIOD*                      iod; 
         vtkStringArray*                         tmpFileNames;
