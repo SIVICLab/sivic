@@ -64,22 +64,22 @@ svkUtils::~svkUtils()
  */
 bool svkUtils::FilePathExists(const char* path)
 {
-	bool filePathExists = false;
-	vtkGlobFileNames* files = vtkGlobFileNames::New();
-	files->AddFileNames( path );
-	vtkStringArray* fileFound = files->GetFileNames();
+    bool filePathExists = false;
+    vtkGlobFileNames* files = vtkGlobFileNames::New();
+    files->AddFileNames( path );
+    vtkStringArray* fileFound = files->GetFileNames();
 
     // Check to see if it is a file
-	if( (fileFound != NULL && fileFound->GetNumberOfValues() == 1)) { 
-		filePathExists = true;
-	} else { // Check to see if it is a directory
+    if( (fileFound != NULL && fileFound->GetNumberOfValues() == 1)) {
+        filePathExists = true;
+    } else { // Check to see if it is a directory
         vtkDirectory* directory = vtkDirectory::New();
         if( directory->FileIsDirectory(path)) {
             filePathExists = true; 
         } 
     }
-	files->Delete();
-	return filePathExists;
+    files->Delete();
+    return filePathExists;
 }
 
 
@@ -89,8 +89,8 @@ bool svkUtils::FilePathExists(const char* path)
 string svkUtils::GetCurrentWorkingDirectory() 
 {
     char cwd[MAXPATHLEN];
-	vtkDirectory::GetCurrentWorkingDirectory(cwd, MAXPATHLEN);
-	return string(cwd);
+    vtkDirectory::GetCurrentWorkingDirectory(cwd, MAXPATHLEN);
+    return string(cwd);
 }
 
 /*!
@@ -110,13 +110,13 @@ string svkUtils::GetUserName()
 {
     string userName = "";
 #ifdef WIN32
-	char acUserName[100];
-	DWORD nUserName = sizeof(acUserName);
-	if (::GetUserName(acUserName, &nUserName)) {
-		userName = string(acUserName);
-	}
+    char acUserName[100];
+    DWORD nUserName = sizeof(acUserName);
+    if (::GetUserName(acUserName, &nUserName)) {
+        userName = string(acUserName);
+    }
 #else
-	register struct passwd *psswd;
+    register struct passwd *psswd;
     register uid_t uid;
     uid = geteuid ();
     psswd = getpwuid (uid);
@@ -134,16 +134,16 @@ string svkUtils::GetUserName()
  */
 bool svkUtils::CanWriteToPath(const char* path)
 {
-	bool canWriteToPath = false;
-	string testFileName = string( path );
-	testFileName.append("/sivic.write.test.txt");
-	FILE* testFileHandle = fopen(testFileName.c_str(), "w");
-	if( testFileHandle != NULL ) {
-		canWriteToPath = true;
-		remove( testFileName.c_str() );
-		fclose(testFileHandle); 
-	} 
-	return canWriteToPath;
+    bool canWriteToPath = false;
+    string testFileName = string( path );
+    testFileName.append("/sivic.write.test.txt");
+    FILE* testFileHandle = fopen(testFileName.c_str(), "w");
+    if( testFileHandle != NULL ) {
+        canWriteToPath = true;
+        remove( testFileName.c_str() );
+        fclose(testFileHandle);
+    }
+    return canWriteToPath;
 }
 
 
@@ -152,17 +152,17 @@ bool svkUtils::CanWriteToPath(const char* path)
  */
 int svkUtils::CopyFile( const char* input, const char* output )
 {
-	int result = 1; 
+    int result = 1;
 #ifndef WIN32
-	stringstream copyCommand;
+    stringstream copyCommand;
     copyCommand << "cp " << input <<" "<< output;
     result = system( copyCommand.str().c_str() );
 #else
-	if (::CopyFile( input, output,false ) ) {
-		result = 0;
-	}
+    if (::CopyFile( input, output,false ) ) {
+        result = 0;
+    }
 #endif
-	return result;
+    return result;
 }
 
 
@@ -171,17 +171,17 @@ int svkUtils::CopyFile( const char* input, const char* output )
  */
 int svkUtils::MoveFile( const char* input, const char* output )
 {
-	int result = 1; 
+    int result = 1;
 #ifndef WIN32
-	stringstream moveCommand;
+    stringstream moveCommand;
     moveCommand << "mv " << input <<" "<< output;
     result = system( moveCommand.str().c_str() );
 #else
-	if (::CopyFile( input, output,false ) ) {
-		result = 0;
-	}
+    if (::CopyFile( input, output,false ) ) {
+        result = 0;
+    }
 #endif
-	return result;
+    return result;
 }
 
 
@@ -220,19 +220,19 @@ vector<string> svkUtils::GetFileNamesFromPattern( string imageBaseName, int star
 bool svkUtils::PrintFile( const char* fileName, const char* printerName )
 {
 #ifndef WIN32
-	stringstream printCommand;
+    stringstream printCommand;
     printCommand << "lpr -o fitplot -to-page -o landscape -h -P " << printerName <<" "<<fileName; 
     cout<< printCommand.str().c_str() << endl;
     int result = system( printCommand.str().c_str() ); 
-	if( result == 0 ) {
-		return true;
-	} else {
-		return false;
-	}
+    if( result == 0 ) {
+        return true;
+    } else {
+        return false;
+    }
 
 #else
-	cout << "Printing not supported in windows..." << endl;
-	return false;
+    cout << "Printing not supported in windows..." << endl;
+    return false;
 #endif
 
 }
@@ -386,17 +386,17 @@ int svkUtils::NearestInt(double x)
  */
 bool svkUtils::UncompressFiles( vtkStringArray *filenames )
 {
-	bool success = true;
+    bool success = true;
 #ifndef WIN32
     for (int fileIndex = 0; fileIndex < filenames->GetNumberOfValues(); fileIndex++) {
-			string filename = filenames->GetValue( fileIndex );
-			bool wasUncompressed = svkUtils::UncompressFile( filename );
-			if( !wasUncompressed ) {
-				success = false;
-			}
+            string filename = filenames->GetValue( fileIndex );
+            bool wasUncompressed = svkUtils::UncompressFile( filename );
+            if( !wasUncompressed ) {
+                success = false;
+            }
     }
 #else
-	// No windows implementation yet.
+    // No windows implementation yet.
 #endif
     return success;
 }
@@ -407,25 +407,25 @@ bool svkUtils::UncompressFiles( vtkStringArray *filenames )
  */
 bool svkUtils::UncompressFile( vtkstd::string filename )
 {
-	bool success = true;
+    bool success = true;
 #ifndef WIN32
-	if( svkUtils::IsFileCompressed( filename ) ) {
-		stringstream uncompressCommand;
+    if( svkUtils::IsFileCompressed( filename ) ) {
+        stringstream uncompressCommand;
 #ifdef UCSF_INTERNAL
-		uncompressCommand << "group_gunzip " << filename << ".gz";
+        uncompressCommand << "group_gunzip " << filename << ".gz";
 #else
-		uncompressCommand << "gunzip " << filename;
+        uncompressCommand << "gunzip " << filename;
 #endif
-		cout << "UNCOMPRESSING FILE " << uncompressCommand.str() << endl;
-		int result = system( uncompressCommand.str().c_str() );
-		if( result != 0 ) {
-			success = false;
-		}
-	}
+        cout << "UNCOMPRESSING FILE " << uncompressCommand.str() << endl;
+        int result = system( uncompressCommand.str().c_str() );
+        if( result != 0 ) {
+            success = false;
+        }
+    }
 #else
-	// No windows implementation yet.
+    // No windows implementation yet.
 #endif
-	return success;
+    return success;
 }
 
 
@@ -434,18 +434,18 @@ bool svkUtils::UncompressFile( vtkstd::string filename )
  */
 bool svkUtils::IsFileCompressed( vtkstd::string filename )
 {
-	bool isCompressed = false;
+    bool isCompressed = false;
 #ifndef WIN32
-	stringstream testCompressCommand;
-	testCompressCommand << "gunzip -t " << filename << " 2> /dev/null";
-	int result = system( testCompressCommand.str().c_str() );
-	if( result == 0 ) {
-		isCompressed = true;
-	}
+    stringstream testCompressCommand;
+    testCompressCommand << "gunzip -t " << filename << " 2> /dev/null";
+    int result = system( testCompressCommand.str().c_str() );
+    if( result == 0 ) {
+        isCompressed = true;
+    }
 #else
-	// No windows implementation yet.
+    // No windows implementation yet.
 #endif
-	return isCompressed;
+    return isCompressed;
 }
 
 
@@ -478,17 +478,17 @@ bool svkUtils::AreValuesClose( double x, double y, double maxRatio )
         return true; 
     }
 
-	double ratio;
-	if( x > y ) {
-		ratio = y/x;
-	} else {
-		ratio = x/y;
-	}
-	if( ratio > 0 && 1 - ratio < maxRatio ) {
-		return true;
-	} else {
-		return false;
-	}
+    double ratio;
+    if( x > y ) {
+        ratio = y/x;
+    } else {
+        ratio = x/y;
+    }
+    if( ratio > 0 && 1 - ratio < maxRatio ) {
+        return true;
+    } else {
+        return false;
+    }
 
 }
 
@@ -498,13 +498,13 @@ bool svkUtils::AreValuesClose( double x, double y, double maxRatio )
  */
 bool svkUtils::AreValuesClose( double x[3], double y[3], double maxRatio )
 {
-	if(    svkUtils::AreValuesClose(x[0], y[0], maxRatio)
-		&& svkUtils::AreValuesClose(x[1], y[1], maxRatio)
-		&& svkUtils::AreValuesClose(x[2], y[2], maxRatio)) {
-		return true;
-	} else {
-		return false;
-	}
+    if(    svkUtils::AreValuesClose(x[0], y[0], maxRatio)
+        && svkUtils::AreValuesClose(x[1], y[1], maxRatio)
+        && svkUtils::AreValuesClose(x[2], y[2], maxRatio)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
@@ -514,16 +514,16 @@ bool svkUtils::AreValuesClose( double x[3], double y[3], double maxRatio )
  */
 int svkUtils::GetNumberOfDigits( int number, bool isMinusDigit )
 {
-	int numDigits = 1;
-	if( isMinusDigit && number < 0){
-		numDigits ++;
-	}
-	number /= 10;
-	while( number != 0 ){
-		number /= 10;
-		numDigits ++;
-	}
-	return numDigits;
+    int numDigits = 1;
+    if( isMinusDigit && number < 0){
+        numDigits ++;
+    }
+    number /= 10;
+    while( number != 0 ){
+        number /= 10;
+        numDigits ++;
+    }
+    return numDigits;
 }
 
 
@@ -608,14 +608,52 @@ vtkXMLDataElement* svkUtils::FindNestedElementWithPath( vtkXMLDataElement* root,
 {
     vector<string> elements = svkUtils::SplitString( xmlPath, "/");
     vtkXMLDataElement* elem = root;
-    for( int i = 0; i < elements.size(); i++ ) {
-        if( elem != NULL ) {
-            elem = elem->FindNestedElementWithName(elements[i].c_str());
-        } else {
-            break;
+    if( elements.size() > 0 ) {
+        for( int i = 0; i < elements.size(); i++ ) {
+            if( elem != NULL ) {
+                elem = elem->FindNestedElementWithName(elements[i].c_str());
+            } else {
+                break;
+            }
         }
+    } else {
+        elem = NULL;
     }
     return elem;
+}
+
+
+/*!
+ * Method finds a nested element and then grabs the character data and puts it
+ * into the data string provided as an argument. If the character data is
+ * retrieved then the method returns true, otherwise false.
+ */
+bool svkUtils::GetNestedElementCharacterDataWithPath( vtkXMLDataElement* root, string xmlPath, string* data )
+{
+    bool dataFound = false;
+    vtkXMLDataElement* elem = svkUtils::FindNestedElementWithPath( root, xmlPath );
+    if( elem != NULL ) {
+        *data = elem->GetCharacterData();
+        dataFound = true;
+    }
+    return dataFound;
+}
+
+
+/*!
+ * Sets the character data for a given xml path relative to a root element. If
+ * the element exists then it will be set and true will be returned. Otherwise
+ * false will be returned.
+ */
+bool svkUtils::SetNestedElementWithPath( vtkXMLDataElement* root, string xmlPath, string value)
+{
+    bool wasSet = false; // Assume failure
+    vtkXMLDataElement* elem = svkUtils::FindNestedElementWithPath(root, xmlPath );
+    if( elem != NULL ) {
+        elem->SetCharacterData(value.c_str(), value.size());
+        wasSet = true;
+    }
+    return wasSet;
 }
 
 

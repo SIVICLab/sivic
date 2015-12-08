@@ -450,6 +450,24 @@ IF(NOT WIN32)
         ${SVK_LIBS}
         vtkIO
     )
+    ADD_EXECUTABLE(
+        svkDadSatsXMLTest_c
+        svkDadSatsXMLTest.c
+    )
+    TARGET_LINK_LIBRARIES(
+        svkDadSatsXMLTest_c
+        ${SVK_LIBS}
+        vtkIO
+    )
+    ADD_EXECUTABLE(
+        svkDadTrajectoryXMLTest_c
+        svkDadTrajectoryXMLTest.c
+    )
+    TARGET_LINK_LIBRARIES(
+        svkDadTrajectoryXMLTest_c
+        ${SVK_LIBS}
+        vtkIO
+    )
 ENDIF(NOT WIN32)
 
 

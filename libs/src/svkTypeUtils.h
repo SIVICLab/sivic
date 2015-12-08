@@ -74,7 +74,7 @@ class svkTypeUtils : public vtkObject
         static float              StringToFloat(  string floatString );
         static int                StringToInt(  string intString );
         static long int           StringToLInt(  string longIntString );
-        static string             IntToString( int intVal );
+        static string             IntToString( long intVal );
         static string             DoubleToString( double doubleVal, int precision = 0 );
 
 
