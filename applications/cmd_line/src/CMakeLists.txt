@@ -390,6 +390,14 @@ TARGET_LINK_LIBRARIES(
     ${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_get_voxel_centers
+    svk_get_voxel_centers.cc 
+)
+TARGET_LINK_LIBRARIES(
+    svk_get_voxel_centers
+    ${SVK_LIBS}
+)
 
 ADD_EXECUTABLE(
     svk_integrate_dynamic
@@ -723,6 +731,7 @@ SET(APPS
     svk_lcmodel_reader
     svk_lcmodel_writer
     svk_spec_diff 
+    svk_get_voxel_centers
     svk_integrate_dynamic 
     svk_quantify 
     svk_zscore
