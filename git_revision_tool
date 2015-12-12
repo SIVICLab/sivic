@@ -183,11 +183,26 @@ sub check_repository_status($)
 {
     my( $tag_branch ) = @_;
     my $return_status = 0;
+
     # First let's check to make sure the user is on the correct branch.
-    my $branch =`git rev-parse --abbrev-ref HEAD`;
-    chomp($branch);
-    if( $branch ne $tag_branch ) {
-        print "ERROR: Current branch=$branch. Please checkout the $tag_branch branch.\n";
+
+    # Grab the current checkout's revision
+    my $head_commit =`git rev-parse HEAD`;
+    chomp($head_commit);
+
+
+    # Grab the remote revision commit for the tag branch
+    my $tagging_commit =`git ls-remote -q -h origin $tag_branch`;
+    if( $tagging_commit =~/(.*)\s+refs\/heads\/$tag_branch/ ) {
+        $tagging_commit = $1;
+    } else {
+        print "ERROR: Could not determine current $tag_branch commit.\n";
+        $return_status = 1;
+    }
+
+    if( $head_commit ne $tagging_commit ) {
+        print "ERROR: Your HEAD ref <$head_commit> does not match the current $tag_branch head <$tagging_commit>.\n";
+        print "ERROR: Please verify you are using the $tag_branch branch and are up-to-date with the remote repo.\n";
         $return_status = 1;
     } else {
         my $local_changes = `git diff origin/$tag_branch`;

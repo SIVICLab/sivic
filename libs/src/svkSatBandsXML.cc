@@ -96,9 +96,15 @@ int svkSatBandsXML::SetXMLFileName( string xmlFileName )
 {
 
     this->xmlFileName = xmlFileName;  
+    return this->ParseXML( vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() ));
+}
+
+
+int svkSatBandsXML::ParseXML( vtkXMLDataElement* satBandsElement )
+{
     // Now we have to remove the old xml file
     this->ClearXMLFile();
-    this->satBandsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
+    this->satBandsXML = satBandsElement;
     if (this->satBandsXML == NULL ) { 
         cout << "ERROR, could not parse element from " << this->xmlFileName << endl;
         return 1; 

@@ -292,6 +292,7 @@ ADD_LIBRARY(
 
     svkFileUtils.cc
     svkSatBandsXML.cc
+    svkDataAcquisitionDescriptionXML.cc
 )
 
 
