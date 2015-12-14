@@ -73,9 +73,7 @@ svkIdfVolumeReader::svkIdfVolumeReader()
 
     this->numSlices = 1; 
     this->numVolumes = 1; 
-    this->onlyReadHeader = false;
     this->readIntAsSigned = false;
-    
 
     //  If there are multiple volumes, by default treat as separate
     //  channels of data. 

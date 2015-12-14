@@ -200,7 +200,7 @@ svkImageReaderFactory::~svkImageReaderFactory()
 void svkImageReaderFactory::QuickParse()
 {
     this->quickParse = true; 
-    this->gePFileReader->OnlyParseHeader(); 
+    this->gePFileReader->OnlyReadHeader(true); 
 }
 
 

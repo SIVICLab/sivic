@@ -114,7 +114,6 @@ class svkGEPFileReader : public svkImageReader2
                                 int first, 
                                 int numLobes, 
                                 int numSkip ); 
-        void                OnlyParseHeader();
         void                Deidentify( ); 
         void                ModifyRawField( string rawField, string value); 
         void                SetPSDLogic( string psdName ); 
@@ -198,7 +197,6 @@ class svkGEPFileReader : public svkImageReader2
                                         inputArgs; 
 
         vtkCallbackCommand*             progressCallback;
-        bool                            onlyParseHeader;  
         vtkStringArray*                 tmpFileNames;
 
         svkDcmHeader::PHIType           phiType; 

@@ -76,6 +76,7 @@ svkImageReader2::svkImageReader2()
     this->dataArray = NULL;
     this->readOneInputFile = false;
     this->onlyGlobFiles = false;
+    this->onlyReadHeader = false;
 
 }
 

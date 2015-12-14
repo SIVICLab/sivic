@@ -190,7 +190,7 @@ void svkDICOMRawDataWriter::Write()
         cerr << "Can not determine appropriate reader for: " << this->FileName << endl;
         exit(1);
     }
-    reader->OnlyParseHeader();
+    reader->OnlyReadHeader(true);
     reader->SetFileName( this->FileName );
     reader->Update();
     this->pfMap = reader->GetPFMap();
