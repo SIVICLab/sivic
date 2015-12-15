@@ -381,6 +381,10 @@ void OrientationTest()
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << i << "SAGITTAL.tiff" ;
         overlayController->SetSlice( i );
         window->Render();
+        // To try and catch a inconsistent test failure let's print out the window and level for the overlay
+        double overlayWindow = svkOverlayView::SafeDownCast(overlayController->GetView())->GetColorOverlayWindow();
+        double overlayLevel = svkOverlayView::SafeDownCast(overlayController->GetView())->GetColorOverlayLevel();
+        cout << "Window:" << overlayWindow << " overlayLevel:" << overlayLevel << endl;
         svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
     if( spectra != NULL ) {
