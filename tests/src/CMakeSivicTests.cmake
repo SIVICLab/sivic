@@ -1829,6 +1829,7 @@ SET_TESTS_PROPERTIES(TEST_SVK_IMAGE_MATHEMATICS_SCL_DIFF PROPERTIES DEPENDS TEST
 #   svk_file_convert load IDF 
 #   check series description test
 #   when multiple vols are present
+#       - only open files with similar file names if the series descriptions match
 ##############################
 SET( TEST_NAME TEST_MCHK_SVK_CHECK_VOL_LOAD )
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
