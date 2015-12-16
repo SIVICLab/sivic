@@ -176,11 +176,11 @@ int svkGEPFileReader::CanReadFile(const char* fname)
 
                 if ( isGEPFile ) { 
                     this->SetFileName( fname ); 
-                    this->ReadGEPFile(); 
                     if ( this->onlyReadHeader ) {
                         //  Just for parsing header, don't care about mapping
                         isKnownPSD = true;
                     } else {
+                        this->ReadGEPFile(); 
                         // We may already have a mapper from can read.
                         if( this->mapper != NULL ) {
                             this->mapper->Delete();
