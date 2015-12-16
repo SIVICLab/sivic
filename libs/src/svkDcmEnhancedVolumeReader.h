@@ -69,6 +69,12 @@ class svkDcmEnhancedVolumeReader : public svkDcmVolumeReader
             return "DICOM MR Enhanced Object";
         }
 
+        //  Enum reader type
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::DICOM_ENHANCED_MRI;
+        }
+
         //  Methods:
         virtual int CanReadFile(const char* fname);
 

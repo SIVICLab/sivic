@@ -86,6 +86,11 @@ class svkIdfVolumeReader : public svkImageReader2
             return "IDF File";
         }
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::IDF;
+        }
+
         void    SetMultiVolumeType(svkIdfVolumeReader::MultiVolumeType volumeType);   
 
         //  Methods:

@@ -130,6 +130,11 @@ class svkGEPFileReader : public svkImageReader2
             return "GE pfile";
         } 
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::GE_PFILE;
+        }
+
         bool                             checkSeriesUID;  
 
 

@@ -79,6 +79,11 @@ class svkGESignaLX2Reader : public svkGESigna5XReader
             return "GE Genesis Signa LX2 File";
         }
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::GE_SIGNA_LX2;
+        }
+
 
     protected:
 
