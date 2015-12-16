@@ -638,25 +638,31 @@ void svkImageReader2::GlobFileNames()
     
     if( groupToUse != -1 ) {
 
-        //  Before setting the file names for this group, confirm that the files 
-        //  all have the same series description    
-        //
-        string referenceSeriesDescription = this->GetFileSeriesDescription( fileName ); 
-        cout << "REF SERIES DESCRIPTION: " << referenceSeriesDescription << endl; 
-      
         vtkStringArray* group = sortFileNames->GetNthGroup(groupToUse); 
-        cout << "NUM VALUES: " <<  group->GetNumberOfValues() << endl;
-        vtkStringArray* seriesGroup = vtkStringArray::New();  
-        for (int i = 0; i < group->GetNumberOfValues(); i++) {
-            string groupFileName = sortFileNames->GetNthGroup( groupToUse )->GetValue(i); 
-            string seriesDescription = this->GetFileSeriesDescription( groupFileName ); 
-            cout << "SERIES DESCRIPTION: " << seriesDescription << endl;
-            if ( seriesDescription.compare( referenceSeriesDescription ) == 0 ) {
-                seriesGroup->InsertNextValue( groupFileName ); 
+        int numFilesInGroup = group->GetNumberOfValues();
+        cout << "NUM VALUES: " <<  numFilesInGroup << endl;
+
+        //  Before setting the file names for this group, confirm that if more than
+        //  one file in the group that they all have the same series description
+        //  all have the same series description    
+        if ( numFilesInGroup > 1 ) {   
+            
+            string referenceSeriesDescription = this->GetFileSeriesDescription( fileName ); 
+            //cout << "REF SERIES DESCRIPTION: " << referenceSeriesDescription << endl; 
+      
+            vtkStringArray* seriesGroup = vtkStringArray::New();  
+            for (int i = 0; i < numFilesInGroup; i++) {
+                string groupFileName = sortFileNames->GetNthGroup( groupToUse )->GetValue(i); 
+                string seriesDescription = this->GetFileSeriesDescription( groupFileName ); 
+                //cout << "SERIES DESCRIPTION: " << seriesDescription << endl;
+                if ( seriesDescription.compare( referenceSeriesDescription ) == 0 ) {
+                    seriesGroup->InsertNextValue( groupFileName ); 
+                }
             }
-        }
-        this->SetFileNames( seriesGroup ); 
-        //this->SetFileNames( sortFileNames->GetNthGroup( groupToUse ) );
+            this->SetFileNames( seriesGroup ); 
+    } else {
+        this->SetFileNames( sortFileNames->GetNthGroup( groupToUse ) );
+    }
 
     } else {
         vtkStringArray* inputFile = vtkStringArray::New();
@@ -686,13 +692,9 @@ void svkImageReader2::GlobFileNames()
  */
 string svkImageReader2::GetFileSeriesDescription( string fileName ) 
 {
-    svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-    svkImageReader2* reader = readerFactory->CreateImageReader2( fileName.c_str() );
-    readerFactory->Delete();
-    if (reader == NULL) {
-        cerr << "Can not determine appropriate reader for: " << fileName << endl;
-        exit(1);
-    }
+
+    svkImageReader2::ReaderType readerType = this->GetReaderType(); 
+    svkImageReader2* reader = svkImageReaderFactory::CreateImageReader2( readerType );
     reader->SetFileName( fileName.c_str() );
     reader->OnlyReadOneInputFile();
     reader->OnlyReadHeader( true ); 
