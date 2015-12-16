@@ -58,7 +58,6 @@ using namespace svk;
 
 
 vtkCxxRevisionMacro(svkLCModelReader, "$Rev$");
-vtkStandardNewMacro(svkLCModelReader);
 
 
 /*!
