@@ -305,6 +305,7 @@ int main (int argc, char** argv)
     peakTimeWriter->Write();
     maxSlopeWriter->Write();
     washoutWriter->Write();
+    washoutPosWriter->Write();
 
     // ===============================================  
 
