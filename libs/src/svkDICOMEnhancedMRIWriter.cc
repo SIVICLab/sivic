@@ -129,8 +129,7 @@ void svkDICOMEnhancedMRIWriter::Write()
 
 
     //  Make sure there is an extension:
-    vtkstd::string fileRoot = svkImageReader2::GetFileRoot( this->InternalFileName );
-    sprintf(this->InternalFileName, "%s.dcm", fileRoot.c_str() );
+    sprintf(this->InternalFileName, "%s.dcm", this->InternalFileName );
     
     if ( this->useLosslessCompression ) {
         this->GetImageDataInput(0)->GetDcmHeader()->
