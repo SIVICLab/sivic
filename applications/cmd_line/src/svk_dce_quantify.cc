@@ -287,7 +287,7 @@ int main (int argc, char** argv)
     maxSlopeCopier->Update();
 
     svkImageCopy* washoutPosCopier = svkImageCopy::New();
-    washoutPosCopier->SetInput(dceQuant->GetOutput(5));  // port 4 is washout map
+    washoutPosCopier->SetInput(dceQuant->GetOutput(5));  // port 5 is positive washout map
     washoutPosCopier->SetSeriesDescription("DCE Washout");
     washoutPosCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
     washoutPosCopier->Update();
@@ -298,7 +298,7 @@ int main (int argc, char** argv)
     peakTimeWriter->SetInput(peakTimeCopier->GetOutput());
     maxSlopeWriter->SetInput(maxSlopeCopier->GetOutput());
     washoutPosWriter->SetInput(washoutPosCopier->GetOutput());
-    washoutWriter->SetInput(dceQuant->GetOutput(4));
+    washoutWriter->SetInput(dceQuant->GetOutput(4));  // port 4 is washout map
 
     baseHtWriter->Write();
     peakHtWriter->Write();
