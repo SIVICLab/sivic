@@ -638,6 +638,15 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_dc_correct
+    svk_dc_correct.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_dc_correct
+    ${SVK_LIBS}
+)
+
 if ( BUILD_ITK )
 
     ADD_EXECUTABLE(
@@ -745,6 +754,7 @@ SET(APPS
     svk_peak_pick
     svk_volume_diff
     svk_psd_prescription_convert
+    svk_dc_correct
 )
 if ( BUILD_CLAPACK )
     LIST(APPEND APPS svk_hsvd)
