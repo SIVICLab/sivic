@@ -88,7 +88,8 @@ class svkDCEQuantify: public svkImageAlgorithmWithPortMapper
             PEAK_HT_MAP,
             PEAK_TIME_MAP,
             UP_SLOPE_MAP,
-            WASHOUT_SLOPE_MAP
+            WASHOUT_SLOPE_MAP,
+            WASHOUT_SLOPE_POS_MAP
         } svkDCEQuantifyOutput;
 
         static svkDCEQuantify* New();

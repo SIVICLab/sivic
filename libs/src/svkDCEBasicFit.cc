@@ -86,12 +86,13 @@ svkDCEBasicFit::svkDCEBasicFit()
     this->GetPortMapper()->InitializeInputPort(START_TIME_PT, "START_TIME_PT", svkAlgorithmPortMapper::SVK_INT, !required);
     this->GetPortMapper()->InitializeInputPort(END_TIME_PT, "END_TIME_PT", svkAlgorithmPortMapper::SVK_INT, !required);
 
-    this->SetNumberOfOutputPorts(5); 
+    this->SetNumberOfOutputPorts(6); 
     this->GetPortMapper()->InitializeOutputPort( BASE_HT_MAP, "BASE_HT_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeOutputPort( PEAK_HT_MAP, "PEAK_HT_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeOutputPort( PEAK_TIME_MAP, "PEAK_TIME_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeOutputPort( UP_SLOPE_MAP, "UP_SLOPE_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeOutputPort( WASHOUT_SLOPE_MAP, "WASHOUT_SLOPE_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeOutputPort( WASHOUT_SLOPE_POS_MAP, "WASHOUT_SLOPE_POS_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
 
     this->normalize            = false; 
     this->baselineMean         = 0.;
@@ -208,6 +209,9 @@ void svkDCEBasicFit::GenerateMaps()
     vtkDataArray* dceMapWashoutArray;
     dceMapWashoutArray  = this->GetOutput(4)->GetPointData()->GetArray(0);
 
+    vtkDataArray* dceMapWashoutPosArray;
+    dceMapWashoutPosArray = this->GetOutput(5)->GetPointData()->GetArray(0);
+
     //  Add the output volume array to the correct array in the svkMriImageData object
     string arrayNameString("pixels");
     dceMapBaseHtArray->SetName(arrayNameString.c_str());
@@ -215,6 +219,7 @@ void svkDCEBasicFit::GenerateMaps()
     dceMapPeakTimeArray->SetName(arrayNameString.c_str());
     dceMapUpSlopeArray->SetName(arrayNameString.c_str());
     dceMapWashoutArray->SetName(arrayNameString.c_str());
+    dceMapWashoutPosArray->SetName(arrayNameString.c_str());
 
     // Initialize imageRate
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader();
@@ -274,6 +279,7 @@ void svkDCEBasicFit::InitializeOutputVoxelValues(float* dynamicVoxelPtr, int vox
     double voxelPeakTime;
     double voxelUpSlope;
     double voxelWashout;
+    double voxelWashoutPos;
     
     int    filterWindow = 5;
     int    arrayLength  = hdr->GetNumberOfTimePoints();
@@ -285,7 +291,7 @@ void svkDCEBasicFit::InitializeOutputVoxelValues(float* dynamicVoxelPtr, int vox
     this->GetPeakTm(dynamicVoxelPtr, voxelPeakHt, &voxelPeakTime);
     this->GetUpSlope(unfilteredDynamicVoxelPtr, voxelPeakTime, &voxelUpSlope);
     this->GetWashout(dynamicVoxelPtr, filterWindow, voxelIndex, &voxelWashout);
-    this->ScaleParams(imageRate, voxelBaseHt, &voxelPeakHt, &voxelPeakTime, &voxelUpSlope, &voxelWashout);
+    this->ScaleParams(imageRate, voxelBaseHt, &voxelPeakHt, &voxelPeakTime, &voxelUpSlope, &voxelWashout, &voxelWashoutPos);
 
     //  Get the data array to initialize.
     vtkDataArray* dceMapBaseHtArray;
@@ -303,11 +309,15 @@ void svkDCEBasicFit::InitializeOutputVoxelValues(float* dynamicVoxelPtr, int vox
     vtkDataArray* dceMapWashoutArray;
     dceMapWashoutArray  = this->GetOutput(4)->GetPointData()->GetArray(0);
 
+    vtkDataArray* dceMapWashoutPosArray;
+    dceMapWashoutPosArray  = this->GetOutput(5)->GetPointData()->GetArray(0);
+
     dceMapBaseHtArray->SetTuple1(voxelIndex, voxelBaseHt);
     dceMapPeakHtArray->SetTuple1(voxelIndex, voxelPeakHt);
     dceMapPeakTimeArray->SetTuple1(voxelIndex, voxelPeakTime);
     dceMapUpSlopeArray->SetTuple1(voxelIndex, voxelUpSlope);
     dceMapWashoutArray->SetTuple1(voxelIndex, voxelWashout);
+    dceMapWashoutPosArray->SetTuple1(voxelIndex, voxelWashoutPos);
 
 }
 
@@ -529,7 +539,7 @@ void svkDCEBasicFit::GetWashout(float* dynamicVoxelPtr, int filterWindow, int vo
  *      Up Slope    - Divides by Baseline, then image rate, then * 60,000
  *      Washout     - Divides by Baseline, then image rate, then * 60,000
  */
-void svkDCEBasicFit::ScaleParams(float imageRate, double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout)
+void svkDCEBasicFit::ScaleParams(float imageRate, double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout, double* voxelWashoutPos)
 {
 
     // calculate peak time
@@ -545,25 +555,25 @@ void svkDCEBasicFit::ScaleParams(float imageRate, double voxelBaseHt, double* vo
     }
 
     // scale remaining parameters
-    double peakMin  = 0.0;
-    double peakMax  = 5000.0;
-    double slopeMin = 0.0;
-    double slopeMax = 10000.0;
-    double peakHt   = *voxelPeakHt;
-    double slope    = *voxelUpSlope;
-    double washout  = *voxelWashout;
+    double peakMin    = 0.0;
+    double peakMax    = 5000.0;
+    double slopeMin   = 0.0;
+    double slopeMax   = 10000.0;
+    double peakHt     = *voxelPeakHt;
+    double slope      = *voxelUpSlope;
+    double washout    = *voxelWashout;
+    double washoutPos = *voxelWashoutPos;
 
     if (voxelBaseHt <= 0 || slope <= 0) {
         peakHt  = 0.0;
         slope   = 0.0;
-        // washout = -150;
-        washout = 0;
+        washout = -150;
     }
     else {
         peakHt  = 10 * peakHt / voxelBaseHt * 100;
         slope   = 10 * (slope / voxelBaseHt) / imageRate * 60 * 100;
-        // washout = 10 * (washout / voxelBaseHt) / imageRate * 60 * 100;
-        washout = (10 * (washout / voxelBaseHt) / imageRate * 60 * 100) + 150;
+        washout = 10 * (washout / voxelBaseHt) / imageRate * 60 * 100;
+        washoutPos = washout + 150;
     }
 
     if (peakHt < peakMin ) {
@@ -580,9 +590,10 @@ void svkDCEBasicFit::ScaleParams(float imageRate, double voxelBaseHt, double* vo
         slope = slopeMax;
     }
 
-    *voxelPeakTime = peakTime;
-    *voxelPeakHt   = peakHt;
-    *voxelUpSlope  = slope;
-    *voxelWashout  = washout;
+    *voxelPeakTime   = peakTime;
+    *voxelPeakHt     = peakHt;
+    *voxelUpSlope    = slope;
+    *voxelWashout    = washout;
+    *voxelWashoutPos = washoutPos;
 
 }
