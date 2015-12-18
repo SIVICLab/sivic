@@ -81,7 +81,8 @@ class svkDCEBasicFit: public svkDynamicImageMap
             PEAK_HT_MAP,
             PEAK_TIME_MAP,
             UP_SLOPE_MAP,
-            WASHOUT_SLOPE_MAP
+            WASHOUT_SLOPE_MAP,
+            WASHOUT_SLOPE_POS_MAP
         } svkDCEBasicFitOutput;
 
         static svkDCEBasicFit *New();
@@ -122,7 +123,7 @@ class svkDCEBasicFit: public svkDynamicImageMap
         void         GetPeakTm( float* dynamicVoxelPtr, double voxelPeakHt, double* voxelPeakTime);
         void         GetUpSlope( float* dynamicVoxelPtr, double voxelPeakTime, double* voxelUpSlope );
         void         GetWashout( float* dynamicVoxelPtr, int filterWindow, int voxelIndex, double* voxelWashout );
-        void         ScaleParams( float imageRate, double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout );
+        void         ScaleParams( float imageRate, double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout, double* voxelWashoutPos);
 
         double       baselineMean;
         double       baselineStdDeviation; 
