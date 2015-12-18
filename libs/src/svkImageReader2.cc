@@ -660,6 +660,7 @@ void svkImageReader2::GlobFileNames()
                 }
             }
             this->SetFileNames( seriesGroup ); 
+            seriesGroup->Delete(); 
     } else {
         this->SetFileNames( sortFileNames->GetNthGroup( groupToUse ) );
     }
