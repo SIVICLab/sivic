@@ -77,12 +77,13 @@ svkDCEQuantify::svkDCEQuantify()
     this->GetPortMapper()->InitializeInputPort(START_TIME_PT, "START_TIME_PT", svkAlgorithmPortMapper::SVK_INT, !required);
     this->GetPortMapper()->InitializeInputPort(END_TIME_PT, "END_TIME_PT", svkAlgorithmPortMapper::SVK_INT, !required);
 
-    this->SetNumberOfOutputPorts(5);
+    this->SetNumberOfOutputPorts(6);
     this->GetPortMapper()->InitializeOutputPort(BASE_HT_MAP, "BASE_HT_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeOutputPort(PEAK_HT_MAP, "PEAK_HT_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeOutputPort(PEAK_TIME_MAP, "PEAK_TIME_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeOutputPort(UP_SLOPE_MAP, "UP_SLOPE_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeOutputPort(WASHOUT_SLOPE_MAP, "WASHOUT_SLOPE_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeOutputPort(WASHOUT_SLOPE_POS_MAP, "WASHOUT_SLOPE_POS_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
 }
 
 
@@ -163,6 +164,7 @@ void svkDCEQuantify::GenerateDCEMaps()
     this->GetOutput(2)->DeepCopy(dcePkHt->GetOutput(2));
     this->GetOutput(3)->DeepCopy(dcePkHt->GetOutput(3));
     this->GetOutput(4)->DeepCopy(dcePkHt->GetOutput(4));
+    this->GetOutput(5)->DeepCopy(dcePkHt->GetOutput(5));
 
     dcePkHt->Delete();
 }
