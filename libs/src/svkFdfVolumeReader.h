@@ -82,6 +82,11 @@ class svkFdfVolumeReader : public svkVarianReader
             return "Varian FDF File";
         }
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::VARIAN_FDF;
+        }
+
         //  Methods:
         virtual int             CanReadFile(const char* fname);
 

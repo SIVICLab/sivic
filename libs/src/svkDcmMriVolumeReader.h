@@ -70,6 +70,11 @@ class svkDcmMriVolumeReader : public svkDcmVolumeReader
             return "DICOM MRI File";
         }
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::DICOM_MRI;
+        }
+
         //  Methods:
         virtual int CanReadFile(const char* fname);
 

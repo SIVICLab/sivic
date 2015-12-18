@@ -44,7 +44,6 @@
 #define SVK_IMAGE_READER_2_H
 
 
-
 #include <vtkImageReader2.h>
 #include <vtkImageData.h>
 
@@ -65,20 +64,46 @@ class svkImageReader2 : public vtkImageReader2
 
         vtkTypeRevisionMacro( svkImageReader2, vtkImageReader2);
 
+        typedef enum {
+            UNDEFINED = -1,
+            DICOM_MRS=0,
+            DICOM_MRI,
+            DICOM_ENHANCED_MRI,
+            DICOM_SEGMENTATION,
+            DICOM_RAW,
+            SIEMENS_RDA,
+            VARIAN_FID,
+            VARIAN_FDF,
+            GE_PFILE,
+            GE_SDBM,
+            GE_POSTAGE_STAMP,
+            GE_SIGNA_LX2,
+            GE_SIGNA_5X,
+            LC_MODEL_COORD, 
+            LC_MODEL_CSV, 
+            BRUKER_MRS,
+            DDF,
+            IDF,
+            LAST_TYPE = IDF
+        } ReaderType;
+
+
         //  Methods:
-        svkImageData*          GetOutput();
-        svkImageData*          GetOutput(int);
-        svkDcmHeader*          GetDcmHeader( const char* fileName );
-        static string          StripWhite(string in);
-        static string          RemoveSlashesFromDate(vtkstd::string* slashDate); 
-        static string          GetFileRoot(const char* fname);
-        static string          GetFileExtension(const char* fname);
-        static string          GetFilePath(const char* fname);
-        static string          GetFileNameWithoutPath(const char* fname); 
-        void                   OnlyReadOneInputFile();
-        void                   OnlyGlobFiles();
-        void                   GlobFileNames(); 
-        static long            GetFileSize(ifstream* fs); 
+        svkImageData*                        GetOutput();
+        svkImageData*                        GetOutput(int);
+        svkDcmHeader*                        GetDcmHeader( const char* fileName );
+        static string                        StripWhite(string in);
+        static string                        RemoveSlashesFromDate(vtkstd::string* slashDate); 
+        static string                        GetFileRoot(const char* fname);
+        static string                        GetFileExtension(const char* fname);
+        static string                        GetFilePath(const char* fname);
+        static string                        GetFileNameWithoutPath(const char* fname); 
+        void                                 OnlyReadOneInputFile();
+        void                                 OnlyGlobFiles();
+        void                                 GlobFileNames(); 
+        static long                          GetFileSize(ifstream* fs); 
+        void                                 OnlyReadHeader(bool onlyReadHeader);
+        virtual svkImageReader2::ReaderType  GetReaderType() = 0;
 
 
     protected:
@@ -118,11 +143,14 @@ class svkImageReader2 : public vtkImageReader2
         vtkDataArray*                            dataArray;
         bool                                     readOneInputFile;
         bool                                     onlyGlobFiles;
+        bool                                     onlyReadHeader;
 
 
     private:
 
         virtual void                            InitDcmHeader() = 0;
+        string                                  GetFileSeriesDescription( string fileName ); 
+
 
 };
 

@@ -68,6 +68,11 @@ class svkGEPostageStampReader : public svkDcmVolumeReader
             return "GE Postage Stamp File";
         }
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::GE_POSTAGE_STAMP;
+        }
+
 
         //  Methods:
         virtual int CanReadFile(const char* fname);

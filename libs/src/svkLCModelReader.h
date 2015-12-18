@@ -62,7 +62,6 @@ class svkLCModelReader : public svkImageReader2
 
     public:
 
-        static svkLCModelReader* New();
         vtkTypeRevisionMacro( svkLCModelReader, svkImageReader2);
 
         // Description: 

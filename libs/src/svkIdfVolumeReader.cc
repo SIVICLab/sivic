@@ -73,9 +73,7 @@ svkIdfVolumeReader::svkIdfVolumeReader()
 
     this->numSlices = 1; 
     this->numVolumes = 1; 
-    this->onlyReadHeader = false;
     this->readIntAsSigned = false;
-    
 
     //  If there are multiple volumes, by default treat as separate
     //  channels of data. 
@@ -150,19 +148,6 @@ void svkIdfVolumeReader::SetMultiVolumeType(svkIdfVolumeReader::MultiVolumeType 
 
 
 /*!
- *  If only the idf header is to be read.  Sometimes this acts as a template for processing, but 
- *  there isn't an associated data file.  
- */
-void svkIdfVolumeReader::OnlyReadHeader(bool onlyReadHeader)
-{
-    this->onlyReadHeader = onlyReadHeader;
-    if (this->GetDebug()) {
-        vtkWarningWithObjectMacro(this, "onlyReadHeader: " << this->onlyReadHeader);   
-    }
-}
-
-
-/*!
  *  Set boolean to determine if int2 should be interpreted as signed, or unsigned.
  */
 void svkIdfVolumeReader::SetReadIntAsSigned(bool readIntAsSigned)
@@ -179,6 +164,10 @@ void svkIdfVolumeReader::SetReadIntAsSigned(bool readIntAsSigned)
  */
 void svkIdfVolumeReader::ReadVolumeFile()
 {
+
+    if ( this->onlyReadHeader == true ) {
+        return; 
+    }
 
     vtkDebugMacro( << this->GetClassName() << "::ReadVolumeFile()" );
 

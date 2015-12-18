@@ -1824,3 +1824,21 @@ ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_image_mathematics --i1 ${TE
 SET( TEST_NAME TEST_SVK_IMAGE_MATHEMATICS_SCL_DIFF)
 ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH}/svk_image_mathematics_scl.real ${TEST_CASE_ROOT}/output/scale/scale.real )
 SET_TESTS_PROPERTIES(TEST_SVK_IMAGE_MATHEMATICS_SCL_DIFF PROPERTIES DEPENDS TEST_MCHK_SVK_IMAGE_MATHEMATICS_SCL)
+
+##############################
+#   svk_file_convert load IDF 
+#   check series description test
+#   when multiple vols are present
+#       - only open files with similar file names if the series descriptions match
+##############################
+SET( TEST_NAME TEST_MCHK_SVK_CHECK_VOL_LOAD )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+file( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/file_reader )
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_file_convert -i ${TEST_CASE_ROOT}/input/pc8215_E1869S3_div.idf -o ${TEST_RESULTS_PATH}/out -t3 )
+
+SET( TEST_NAME TEST_MCHK_SVK_CHECK_VOL_LOAD_DIFF )
+ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH}/ ${TEST_CASE_ROOT}/output/ )
+SET_TESTS_PROPERTIES(TEST_MCHK_SVK_CHECK_VOL_LOAD_DIFF PROPERTIES DEPENDS TEST_MCHK_SVK_CHECK_VOL_LOAD)
+

@@ -68,6 +68,11 @@ class svkDcmRawDataReader : public svkDcmVolumeReader
             return "DICOM Raw Data File";
         }
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::DICOM_RAW;
+        }
+
         //  Methods:
         virtual int CanReadFile(const char* fname);
         void        ExtractFiles(); 

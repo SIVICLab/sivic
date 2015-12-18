@@ -66,6 +66,12 @@ class svkLCModelCSVReader : public svkLCModelReader
         static svkLCModelCSVReader* New();
         vtkTypeRevisionMacro( svkLCModelCSVReader, svkLCModelReader );
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::LC_MODEL_CSV;
+        }
+
+
         //  Methods:
         virtual int             CanReadFile( const char* fname );
 
