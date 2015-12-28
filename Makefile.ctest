@@ -97,6 +97,7 @@ configure_dist_UCSF: clean_results
 
 #
 # configure for sourceforge release of GE Console version (not OsiriX)
+# configure and build on ESE host
 #
 configure_GE_dist: clean_results 
 	(${RM_CACHE} ${CONFIG_BASE_GE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_GE_CONSOLE} ${CONFIG_RELEASE} ${SIVIC_ROOT}/) 
