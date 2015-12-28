@@ -31,6 +31,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 PROJECT( sivic )
 option( BUILD_TESTING "Build tests." FALSE )
 
+INCLUDE( CMakeSivicInclude.cmake )
 include(CMakeSivicInstall.cmake)
 include(CPack)
 
@@ -64,7 +65,6 @@ IF(COMMAND CMAKE_POLICY)
     CMAKE_POLICY(SET CMP0005 OLD)
 ENDIF(COMMAND CMAKE_POLICY)
 
-INCLUDE( CMakeSivicInclude.cmake )
 
 option( BUILD_LIBRARY "Build library." TRUE )
 option( BUILD_VIZ_LIBRARY "Build visualization library." TRUE )
