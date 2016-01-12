@@ -144,12 +144,12 @@ class svkImageReader2 : public vtkImageReader2
         bool                                     readOneInputFile;
         bool                                     onlyGlobFiles;
         bool                                     onlyReadHeader;
+        virtual string                           GetFileSeriesDescription( string fileName ); 
 
 
     private:
 
         virtual void                            InitDcmHeader() = 0;
-        string                                  GetFileSeriesDescription( string fileName ); 
 
 
 };
