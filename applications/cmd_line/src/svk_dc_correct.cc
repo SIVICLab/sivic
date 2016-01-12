@@ -183,7 +183,6 @@ int main (int argc, char** argv)
     writer->Write();
     writer->Delete();
 
-    dc->Delete();
     reader->Delete();
 
 
