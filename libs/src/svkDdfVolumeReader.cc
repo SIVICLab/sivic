@@ -823,6 +823,8 @@ void svkDdfVolumeReader::InitGeneralSeriesModule()
         patientEntryPos = "HF";
     } else if ( patientEntry.compare("feet first") == 0) {
         patientEntryPos = "FF";
+    } else { 
+        patientEntryPos = "UNKNOWN";
     }
 
     string patientPosition( ddfMap["patientPosition"]); 
@@ -830,6 +832,8 @@ void svkDdfVolumeReader::InitGeneralSeriesModule()
         patientEntryPos.append("S");
     } else if ( patientPosition.compare("prone") == 0 ) {
         patientEntryPos.append("P");
+    } else { 
+        patientEntryPos = "UNKNOWN";
     }
 
     this->GetOutput()->GetDcmHeader()->InitGeneralSeriesModule(
