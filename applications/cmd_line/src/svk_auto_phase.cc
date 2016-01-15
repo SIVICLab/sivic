@@ -173,6 +173,11 @@ int main (int argc, char** argv)
         mriDataTypeOut = svkImageWriterFactory::IDF;
     }
 
+    if( ! svkUtils::FilePathExists( inputFileName.c_str() ) ) {
+        cerr << "Input file can not be loaded (may not exist) " << inputFileName << endl;
+        exit(1);
+    }
+
     cout << "Input File:  " << inputFileName << endl;
     cout << "Output File: " << outputFileName << endl;
     cout << "Phase Type:  " << phasingType << endl;
