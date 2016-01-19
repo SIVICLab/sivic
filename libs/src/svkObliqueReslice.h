@@ -125,7 +125,8 @@ class svkObliqueReslice : public svkImageAlgorithmWithPortMapper
         void                SetRotationMatrix( );
         void                Print3x3(double matrix[3][3], string name);
         bool                IsDcosInitialized(); 
-        bool                Magnify(); 
+        bool                Magnify();
+        void                ComputeTopLeftCorner(double newTlc[3]);
 
 
 

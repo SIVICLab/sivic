@@ -328,8 +328,11 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
 
-    // These values are not quite right... we only know the correct origin after request data is run
+
+    double newTlc[3];
+    this->ComputeTopLeftCorner( newTlc );
     outInfo->Set(vtkDataObject::SPACING(), this->reslicer->GetOutput()->GetSpacing(), 3);
+    outInfo->Set(vtkDataObject::ORIGIN(), newTlc, 3);
     outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),this->reslicer->GetOutput()->GetExtent() , 6);
 
     return 1;
@@ -580,44 +583,8 @@ void svkObliqueReslice::SetReslicedHeaderSpacing()
 void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
 {
     
-    //  Get Center of original image volume: 
-    //  first get the tlc of the stack:
-    double* tlc0 = new double[3]; 
-    this->GetImageDataInput(0)->GetDcmHeader()->GetOrigin(tlc0, 0);
-
-    double* inputSpacing = new double[3]; 
-    this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(inputSpacing); 
-
-    int numVoxels[3]; 
-    this->GetImageDataInput(0)->GetNumberOfVoxels(numVoxels);
-
-    double dcosIn[3][3];
-    this->GetImageDataInput(0)->GetDcmHeader()->GetDataDcos(dcosIn); 
-
     double newTlc[3];
-    if( !this->GetMatchSpacingAndFovOn()) {
-        //  Now calculate the volumetric center by displacing by 1/2 fov - 1/2 voxel from tlc position:
-        double origin[3];
-        for (int i = 0; i < 3; i++) {
-            origin[i] = tlc0[i];
-            for (int j = 0; j < 3; j++) {
-                origin[i] += dcosIn[j][i] * (inputSpacing[j] * ((numVoxels[j]-1)/2.) );
-            }
-        }
-
-        //  Now calculate the NEW tlc:
-        //  this->targetDcos
-        //  this->newSpacing
-        //  this->newNumVoxels
-        for (int i = 0; i < 3; i++) {
-            newTlc[i] = origin[i];
-            for (int j = 0; j < 3; j++) {
-                newTlc[i] -= targetDcos[j][i] * (this->newSpacing[j] * ((this->newNumVoxels[j] - 1)/2.) );
-            }
-        }
-    } else {
-        this->GetPortMapper()->GetImageInputPortValue(TARGET_IMAGE)->GetDcmHeader()->GetOrigin(newTlc);
-    }
+    this->ComputeTopLeftCorner( newTlc );
     this->reslicedImage->SetOrigin( newTlc );
 
     int numSlices = this->GetOutput()->GetDimensions()[2];
@@ -633,8 +600,6 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
         newTlc, this->newSpacing, this->targetDcos, &dimensionVector
     );
 
-    delete[] tlc0;
-    delete[] inputSpacing;
 }
 
 
@@ -684,6 +649,54 @@ void svkObliqueReslice::SetReslicedHeaderOrientation()
     }
     this->reslicedImage->GetDcmHeader()->SetSliceOrder( dataSliceOrder );
     math->Delete();
+
+}
+
+
+/*!
+ * Computes the new origin for the output data object.
+ */
+void svkObliqueReslice::ComputeTopLeftCorner(double newTlc[3])
+{
+    //  Get Center of original image volume:
+    //  first get the tlc of the stack:
+    double* tlc0 = new double[3];
+    this->GetImageDataInput(0)->GetDcmHeader()->GetOrigin(tlc0, 0);
+
+    double* inputSpacing = new double[3];
+    this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(inputSpacing);
+
+    int numVoxels[3];
+    this->GetImageDataInput(0)->GetNumberOfVoxels(numVoxels);
+
+    double dcosIn[3][3];
+    this->GetImageDataInput(0)->GetDcmHeader()->GetDataDcos(dcosIn);
+
+    if( !this->GetMatchSpacingAndFovOn()) {
+        //  Now calculate the volumetric center by displacing by 1/2 fov - 1/2 voxel from tlc position:
+        double origin[3];
+        for (int i = 0; i < 3; i++) {
+            origin[i] = tlc0[i];
+            for (int j = 0; j < 3; j++) {
+                origin[i] += dcosIn[j][i] * (inputSpacing[j] * ((numVoxels[j]-1)/2.) );
+            }
+        }
+
+        //  Now calculate the NEW tlc:
+        //  this->targetDcos
+        //  this->newSpacing
+        //  this->newNumVoxels
+        for (int i = 0; i < 3; i++) {
+            newTlc[i] = origin[i];
+            for (int j = 0; j < 3; j++) {
+                newTlc[i] -= targetDcos[j][i] * (this->newSpacing[j] * ((this->newNumVoxels[j] - 1)/2.) );
+            }
+        }
+    } else {
+        this->GetPortMapper()->GetImageInputPortValue(TARGET_IMAGE)->GetDcmHeader()->GetOrigin(newTlc);
+    }
+    delete[] tlc0;
+    delete[] inputSpacing;
 
 }
 
