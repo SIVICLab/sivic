@@ -3536,8 +3536,13 @@ void vtkSivicController::PushToPACS()
         size_t found;
         found = activeDataFileName.find_last_of("/");
 
-        string localDirectory = activeDataFileName.substr(0,found);
-        found = localDirectory.find_last_of("/");
+        string localDirectory; 
+        //  if not found then this is a local file name, i.e. implicit ./
+        if ( found == string::npos ) {
+            localDirectory = "./"; 
+        } else {
+            localDirectory = activeDataFileName.substr(0,found);
+        }
 
         //  We want to put the SIVIC_DICOM_SC folder parallel to the spectra location
         found = localDirectory.find_last_of("/");
