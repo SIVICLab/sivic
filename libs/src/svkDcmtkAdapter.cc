@@ -53,7 +53,7 @@ using namespace svk;
 
 
 bool svkDcmtkAdapter::privateElementsAdded = false;
-vtkCxxRevisionMacro(svkDcmtkAdapter, "$Rev$");
+//vtkCxxRevisionMacro(svkDcmtkAdapter, "$Rev$");
 vtkStandardNewMacro(svkDcmtkAdapter);
 
 

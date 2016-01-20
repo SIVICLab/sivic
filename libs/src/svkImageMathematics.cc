@@ -52,7 +52,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageMathematics, "$Rev$");
+//vtkCxxRevisionMacro(svkImageMathematics, "$Rev$");
 vtkStandardNewMacro(svkImageMathematics);
 
 

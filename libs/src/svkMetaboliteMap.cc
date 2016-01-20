@@ -53,7 +53,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMetaboliteMap, "$Rev$");
+//vtkCxxRevisionMacro(svkMetaboliteMap, "$Rev$");
 vtkStandardNewMacro(svkMetaboliteMap);
 
 

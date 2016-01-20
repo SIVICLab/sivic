@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMriImageFFT, "$Rev$");
+//vtkCxxRevisionMacro(svkMriImageFFT, "$Rev$");
 vtkStandardNewMacro(svkMriImageFFT);
 
 

@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkCorrectDCOffset, "$Rev$");
+//vtkCxxRevisionMacro(svkCorrectDCOffset, "$Rev$");
 vtkStandardNewMacro(svkCorrectDCOffset);
 
 

@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMrsTopoGenerator, "$Rev$");
+//vtkCxxRevisionMacro(svkMrsTopoGenerator, "$Rev$");
 vtkStandardNewMacro(svkMrsTopoGenerator);
 
 

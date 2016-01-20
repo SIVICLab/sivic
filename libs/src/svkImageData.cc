@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageData, "$Rev$");
+//vtkCxxRevisionMacro(svkImageData, "$Rev$");
 
 
 /*!
@@ -293,7 +293,8 @@ void svkImageData::CopyAndFillComponents( vtkImageData* src, double fillValue, s
     }
     //  arg should be type DcmPixelDataFormat
 	this->GetDcmHeader()->SetPixelDataType( svkDcmHeader::GetVtkDataTypeFromSvkDataType(dataTypeVtk) );
-    this->SetScalarType( dataTypeVtk );
+    this->AllocateScalars(dataTypeVtk, numPointComponents);
+
 }
 
 

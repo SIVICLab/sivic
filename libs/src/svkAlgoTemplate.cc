@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkAlgoTemplate, "$Rev$");
+//vtkCxxRevisionMacro(svkAlgoTemplate, "$Rev$");
 vtkStandardNewMacro(svkAlgoTemplate);
 
 

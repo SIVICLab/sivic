@@ -55,7 +55,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRSZeroOrderPhase, "$Rev$");
+//vtkCxxRevisionMacro(svkMRSZeroOrderPhase, "$Rev$");
 vtkStandardNewMacro(svkMRSZeroOrderPhase);
 
 
@@ -112,7 +112,7 @@ void svkMRSZeroOrderPhase::PrePhaseSetup()
     if ( this->isSpectralFFTRequired == true ) {
 
         svkMrsImageFFT* fft = svkMrsImageFFT::New();
-        fft->SetInput( data );
+        fft->SetInputData( data );
 
         fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
 
@@ -139,7 +139,7 @@ void svkMRSZeroOrderPhase::PostPhaseCleanup()
         svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
 
         svkMrsImageFFT* fft = svkMrsImageFFT::New();
-        fft->SetInput( data );
+        fft->SetInputData( data );
 
         fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
 
@@ -340,7 +340,7 @@ void svkMRSZeroOrderPhase::InitPeakPicker ( )
 {
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
     this->peakPicker = svkMRSPeakPick::New();
-    this->peakPicker->SetInput( data );
+    this->peakPicker->SetInputData( data );
     if ( this->onlyUseSelectionBox == true ) {
         this->peakPicker->OnlyUseSelectionBox();
     }

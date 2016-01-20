@@ -62,7 +62,7 @@
 #include "vtkPointData.h"
 using namespace svk;
 
-vtkCxxRevisionMacro(svkExtractVOI, "$Rev$");
+//vtkCxxRevisionMacro(svkExtractVOI, "$Rev$");
 vtkStandardNewMacro(svkExtractVOI);
 
 // Construct object to extract all of the input data.

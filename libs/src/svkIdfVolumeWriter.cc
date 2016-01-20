@@ -59,7 +59,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkIdfVolumeWriter, "$Rev$");
+//vtkCxxRevisionMacro(svkIdfVolumeWriter, "$Rev$");
 vtkStandardNewMacro(svkIdfVolumeWriter);
 
 
@@ -167,7 +167,7 @@ void svkIdfVolumeWriter::WriteData()
     //  Write out each volume:
     for ( int vol = 0; vol < numVolumes; vol++ ) {
 
-        vtkstd::string extension; 
+        string extension; 
         int numBytesPerPixel; 
         void* pixels; 
         float* floatPixels = NULL;
@@ -213,7 +213,7 @@ void svkIdfVolumeWriter::WriteData()
         }
 
 
-        vtkstd::string volName = this->InternalFileName;
+        string volName = this->InternalFileName;
         if (numVolumes > 1 ) {
             volName += "_" + svkTypeUtils::IntToString(vol + 1);
         }
@@ -267,11 +267,11 @@ void svkIdfVolumeWriter::WriteHeader()
     for ( int vol = 0; vol < numVolumes; vol++ ) {
         string header = this->GetHeaderString(vol);
 
-        vtkstd::string volName = this->InternalFileName;
+        string volName = this->InternalFileName;
         if (numVolumes > 1 ) {
             volName += "_" +  svkTypeUtils::IntToString(vol + 1);
         }
-        volName += vtkstd::string(".idf");
+        volName += string(".idf");
 
         ofstream out( volName.c_str() );
         if(!out) {
@@ -305,28 +305,28 @@ string svkIdfVolumeWriter::GetHeaderString( int vol )
     out << "study #: " << setw(7) << hdr->GetStringValue( "StudyID" ) << endl;
     out << "series #: " << setw(7) << hdr->GetIntValue( "SeriesNumber" ) << endl;
     out << "position: ";
-    vtkstd::string positionString = hdr->GetStringValue( "PatientPosition" );
-    if ( positionString.substr(0,2) == vtkstd::string( "HF" ) ){
+    string positionString = hdr->GetStringValue( "PatientPosition" );
+    if ( positionString.substr(0,2) == string( "HF" ) ){
         out << "Head First, ";
-    } else if ( positionString.substr(0,2) == vtkstd::string( "FF" ) ) {
+    } else if ( positionString.substr(0,2) == string( "FF" ) ) {
         out << "Feet First, ";
     } else {
         out << "UNKNOWN, ";
     }
 
-    if ( positionString.substr(2) == vtkstd::string( "S" ) ) {
+    if ( positionString.substr(2) == string( "S" ) ) {
         out << "Supine" << endl;
-    } else if ( positionString.substr(2) == vtkstd::string( "P" ) ) {
+    } else if ( positionString.substr(2) == string( "P" ) ) {
         out << "Prone" << endl;
-    } else if ( positionString.substr(2) == vtkstd::string( "DL" ) ) {
+    } else if ( positionString.substr(2) == string( "DL" ) ) {
         out << "Decubitus Left" << endl;
-    } else if ( positionString.substr(2) == vtkstd::string( "DR" ) ) {
+    } else if ( positionString.substr(2) == string( "DR" ) ) {
         out << "Decubitus Right" << endl;
     } else {
         out << "UNKNOWN" << endl;;
     }
 
-    vtkstd::string coilName;
+    string coilName;
     if ( hdr->ElementExists( "ReceiveCoilName" ) ) {
         coilName = hdr->GetStringSequenceItemElement(
             "MRReceiveCoilSequence",
@@ -382,15 +382,15 @@ string svkIdfVolumeWriter::GetHeaderString( int vol )
 
     //  if there are multiple volumes append _volNum to rootname
     if ( numVolumes > 1 ) {
-        out << "rootname: " << vtkstd::string(FileName).substr( vtkstd::string(FileName).rfind("/") + 1 )
+        out << "rootname: " << string(FileName).substr( string(FileName).rfind("/") + 1 )
         << "_" << svkTypeUtils::IntToString(vol+1) << endl;
     } else {
-        out << "rootname: " << vtkstd::string(FileName).substr( vtkstd::string(FileName).rfind("/") + 1 ) << endl;
+        out << "rootname: " << string(FileName).substr( string(FileName).rfind("/") + 1 ) << endl;
     }
 
 
 
-    vtkstd::string date = hdr->GetStringValue( "StudyDate" );
+    string date = hdr->GetStringValue( "StudyDate" );
     if ( date.length() == 0 ) {
         date.assign("        ");
     } else if ( date.length() < 8 ) {
@@ -544,7 +544,7 @@ void svkIdfVolumeWriter::GetIDFCenter(double center[3])
 /*!
  *   
  */
-vtkstd::string svkIdfVolumeWriter::GetIDFPatientName(vtkstd::string PatientName)
+string svkIdfVolumeWriter::GetIDFPatientName(string PatientName)
 {
 
     //  Remove DICOM delimiters:
@@ -556,7 +556,7 @@ vtkstd::string svkIdfVolumeWriter::GetIDFPatientName(vtkstd::string PatientName)
 
     //  Remove multiple spaces:
     size_t pos; 
-    while ( (pos = PatientName.find("  ")) != vtkstd::string::npos) {
+    while ( (pos = PatientName.find("  ")) != string::npos) {
         PatientName.erase(pos, 1);     
     }
 

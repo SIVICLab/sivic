@@ -53,7 +53,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkEPSIReorder, "$Rev$");
+//vtkCxxRevisionMacro(svkEPSIReorder, "$Rev$");
 vtkStandardNewMacro(svkEPSIReorder);
 
 

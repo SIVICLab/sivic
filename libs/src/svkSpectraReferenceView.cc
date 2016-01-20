@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkSpectraReferenceView, "$Rev$");
+//vtkCxxRevisionMacro(svkSpectraReferenceView, "$Rev$");
 vtkStandardNewMacro(svkSpectraReferenceView);
 
 

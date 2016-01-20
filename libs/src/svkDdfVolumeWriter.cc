@@ -56,7 +56,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDdfVolumeWriter, "$Rev$");
+//vtkCxxRevisionMacro(svkDdfVolumeWriter, "$Rev$");
 vtkStandardNewMacro(svkDdfVolumeWriter);
 
 

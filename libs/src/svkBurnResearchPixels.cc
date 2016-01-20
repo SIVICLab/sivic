@@ -49,7 +49,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkBurnResearchPixels, "$Rev$");
+//vtkCxxRevisionMacro(svkBurnResearchPixels, "$Rev$");
 vtkStandardNewMacro(svkBurnResearchPixels);
 
 

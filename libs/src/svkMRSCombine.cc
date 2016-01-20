@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRSCombine, "$Rev$");
+//vtkCxxRevisionMacro(svkMRSCombine, "$Rev$");
 vtkStandardNewMacro(svkMRSCombine);
 
 

@@ -55,7 +55,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageReader2, "$Rev$");
+//vtkCxxRevisionMacro(svkImageReader2, "$Rev$");
 
 
 /*!

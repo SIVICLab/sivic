@@ -63,7 +63,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGESigna5XReader, "$Rev$");
+//vtkCxxRevisionMacro(svkGESigna5XReader, "$Rev$");
 vtkStandardNewMacro(svkGESigna5XReader);
 
 

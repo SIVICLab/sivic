@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDcmHeader, "$Rev$");
+//vtkCxxRevisionMacro(svkDcmHeader, "$Rev$");
 
 
 const float svkDcmHeader::UNKNOWN_TIME = -1;

@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDICOMImageWriter, "$Rev$");
+//vtkCxxRevisionMacro(svkDICOMImageWriter, "$Rev$");
 
 
 /*!

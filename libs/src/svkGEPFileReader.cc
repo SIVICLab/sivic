@@ -58,7 +58,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGEPFileReader, "$Rev$");
+//vtkCxxRevisionMacro(svkGEPFileReader, "$Rev$");
 vtkStandardNewMacro(svkGEPFileReader);
 
 

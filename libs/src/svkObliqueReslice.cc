@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkObliqueReslice, "$Rev$");
+//vtkCxxRevisionMacro(svkObliqueReslice, "$Rev$");
 vtkStandardNewMacro(svkObliqueReslice);
 
 

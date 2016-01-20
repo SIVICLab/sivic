@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkSatBandSet, "$Rev$");
+//vtkCxxRevisionMacro(svkSatBandSet, "$Rev$");
 vtkStandardNewMacro(svkSatBandSet);
 
 

@@ -53,7 +53,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDdfVolumeReader, "$Rev$");
+//vtkCxxRevisionMacro(svkDdfVolumeReader, "$Rev$");
 vtkStandardNewMacro(svkDdfVolumeReader);
 
 

@@ -65,7 +65,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkImageFourierCenter, "$Revision$");
+//vtkCxxRevisionMacro(svkImageFourierCenter, "$Revision$");
 vtkStandardNewMacro(svkImageFourierCenter);
 
 

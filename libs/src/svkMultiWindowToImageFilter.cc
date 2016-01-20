@@ -45,7 +45,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMultiWindowToImageFilter, "$Rev$");
+//vtkCxxRevisionMacro(svkMultiWindowToImageFilter, "$Rev$");
 vtkStandardNewMacro(svkMultiWindowToImageFilter);
 
 

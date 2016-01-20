@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDICOMMRIWriter, "$Rev$");
+//vtkCxxRevisionMacro(svkDICOMMRIWriter, "$Rev$");
 vtkStandardNewMacro(svkDICOMMRIWriter);
 
 

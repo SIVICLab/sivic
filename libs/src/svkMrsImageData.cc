@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMrsImageData, "$Rev$");
+//vtkCxxRevisionMacro(svkMrsImageData, "$Rev$");
 vtkStandardNewMacro(svkMrsImageData);
 
 

@@ -83,7 +83,7 @@
 #ifndef __svkLabeledDataMapper_h
 #define __svkLabeledDataMapper_h
 
-#include "vtkMapper2D.h"
+#include <vtkMapper2D.h>
 #include <vector>
 #include <map>
 #include <string>

@@ -57,7 +57,7 @@ using namespace svk;
 
 
 
-vtkCxxRevisionMacro(svkDataAcquisitionDescriptionXML, "$Rev$");
+//vtkCxxRevisionMacro(svkDataAcquisitionDescriptionXML, "$Rev$");
 vtkStandardNewMacro(svkDataAcquisitionDescriptionXML);
 
 

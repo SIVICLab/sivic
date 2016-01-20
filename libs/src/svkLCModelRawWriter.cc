@@ -54,7 +54,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkLCModelRawWriter, "$Rev$");
+//vtkCxxRevisionMacro(svkLCModelRawWriter, "$Rev$");
 vtkStandardNewMacro(svkLCModelRawWriter);
 
 

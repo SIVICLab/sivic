@@ -45,7 +45,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkImageStatistics, "$Rev$");
+//vtkCxxRevisionMacro(svkImageStatistics, "$Rev$");
 vtkStandardNewMacro(svkImageStatistics);
 
 //! Constructor

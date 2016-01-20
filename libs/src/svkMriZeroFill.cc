@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMriZeroFill, "$Rev$");
+//vtkCxxRevisionMacro(svkMriZeroFill, "$Rev$");
 vtkStandardNewMacro(svkMriZeroFill);
 
 

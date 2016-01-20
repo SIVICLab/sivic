@@ -56,7 +56,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkHSVD, "$Rev$");
+//vtkCxxRevisionMacro(svkHSVD, "$Rev$");
 vtkStandardNewMacro(svkHSVD);
 
 
@@ -272,7 +272,7 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 
     delete [] this->selectionBoxMask; 
 
@@ -342,7 +342,7 @@ void svkHSVD::CheckInputSpectralDomain()
     if ( this->isInputInTimeDomain == false ) {
 
         svkMrsImageFFT* fft = svkMrsImageFFT::New();
-        fft->SetInput( data );
+        fft->SetInputData( data );
 
         fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL ); 
 
@@ -375,7 +375,7 @@ void svkHSVD::CheckOutputSpectralDomain()
     if ( this->isInputInTimeDomain == false ) {
 
         svkMrsImageFFT* fft = svkMrsImageFFT::New();
-        fft->SetInput( data );
+        fft->SetInputData( data );
 
         fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL ); 
 
@@ -391,7 +391,7 @@ void svkHSVD::CheckOutputSpectralDomain()
         if ( this->exportFilterImage ) {
 
             svkMrsImageFFT* fft = svkMrsImageFFT::New();
-            fft->SetInput( this->filterImage );
+            fft->SetInputData( this->filterImage );
 
             fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL ); 
 

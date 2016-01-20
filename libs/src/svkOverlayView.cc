@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkOverlayView, "$Rev$");
+//vtkCxxRevisionMacro(svkOverlayView, "$Rev$");
 vtkStandardNewMacro(svkOverlayView);
 
 

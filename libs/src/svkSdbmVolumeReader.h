@@ -50,8 +50,8 @@
 #include <svkImageReader2.h>
 #include <svkMRSIOD.h>
 
-#include <vtkstd/map>
-#include <vtkstd/string>
+#include <map>
+#include <string>
 
 
 namespace svk {
@@ -66,7 +66,7 @@ class svkSdbmVolumeReader : public svkImageReader2
     public:
 
         static svkSdbmVolumeReader* New();
-        vtkTypeRevisionMacro( svkSdbmVolumeReader, svkImageReader2 );
+        vtkTypeMacro( svkSdbmVolumeReader, svkImageReader2 );
 
         // Description: 
         // A descriptive name for this format
@@ -129,15 +129,15 @@ class svkSdbmVolumeReader : public svkImageReader2
         int             GetNumSlices();
         void            SetCellSpectrum( vtkImageData* data, int x, int y, int z, int channel = 0, int timepoint = 0 );
         void            ParseShf();
-        void            ParseShfDim( vtkstd::string dimenNum ); 
-        vtkstd::string  ReadLineSubstr(istringstream* iss, int start, int stop);
-        int             ReadLineKeyValue(istringstream* iss, char delim, vtkstd::string* key, vtkstd::string* value);
-        vtkstd::string  ReadLineIgnore(istringstream* iss, char delim);
+        void            ParseShfDim( string dimenNum ); 
+        string          ReadLineSubstr(istringstream* iss, int start, int stop);
+        int             ReadLineKeyValue(istringstream* iss, char delim, string* key, string* value);
+        string          ReadLineIgnore(istringstream* iss, char delim);
         void            PrintKeyValuePairs(); 
-        int             GetHeaderValueAsInt(vtkstd::map <vtkstd::string, vtkstd::string> hdrMap, 
-                            vtkstd::string keyString, int valueIndex = 0); 
-        float           GetHeaderValueAsFloat(vtkstd::map <vtkstd::string, vtkstd::string> hdrMap, 
-                            vtkstd::string keyString, int valueIndex = 0); 
+        int             GetHeaderValueAsInt(map <string, string> hdrMap, 
+                            string keyString, int valueIndex = 0); 
+        float           GetHeaderValueAsFloat(map <string, string> hdrMap, 
+                            string keyString, int valueIndex = 0); 
         int             GetNumPixelsInVol(); 
         bool            IsMultiCoil(); 
 
@@ -148,12 +148,11 @@ class svkSdbmVolumeReader : public svkImageReader2
         int                                     numFrames;
         int                                     numSlices;
         int                                     numCoils;
-        static const vtkstd::string             MFG_STRING;
+        static const string                     MFG_STRING;
         double                                  dcos[3][3];
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         ifstream*                               shfHdr;
-        vtkstd::map <vtkstd::string, vtkstd::string>                    
-                                                shfMap; 
+        map <string, string>                    shfMap;                  
         vtkStringArray*                         tmpFileNames;
         svkMRSIOD*                              iod; 
 

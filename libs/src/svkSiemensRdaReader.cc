@@ -52,7 +52,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkSiemensRdaReader, "$Rev$");
+//vtkCxxRevisionMacro(svkSiemensRdaReader, "$Rev$");
 vtkStandardNewMacro(svkSiemensRdaReader);
 
 
@@ -113,7 +113,7 @@ svkSiemensRdaReader::~svkSiemensRdaReader()
 int svkSiemensRdaReader::CanReadFile(const char* fname)
 {
 
-    vtkstd::string fileToCheck(fname);
+    string fileToCheck(fname);
 
     if( fileToCheck.size() > 4 ) {
 
@@ -143,7 +143,7 @@ int svkSiemensRdaReader::CanReadFile(const char* fname)
                     // First line should be ">>> Begin of header <<<".
                     this->ReadLine(tempRdaFile, iss);
                     if ( iss->str().find(">>> Begin of header <<<") 
-                      == vtkstd::string::npos ) {
+                      == string::npos ) {
                         vtkDebugMacro(
                           << this->GetClassName() << "::CanReadFile(): It's NOT a Siemens RDA File: " << fileToCheck << 
                           ": Could not find >>> Begin of header <<< text"
@@ -157,7 +157,7 @@ int svkSiemensRdaReader::CanReadFile(const char* fname)
                     while (! tempRdaFile->eof() ) {
                         this->ReadLine(tempRdaFile, iss);
                         if ( iss->str().find(">>> End of header <<<") 
-                        != vtkstd::string::npos ) {
+                        != string::npos ) {
                             break; 
                         }
                     }
@@ -328,7 +328,7 @@ void svkSiemensRdaReader::ExecuteData(vtkDataObject* output)
     vtkDebugMacro( << this->GetClassName() << " FileName: " << this->FileName );
     struct stat fs;
     if ( stat(this->FileName, &fs) ) {
-        vtkErrorMacro("Unable to open file " << vtkstd::string(this->FileName) );
+        vtkErrorMacro("Unable to open file " << string(this->FileName) );
         return;
     }
     this->ReadRdaFiles( data );
@@ -568,7 +568,7 @@ void svkSiemensRdaReader::InitPerFrameFunctionalGroupMacros()
     for (int i = 0; i < 3; i++) {
         ostringstream ossIndex;
         ossIndex << i;
-        vtkstd::string indexString(ossIndex.str());
+        string indexString(ossIndex.str());
         toplc[i] = this->GetHeaderValueAsFloat( "PositionVector[" + indexString + "]" );
     }
 
@@ -667,7 +667,7 @@ void svkSiemensRdaReader::InitPlaneOrientationMacro()
         "PlaneOrientationSequence"
     );
 
-    vtkstd::string orientationString;
+    string orientationString;
  
     //  varian appears to be LAI coords (rather than LPS), 
     //  so flip the 2nd and 3rd idndex.  Is there an "entry" indicator?
@@ -919,11 +919,11 @@ void svkSiemensRdaReader::InitMRSpectroscopyFOVGeometryMacro()
     for (int i = 0; i < 3; i++) {
         ostringstream ossIndex;
         ossIndex << i;
-        vtkstd::string indexString(ossIndex.str());
+        string indexString(ossIndex.str());
         toplc[i] = this->GetHeaderValueAsFloat( "PositionVector[" + indexString + "]" );
     }
 
-    vtkstd::string acqTlc = this->GetHeaderValueAsString( "PositionVector[0]" ) 
+    string acqTlc = this->GetHeaderValueAsString( "PositionVector[0]" ) 
                     + '\\' + this->GetHeaderValueAsString( "PositionVector[1]" ) 
                     + '\\' + this->GetHeaderValueAsString( "PositionVector[2]" ) ;
     
@@ -1095,7 +1095,7 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ImageType",
-        vtkstd::string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE")
+        string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE")
     );
 
     /*  =======================================
@@ -1103,17 +1103,17 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
      *  ======================================= */
     this->GetOutput()->GetDcmHeader()->SetValue(
         "VolumetricProperties",
-        vtkstd::string("VOLUME")
+        string("VOLUME")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "VolumeBasedCalculationTechnique",
-        vtkstd::string("NONE")
+        string("NONE")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ComplexImageComponent",
-        vtkstd::string("COMPLEX")
+        string("COMPLEX")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -1151,7 +1151,7 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
         "PRESS"
     );
 
-    vtkstd::string volLocType = "UNKNOWN"; 
+    string volLocType = "UNKNOWN"; 
 
     if ( this->GetHeaderValueAsFloat( "VOIPhaseFOV" ) !=0 
         && this->GetHeaderValueAsFloat( "VOIReadoutFOV" ) !=0 
@@ -1183,7 +1183,7 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "BaselineCorrection",
-        vtkstd::string("NONE")
+        string("NONE")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -1193,12 +1193,12 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "FirstOrderPhaseCorrection",
-        vtkstd::string("NO")
+        string("NO")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "WaterReferencedPhaseCorrection",
-        vtkstd::string("NO")
+        string("NO")
     );
 }
 
@@ -1218,7 +1218,7 @@ void svkSiemensRdaReader::InitMRSpectroscopyPulseSequenceModule()
     numVoxels[1] = this->GetHeaderValueAsInt( "CSIMatrixSize[1]" );
     numVoxels[2] = this->GetHeaderValueAsInt( "CSIMatrixSize[2]" );
 
-    vtkstd::string acqType = "VOLUME";
+    string acqType = "VOLUME";
     if (numVoxels[0] == 1 && numVoxels[1] == 1 &&  numVoxels[2] == 1) {
         acqType = "SINGLE VOXEL";
     }
@@ -1344,37 +1344,37 @@ void svkSiemensRdaReader::InitMRSpectroscopyDataModule()
 /*! 
  *  Use the RDA patient position string to set the DCM_PatientPosition data element.
  */
-vtkstd::string svkSiemensRdaReader::GetDcmPatientPositionString(vtkstd::string patientPosition)
+string svkSiemensRdaReader::GetDcmPatientPositionString(string patientPosition)
 {
-    vtkstd::size_t delim = patientPosition.find_first_of(',');
-    vtkstd::string headFeetFirst( patientPosition.substr(0, delim) );
+    size_t delim = patientPosition.find_first_of(',');
+    string headFeetFirst( patientPosition.substr(0, delim) );
 
     for(int i = 0; i < headFeetFirst.size(); i++){
         headFeetFirst[i] = tolower( headFeetFirst[i] );
     }
 
-    vtkstd::string dcmPatientPosition;
-    if( headFeetFirst.find("head first") != vtkstd::string::npos ) {
+    string dcmPatientPosition;
+    if( headFeetFirst.find("head first") != string::npos ) {
         dcmPatientPosition.assign("HF");
-    } else if( headFeetFirst.find("feet first") != vtkstd::string::npos ) {
+    } else if( headFeetFirst.find("feet first") != string::npos ) {
         dcmPatientPosition.assign("FF");
     } else {
         dcmPatientPosition.assign("UNKNOWN");
     }
 
     //  skip ", ":
-    vtkstd::string spd( patientPosition.substr(delim + 2) );
+    string spd( patientPosition.substr(delim + 2) );
     for(int i = 0; i < spd.size(); i++){
         spd[i] = tolower( spd[i] );
     }
 
-    if( spd.find("supine") != vtkstd::string::npos ) {
+    if( spd.find("supine") != string::npos ) {
         dcmPatientPosition += "S";
-    } else if( spd.find("prone") != vtkstd::string::npos ) {
+    } else if( spd.find("prone") != string::npos ) {
         dcmPatientPosition += "P";
-    } else if( spd.find("decubitus left") != vtkstd::string::npos ) {
+    } else if( spd.find("decubitus left") != string::npos ) {
         dcmPatientPosition += "DL";
-    } else if( spd.find("decubitus right") != vtkstd::string::npos ) {
+    } else if( spd.find("decubitus right") != string::npos ) {
         dcmPatientPosition += "DR";
     } else {
         dcmPatientPosition += "UNKNOWN";
@@ -1392,7 +1392,7 @@ vtkstd::string svkSiemensRdaReader::GetDcmPatientPositionString(vtkstd::string p
 void svkSiemensRdaReader::ParseRda()
 {
 
-    vtkstd::string rdaFileName( this->GetFileName() );
+    string rdaFileName( this->GetFileName() );
 
     try { 
 
@@ -1443,15 +1443,15 @@ int svkSiemensRdaReader::GetRdaKeyValuePair(  )
 
     istringstream* iss = new istringstream();
 
-    vtkstd::string keyString;
-    vtkstd::string valueString;
+    string keyString;
+    string valueString;
 
     try {
 
         this->ReadLine(this->rdaFile, iss); 
 
-        vtkstd::size_t  position; 
-        vtkstd::string  tmp; 
+        size_t  position; 
+        string  tmp; 
 
         //  Read only to the start of the pixel buffer, 
         //  i.e. no more than the header size, delimited 
@@ -1459,7 +1459,7 @@ int svkSiemensRdaReader::GetRdaKeyValuePair(  )
         tmp.assign( iss->str() );
         position = tmp.find(">>> End of header <<<"); 
 
-        if ( position == vtkstd::string::npos ) {  
+        if ( position == string::npos ) {  
 
             //  find first white space position before "key" string: 
             if (this->GetDebug()) {
@@ -1468,7 +1468,7 @@ int svkSiemensRdaReader::GetRdaKeyValuePair(  )
     
             //  Extract key and value strings:
             position = tmp.find_first_of(':');
-            if (position != vtkstd::string::npos) {
+            if (position != string::npos) {
 
                 keyString.assign( tmp.substr(0, position) );
                 keyString = StripWhite(keyString); 
@@ -1507,13 +1507,13 @@ int svkSiemensRdaReader::GetRdaKeyValuePair(  )
  *  For values that are comma separated lists, put each element into the value 
  *  vector. 
  */
-void svkSiemensRdaReader::ParseAndSetStringElements(vtkstd::string key, vtkstd::string valueArrayString) 
+void svkSiemensRdaReader::ParseAndSetStringElements(string key, string valueArrayString) 
 {
-    vtkstd::size_t pos;
+    size_t pos;
     istringstream* iss = new istringstream();
-    vtkstd::string tmpString;     
+    string tmpString;     
 
-    while ( (pos = valueArrayString.find_first_of(',')) != vtkstd::string::npos) {  
+    while ( (pos = valueArrayString.find_first_of(',')) != string::npos) {  
 
         iss->str( valueArrayString.substr(0, pos) );
         *iss >> tmpString;
@@ -1532,7 +1532,7 @@ void svkSiemensRdaReader::ParseAndSetStringElements(vtkstd::string key, vtkstd::
 /*!
  *
  */
-vtkstd::string svkSiemensRdaReader::GetStringFromFloat(float floatValue) 
+string svkSiemensRdaReader::GetStringFromFloat(float floatValue) 
 {
     ostringstream tmpOss;
     tmpOss << floatValue; 
@@ -1543,7 +1543,7 @@ vtkstd::string svkSiemensRdaReader::GetStringFromFloat(float floatValue)
 /*!
  *
  */
-int svkSiemensRdaReader::GetHeaderValueAsInt(vtkstd::string keyString, int valueIndex) 
+int svkSiemensRdaReader::GetHeaderValueAsInt(string keyString, int valueIndex) 
 {
     
     istringstream* iss = new istringstream();
@@ -1560,7 +1560,7 @@ int svkSiemensRdaReader::GetHeaderValueAsInt(vtkstd::string keyString, int value
 /*!
  *
  */
-float svkSiemensRdaReader::GetHeaderValueAsFloat(vtkstd::string keyString, int valueIndex) 
+float svkSiemensRdaReader::GetHeaderValueAsFloat(string keyString, int valueIndex) 
 {
     
     istringstream* iss = new istringstream();
@@ -1576,7 +1576,7 @@ float svkSiemensRdaReader::GetHeaderValueAsFloat(vtkstd::string keyString, int v
 /*!
  *
  */
-vtkstd::string svkSiemensRdaReader::GetHeaderValueAsString(vtkstd::string keyString, int valueIndex) 
+string svkSiemensRdaReader::GetHeaderValueAsString(string keyString, int valueIndex) 
 {
     return (this->rdaMap[keyString])[valueIndex];
 }
@@ -1589,12 +1589,12 @@ void svkSiemensRdaReader::PrintKeyValuePairs()
 {
 
     //  Print out key value pairs parsed from header:
-    vtkstd::map< vtkstd::string, vtkstd::vector<vtkstd::string> >::iterator mapIter;
+    map< string, vector<string> >::iterator mapIter;
     for ( mapIter = this->rdaMap.begin(); mapIter != this->rdaMap.end(); ++mapIter ) {
      
         cout << this->GetClassName() << " " << mapIter->first << " = ";
 
-        vtkstd::vector<vtkstd::string>::iterator it;
+        vector<string>::iterator it;
         for ( it = this->rdaMap[mapIter->first].begin() ; it < this->rdaMap[mapIter->first].end(); it++ ) {
             cout << " " << *it ;
         }

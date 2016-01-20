@@ -53,7 +53,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGEPFileMapper, "$Rev$");
+//vtkCxxRevisionMacro(svkGEPFileMapper, "$Rev$");
 vtkStandardNewMacro(svkGEPFileMapper);
 
 
@@ -89,8 +89,8 @@ svkGEPFileMapper::~svkGEPFileMapper()
  *  and initizlizes the svkDcmHeader member of the svkImageData 
  *  object.    
  */
-void svkGEPFileMapper::InitializeDcmHeader(vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >  pfMap, 
-    svkDcmHeader* header, float pfileVersion, int swapBytes, vtkstd::map < vtkstd::string, void* > inputArgs)
+void svkGEPFileMapper::InitializeDcmHeader(map <string, vector< string > >  pfMap, 
+    svkDcmHeader* header, float pfileVersion, int swapBytes, map < string, void* > inputArgs)
 {
     this->pfMap = pfMap; 
     this->dcmHeader = header; 
@@ -131,7 +131,7 @@ void svkGEPFileMapper::InitVolumeLocalizationSeq()
     double selBoxCenter[3]; 
     this->GetSelBoxCenter( selBoxCenter );
 
-    vtkstd::string midSlabPosition;
+    string midSlabPosition;
     for (int i = 0; i < 3; i++) {
         ostringstream oss;
         oss << selBoxCenter[i];
@@ -166,7 +166,7 @@ void svkGEPFileMapper::InitVolumeLocalizationSeq()
         );
 
 
-        vtkstd::string slabOrientation;
+        string slabOrientation;
         for (int j = 0; j < 3; j++) {
             ostringstream oss;
             oss << dcos[i][j];
@@ -261,7 +261,7 @@ void svkGEPFileMapper::InitPatientModule()
 {
 
     int patsex = this->GetHeaderValueAsInt( "rhe.patsex" ); 
-    vtkstd::string gender("O"); 
+    string gender("O"); 
     if ( patsex == 1 ) {
         gender.assign("M"); 
     } else if ( patsex == 2 ) {
@@ -284,7 +284,7 @@ void svkGEPFileMapper::InitPatientModule()
 void svkGEPFileMapper::InitGeneralStudyModule() 
 {
 
-    vtkstd::string dcmDate = this->ConvertGEDateToDICOM( this->GetHeaderValueAsString( "rhr.rh_scan_date" ) );
+    string dcmDate = this->ConvertGEDateToDICOM( this->GetHeaderValueAsString( "rhr.rh_scan_date" ) );
 
     this->dcmHeader->InitGeneralStudyModule(
         svkImageReader2::RemoveSlashesFromDate( &dcmDate ),  
@@ -304,7 +304,7 @@ void svkGEPFileMapper::InitGeneralStudyModule()
 void svkGEPFileMapper::InitGeneralSeriesModule() 
 {
 
-    vtkstd::string patientEntryPos; 
+    string patientEntryPos; 
     int patientEntry( this->GetHeaderValueAsInt( "rhs.entry" ) ); 
     if ( patientEntry == 0) {
         patientEntryPos = "Unknown";
@@ -382,7 +382,7 @@ void svkGEPFileMapper::InitEnhancedGeneralEquipmentModule()
     );
 
     // need to null terminate this string:
-    vtkstd::string versionNumber = this->GetHeaderValueAsString( "rhe.ex_verscre" ); 
+    string versionNumber = this->GetHeaderValueAsString( "rhe.ex_verscre" ); 
 
     char* terminatedVersionString = const_cast<char*>(versionNumber.c_str()); 
     terminatedVersionString[2] = '\0'; 
@@ -406,7 +406,7 @@ void svkGEPFileMapper::InitMultiFrameFunctionalGroupsModule()
         1 
     );
 
-    vtkstd::string dcmDate = this->ConvertGEDateToDICOM( this->GetHeaderValueAsString( "rhr.rh_scan_date" ) );
+    string dcmDate = this->ConvertGEDateToDICOM( this->GetHeaderValueAsString( "rhr.rh_scan_date" ) );
     this->dcmHeader->SetValue( 
         "ContentDate", 
         svkImageReader2::RemoveSlashesFromDate( &dcmDate ) 
@@ -506,7 +506,7 @@ void svkGEPFileMapper::InitPixelMeasuresMacro()
     } else {
 
         //  If PRESS SV, then set pixel size to PRESS box dimensions: 
-        vtkstd::string localizationType; 
+        string localizationType; 
         localizationType = this->GetVolumeLocalizationTechnique(); 
 
         if ( localizationType.compare("PRESS") == 0 )  { 
@@ -516,14 +516,14 @@ void svkGEPFileMapper::InitPixelMeasuresMacro()
 
     }
 
-    vtkstd::string pixelSpacing;
+    string pixelSpacing;
     ostringstream oss;
     oss << voxelSpacing[0];
     oss << '\\';
     oss << voxelSpacing[1];
     pixelSpacing = oss.str();
 
-    vtkstd::string sliceThickness;
+    string sliceThickness;
     oss.clear();
     oss.str( "" );
     oss << voxelSpacing[2];
@@ -539,15 +539,15 @@ void svkGEPFileMapper::InitPixelMeasuresMacro()
  *  Converts GE date year to 4 digit representation, i.e. 
  *  converts year from 1XX to 20XX
  */
-vtkstd::string svkGEPFileMapper::ConvertGEDateToDICOM( vtkstd::string geDate )
+string svkGEPFileMapper::ConvertGEDateToDICOM( string geDate )
 { 
-    vtkstd::string dcmDate = "";
+    string dcmDate = "";
 
     //   if the data is deidentified, date will have length 0: 
     if (geDate.length() > 0) {
         size_t yearPos; 
-        vtkstd::string yearPrefix = "";  
-        if ( (yearPos = geDate.find_last_of("\\/") ) != vtkstd::string::npos ) { 
+        string yearPrefix = "";  
+        if ( (yearPos = geDate.find_last_of("\\/") ) != string::npos ) { 
             if ( geDate[yearPos + 1] == '1' ) { 
                 yearPrefix = "20";  
             } else if ( geDate[yearPos + 1] == '0' ) { 
@@ -935,7 +935,7 @@ void svkGEPFileMapper::InitMRSpectroscopyFrameTypeMacro()
         "MRSpectroscopyFrameTypeSequence",
         0,                               
         "FrameType",                    
-        vtkstd::string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE"),  
+        string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE"),  
         "SharedFunctionalGroupsSequence",   
         0                                 
     );
@@ -944,7 +944,7 @@ void svkGEPFileMapper::InitMRSpectroscopyFrameTypeMacro()
         "MRSpectroscopyFrameTypeSequence",  
         0,                                 
         "VolumetricProperties",           
-        vtkstd::string("VOLUME"),  
+        string("VOLUME"),  
         "SharedFunctionalGroupsSequence",
         0                              
     );
@@ -953,7 +953,7 @@ void svkGEPFileMapper::InitMRSpectroscopyFrameTypeMacro()
         "MRSpectroscopyFrameTypeSequence",  
         0,                                 
         "VolumeBasedCalculationTechnique",
-        vtkstd::string("NONE"),
+        string("NONE"),
         "SharedFunctionalGroupsSequence",
         0                              
     );
@@ -962,7 +962,7 @@ void svkGEPFileMapper::InitMRSpectroscopyFrameTypeMacro()
         "MRSpectroscopyFrameTypeSequence",
         0,                                
         "ComplexImageComponent",           
-        vtkstd::string("COMPLEX"),  
+        string("COMPLEX"),  
         "SharedFunctionalGroupsSequence",   
         0
     );
@@ -1347,13 +1347,13 @@ void svkGEPFileMapper::InitMRReceiveCoilMacro()
         "MRReceiveCoilSequence",
         0,                        
         "ReceiveCoilManufacturerName",       
-        vtkstd::string(""),
+        string(""),
         "SharedFunctionalGroupsSequence",    
         0                      
     );
 
-    vtkstd::string coilType( "VOLUME" ); 
-    vtkstd::string quadCoil("YES"); 
+    string coilType( "VOLUME" ); 
+    string quadCoil("YES"); 
     if ( this->GetNumCoils() > 1 ) {
         coilType.assign("MULTICOIL"); 
         quadCoil.assign("NO"); 
@@ -1393,7 +1393,7 @@ void svkGEPFileMapper::InitMRReceiveCoilMacro()
 
             ostringstream ossIndex;
             ossIndex << coilIndex;
-            vtkstd::string indexString(ossIndex.str());
+            string indexString(ossIndex.str());
 
             this->dcmHeader->AddSequenceItemElement(
                 "MultiCoilDefinitionSequence",
@@ -1487,22 +1487,22 @@ void svkGEPFileMapper::InitMRSpatialSaturationMacro()
 
             ostringstream index;
             index << i;
-            vtkstd::string ras0 = "rhi.user" + index.str(); 
+            string ras0 = "rhi.user" + index.str(); 
 
             index.clear(); 
             index.str( "" ); 
             index << i + 1;
-            vtkstd::string ras1 = "rhi.user" + index.str(); 
+            string ras1 = "rhi.user" + index.str(); 
     
             index.clear(); 
             index.str( "" ); 
             index << i + 2;
-            vtkstd::string ras2 = "rhi.user" + index.str(); 
+            string ras2 = "rhi.user" + index.str(); 
     
             index.clear(); 
             index.str( "" ); 
             index << i + 3;
-            vtkstd::string t = "rhi.user" + index.str(); 
+            string t = "rhi.user" + index.str(); 
     
             float satRAS[3];
             satRAS[0] = this->GetHeaderValueAsFloat( ras0 ); 
@@ -1679,7 +1679,7 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "ImageType", 
-        vtkstd::string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE") 
+        string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE") 
     );
 
 
@@ -1688,17 +1688,17 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
      *  ======================================= */
     this->dcmHeader->SetValue(
         "VolumetricProperties", 
-        vtkstd::string("VOLUME")  
+        string("VOLUME")  
     );
 
     this->dcmHeader->SetValue(
         "VolumeBasedCalculationTechnique", 
-        vtkstd::string("NONE")
+        string("NONE")
     );
 
     this->dcmHeader->SetValue(
         "ComplexImageComponent", 
-        vtkstd::string("COMPLEX")  
+        string("COMPLEX")  
     );
 
     this->dcmHeader->SetValue(
@@ -1730,7 +1730,7 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
         this->GetPPMRef() 
     );
 
-    vtkstd::string localizationType; 
+    string localizationType; 
     localizationType = this->GetVolumeLocalizationTechnique(); 
 
     this->dcmHeader->SetValue(
@@ -1760,7 +1760,7 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "BaselineCorrection", 
-        vtkstd::string("NONE")
+        string("NONE")
     );
 
     this->dcmHeader->SetValue(
@@ -1770,12 +1770,12 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "FirstOrderPhaseCorrection", 
-        vtkstd::string("NO")
+        string("NO")
     );
 
     this->dcmHeader->SetValue(
         "WaterReferencedPhaseCorrection", 
-        vtkstd::string("NO")
+        string("NO")
     );
 }
 
@@ -1791,7 +1791,7 @@ string svkGEPFileMapper::GetNucleus()
     float gamma = ( this->GetHeaderValueAsFloat( "rhr.rh_ps_mps_freq" ) * 1e-7 )  
             / ( this->GetHeaderValueAsFloat( "rhe.magstrength" ) / 10000. );
    
-    vtkstd::string nucleus;  
+    string nucleus;  
     if ( fabs( gamma - 42.57 ) < 0.1 ) {
         nucleus.assign("1H");
     } else if ( fabs( gamma - 10.7 ) <0.1 ) {
@@ -1807,9 +1807,9 @@ string svkGEPFileMapper::GetNucleus()
 /*
  *  Returns the volume localization type, e.g. PRESS. 
  */
-vtkstd::string  svkGEPFileMapper::GetVolumeLocalizationTechnique()
+string  svkGEPFileMapper::GetVolumeLocalizationTechnique()
 {
-    vtkstd::string localizationType; 
+    string localizationType; 
 
     if ( this->pfileVersion >= 9 ) {
         localizationType.assign( "PRESS" ); 
@@ -1865,7 +1865,7 @@ float svkGEPFileMapper::GetPPMRef()
         float transmitFreq = this->GetHeaderValueAsFloat( "rhr.rh_ps_mps_freq" ) * 1e-7; 
 
         //  Get mapper behavior flag value:
-        vtkstd::map < vtkstd::string, void* >::iterator  it;
+        map < string, void* >::iterator  it;
         it = this->inputArgs.find( "temperature" );
 
         if ( it != this->inputArgs.end() ) {
@@ -1893,7 +1893,7 @@ void svkGEPFileMapper::InitMRSpectroscopyPulseSequenceModule()
     int numVoxels[3]; 
     this->GetNumVoxels( numVoxels ); 
 
-    vtkstd::string acqType = "VOLUME"; 
+    string acqType = "VOLUME"; 
     if (numVoxels[0] == 1 && numVoxels[1] == 1 &&  numVoxels[2] == 1) {
         acqType = "SINGLE VOXEL";
     }
@@ -1909,7 +1909,7 @@ void svkGEPFileMapper::InitMRSpectroscopyPulseSequenceModule()
     this->dcmHeader->SetValue( "RectilinearPhaseEncodeReordering", "LINEAR" );  
     this->dcmHeader->SetValue( "SegmentedKSpaceTraversal", "SINGLE" ); 
 
-    vtkstd::string kspaceCoverage; 
+    string kspaceCoverage; 
     if ( this->GetNumKSpacePoints() <  this->GetNumVoxelsInVol() ) {
         kspaceCoverage = "ELLIPSOIDAL"; 
     } else {
@@ -1955,14 +1955,14 @@ void svkGEPFileMapper::InitMRSpectroscopyDataModule()
         this->GetHeaderValueAsInt( "rhr.rh_frame_size" )
     );
 
-    vtkstd::string representation( "COMPLEX" );
+    string representation( "COMPLEX" );
 
     this->dcmHeader->SetValue(
         "DataRepresentation", 
         representation 
     );
 
-    vtkstd::string signalDomain("TIME"); 
+    string signalDomain("TIME"); 
 
     this->dcmHeader->SetValue(
         "SignalDomainColumns", 
@@ -1970,7 +1970,7 @@ void svkGEPFileMapper::InitMRSpectroscopyDataModule()
     );
 
     //  Single Voxel doesn't require spatial tranform 
-    vtkstd::string spatialDomain = "KSPACE"; 
+    string spatialDomain = "KSPACE"; 
 
     this->dcmHeader->SetValue( "SVK_ColumnsDomain", spatialDomain );
     this->dcmHeader->SetValue( "SVK_RowsDomain", spatialDomain);
@@ -2045,7 +2045,7 @@ void svkGEPFileMapper::GetCenterFromRawFile( double* center )
 /*!
  *  returns the value for the specified key as an int. 
  */
-int svkGEPFileMapper::GetHeaderValueAsInt(vtkstd::string key)
+int svkGEPFileMapper::GetHeaderValueAsInt(string key)
 {
 
     istringstream* iss = new istringstream();
@@ -2062,7 +2062,7 @@ int svkGEPFileMapper::GetHeaderValueAsInt(vtkstd::string key)
  *  returns the value for the specified key as a long long int. 
  *  An int may be 4 or 8 bytes, but long int should be 8 as needed.
  */
-long long int svkGEPFileMapper::GetHeaderValueAsLongInt(vtkstd::string key)
+long long int svkGEPFileMapper::GetHeaderValueAsLongInt(string key)
 {
 
     istringstream* iss = new istringstream();
@@ -2078,7 +2078,7 @@ long long int svkGEPFileMapper::GetHeaderValueAsLongInt(vtkstd::string key)
 /*!
  *  returns the value for the specified key as a float. 
  */
-float svkGEPFileMapper::GetHeaderValueAsFloat(vtkstd::string key)
+float svkGEPFileMapper::GetHeaderValueAsFloat(string key)
 {
 
     istringstream* iss = new istringstream();
@@ -2094,7 +2094,7 @@ float svkGEPFileMapper::GetHeaderValueAsFloat(vtkstd::string key)
 /*!
  *  returns the value for the specified key as a string. 
  */
-vtkstd::string svkGEPFileMapper::GetHeaderValueAsString( vtkstd::string key )
+string svkGEPFileMapper::GetHeaderValueAsString( string key )
 {         
     return this->pfMap[key][3];
 }         
@@ -2111,8 +2111,8 @@ int svkGEPFileMapper::GetNumCoils()
 
         ostringstream index;
         index << i;
-        vtkstd::string start_rcv = "rhr.rh_dab[" + index.str() + "].start_rcv"; 
-        vtkstd::string stop_rcv  = "rhr.rh_dab[" + index.str() + "].stop_rcv"; 
+        string start_rcv = "rhr.rh_dab[" + index.str() + "].start_rcv"; 
+        string stop_rcv  = "rhr.rh_dab[" + index.str() + "].stop_rcv"; 
 
         int startRcv = this->GetHeaderValueAsInt( start_rcv ); 
         int stopRcv  = this->GetHeaderValueAsInt( stop_rcv ); 
@@ -2161,7 +2161,7 @@ int svkGEPFileMapper::GetNumEPSIAcquisitions()
 
     //  If this is not an EPSI acquisition return 1
     int numAcquisitions = 1;     
-    vtkstd::map < vtkstd::string, void* >::iterator  it;
+    map < string, void* >::iterator  it;
     it = this->inputArgs.find( "epsiType" );
 
     int epsiType;
@@ -2240,7 +2240,7 @@ int svkGEPFileMapper::GetNumDummyScans()
     int numFreqPoints = this->GetHeaderValueAsInt( "rhr.rh_frame_size" ); 
     int dataWordSize = this->GetHeaderValueAsInt( "rhr.rh_point_size" ); 
 
-    vtkstd::string dataRepresentation = this->dcmHeader->GetStringValue( "DataRepresentation" );
+    string dataRepresentation = this->dcmHeader->GetStringValue( "DataRepresentation" );
     int numComponents;
     if ( dataRepresentation == "COMPLEX" ) {
         numComponents = 2;
@@ -2514,7 +2514,7 @@ void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, bool wasSampled, int 
     //  formula should be general:
     vtkDataArray* dataArray = data->GetCellData()->GetArray(index); 
 
-    vtkstd::string dataRepresentation = this->dcmHeader->GetStringValue( "DataRepresentation" );
+    string dataRepresentation = this->dcmHeader->GetStringValue( "DataRepresentation" );
     int numComponents;
     if ( dataRepresentation == "COMPLEX" ) {
         numComponents = 2;
@@ -2581,7 +2581,7 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
     int numSuppressed = this->GetNumberSuppressedAcquisitions(); 
 
     //  Get mapper behavior flag value: 
-    vtkstd::map < vtkstd::string, void* >::iterator  it;
+    map < string, void* >::iterator  it;
     it = this->inputArgs.find( "SetMapperBehavior" );
     MapperBehavior behaviorFlag = svkGEPFileMapper::UNDEFINED;  
     if ( it != this->inputArgs.end() ) {
@@ -2802,7 +2802,7 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
         hdr->SetDimensionIndexSize(svkDcmHeader::EPSI_ACQ_INDEX, 1); 
 
 
-        vtkstd::map < vtkstd::string, void* >::iterator  it;
+        map < string, void* >::iterator  it;
 
         it = this->inputArgs.find( "epsiType" );
         svkEPSIReorder::EPSIType epsiType;
@@ -2954,11 +2954,11 @@ int svkGEPFileMapper::GetNumberSuppressedAcquisitions( )
 /*!
  *  Returns true if the inputArgs map key is set
  */
-bool svkGEPFileMapper::isInputArgSet(vtkstd::string argName)
+bool svkGEPFileMapper::isInputArgSet(string argName)
 {
     bool isArgDefined;
     
-    vtkstd::map < vtkstd::string, void* >::iterator  it;
+    map < string, void* >::iterator  it;
     it = this->inputArgs.find( argName );
     if ( it != this->inputArgs.end() ) {
         isArgDefined = true;            
@@ -2973,14 +2973,14 @@ bool svkGEPFileMapper::isInputArgSet(vtkstd::string argName)
  *  Sets the inputArg value for the specified key as a string.  If the value is not set, then argValue
  *  is not modified. Return value is true if the arg was found, or false if not set. 
  */
-bool svkGEPFileMapper::GetInputArgStringValue(vtkstd::string argName, vtkstd::string* argValue)
+bool svkGEPFileMapper::GetInputArgStringValue(string argName, string* argValue)
 {
     if ( this->isInputArgSet(argName) ) {
 
-        vtkstd::map < vtkstd::string, void* >::iterator  it;
+        map < string, void* >::iterator  it;
         it = this->inputArgs.find( argName);
         if ( it != this->inputArgs.end() ) {
-            argValue->assign(*( static_cast< vtkstd::string* >( this->inputArgs[ it->first ] ) ));
+            argValue->assign(*( static_cast< string* >( this->inputArgs[ it->first ] ) ));
         }
         return true; 
 
@@ -2996,11 +2996,11 @@ bool svkGEPFileMapper::GetInputArgStringValue(vtkstd::string argName, vtkstd::st
  *  Sets the inputArg value for the specified key as a string.  If the value is not set, then argValue
  *  is not modified. Return value is true if the arg was found, or false if not set. 
  */
-bool svkGEPFileMapper::GetInputArgBoolValue(vtkstd::string argName, bool* argValue)
+bool svkGEPFileMapper::GetInputArgBoolValue(string argName, bool* argValue)
 {
     if ( this->isInputArgSet(argName) ) {
 
-        vtkstd::map < vtkstd::string, void* >::iterator  it;
+        map < string, void* >::iterator  it;
         it = this->inputArgs.find( argName);
         if ( it != this->inputArgs.end() ) {
             *argValue = (*( static_cast< bool* >( this->inputArgs[ it->first ] ) ) );
@@ -3019,7 +3019,7 @@ bool svkGEPFileMapper::GetInputArgBoolValue(vtkstd::string argName, bool* argVal
 /*!
  *
  */
-void svkGEPFileMapper::SetProgressText( vtkstd::string progressText )
+void svkGEPFileMapper::SetProgressText( string progressText )
 {
     this->progressText = progressText;
 }
@@ -3028,7 +3028,7 @@ void svkGEPFileMapper::SetProgressText( vtkstd::string progressText )
 /*!
  *
  */
-vtkstd::string svkGEPFileMapper::GetProgressText( )
+string svkGEPFileMapper::GetProgressText( )
 {
     return this->progressText;
 }

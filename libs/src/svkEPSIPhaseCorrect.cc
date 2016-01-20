@@ -48,7 +48,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkEPSIPhaseCorrect, "$Rev$");
+//vtkCxxRevisionMacro(svkEPSIPhaseCorrect, "$Rev$");
 vtkStandardNewMacro(svkEPSIPhaseCorrect);
 
 

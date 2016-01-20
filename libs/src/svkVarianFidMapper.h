@@ -49,9 +49,9 @@
 #include <svkDcmHeader.h>
 #include <svkMRSIOD.h>
 
-#include <vtkstd/map>
-#include <vtkstd/string>
-#include <vtkstd/vector>
+#include <map>
+#include <string>
+#include <vector>
 
 
 namespace svk {
@@ -76,16 +76,16 @@ class svkVarianFidMapper : public vtkObject
 
     public:
 
-        vtkTypeRevisionMacro( svkVarianFidMapper, vtkObject );
+        vtkTypeMacro( svkVarianFidMapper, vtkObject );
 
         virtual void    InitializeDcmHeader(
-                            vtkstd::map <vtkstd::string, vtkstd::vector < vtkstd::vector<vtkstd::string> > >    procparMap,
+                            map <string, vector < vector<string> > >    procparMap,
                             svkDcmHeader* header,
                             svkMRSIOD* iod,
                             int        swapBytes  
                         );
 
-        virtual void    ReadFidFile( vtkstd::string fidFileName, svkImageData* data );
+        virtual void    ReadFidFile( string fidFileName, svkImageData* data );
 
         
     protected:
@@ -114,18 +114,18 @@ class svkVarianFidMapper : public vtkObject
         virtual void    InitMRSpectroscopyModule();
         virtual void    InitMRSpectroscopyFOVGeometryMacro();
         virtual void    InitMRSpectroscopyDataModule();
-        vtkstd::string  GetDcmPatientPositionString(); 
+        string          GetDcmPatientPositionString(); 
 
         virtual void    ConvertCmToMm();
 
         int             GetHeaderValueAsInt(
-                            vtkstd::string keyString, int valueIndex = 0, int procparRow = 0
+                            string keyString, int valueIndex = 0, int procparRow = 0
                         );
         float           GetHeaderValueAsFloat(
-                            vtkstd::string keyString, int valueIndex = 0, int procparRow = 0
+                            string keyString, int valueIndex = 0, int procparRow = 0
                         );
-        vtkstd::string  GetHeaderValueAsString(
-                            vtkstd::string keyString, int valueIndex = 0, int procparRow = 0
+        string          GetHeaderValueAsString(
+                            string keyString, int valueIndex = 0, int procparRow = 0
                         );
 
         virtual void    SetCellSpectrum(
@@ -136,7 +136,7 @@ class svkVarianFidMapper : public vtkObject
                         );
 
 
-        vtkstd::map <vtkstd::string, vtkstd::vector < vtkstd::vector<vtkstd::string> > >    
+        map <string, vector < vector<string> > >    
                                                     procparMap;
         svkDcmHeader*                               dcmHeader; 
         float*                                      specData; 

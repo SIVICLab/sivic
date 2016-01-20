@@ -60,7 +60,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkLCModelCoordReader, "$Rev$");
+//vtkCxxRevisionMacro(svkLCModelCoordReader, "$Rev$");
 vtkStandardNewMacro(svkLCModelCoordReader);
 
 

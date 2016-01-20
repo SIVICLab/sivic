@@ -43,7 +43,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkUCSFPACSInterface, "$Rev$");
+//vtkCxxRevisionMacro(svkUCSFPACSInterface, "$Rev$");
 vtkStandardNewMacro(svkUCSFPACSInterface);
 
 

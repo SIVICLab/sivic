@@ -62,7 +62,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkQuantifyMetabolites, "$Rev$");
+//vtkCxxRevisionMacro(svkQuantifyMetabolites, "$Rev$");
 vtkStandardNewMacro(svkQuantifyMetabolites);
 
 

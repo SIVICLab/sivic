@@ -51,9 +51,8 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include <vtkstd/set>
-#include <vtkstd/map>
-#include <vtkstd/vector>
+#include <map>
+#include <vector>
 
 
 namespace svk {
@@ -69,7 +68,7 @@ class svkDcmHeader: public vtkObject
 
     public:
 
-        vtkTypeRevisionMacro( svkDcmHeader, vtkObject );
+        vtkTypeMacro( svkDcmHeader, vtkObject );
 
         //  Members:
 

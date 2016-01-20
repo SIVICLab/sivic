@@ -57,7 +57,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDcmVolumeReader, "$Rev$");
+//vtkCxxRevisionMacro(svkDcmVolumeReader, "$Rev$");
 
 
 /*!

@@ -52,8 +52,8 @@
 #include <svkMRSIOD.h>
 #include <svkUtils.h>
 
-#include <vtkstd/map>
-#include <vtkstd/string>
+#include <map>
+#include <string>
 
 
 namespace svk {
@@ -68,7 +68,7 @@ class svkDdfVolumeReader : public svkImageReader2
     public:
 
         static svkDdfVolumeReader* New();
-        vtkTypeRevisionMacro( svkDdfVolumeReader, svkImageReader2 );
+        vtkTypeMacro( svkDdfVolumeReader, svkImageReader2 );
 
         // Description: 
         // A descriptive name for this format

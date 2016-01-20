@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageThreshold, "$Rev$");
+//vtkCxxRevisionMacro(svkImageThreshold, "$Rev$");
 vtkStandardNewMacro(svkImageThreshold);
 
 

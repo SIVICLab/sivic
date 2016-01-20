@@ -50,7 +50,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDynamicImageMap, "$Rev$");
+//vtkCxxRevisionMacro(svkDynamicImageMap, "$Rev$");
 
 
 /*!

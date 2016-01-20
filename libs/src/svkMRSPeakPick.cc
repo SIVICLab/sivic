@@ -49,7 +49,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRSPeakPick, "$Rev$");
+//vtkCxxRevisionMacro(svkMRSPeakPick, "$Rev$");
 vtkStandardNewMacro(svkMRSPeakPick);
 
 

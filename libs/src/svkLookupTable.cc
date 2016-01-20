@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkLookupTable, "$Rev$");
+//vtkCxxRevisionMacro(svkLookupTable, "$Rev$");
 vtkStandardNewMacro(svkLookupTable);
 
 

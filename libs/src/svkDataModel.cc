@@ -45,7 +45,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDataModel, "$Rev$");
+//vtkCxxRevisionMacro(svkDataModel, "$Rev$");
 vtkStandardNewMacro(svkDataModel);
 
 

@@ -52,7 +52,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkVarianUCSFEPSI2DMapper, "$Rev$");
+//vtkCxxRevisionMacro(svkVarianUCSFEPSI2DMapper, "$Rev$");
 vtkStandardNewMacro(svkVarianUCSFEPSI2DMapper);
 
 

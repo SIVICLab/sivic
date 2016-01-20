@@ -54,7 +54,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkImageLinearPhase, "$Revision$");
+//vtkCxxRevisionMacro(svkImageLinearPhase, "$Revision$");
 vtkStandardNewMacro(svkImageLinearPhase);
 
 

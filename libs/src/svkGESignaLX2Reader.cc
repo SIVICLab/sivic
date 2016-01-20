@@ -49,7 +49,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGESignaLX2Reader, "$Rev$");
+//vtkCxxRevisionMacro(svkGESignaLX2Reader, "$Rev$");
 vtkStandardNewMacro(svkGESignaLX2Reader);
 
 

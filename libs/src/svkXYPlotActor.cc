@@ -45,7 +45,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkXYPlotActor, "$Rev$");
+//vtkCxxRevisionMacro(svkXYPlotActor, "$Rev$");
 vtkStandardNewMacro(svkXYPlotActor);
 
 
@@ -138,7 +138,7 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
     {
     this->PlotData[i] = vtkPolyData::New();
     this->PlotGlyph[i] = vtkGlyph2D::New();
-    this->PlotGlyph[i]->SetInput(this->PlotData[i]);
+    this->PlotGlyph[i]->SetInputData(this->PlotData[i]);
     this->PlotGlyph[i]->SetScaleModeToDataScalingOff();
     this->PlotAppend[i] = vtkAppendPolyData::New();
     this->PlotAppend[i]->AddInput(this->PlotData[i]);
@@ -150,7 +150,7 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
       this->PlotAppend[i]->AddInput(this->PlotGlyph[i]->GetOutput());
       }
     this->PlotMapper[i] = vtkPolyDataMapper2D::New();
-    this->PlotMapper[i]->SetInput(this->PlotAppend[i]->GetOutput());
+    this->PlotMapper[i]->SetInputConnection(this->PlotAppend[i]->GetOutputPort());
     this->PlotMapper[i]->ScalarVisibilityOff();
     this->PlotActor[i] = vtkActor2D::New();
     this->PlotActor[i]->SetMapper(this->PlotMapper[i]);

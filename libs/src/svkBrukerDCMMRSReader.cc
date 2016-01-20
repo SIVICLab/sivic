@@ -57,7 +57,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkBrukerDCMMRSReader, "$Rev$");
+//vtkCxxRevisionMacro(svkBrukerDCMMRSReader, "$Rev$");
 vtkStandardNewMacro(svkBrukerDCMMRSReader);
 
 

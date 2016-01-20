@@ -57,7 +57,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDSCQuantify, "$Rev$");
+//vtkCxxRevisionMacro(svkDSCQuantify, "$Rev$");
 vtkStandardNewMacro(svkDSCQuantify);
 
 

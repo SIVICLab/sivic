@@ -55,7 +55,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRSFirstPointPhase, "$Rev$");
+//vtkCxxRevisionMacro(svkMRSFirstPointPhase, "$Rev$");
 vtkStandardNewMacro(svkMRSFirstPointPhase);
 
 
@@ -105,7 +105,7 @@ void svkMRSFirstPointPhase::PrePhaseSetup()
     if ( this->isSpectralFFTRequired == true ) {
 
         svkMrsImageFFT* fft = svkMrsImageFFT::New();
-        fft->SetInput( data );
+        fft->SetInputData( data );
 
         fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
 
@@ -134,7 +134,7 @@ void svkMRSFirstPointPhase::PostPhaseCleanup()
         svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
 
         svkMrsImageFFT* fft = svkMrsImageFFT::New();
-        fft->SetInput( data );
+        fft->SetInputData( data );
 
         fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
 

@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkPlotGridView, "$Rev$");
+//vtkCxxRevisionMacro(svkPlotGridView, "$Rev$");
 vtkStandardNewMacro(svkPlotGridView);
 
 

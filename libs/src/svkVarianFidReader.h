@@ -51,9 +51,9 @@
 #include <vtkInformation.h>
 #include <vtkStringArray.h>
 #include <vtkCallbackCommand.h>
-#include <vtkstd/map>
-#include <vtkstd/string>
-#include <vtkstd/vector>
+#include <map>
+#include <string>
+#include <vector>
 
 
 namespace svk {
@@ -71,7 +71,7 @@ class svkVarianFidReader : public svkVarianReader
     public:
 
         static svkVarianFidReader* New();
-        vtkTypeRevisionMacro( svkVarianFidReader, svkVarianReader);
+        vtkTypeMacro( svkVarianFidReader, svkVarianReader);
 
         // Description: 
         // A descriptive name for this format
@@ -118,10 +118,9 @@ class svkVarianFidReader : public svkVarianReader
 
         //  Members:
         ifstream*                       fidFile;
-        vtkstd::map <vtkstd::string, vtkstd::vector<vtkstd::string> >   
-                                        fidMap; 
+        map <string, vector<string> >   fidMap;  
         svkVarianFidMapper*             mapper;
-        vtkstd::string                  progressText;
+        string                          progressText;
         vtkCallbackCommand*             progressCallback;
 
 };

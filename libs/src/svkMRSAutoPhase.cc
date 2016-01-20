@@ -59,7 +59,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRSAutoPhase, "$Rev$");
+//vtkCxxRevisionMacro(svkMRSAutoPhase, "$Rev$");
 int* svkMRSAutoPhase::progress; //  static pointer 
 
 
@@ -252,7 +252,7 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 
 
     //this->SyncPointsFromCells(); 

@@ -53,7 +53,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMrsSingleVoxelSincExtraction, "$Rev$");
+//vtkCxxRevisionMacro(svkMrsSingleVoxelSincExtraction, "$Rev$");
 vtkStandardNewMacro(svkMrsSingleVoxelSincExtraction);
 
 

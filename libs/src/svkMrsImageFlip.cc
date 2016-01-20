@@ -48,7 +48,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMrsImageFlip, "$Rev$");
+//vtkCxxRevisionMacro(svkMrsImageFlip, "$Rev$");
 vtkStandardNewMacro(svkMrsImageFlip);
 
 

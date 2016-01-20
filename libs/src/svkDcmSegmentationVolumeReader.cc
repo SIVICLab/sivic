@@ -50,7 +50,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDcmSegmentationVolumeReader, "$Rev$");
+//vtkCxxRevisionMacro(svkDcmSegmentationVolumeReader, "$Rev$");
 vtkStandardNewMacro(svkDcmSegmentationVolumeReader);
 
 

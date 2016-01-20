@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageTopologyGenerator, "$Rev$");
+//vtkCxxRevisionMacro(svkImageTopologyGenerator, "$Rev$");
 
 
 /*!

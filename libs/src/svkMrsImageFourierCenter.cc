@@ -49,7 +49,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMrsImageFourierCenter, "$Rev$");
+//vtkCxxRevisionMacro(svkMrsImageFourierCenter, "$Rev$");
 vtkStandardNewMacro(svkMrsImageFourierCenter);
 
 

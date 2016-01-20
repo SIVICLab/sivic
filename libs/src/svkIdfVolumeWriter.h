@@ -48,7 +48,7 @@
 #include <svkImageWriter.h>
 #include <svkImageData.h>
 
-#include <vtkstd/string>
+#include <string>
 #include <iostream>
 
 namespace svk {
@@ -63,7 +63,7 @@ class svkIdfVolumeWriter : public svkImageWriter
     public:
 
         static svkIdfVolumeWriter* New();
-        vtkTypeRevisionMacro( svkIdfVolumeWriter, svkImageWriter);
+        vtkTypeMacro( svkIdfVolumeWriter, svkImageWriter);
 
         //  Methods:
         vtkDataObject*  GetInput(int port);
@@ -91,7 +91,7 @@ class svkIdfVolumeWriter : public svkImageWriter
         void            WriteData();
         void            WriteHeader();
         void            GetIDFCenter(double center[3]);
-        vtkstd::string  GetIDFPatientName(vtkstd::string PatientName);
+        string          GetIDFPatientName(string PatientName);
         void            MapUnsignedToSigned( void* pixels, int numPixels ); 
         void            MapSignedIntToFloat(short* shortPixels, float* floatPixels, int numPixels);
         void            MapDoubleToFloat(double* doublePixels, float* floatPixels, int numPixels); 

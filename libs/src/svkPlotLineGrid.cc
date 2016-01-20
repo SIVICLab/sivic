@@ -47,7 +47,7 @@ using namespace svk;
 using namespace std;
 
 
-vtkCxxRevisionMacro(svkPlotLineGrid, "$Rev$");
+//vtkCxxRevisionMacro(svkPlotLineGrid, "$Rev$");
 vtkStandardNewMacro(svkPlotLineGrid);
 
 //! Constructor 

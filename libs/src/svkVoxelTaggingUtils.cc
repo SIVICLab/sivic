@@ -43,7 +43,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkVoxelTaggingUtils, "$Rev$");
+//vtkCxxRevisionMacro(svkVoxelTaggingUtils, "$Rev$");
 vtkStandardNewMacro(svkVoxelTaggingUtils);
 
 //! Constructor

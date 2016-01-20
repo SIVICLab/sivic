@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkSincInterpolationFilter, "$Rev$");
+//vtkCxxRevisionMacro(svkSincInterpolationFilter, "$Rev$");
 vtkStandardNewMacro(svkSincInterpolationFilter);
 
 

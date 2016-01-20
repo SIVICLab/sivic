@@ -53,7 +53,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkVarianFidMapper, "$Rev$");
+//vtkCxxRevisionMacro(svkVarianFidMapper, "$Rev$");
 
 
 /*!
@@ -95,7 +95,7 @@ svkVarianFidMapper::~svkVarianFidMapper()
  *  and initizlizes the svkDcmHeader member of the svkImageData 
  *  object.    
  */
-void svkVarianFidMapper::InitializeDcmHeader(vtkstd::map <vtkstd::string, vtkstd::vector < vtkstd::vector<vtkstd::string> > >  procparMap, 
+void svkVarianFidMapper::InitializeDcmHeader(map <string, vector < vector<string> > >  procparMap, 
     svkDcmHeader* header, svkMRSIOD* iod, int swapBytes) 
 {
     this->procparMap = procparMap; 
@@ -144,9 +144,9 @@ void svkVarianFidMapper::InitPatientModule()
  */
 void svkVarianFidMapper::InitGeneralStudyModule()
 {
-    vtkstd::string timeDate = this->GetHeaderValueAsString( "time_svfdate" ); 
+    string timeDate = this->GetHeaderValueAsString( "time_svfdate" ); 
     size_t delim = timeDate.find("T"); 
-    vtkstd::string date = timeDate.substr(0, delim); 
+    string date = timeDate.substr(0, delim); 
 
     this->dcmHeader->InitGeneralStudyModule(
         date, 
@@ -402,7 +402,7 @@ void svkVarianFidMapper::InitPlaneOrientationMacro()
     //dcos->SetElement(2, 2, dcos->GetElement(2, 2)  * -1);
     
 
-    vtkstd::string orientationString;
+    string orientationString;
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 3; j++) {
@@ -928,7 +928,7 @@ void svkVarianFidMapper::InitMRSpectroscopyDataModule()
 /*!
  *  Reads spec data from fid file.
  */
-void svkVarianFidMapper::ReadFidFile( vtkstd::string fidFileName, svkImageData* data )
+void svkVarianFidMapper::ReadFidFile( string fidFileName, svkImageData* data )
 {
     
     vtkDebugMacro( << this->GetClassName() << "::ReadFidFile()" );
@@ -1011,7 +1011,7 @@ void svkVarianFidMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z
 {
 
     int numComponents = 1;
-    vtkstd::string representation =  this->dcmHeader->GetStringValue( "DataRepresentation" );
+    string representation =  this->dcmHeader->GetStringValue( "DataRepresentation" );
     if (representation.compare( "COMPLEX" ) == 0 ) {
         numComponents = 2;
     }
@@ -1107,27 +1107,27 @@ void svkVarianFidMapper::ConvertCmToMm()
 /*!
  *  Use the Procpar patient position string to set the DCM_PatientPosition data element.
  */
-vtkstd::string svkVarianFidMapper::GetDcmPatientPositionString()
+string svkVarianFidMapper::GetDcmPatientPositionString()
 {
-    vtkstd::string dcmPatientPosition;
+    string dcmPatientPosition;
 
-    vtkstd::string position1 = this->GetHeaderValueAsString("position1", 0);
-    if( position1.find("head first") != vtkstd::string::npos ) {
+    string position1 = this->GetHeaderValueAsString("position1", 0);
+    if( position1.find("head first") != string::npos ) {
         dcmPatientPosition.assign("HF");
-    } else if( position1.find("feet first") != vtkstd::string::npos ) {
+    } else if( position1.find("feet first") != string::npos ) {
         dcmPatientPosition.assign("FF");
     } else {
         dcmPatientPosition.assign("UNKNOWN");
     }
 
-    vtkstd::string position2 = this->GetHeaderValueAsString("position2", 0);
-    if( position2.find("supine") != vtkstd::string::npos ) {
+    string position2 = this->GetHeaderValueAsString("position2", 0);
+    if( position2.find("supine") != string::npos ) {
         dcmPatientPosition += "S";
-    } else if( position2.find("prone") != vtkstd::string::npos ) {
+    } else if( position2.find("prone") != string::npos ) {
         dcmPatientPosition += "P";
-    } else if( position2.find("decubitus left") != vtkstd::string::npos ) {
+    } else if( position2.find("decubitus left") != string::npos ) {
         dcmPatientPosition += "DL";
-    } else if( position2.find("decubitus right") != vtkstd::string::npos ) {
+    } else if( position2.find("decubitus right") != string::npos ) {
         dcmPatientPosition += "DR";
     } else {
         dcmPatientPosition += "UNKNOWN";
@@ -1140,7 +1140,7 @@ vtkstd::string svkVarianFidMapper::GetDcmPatientPositionString()
 /*!
  *
  */
-int svkVarianFidMapper::GetHeaderValueAsInt(vtkstd::string keyString, int valueIndex, int procparRow)
+int svkVarianFidMapper::GetHeaderValueAsInt(string keyString, int valueIndex, int procparRow)
 {
 
     istringstream* iss = new istringstream();
@@ -1158,7 +1158,7 @@ int svkVarianFidMapper::GetHeaderValueAsInt(vtkstd::string keyString, int valueI
 /*!
  *
  */
-float svkVarianFidMapper::GetHeaderValueAsFloat(vtkstd::string keyString, int valueIndex, int procparRow)
+float svkVarianFidMapper::GetHeaderValueAsFloat(string keyString, int valueIndex, int procparRow)
 {
 
     istringstream* iss = new istringstream();
@@ -1175,7 +1175,7 @@ float svkVarianFidMapper::GetHeaderValueAsFloat(vtkstd::string keyString, int va
 /*!
  *
  */
-vtkstd::string svkVarianFidMapper::GetHeaderValueAsString(vtkstd::string keyString, int valueIndex, int procparRow)
+string svkVarianFidMapper::GetHeaderValueAsString(string keyString, int valueIndex, int procparRow)
 {
     return (this->procparMap[keyString])[procparRow][valueIndex];
 }
@@ -1198,7 +1198,7 @@ void svkVarianFidMapper::InitPixelMeasuresMacro()
     pixelSize[1] = this->GetHeaderValueAsFloat("vox2", 0);
     pixelSize[2] = this->GetHeaderValueAsFloat("vox3", 0);
 
-    vtkstd::string pixelSizeString[3];
+    string pixelSizeString[3];
 
     for (int i = 0; i < 3; i++) {
         ostringstream oss;

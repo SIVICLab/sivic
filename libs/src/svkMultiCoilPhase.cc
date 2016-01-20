@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMultiCoilPhase, "$Rev$");
+//vtkCxxRevisionMacro(svkMultiCoilPhase, "$Rev$");
 vtkStandardNewMacro(svkMultiCoilPhase);
 
 

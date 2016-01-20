@@ -56,7 +56,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDcmRawDataReader, "$Rev$");
+//vtkCxxRevisionMacro(svkDcmRawDataReader, "$Rev$");
 vtkStandardNewMacro(svkDcmRawDataReader);
 
 

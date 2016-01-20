@@ -53,7 +53,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkIntegratePeak, "$Rev$");
+//vtkCxxRevisionMacro(svkIntegratePeak, "$Rev$");
 vtkStandardNewMacro(svkIntegratePeak);
 
 
