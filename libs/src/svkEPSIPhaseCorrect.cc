@@ -225,7 +225,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 
     for (int i = 0; i < this->numEPSIkRead; i++ ) {
         delete [] epsiPhaseArray[i]; 
@@ -303,7 +303,7 @@ int svkEPSIPhaseCorrect::SpectralFFT( svkMrsImageFFT::FFTMode direction )
     svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
 
     svkMrsImageFFT* fft = svkMrsImageFFT::New();
-    fft->SetInput( mrsData );
+    fft->SetInputData( mrsData );
     fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
     fft->SetFFTMode( direction ); 
     fft->Update();

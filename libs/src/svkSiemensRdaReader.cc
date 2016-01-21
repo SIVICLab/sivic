@@ -313,12 +313,12 @@ void svkSiemensRdaReader::SetCellSpectrum(vtkImageData* data, int x, int y, int 
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkSiemensRdaReader::ExecuteData(vtkDataObject* output)
+void svkSiemensRdaReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
     if (!this->FileName) {
         vtkErrorMacro("A valid FileName must be specified.");

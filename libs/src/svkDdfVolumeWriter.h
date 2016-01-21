@@ -48,7 +48,6 @@
 #include <svkImageWriter.h>
 #include <svkImageData.h>
 
-#include <vtkstd/string>
 
 
 namespace svk {

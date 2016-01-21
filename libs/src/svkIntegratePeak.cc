@@ -157,7 +157,7 @@ int svkIntegratePeak::RequestData( vtkInformation* request, vtkInformationVector
 
                 if ( this->magnitudeIntegration ) {
                     vtkImageMagnitude* mag = vtkImageMagnitude::New();
-                    mag->SetInput( ptImage ); 
+                    mag->SetInputData( ptImage ); 
                     mag->Update(); 
 
                     double sumTuple[2];  
@@ -198,7 +198,7 @@ int svkIntegratePeak::RequestData( vtkInformation* request, vtkInformationVector
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 
     ptImage->Delete(); 
     sumImage->Delete(); 

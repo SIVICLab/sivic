@@ -244,7 +244,7 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
 
     //Reverse FFT spatial data: kspace to spatial domain
     svkMriImageFFT* fft = svkMriImageFFT::New();
-    fft->SetInput( target );
+    fft->SetInputData( target );
     fft->SetFFTMode( svkMriImageFFT::FORWARD );
     fft->SetOperateInPlace( true );
     fft->Update();
@@ -254,7 +254,7 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
      ********************************************************/
 
     svkImageFourierCenter* center = svkImageFourierCenter::New();
-    center->SetInput( fft->GetOutput() );
+    center->SetInputData( fft->GetOutput() );
     center->Update();
     target->DeepCopy( center->GetOutput() );
 
@@ -274,7 +274,7 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
     data->GetExtent( inExtent );
 
     svkMriZeroFill* pad = svkMriZeroFill::New();
-    pad->SetInput( target );
+    pad->SetInputData( target );
     pad->SetOutputWholeExtent(this->outputWholeExtent);
     pad->SetOperateInPlace( true );
     pad->Update();
@@ -284,7 +284,7 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
      ********************************************************/
     svkImageFourierCenter* reverseCenter = svkImageFourierCenter::New();
     reverseCenter->SetReverseCenter( true );
-    reverseCenter->SetInput( target );
+    reverseCenter->SetInputData( target );
     reverseCenter->Update();
 
     // We need to deep copy here because it is a non-svk output
@@ -294,7 +294,6 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
     pad->Delete();
     reverseCenter->Delete();
     
-    target->Update(); 
     target->SyncVTKImageDataToDcmHeader(); 
 
     /********************************************************
@@ -302,7 +301,7 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
      ********************************************************/
 
     svkMriImageFFT* rfft = svkMriImageFFT::New();
-    rfft->SetInput( target );
+    rfft->SetInputData( target );
     rfft->SetFFTMode( svkMriImageFFT::REVERSE );
     rfft->SetOperateInPlace( true );
     rfft->Update();
@@ -310,10 +309,9 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
     if( representation.compare("MAGNITUDE") == 0 ) {
         vtkImageExtractComponents* real = vtkImageExtractComponents::New();
         real->SetComponents( 0 );
-        real->SetInput( rfft->GetOutput() );
+        real->SetInputData( rfft->GetOutput() );
         real->Update();
         target->ShallowCopy( real->GetOutput() );
-        target->Update();
         real->Delete();
         target->SyncVTKImageDataToDcmHeader();
     }
@@ -323,7 +321,6 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
         data->DeepCopy( target );
         data->SyncVTKImageDataToDcmHeader();
         data->Modified();
-        data->Update();
     } else {
         this->GetOutput()->DeepCopy( target );
         this->GetOutput()->SyncVTKImageDataToDcmHeader();

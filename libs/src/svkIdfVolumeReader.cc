@@ -221,15 +221,23 @@ void svkIdfVolumeReader::ReadVolumeFile()
 
         array->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
 
+        int vtkDataType; 
         if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
-            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_CHAR);
+            vtkDataType = VTK_UNSIGNED_CHAR; 
         } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
-            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_SHORT);
+            vtkDataType = VTK_UNSIGNED_SHORT; 
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
-            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_SHORT);
+            vtkDataType = VTK_SHORT; 
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
-            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_FLOAT);
+            vtkDataType = VTK_FLOAT; 
         }
+
+        vtkDataObject::SetPointDataActiveScalarInfo(
+            this->GetOutput()->GetInformation(),
+            vtkDataType,
+            this->GetOutput()->GetNumberOfScalarComponents()
+        );
+
 
         ostringstream number;
         number << fileIndex ; 
@@ -280,7 +288,7 @@ int svkIdfVolumeReader::GetNumSlices()
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkIdfVolumeReader::ExecuteData(vtkDataObject* output)
+void svkIdfVolumeReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     this->FileNames = vtkStringArray::New();
@@ -290,7 +298,7 @@ void svkIdfVolumeReader::ExecuteData(vtkDataObject* output)
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
     if ( this->GetFileNames()->GetNumberOfValues() ) {
 

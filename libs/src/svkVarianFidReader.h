@@ -95,7 +95,7 @@ class svkVarianFidReader : public svkVarianReader
 
         virtual int     FillOutputPortInformation(int port, vtkInformation* info);
         virtual void    ExecuteInformation();
-        virtual void    ExecuteData(vtkDataObject *output);
+        virtual void    ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo);
         void            SetProgressText( string progressText );
 
 

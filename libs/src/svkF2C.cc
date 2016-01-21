@@ -111,7 +111,7 @@ int svkF2C::GetIDFHeader(char* fileRootName, char* headerString)
     reader->SetFileName( stringFileName.c_str() );
     reader->Update();
     svkIdfVolumeWriter* writer = svkIdfVolumeWriter::New();
-    writer->SetInput(reader->GetOutput());
+    writer->SetInputData(reader->GetOutput());
     writer->SetFileName( stringFileName.c_str() );
     string header = writer->GetHeaderString();
     for( int i = 0; i < header.length(); i++ ) {

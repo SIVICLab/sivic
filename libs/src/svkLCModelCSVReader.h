@@ -44,9 +44,7 @@
 #define SVK_LCMODEL_CSV_READER_H
 
 #include <vtkInformation.h>
-#include <vtkstd/map>
 #include <vtkStringArray.h>
-#include <vtkstd/string>
 
 #include <svkUtils.h>
 #include <svkLCModelReader.h>
@@ -81,7 +79,7 @@ class svkLCModelCSVReader : public svkLCModelReader
         ~svkLCModelCSVReader();
 
         virtual int             FillOutputPortInformation(int port, vtkInformation* info);
-        virtual void            ExecuteData(vtkDataObject *output);
+        virtual void            ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo);
 
 
     private:

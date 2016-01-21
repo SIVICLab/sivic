@@ -429,7 +429,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     tmpReorderData->DeepCopy( data ); 
 
     svkEPSIReorder* reorder = svkEPSIReorder::New();    
-    reorder->SetInput( tmpReorderData ); 
+    reorder->SetInputData( tmpReorderData ); 
     reorder->SetEPSIType( svkEPSIReorder::SYMMETRIC ); 
 
     //  between lobes, throw out the last and first point before resuming sampling
@@ -651,7 +651,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::EPSIPhaseCorrection( svkImageData* data, in
     numRead -= 2; 
     epsiPhase->SetNumEPSIkRead( numRead );
     epsiPhase->SetEPSIAxis( epsiAxis );
-    epsiPhase->SetInput( tmpData ); 
+    epsiPhase->SetInputData( tmpData ); 
     //tmpData->GetDcmHeader()->PrintDcmHeader(); 
     epsiPhase->Update(); 
 
@@ -677,7 +677,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::FlipAxis( svkImageData* data, int axis, int
     if (lobe != -1) {
         flip->SetFilteredChannel( lobe ); 
     }
-    flip->SetInput( tmpData ); 
+    flip->SetInputData( tmpData ); 
     flip->Update(); 
 
     data->DeepCopy( flip->GetOutput() ); 
@@ -1347,7 +1347,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::FFTShift( svkImageData* data )
     svkMrsImageFourierCenter* fftShift = svkMrsImageFourierCenter::New(); 
     fftShift->SetShiftDomain( svkMrsImageFourierCenter::SPATIAL ); 
     fftShift->SetShiftDirection( svkMrsImageFourierCenter::FORWARD); 
-    fftShift->SetInput( tmpData ); 
+    fftShift->SetInputData( tmpData ); 
     fftShift->Update(); 
 
     data->DeepCopy( fftShift->GetOutput() ); 

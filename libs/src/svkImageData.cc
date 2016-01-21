@@ -293,7 +293,11 @@ void svkImageData::CopyAndFillComponents( vtkImageData* src, double fillValue, s
     }
     //  arg should be type DcmPixelDataFormat
 	this->GetDcmHeader()->SetPixelDataType( svkDcmHeader::GetVtkDataTypeFromSvkDataType(dataTypeVtk) );
-    this->AllocateScalars(dataTypeVtk, numPointComponents);
+    vtkDataObject::SetPointDataActiveScalarInfo(
+            this->GetInformation(),
+            dataTypeVtk,
+            this->GetNumberOfScalarComponents()
+    );
 
 }
 
@@ -412,7 +416,13 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
         }
 
         this->GetDcmHeader()->SetPixelDataType( castToFormat );
-        this->SetScalarType( dataTypeVtk );
+        //this->SetScalarType( dataTypeVtk );
+        vtkDataObject::SetPointDataActiveScalarInfo(
+            this->GetInformation(), 
+            dataTypeVtk, 
+            this->GetNumberOfScalarComponents()
+        );
+
     } else {
         cerr << "ERROR: You must define the format to which you wish to cast" << endl; 
     }
@@ -486,7 +496,12 @@ void svkImageData::CastDataArrays( int dataTypeVtk, vtkDataSetAttributes* fieldD
     if( scalarHasName ) { 
         fieldData->SetActiveScalars( scalarName.c_str() );
     }
-    this->SetScalarType( dataTypeVtk );
+    //this->SetScalarType( dataTypeVtk );
+    vtkDataObject::SetPointDataActiveScalarInfo(
+        this->GetInformation(), 
+        dataTypeVtk, 
+        this->GetNumberOfScalarComponents()
+    );
 }
 
 
@@ -1765,8 +1780,7 @@ void svkImageData::SyncVTKImageDataToDcmHeader()
             numVoxels[2] - 1
         );
     }
-    this->SetUpdateExtent( this->GetExtent() ); 
-    this->SetWholeExtent( this->GetExtent() ); 
+    this->SetExtent( this->GetExtent() ); 
 
     //  ============================
     //  Set Voxel Spacing ( includes any gaps )

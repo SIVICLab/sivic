@@ -352,11 +352,19 @@ void  svk4DImageData::GetImage(  svkImageData* image,
 
 			// Setup image dimensions
 			image->SetExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
-			image->SetScalarType( vtkDataType );
+
 	        if( component > 1) {
-				image->SetNumberOfScalarComponents( numComponents );
+                vtkDataObject::SetPointDataActiveScalarInfo(
+                    image->GetInformation(),
+                    vtkDataType,
+                    numComponents
+                );
 	        } else {
-				image->SetNumberOfScalarComponents( 1 );
+                vtkDataObject::SetPointDataActiveScalarInfo(
+                    image->GetInformation(),
+                    vtkDataType,
+                    1
+                );
 	        }
 	        //image->AllocateScalars();
 			image->CopyDcos( this );

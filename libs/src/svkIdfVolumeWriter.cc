@@ -462,7 +462,7 @@ string svkIdfVolumeWriter::GetHeaderString( int vol )
         inputRangeMax = this->globalRangeMax;
     } else {
         vtkImageAccumulate* histo = vtkImageAccumulate::New();
-        histo->SetInput( this->GetImageDataInput(0) );
+        histo->SetInputData( this->GetImageDataInput(0) );
         histo->Update();
         inputRangeMin = (histo->GetMin())[0];
         inputRangeMax = (histo->GetMax())[0];

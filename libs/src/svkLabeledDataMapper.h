@@ -107,7 +107,7 @@ class vtkTransform;
 #define SVK_LABEL_DATA_TAGS  7
 
 
-class VTK_RENDERING_EXPORT svkLabeledDataMapper : public vtkMapper2D
+class svkLabeledDataMapper : public vtkMapper2D
 {
 public:
 

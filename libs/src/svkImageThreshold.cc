@@ -278,7 +278,7 @@ int svkImageThreshold::RequestData( vtkInformation* request,
     executer->SetAlgorithm( threshold );
 
     // Set the input of the vtk algorithm to be the input of the executer
-    executer->SetInput(this->GetImageDataInput(0));
+    executer->SetInputData(this->GetImageDataInput(0));
 
     // Update the vtk algorithm
     executer->Update();

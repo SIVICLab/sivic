@@ -46,7 +46,7 @@
 #include <vtkImageData.h>
 #include <svkVarianFidMapper.h>
 
-#include <vtkstd/vector>
+#include <vector>
 
 
 namespace svk {
@@ -124,7 +124,7 @@ class svkVarianCSFidMapper : public svkVarianFidMapper
         void                ReOrderSamples( float* specDataReordered, int numberDataPointsInFIDFile ); 
         void                ReOrderFlyback(); 
         void                ZeroPadCompressedSensingData( int numberDataPointsInFIDFile ); 
-        vtkstd::vector<int> GetBlips(); 
+        vector<int>         GetBlips(); 
         void                GetBlipString(string* blipString);
 
         int                 numXReordered; 

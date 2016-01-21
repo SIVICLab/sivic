@@ -165,11 +165,11 @@ int svkVarianFidReader::CanReadFile(const char* fname)
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkVarianFidReader::ExecuteData(vtkDataObject* output)
+void svkVarianFidReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
     if ( this->FileName ) {
         this->mapper->ReadFidFile( this->FileName, data );

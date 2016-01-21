@@ -2838,7 +2838,7 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
         tmpData->ShallowCopy( data );
 
         svkEPSIReorder* reorder = svkEPSIReorder::New();
-        reorder->SetInput( tmpData ); 
+        reorder->SetInputData( tmpData ); 
         reorder->SetEPSIType( epsiType );
         reorder->SetEPSIAxis( epsiAxis );
         reorder->SetNumSamplesToSkip( epsiNumSkip);

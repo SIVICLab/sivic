@@ -112,7 +112,7 @@ void svkDSCQuantify::GenerateDSCMaps()
 
     //  Calculate DSC Peak Ht map:
     svkDSCPeakHeight* dscPkHt = svkDSCPeakHeight::New();
-    dscPkHt->SetInput( this->GetImageDataInput(0) ); 
+    dscPkHt->SetInputData( this->GetImageDataInput(0) ); 
     dscPkHt->SetSeriesDescription( "Peak Height" );
     dscPkHt->Update();
     svkMriImageData* htImage = svkMriImageData::New();
@@ -125,7 +125,7 @@ void svkDSCQuantify::GenerateDSCMaps()
 
     //  Calculate DSC % recovery map:
     svkDSCRecovery* dscRecov = svkDSCRecovery::New();
-    dscRecov->SetInput( this->GetImageDataInput(0) ); 
+    dscRecov->SetInputData( this->GetImageDataInput(0) ); 
     dscRecov->SetSeriesDescription( "Percent Recovery" );
     dscRecov->Update();
     svkMriImageData* recovImage = svkMriImageData::New();
@@ -178,7 +178,7 @@ void svkDSCQuantify::GenerateNormalizedMaps()
 
     //  Calculate DSC Peak Ht map:
     svkDSCPeakHeight* dscPkHt = svkDSCPeakHeight::New();
-    dscPkHt->SetInput( this->GetImageDataInput(0) ); 
+    dscPkHt->SetInputData( this->GetImageDataInput(0) ); 
     dscPkHt->SetSeriesDescription( "normalized Peak Height" );
     dscPkHt->SetNormalize();
     dscPkHt->Update();

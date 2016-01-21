@@ -44,6 +44,7 @@
 #include <svkDcmHeader.h>
 #include <svkDICOMParser.h>
 #include <vector>
+#include <set>
 
 #include "svkDcmHeader.h"
 

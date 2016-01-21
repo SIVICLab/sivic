@@ -226,14 +226,14 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
         }
     }
     translateExtent->SetExtentTranslation( extentTranslation ); 
-    translateExtent->SetInput( inputData );
+    translateExtent->SetInputData( inputData );
    
     // Now we can use the vtk pad algorithm 
     vtkImageConstantPad* pad = NULL;
     pad = vtkImageConstantPad::New();
     pad->SetOutputWholeExtent(this->outputWholeExtent);
     pad->SetConstant(0.0);
-    pad->SetInput(translateExtent->GetOutput());
+    pad->SetInputData(translateExtent->GetOutput());
     pad->Update();
 
     // Now let's move the origin to the appropriate location
@@ -296,7 +296,7 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     // Apply a half voxel phase shift. This is because the sampled points of the data has changed.
     svkImageLinearPhase* linearShift = svkImageLinearPhase::New();
     linearShift->SetShiftWindow( shiftWindow );
-    linearShift->SetInput( targetData );
+    linearShift->SetInputData( targetData );
     linearShift->Update();
 
 
@@ -310,7 +310,7 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     vtkImageMathematics* multiply = vtkImageMathematics::New();
     multiply->SetConstantK( scale );
     multiply->SetOperationToMultiplyByK();
-    multiply->SetInput( linearShift->GetOutput() );
+    multiply->SetInputData( linearShift->GetOutput() );
     multiply->Update();
    
     targetData->DeepCopy(multiply->GetOutput());
@@ -334,7 +334,7 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
         inputData->DeepCopy( targetData );
         inputData->SyncVTKImageDataToDcmHeader();
         inputData->Modified();
-        inputData->Update();
+        this->Update();
     } else {
         this->GetOutput()->DeepCopy( targetData );
         this->GetOutput()->SyncVTKImageDataToDcmHeader();

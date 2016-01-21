@@ -94,8 +94,8 @@ svkPhaseSpec::~svkPhaseSpec()
  */
 int svkPhaseSpec::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-    int wholeExtent[6]; 
-    this->GetInput()->GetWholeExtent( wholeExtent ); 
+    this->UpdateInformation(); 
+    int* wholeExtent = this->GetOutputInformation(0)->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
     
     bool useWholeExtent = false; 
     //  If the specified update extent is outside the whole extent, just use
@@ -326,7 +326,7 @@ int svkPhaseSpec::ApplyGlobalPhase( )
     this->linearPhasePivot = this->linearPhasePivotTarget;
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 
 } 
 

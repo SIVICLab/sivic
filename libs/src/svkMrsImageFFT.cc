@@ -111,8 +111,9 @@ void svkMrsImageFFT::ConvertArrayToImageComplex( vtkDataArray* spectrum, vtkImag
  */
 int svkMrsImageFFT::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-    int wholeExtent[6]; 
-    this->GetInput()->GetWholeExtent( wholeExtent ); 
+
+    this->UpdateInformation();
+    int* wholeExtent = this->GetOutputInformation(0)->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
     
     bool useWholeExtent = false; 
     //  If the specified update extent is outside the whole extent, just use
@@ -263,7 +264,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                     && kZeroShiftWindow[1] != 0
                     && kZeroShiftWindow[2] != 0 ) {
                     preKZeroShifter->SetShiftWindow( kZeroShiftWindow );
-                    preKZeroShifter->SetInput( currentData );
+                    preKZeroShifter->SetInputData( currentData );
                     currentData = preKZeroShifter->GetOutput();
                 }
 
@@ -273,24 +274,24 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                     || this->voxelShift[2] != 0 )
                     && this->mode == REVERSE ) {
                     voxelShifter->SetShiftWindow( this->voxelShift );
-                    voxelShifter->SetInput( currentData );
+                    voxelShifter->SetInputData( currentData );
                     currentData = voxelShifter->GetOutput();
                 }
 
                 // And correct the center....
                 if( this->preCorrectCenter ) {
                     preIfc->SetReverseCenter( true );
-                    preIfc->SetInput(currentData);
+                    preIfc->SetInputData(currentData);
                     currentData = preIfc->GetOutput();
                 }
 
                 // Do the Fourier Transform
-                fourierFilter->SetInput(currentData);
+                fourierFilter->SetInputData(currentData);
                 currentData = fourierFilter->GetOutput();
 
                 // And correct the center....
                 if( this->postCorrectCenter ) {
-                    postIfc->SetInput(currentData);
+                    postIfc->SetInputData(currentData);
                     currentData = postIfc->GetOutput();
                 }
 
@@ -299,7 +300,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                     && kZeroShiftWindow[1] != 0
                     && kZeroShiftWindow[2] != 0 ) {
                     postKZeroShifter->SetShiftWindow( kZeroShiftWindow );
-                    postKZeroShifter->SetInput( currentData );
+                    postKZeroShifter->SetInputData( currentData );
                     currentData = postKZeroShifter->GetOutput();
                 }
 
@@ -309,11 +310,11 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                     || this->voxelShift[2] != 0 )
                     && this->mode == FORWARD ) {
                     voxelShifter->SetShiftWindow( this->voxelShift );
-                    voxelShifter->SetInput( currentData );
+                    voxelShifter->SetInputData( currentData );
                     currentData = voxelShifter->GetOutput();
                 }
 
-                currentData->Update();
+                fourierFilter->Update(); 
                 data->SetImage( currentData, point, timePt, channel );
             }
         }
@@ -359,7 +360,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
     return 1; 
 }
 
@@ -525,7 +526,7 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 
     return 1; 
 } 

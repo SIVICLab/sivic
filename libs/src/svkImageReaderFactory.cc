@@ -41,7 +41,7 @@
 
 
 #include <svkImageReaderFactory.h>
-#include <vtkstd/string>
+#include <string>
 
 
 using namespace svk;

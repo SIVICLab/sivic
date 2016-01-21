@@ -49,9 +49,9 @@
 #include <svkMRSIOD.h>
 #include <svkVarianFidMapper.h>
 
-#include <vtkstd/map>
-#include <vtkstd/string>
-#include <vtkstd/vector>
+#include <map>
+#include <string>
+#include <vector>
 
 
 namespace svk {

@@ -120,7 +120,7 @@ int svkAlgoTemplate::RequestData( vtkInformation* request, vtkInformationVector*
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 
     return 1; 
 } 

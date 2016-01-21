@@ -100,7 +100,7 @@ class svkGESigna5XReader : public svkImageReader2
         ~svkGESigna5XReader();
 
         virtual void                             ExecuteInformation();
-        virtual void                             ExecuteData(vtkDataObject* output);
+        virtual void                             ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo);
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType(); 
 

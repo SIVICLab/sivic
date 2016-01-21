@@ -49,7 +49,7 @@
 #include <vtkImageLuminance.h>
 #include <vtkInformation.h>
 #include <vtkExecutive.h>
-#include <vtkstd/vector>
+#include <vector>
 
 #include <svkImageWriter.h>
 
@@ -83,8 +83,8 @@ class svkDICOMRawDataWriter : public svkImageWriter
         void            ReuseSeriesUID( bool reuseUID ); 
         void            ReuseInstanceUID( bool reuseUID ); 
         virtual void    SetFileName (const char* fileName);
-        void            SetSeriesUID( vtkstd::string UID ); 
-        void            SetInstanceUID( vtkstd::string UID ); 
+        void            SetSeriesUID( string UID ); 
+        void            SetInstanceUID( string UID ); 
         void            SetSkipFileSizeCheck( bool skipFileSizeCheck );
         virtual void    Write();
 
@@ -106,19 +106,19 @@ class svkDICOMRawDataWriter : public svkImageWriter
         void            InitGeneralSeriesModule(); 
         void            InitGeneralEquipmentModule(); 
         void            InitRawDataModule(); 
-        int             GetHeaderValueAsInt(vtkstd::string key); 
-        long int        GetHeaderValueAsLongInt(vtkstd::string key); 
+        int             GetHeaderValueAsInt(string key); 
+        long int        GetHeaderValueAsLongInt(string key); 
 
         //  Members:
         svkDcmHeader*                   dcmHeader;
         string                          sha1Digest; 
         vector < vector <string > >     associatedFiles; 
         long int                        computedPFileSize; 
-        vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >     pfMap;
+        map <string, vector< string > > pfMap;
         bool                            reuseSeriesUID; 
         bool                            reuseInstanceUID; 
-        vtkstd::string                  seriesInstanceUID; 
-        vtkstd::string                  sopInstanceUID; 
+        string                          seriesInstanceUID; 
+        string                          sopInstanceUID; 
         bool                            skipFileSizeCheck;
 };
 

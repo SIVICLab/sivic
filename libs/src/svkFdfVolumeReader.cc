@@ -215,7 +215,7 @@ void svkFdfVolumeReader::ReadFdfFiles()
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkFdfVolumeReader::ExecuteData(vtkDataObject* output)
+void svkFdfVolumeReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     this->FileNames = vtkStringArray::New(); 
@@ -226,7 +226,7 @@ void svkFdfVolumeReader::ExecuteData(vtkDataObject* output)
     }
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
     if ( this->GetFileNames()->GetNumberOfValues() ) {
         vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
@@ -256,16 +256,24 @@ void svkFdfVolumeReader::ExecuteData(vtkDataObject* output)
             this->dataArray->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
         }
 
-        
+       
+        int vtkDataType;  
         if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1) {
-            this->Superclass::Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_CHAR);
+            vtkDataType = VTK_UNSIGNED_CHAR; 
         } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 || this->scaleTo16Bit)  {
-            this->Superclass::Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_SHORT);
+            vtkDataType = VTK_UNSIGNED_SHORT; 
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 && ! this->scaleTo16Bit) { 
-            this->Superclass::Superclass::Superclass::GetOutput()->SetScalarType(VTK_FLOAT);
+            vtkDataType = VTK_FLOAT; 
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 && this->scaleTo16Bit) { 
-            this->Superclass::Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_SHORT);
+            vtkDataType = VTK_UNSIGNED_SHORT; 
         }
+        vtkDataObject::SetPointDataActiveScalarInfo(
+            this->GetInformation(),
+            vtkDataType,
+            this->GetNumberOfScalarComponents()
+        );
+
+
 
         data->GetPointData()->SetScalars(this->dataArray);
 

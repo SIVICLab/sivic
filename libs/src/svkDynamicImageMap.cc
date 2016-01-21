@@ -221,7 +221,7 @@ double svkDynamicImageMap::GetNormalizationFactor()
     svkMriImageData* tmp = svkMriImageData::New();
     tmp->DeepCopy( this->GetOutput() );
 
-    acc->SetInput( tmp ); 
+    acc->SetInputData( tmp ); 
     acc->Update();
     double min = (acc->GetMin())[0]; 
     double max = (acc->GetMax())[0]; 

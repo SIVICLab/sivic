@@ -98,7 +98,7 @@ class svkFdfVolumeReader : public svkVarianReader
 
         virtual int                      FillOutputPortInformation(int port, vtkInformation* info);
         virtual void                     ExecuteInformation();
-        virtual void                     ExecuteData(vtkDataObject *output);
+        virtual void                     ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo);
         svkDcmHeader::DcmPixelDataFormat GetFileType();
         void                             ScaleTo16Bit( bool scaleTo16Bit, bool scaleToSignedShort, bool scaleToPositiveRange ); 
 

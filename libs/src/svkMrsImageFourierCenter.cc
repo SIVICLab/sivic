@@ -157,10 +157,10 @@ void svkMrsImageFourierCenter::ApplySpatialShift()
                     imageShift->SetReverseCenter( true );
                 }
 
-                imageShift->SetInput( tmpData ); 
+                imageShift->SetInputData( tmpData ); 
                 tmpData = imageShift->GetOutput();
 
-                tmpData->Update();
+                imageShift->Update();
 
                 mrsData->SetImage( tmpData, freq, timePt, coil);
 
@@ -172,7 +172,7 @@ void svkMrsImageFourierCenter::ApplySpatialShift()
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 
 } 
 
@@ -240,7 +240,7 @@ void svkMrsImageFourierCenter::ApplySpectralShift()
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 }
 
 

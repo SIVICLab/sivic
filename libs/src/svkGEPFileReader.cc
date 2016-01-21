@@ -278,7 +278,7 @@ void svkGEPFileReader::ExecuteInformation()
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkGEPFileReader::ExecuteData(vtkDataObject* output)
+void svkGEPFileReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     this->FileNames = vtkStringArray::New();
@@ -293,7 +293,7 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
     if ( ! this->onlyReadHeader ) {
         vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-        svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+        svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
         vtkDebugMacro( << this->GetClassName() << " FileName: " << this->FileName );
         this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);

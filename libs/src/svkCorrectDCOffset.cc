@@ -84,7 +84,7 @@ int svkCorrectDCOffset::RequestData( vtkInformation* request, vtkInformationVect
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 
     return 1; 
 }
@@ -193,7 +193,7 @@ void svkCorrectDCOffset::CorrectDCOffset()
     }
 
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 }
 
 

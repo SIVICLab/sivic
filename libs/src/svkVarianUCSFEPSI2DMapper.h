@@ -49,9 +49,9 @@
 #include <svkMRSIOD.h>
 #include <svkVarianFidMapper.h>
 #include <svkImageData.h>
-#include <vtkstd/map>
-#include <vtkstd/string>
-#include <vtkstd/vector>
+#include <map>
+#include <string>
+#include <vector>
 
 
 namespace svk {
@@ -91,7 +91,7 @@ class svkVarianUCSFEPSI2DMapper : public svkVarianFidMapper
         virtual void    InitMRSpectroscopyDataModule(); 
         virtual void    InitMRSpectroscopyModule(); 
         virtual void    InitMultiFrameFunctionalGroupsModule(); 
-        virtual void    ReadFidFile( vtkstd::string fidFileName, svkImageData* data ); 
+        virtual void    ReadFidFile( string fidFileName, svkImageData* data ); 
         void            ReorderEPSIData( svkImageData* data); 
         void            RemoveArrays( svkImageData* data ); 
         void            RedimensionData( 

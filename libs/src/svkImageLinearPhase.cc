@@ -234,7 +234,9 @@ void svkImageLinearPhase::ThreadedExecute(vtkImageData *inData, vtkImageData *ou
   void *inPtr, *outPtr;
   int inExt[6];
 
-  int *wExt = inData->GetWholeExtent();
+  this->UpdateInformation();
+  int* wExt = this->GetOutputInformation(0)->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
+
   vtkImageLinearPhaseInternalRequestUpdateExtent(inExt,outExt,wExt,this->Iteration);
   inPtr = inData->GetScalarPointerForExtent(inExt);
   outPtr = outData->GetScalarPointerForExtent(outExt);

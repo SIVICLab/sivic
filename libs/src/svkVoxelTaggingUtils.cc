@@ -201,7 +201,13 @@ svkMriImageData* svkVoxelTaggingUtils::CreateVoxelTagData( svk4DImageData* volum
 		// Remove any previous data
 		voxelTagData->GetPointData()->RemoveArray( voxelTagData->GetPointData()->GetArray(0)->GetName());
 
-		voxelTagData->SetScalarType(VTK_UNSIGNED_SHORT);
+        vtkDataObject::SetPointDataActiveScalarInfo(
+             voxelTagData->GetInformation(),
+             VTK_UNSIGNED_SHORT,
+             voxelTagData->GetNumberOfScalarComponents()
+        );
+
+
         voxelTagData->GetDcmHeader()->SetPixelDataType(svkDcmHeader::UNSIGNED_INT_2);
 		for( int i = 0; i < tagNames.size(); i ++ ) {
 			svkVoxelTaggingUtils::AddTagToVoxelData(voxelTagData, tagNames[i], tagValues[i] );

@@ -279,7 +279,7 @@ double svkStatistics::GetAutoAdjustedBinSize( svkMriImageData* image, double sta
 {
     double binSize = startBinSize;
     vtkImageAccumulate* accumulator = vtkImageAccumulate::New();
-    accumulator->SetInput( image );
+    accumulator->SetInputData( image );
     accumulator->Update( );
     accumulator->SetIgnoreZero( true );
     accumulator->SetComponentExtent(0,numBins-1,0,0,0,0 );

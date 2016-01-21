@@ -207,7 +207,7 @@ void svkSdbmVolumeReader::ExecuteInformation()
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkSdbmVolumeReader::ExecuteData(vtkDataObject* output)
+void svkSdbmVolumeReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     this->FileNames = vtkStringArray::New();
@@ -217,7 +217,7 @@ void svkSdbmVolumeReader::ExecuteData(vtkDataObject* output)
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
     if ( this->GetFileNames()->GetNumberOfValues() ) {
         vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );

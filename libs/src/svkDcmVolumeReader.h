@@ -82,7 +82,7 @@ class svkDcmVolumeReader : public svkImageReader2
 
 
         virtual void                            ExecuteInformation();
-        virtual void                            ExecuteData(vtkDataObject* output); 
+        virtual void                            ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo); 
         ProprietarySOP                          ContainsProprietaryContent( svkImageData* data );
         void                                    InitFileNames(); 
         void                                    OnlyReadInputFile(); 

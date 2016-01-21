@@ -95,7 +95,7 @@ int svkMRSPeakPick::RequestData( vtkInformation* request, vtkInformationVector**
 
     //  Initialize the noiseSD and baseline values from the average magnitude spectrum: 
     svkMRSNoise* noise = svkMRSNoise::New(); 
-    noise->SetInput( data ); 
+    noise->SetInputData( data ); 
     if ( this->onlyUseSelectionBox ) {
         noise->OnlyUseSelectionBox();
     }
@@ -117,7 +117,7 @@ int svkMRSPeakPick::RequestData( vtkInformation* request, vtkInformationVector**
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 
     return 1; 
 }

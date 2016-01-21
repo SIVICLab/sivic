@@ -78,7 +78,7 @@ class svkImageWriter : public vtkImageWriter
 
         //  Note: this is not set as virtual otherwise it hides the 
         //  overloaded vtkImageWriter::SetInput(vtkImageData* imageData); 
-        using   vtkImageWriter::SetInput;
+        using           vtkImageWriter::SetInputData;
 
         void            SetSeriesNumber(int number);
         void            SetSeriesDescription(string description);

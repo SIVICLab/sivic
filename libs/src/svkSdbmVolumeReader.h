@@ -90,7 +90,7 @@ class svkSdbmVolumeReader : public svkImageReader2
   
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
         virtual void                             ExecuteInformation();
-        virtual void                             ExecuteData( vtkDataObject *output );
+        virtual void                             ExecuteDataWithInformation( vtkDataObject *output, vtkInformation* outInfo );
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
 
 
