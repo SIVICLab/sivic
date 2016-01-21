@@ -110,7 +110,7 @@ void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int num
     double fullWindow = range[1]-range[0];
     double binSize = fullWindow/numBins; 
     vtkImageAccumulate* accumulator = vtkImageAccumulate::New();
-    accumulator->SetInput( this );
+    accumulator->SetInputData( this );
 
     // Component origin is the position of the first bins. 3 Dimension correspond to up to 3 components
     accumulator->SetComponentOrigin(range[0],0,0);
@@ -127,7 +127,6 @@ void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int num
 
     // The output of image accumulate is an image.
     vtkImageData* histogramImage = accumulator->GetOutput();
-    histogramImage->Update();
     int usedBins = 0;
     double binHeight = 0;
 
@@ -156,7 +155,6 @@ void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int num
 		accumulator->SetComponentExtent(0, numBins-1,0,0,0,0);
 		accumulator->SetComponentSpacing(binSize,0,0);
 		accumulator->Update();
-		histogramImage->Update();
     }
 
     // The "pixels" of the output are the values in the histogram
