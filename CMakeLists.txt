@@ -101,7 +101,9 @@ ENDIF(UNIX)
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK REQUIRED)
+FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE)
+INCLUDE(${VTK_USE_FILE})
+
 
 ###################################
 #   KWWidgets

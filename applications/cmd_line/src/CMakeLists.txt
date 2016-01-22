@@ -110,7 +110,7 @@ endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.li
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK REQUIRED)
+FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE)
 
 IF(VTK_FOUND)
   INCLUDE(${VTK_USE_FILE})
@@ -242,11 +242,13 @@ SET(SVK_LIBS
     svkPSD
     svkTypeUtils
     svkadapt 
-    vtkImaging
-    vtkIO
-    vtkFiltering
-    vtkCommon
-    vtkInfovis
+    #   this needs to be refined since includeing all the libs quadruples the static binary size
+    ${VTK_LIBRARIES} 
+    #vtkImaging
+    #vtkIO
+    #vtkFiltering
+    #vtkCommon
+    #vtkInfovis
     dcmdata
     ${DCMTK_OFLOG}
     ofstd 
