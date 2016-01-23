@@ -41,6 +41,8 @@
 
 
 #include <svkImageViewer2.h>
+#include "vtkStreamingDemandDrivenPipeline.h"
+
 
 
 using namespace svk;
@@ -143,10 +145,12 @@ public:
 
       if (event == vtkCommand::ResetWindowLevelEvent)
         {
-        this->IV->GetInput()->UpdateInformation();
-        this->IV->GetInput()->SetUpdateExtent
-          (this->IV->GetInput()->GetWholeExtent());
-        this->IV->GetInput()->Update();
+        this->IV->GetInputAlgorithm()->UpdateInformation();
+        vtkStreamingDemandDrivenPipeline::SetUpdateExtent(
+          this->IV->GetInputInformation(),
+          vtkStreamingDemandDrivenPipeline::GetWholeExtent(
+            this->IV->GetInputInformation()));
+        this->IV->GetInputAlgorithm()->Update();
         double *range = this->IV->GetInput()->GetScalarRange();
         this->IV->SetColorWindow(range[1] - range[0]);
         this->IV->SetColorLevel(0.5 * (range[1] + range[0]));
@@ -286,9 +290,9 @@ void svkImageViewer2::InstallPipeline()
      * is not virtual, so we need to cast it to get our GetOutput method which copies
      * the correct dcos on output.
      */
-    this->axialImageActor->SetInput(this->axialWinLevel->GetOutput());
-    this->coronalImageActor->SetInput(this->coronalWinLevel->GetOutput());
-    this->sagittalImageActor->SetInput(this->sagittalWinLevel->GetOutput());
+    this->axialImageActor->SetInputData(this->axialWinLevel->GetOutput());
+    this->coronalImageActor->SetInputData(this->coronalWinLevel->GetOutput());
+    this->sagittalImageActor->SetInputData(this->sagittalWinLevel->GetOutput());
     }
 }
 
@@ -303,13 +307,13 @@ void svkImageViewer2::SetInput(svkImageData *in)
     }
     this->data = in;
     this->data->Register(this);
-    this->axialWinLevel->SetInput(in);
+    this->axialWinLevel->SetInputData(in);
     this->axialWinLevel->UpdateWholeExtent();
     this->axialWinLevel->SetNumberOfThreads(1);
-    this->coronalWinLevel->SetInput(in);
+    this->coronalWinLevel->SetInputData(in);
     this->coronalWinLevel->UpdateWholeExtent();
     this->coronalWinLevel->SetNumberOfThreads(1);
-    this->sagittalWinLevel->SetInput(in);
+    this->sagittalWinLevel->SetInputData(in);
     this->sagittalWinLevel->UpdateWholeExtent();
     this->sagittalWinLevel->SetNumberOfThreads(1);
 
@@ -339,12 +343,13 @@ void svkImageViewer2::Render()
   if (this->FirstRender)
     {
     // Initialize the size if not set yet
-
-    vtkImageData *input = this->GetInput();
-    if (this->RenderWindow->GetSize()[0] == 0 && input)
+    
+    vtkAlgorithm *input = this->GetInputAlgorithm();
+    if (input)
       {
       input->UpdateInformation();
-      int *w_ext = input->GetWholeExtent();
+      int *w_ext = this->GetInputInformation()->Get(
+        vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
       int xs = 0, ys = 0;
 
       switch (this->SliceOrientation)
@@ -366,9 +371,12 @@ void svkImageViewer2::Render()
           break;
         }
 
-      // if it would be smaller than 150 by 100 then limit to 150 by 100
-      this->RenderWindow->SetSize(
-        xs < 150 ? 150 : xs, ys < 100 ? 100 : ys);
+      // if it would be smaller than 150 by 100 then limit to 150 by 100  
+      if (this->RenderWindow->GetSize()[0] == 0)
+        {
+        this->RenderWindow->SetSize(
+          xs < 150 ? 150 : xs, ys < 100 ? 100 : ys);
+        }
 
       if (this->Renderer)
         {
@@ -376,14 +384,12 @@ void svkImageViewer2::Render()
         this->Renderer->GetActiveCamera()->SetParallelScale(
           xs < 150 ? 75 : (xs - 1 ) / 2.0);
         }
-      this->FirstRender = 0;  
+      this->FirstRender = 0;
       }
     }
+  
   if (this->GetInput())
     {
-    //this->ImageActor->Modified();
-    //this->orthImageActor1->Modified();
-    //this->orthImageActor2->Modified();
     this->axialImageActor->Modified();
     this->coronalImageActor->Modified();
     this->sagittalImageActor->Modified();
