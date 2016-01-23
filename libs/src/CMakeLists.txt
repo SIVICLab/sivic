@@ -311,7 +311,6 @@ IF( BUILD_VIZ_LIBRARY )
         svkDataViewController.cc
         svkPlotGridView.cc
         svkPlotGridViewController.cc
-        svkDetailedPlotDirector.cc
         svkOverlaySelector.cc
         svkOverlayView.cc
         svkOverlayViewController.cc
@@ -327,6 +326,7 @@ IF( BUILD_VIZ_LIBRARY )
         svkImageMapToColors.cc
         svkLabeledDataMapper.cc
         svkVizUtils.cc
+        svkDetailedPlotDirector.cc
         svkXYPlotActor.cc
         ${SVK_ORIENTED_IMAGE_ACTOR_SRC}
     )
