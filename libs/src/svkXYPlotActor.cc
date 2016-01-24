@@ -1,3 +1,4 @@
+
 /*
  *  Copyright © 2009-2014 The Regents of the University of California.
  *  All Rights Reserved.
@@ -40,6 +41,7 @@
 
 
 #include <svkXYPlotActor.h>
+#include "vtkAlgorithmOutput.h"
 
 
 using namespace svk;
@@ -48,6 +50,26 @@ using namespace svk;
 //vtkCxxRevisionMacro(svkXYPlotActor, "$Rev$");
 vtkStandardNewMacro(svkXYPlotActor);
 
+//----------------------------------------------
+//----------------------------------------------
+vtkCxxSetObjectMacro(vtkXYPlotActor,TitleTextProperty,vtkTextProperty);
+vtkCxxSetObjectMacro(vtkXYPlotActor,AxisLabelTextProperty,vtkTextProperty);
+
+class vtkXYPlotActorConnections: public vtkAlgorithm
+{
+public:
+  static vtkXYPlotActorConnections *New();
+  vtkTypeMacro(vtkXYPlotActorConnections,vtkAlgorithm);
+
+  vtkXYPlotActorConnections()
+  {
+    this->SetNumberOfInputPorts( 1 );
+  }
+};
+
+vtkStandardNewMacro(vtkXYPlotActorConnections);
+//----------------------------------------------
+//----------------------------------------------
 
 //! Constructor
 svkXYPlotActor::svkXYPlotActor()
@@ -108,13 +130,14 @@ static inline int vtkXYPlotActorGetComponent(vtkFieldData* field,
  * @param numDS
  * @param numDO
  */
-void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
-                                    double yRange[2], double *lengths,
-                                    int numDS, int numDO)
+void vtkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
+                                     double yRange[2], double *lengths,
+                                     int numDS, int numDO )
 {
-  double xyz[3]; xyz[2] = 0.0;
+//----------------------------------------------------------------------------
+  double xyz[3]; xyz[2] = 0.;
   double xyzTransform[3];
-  int i, numLinePts, dsNum, doNum, num;
+  int i, numLinePts, doNum, num;
   vtkIdType numPts, ptId, id;
   double length, x[3], xPrev[3];
   vtkDataArray *scalars;
@@ -126,7 +149,7 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
 
   // Allocate resources for the polygonal plots
   //
-  num = (numDS > numDO ? numDS : numDO);
+  num = ( numDS > numDO ? numDS : numDO );
   this->InitializeEntries();
   this->NumberOfInputs = num;
   this->PlotData = new vtkPolyData* [num];
@@ -134,51 +157,51 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
   this->PlotAppend = new vtkAppendPolyData* [num];
   this->PlotMapper = new vtkPolyDataMapper2D* [num];
   this->PlotActor = new vtkActor2D* [num];
-  for (i=0; i<num; i++)
+  for ( i=0; i<num; i++)
     {
     this->PlotData[i] = vtkPolyData::New();
     this->PlotGlyph[i] = vtkGlyph2D::New();
-    this->PlotGlyph[i]->SetInputData(this->PlotData[i]);
+    this->PlotGlyph[i]->SetInputData( this->PlotData[i] );
     this->PlotGlyph[i]->SetScaleModeToDataScalingOff();
     this->PlotAppend[i] = vtkAppendPolyData::New();
-    this->PlotAppend[i]->AddInput(this->PlotData[i]);
-    if ( this->LegendActor->GetEntrySymbol(i) != NULL &&
-         this->LegendActor->GetEntrySymbol(i) != this->GlyphSource->GetOutput() )
+    this->PlotAppend[i]->AddInputData( this->PlotData[i] );
+    if ( this->LegendActor->GetEntrySymbol( i ) != NULL &&
+         this->LegendActor->GetEntrySymbol( i ) != this->GlyphSource->GetOutput() )
       {
-      this->PlotGlyph[i]->SetSource(this->LegendActor->GetEntrySymbol(i));
-      this->PlotGlyph[i]->SetScaleFactor(this->ComputeGlyphScale(i,pos,pos2));
-      this->PlotAppend[i]->AddInput(this->PlotGlyph[i]->GetOutput());
+      this->PlotGlyph[i]->SetSourceData( this->LegendActor->GetEntrySymbol( i ) );
+      this->PlotGlyph[i]->SetScaleFactor( this->ComputeGlyphScale( i,pos,pos2 ) );
+      this->PlotAppend[i]->AddInputConnection( this->PlotGlyph[i]->GetOutputPort() );
       }
     this->PlotMapper[i] = vtkPolyDataMapper2D::New();
-    this->PlotMapper[i]->SetInputConnection(this->PlotAppend[i]->GetOutputPort());
+    this->PlotMapper[i]->SetInputConnection( this->PlotAppend[i]->GetOutputPort() );
     this->PlotMapper[i]->ScalarVisibilityOff();
     this->PlotActor[i] = vtkActor2D::New();
-    this->PlotActor[i]->SetMapper(this->PlotMapper[i]);
-    this->PlotActor[i]->GetProperty()->DeepCopy(this->GetProperty());
-    if ( this->LegendActor->GetEntryColor(i)[0] < 0.0 )
+    this->PlotActor[i]->SetMapper( this->PlotMapper[i] );
+    this->PlotActor[i]->GetProperty()->DeepCopy( this->GetProperty() );
+    if ( this->LegendActor->GetEntryColor( i )[0] < 0.0 )
       {
       this->PlotActor[i]->GetProperty()->SetColor(
-        this->GetProperty()->GetColor());
+                                                  this->GetProperty()->GetColor() );
       }
     else
       {
       this->PlotActor[i]->GetProperty()->SetColor(
-        this->LegendActor->GetEntryColor(i));
+                                                  this->LegendActor->GetEntryColor( i ) );
       }
     }
 
   // Prepare to receive data
-  this->GenerateClipPlanes(pos,pos2);
-  for (i=0; i<this->NumberOfInputs; i++)
+  this->GenerateClipPlanes( pos,pos2 );
+  for ( i=0; i<this->NumberOfInputs; i++)
     {
     lines = vtkCellArray::New();
     pts = vtkPoints::New();
 
-    lines->Allocate(10,10);
-    pts->Allocate(10,10);
-    this->PlotData[i]->SetPoints(pts);
-    this->PlotData[i]->SetVerts(lines);
-    this->PlotData[i]->SetLines(lines);
+    lines->Allocate( 10,10 );
+    pts->Allocate( 10,10 );
+    this->PlotData[i]->SetPoints( pts );
+    this->PlotData[i]->SetVerts( lines );
+    this->PlotData[i]->SetLines( lines );
 
     pts->Delete();
     lines->Delete();
@@ -189,49 +212,59 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
   //
   if ( numDS > 0 )
     {
-    vtkCollectionSimpleIterator dsit;
-    for ( dsNum=0, this->InputList->InitTraversal(dsit);
-          (ds = this->InputList->GetNextDataSet(dsit)); dsNum++ )
+    for ( int dsNum=0; dsNum<numDS;  dsNum++)
       {
+      vtkAlgorithmOutput* port =
+        this->InputConnectionHolder->GetInputConnection( 0, dsNum );
+      vtkAlgorithm* alg = port->GetProducer();
+      int portIndex = port->GetIndex();
+      ds = vtkDataSet::SafeDownCast( alg->GetOutputDataObject( portIndex ) );
       clippingRequired = 0;
       numPts = ds->GetNumberOfPoints();
-      scalars = ds->GetPointData()->GetScalars(this->SelectedInputScalars[dsNum]);
-      if ( !scalars)
+      scalars = ds->GetPointData()->GetScalars( this->SelectedInputScalars[dsNum] );
+      if ( !scalars )
         {
         continue;
         }
-      component = this->SelectedInputScalarsComponent->GetValue(dsNum);
-      if ( component < 0 || component >= scalars->GetNumberOfComponents())
+      if (scalars->GetNumberOfTuples() < numPts)
+        {
+        vtkErrorMacro("Number of points: " << numPts
+                      << " exceeds number of scalar tuples: "
+                      << scalars->GetNumberOfTuples());
+        continue;
+        }
+      component = this->SelectedInputScalarsComponent->GetValue( dsNum );
+      if ( component < 0 || component >= scalars->GetNumberOfComponents() )
         {
         continue;
         }
 
       pts = this->PlotData[dsNum]->GetPoints();
       lines = this->PlotData[dsNum]->GetLines();
-      lines->InsertNextCell(0); //update the count later
+      lines->InsertNextCell( 0 ); //update the count later
 
-      ds->GetPoint(0, xPrev);
+      ds->GetPoint( 0, xPrev );
       for ( numLinePts=0, length=0.0, ptId=0; ptId < numPts; ptId++ )
         {
-        xyz[1] = scalars->GetComponent(ptId, component);
-        ds->GetPoint(ptId, x);
-        switch (this->XValues)
+        xyz[1] = scalars->GetComponent( ptId, component );
+        ds->GetPoint( ptId, x );
+        switch ( this->XValues )
           {
           case VTK_XYPLOT_NORMALIZED_ARC_LENGTH:
-            length += sqrt(vtkMath::Distance2BetweenPoints(x,xPrev));
+            length += sqrt( vtkMath::Distance2BetweenPoints( x,xPrev ) );
             xyz[0] = length / lengths[dsNum];
             xPrev[0] = x[0]; xPrev[1] = x[1]; xPrev[2] = x[2];
             break;
           case VTK_XYPLOT_INDEX:
-            xyz[0] = (double)ptId;
+            xyz[0] = ( double )ptId;
             break;
           case VTK_XYPLOT_ARC_LENGTH:
-            length += sqrt(vtkMath::Distance2BetweenPoints(x,xPrev));
+            length += sqrt( vtkMath::Distance2BetweenPoints( x,xPrev ) );
             xyz[0] = length;
             xPrev[0] = x[0]; xPrev[1] = x[1]; xPrev[2] = x[2];
             break;
           case VTK_XYPLOT_VALUE:
-            xyz[0] = x[this->XComponent->GetValue(dsNum)];
+            xyz[0] = x[this->XComponent->GetValue( dsNum )];
             break;
           default:
             vtkErrorMacro(<< "Unknown X-Component option");
@@ -239,9 +272,9 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
 
         if ( this->GetLogx() == 1 )
           {
-          if (xyz[0] > 0)
+          if ( xyz[0] > 0 )
             {
-            xyz[0] = log10(xyz[0]);
+            xyz[0] = log10( xyz[0] );
             // normalize and position
             if ( xyz[0] < xRange[0] || xyz[0] > xRange[1] ||
                  xyz[1] < yRange[0] || xyz[1] > yRange[1] )
@@ -251,9 +284,11 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
 
             numLinePts++;
             xyz[0] = pos[0] +
-              (xyz[0]-xRange[0])/(xRange[1]-xRange[0])*(pos2[0]-pos[0]);
+              ( xyz[0]-xRange[0] )/( xRange[1]-xRange[0] )*( pos2[0]-pos[0] );
             xyz[1] = pos[1] +
-              (xyz[1]-yRange[0])/(yRange[1]-yRange[0])*(pos2[1]-pos[1]);
+              ( xyz[1]-yRange[0] )/( yRange[1]-yRange[0] )*( pos2[1]-pos[1] );
+            //id = pts->InsertNextPoint( xyz );
+            //lines->InsertCellPoint( id );
             this->TransformPoint(pos, pos2, xyz, xyzTransform);
             id = pts->InsertNextPoint(xyzTransform);
             lines->InsertCellPoint(id);
@@ -270,19 +305,21 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
 
           numLinePts++;
           xyz[0] = pos[0] +
-            (xyz[0]-xRange[0])/(xRange[1]-xRange[0])*(pos2[0]-pos[0]);
+            ( xyz[0]-xRange[0] )/( xRange[1]-xRange[0] )*( pos2[0]-pos[0] );
           xyz[1] = pos[1] +
-            (xyz[1]-yRange[0])/(yRange[1]-yRange[0])*(pos2[1]-pos[1]);
+            ( xyz[1]-yRange[0] )/( yRange[1]-yRange[0] )*( pos2[1]-pos[1] );
+          //id = pts->InsertNextPoint( xyz );
+          //lines->InsertCellPoint( id );
           this->TransformPoint(pos, pos2, xyz, xyzTransform);
           id = pts->InsertNextPoint(xyzTransform);
           lines->InsertCellPoint(id);
           }
         }//for all input points
 
-      lines->UpdateCellCount(numLinePts);
+      lines->UpdateCellCount( numLinePts );
       if ( clippingRequired )
         {
-        this->ClipPlotData(pos,pos2,this->PlotData[dsNum]);
+        this->ClipPlotData( pos,pos2,this->PlotData[dsNum] );
         }
       }//loop over all input data sets
     }//if plotting datasets
@@ -294,19 +331,24 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
     vtkIdType numRows, numTuples;
     vtkDataArray *array;
     vtkFieldData *field;
-    vtkCollectionSimpleIterator doit;
-    for ( doNum=0, this->DataObjectInputList->InitTraversal(doit);
-          (dobj = this->DataObjectInputList->GetNextDataObject(doit));
-          doNum++ )
+    int numDOs =
+      this->DataObjectInputConnectionHolder->GetNumberOfInputConnections( 0 );
+    for ( doNum = 0; doNum < numDOs; doNum++ )
       {
+      vtkAlgorithmOutput* port =
+        this->DataObjectInputConnectionHolder->GetInputConnection( 0, doNum );
+      vtkAlgorithm* alg = port->GetProducer();
+      int portIdx = port->GetIndex();
+      dobj = alg->GetOutputDataObject( portIdx );
+
       // determine the shape of the field
       field = dobj->GetFieldData();
       numColumns = field->GetNumberOfComponents(); //number of "columns"
       // numColumns also includes non-numeric array components.
-      for (numRows = VTK_LARGE_ID, i=0; i<field->GetNumberOfArrays(); i++)
+      for ( numRows = VTK_ID_MAX, i=0; i<field->GetNumberOfArrays(); i++)
         {
-        array = field->GetArray(i);
-        if (!array)
+        array = field->GetArray( i );
+        if (!array )
           {
           // skip non-numeric arrays.
           continue;
@@ -320,10 +362,10 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
 
       pts = this->PlotData[doNum]->GetPoints();
       lines = this->PlotData[doNum]->GetLines();
-      lines->InsertNextCell(0); //update the count later
+      lines->InsertNextCell( 0 ); //update the count later
 
-      numPts = (this->DataObjectPlotMode == VTK_XYPLOT_ROW ?
-                numColumns : numRows);
+      numPts = ( this->DataObjectPlotMode == VTK_XYPLOT_ROW ?
+                 numColumns : numRows );
 
       // gather the information to form a plot
       for ( numLinePts=0, length=0.0, ptId=0; ptId < numPts; ptId++ )
@@ -331,53 +373,53 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
         int status1, status2;
         if ( this->DataObjectPlotMode == VTK_XYPLOT_ROW )
           {
-          //x[0] = field->GetComponent(this->XComponent->GetValue(doNum),ptId);
-          //xyz[1] = field->GetComponent(this->YComponent->GetValue(doNum),ptId);
-          status1 = ::vtkXYPlotActorGetComponent(field,
-            this->XComponent->GetValue(doNum), ptId, &x[0]);
-          status2 = ::vtkXYPlotActorGetComponent(field,
-            this->YComponent->GetValue(doNum), ptId, &xyz[1]);
+          //x[0] = field->GetComponent( this->XComponent->GetValue( doNum ),ptId );
+          //xyz[1] = field->GetComponent( this->YComponent->GetValue( doNum ),ptId );
+          status1 = ::vtkXYPlotActorGetComponent( field,
+                                                  this->XComponent->GetValue( doNum ), ptId, &x[0] );
+          status2 = ::vtkXYPlotActorGetComponent( field,
+                                                  this->YComponent->GetValue( doNum ), ptId, &xyz[1] );
           }
         else //if ( this->DataObjectPlotMode == VTK_XYPLOT_COLUMN )
           {
-          //x[0] = field->GetComponent(ptId, this->XComponent->GetValue(doNum));
-          //xyz[1] = field->GetComponent(ptId, this->YComponent->GetValue(doNum));
+          //x[0] = field->GetComponent( ptId, this->XComponent->GetValue( doNum ) );
+          //xyz[1] = field->GetComponent( ptId, this->YComponent->GetValue( doNum ) );
 
-          status1 = ::vtkXYPlotActorGetComponent(field,
-            ptId, this->XComponent->GetValue(doNum), &x[0]);
+          status1 = ::vtkXYPlotActorGetComponent( field,
+                                                  ptId, this->XComponent->GetValue( doNum ), &x[0] );
 
-          if (!status1)
+          if (!status1 )
             {
-            vtkWarningMacro(<< this->XComponent->GetValue(doNum) << " is a non-numeric component.");
+            vtkWarningMacro(<< this->XComponent->GetValue( doNum ) << " is a non-numeric component.");
             }
 
-          status2 = ::vtkXYPlotActorGetComponent(field,
-            ptId, this->YComponent->GetValue(doNum), &xyz[1]);
+          status2 = ::vtkXYPlotActorGetComponent( field,
+                                                  ptId, this->YComponent->GetValue( doNum ), &xyz[1] );
 
-          if (!status2)
+          if (!status2 )
             {
-            vtkWarningMacro(<< this->YComponent->GetValue(doNum) << " is a non-numeric component.");
+            vtkWarningMacro(<< this->YComponent->GetValue( doNum ) << " is a non-numeric component.");
             }
           }
-        if (!status1 || !status2)
+        if (!status1 || !status2 )
           {
           // component is non-numeric.
           // Skip it.
           continue;
           }
 
-        switch (this->XValues)
+        switch ( this->XValues )
           {
           case VTK_XYPLOT_NORMALIZED_ARC_LENGTH:
-            length += fabs(x[0]-xPrev[0]);
+            length += fabs( x[0]-xPrev[0] );
             xyz[0] = length / lengths[doNum];
             xPrev[0] = x[0];
             break;
           case VTK_XYPLOT_INDEX:
-            xyz[0] = (double)ptId;
+            xyz[0] = ( double )ptId;
             break;
           case VTK_XYPLOT_ARC_LENGTH:
-            length += fabs(x[0]-xPrev[0]);
+            length += fabs( x[0]-xPrev[0] );
             xyz[0] = length;
             xPrev[0] = x[0];
             break;
@@ -390,9 +432,9 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
 
         if ( this->GetLogx() == 1 )
           {
-          if (xyz[0] > 0)
+          if ( xyz[0] > 0 )
             {
-            xyz[0] = log10(xyz[0]);
+            xyz[0] = log10( xyz[0] );
             // normalize and position
             if ( xyz[0] < xRange[0] || xyz[0] > xRange[1] ||
                  xyz[1] < yRange[0] || xyz[1] > yRange[1] )
@@ -401,11 +443,13 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
               }
             numLinePts++;
             xyz[0] = pos[0] +
-              (xyz[0]-xRange[0])/(xRange[1]-xRange[0])*(pos2[0]-pos[0]);
+              ( xyz[0]-xRange[0] )/( xRange[1]-xRange[0] )*( pos2[0]-pos[0] );
             xyz[1] = pos[1] +
-              (xyz[1]-yRange[0])/(yRange[1]-yRange[0])*(pos2[1]-pos[1]);
-           this->TransformPoint(pos, pos2, xyz, xyzTransform);
-           id = pts->InsertNextPoint(xyzTransform);
+              ( xyz[1]-yRange[0] )/( yRange[1]-yRange[0] )*( pos2[1]-pos[1] );
+            //id = pts->InsertNextPoint( xyz );
+            //lines->InsertCellPoint( id );
+            this->TransformPoint(pos, pos2, xyz, xyzTransform);
+            id = pts->InsertNextPoint(xyzTransform);
             lines->InsertCellPoint(id);
             }
           }
@@ -419,19 +463,21 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
             }
           numLinePts++;
           xyz[0] = pos[0] +
-            (xyz[0]-xRange[0])/(xRange[1]-xRange[0])*(pos2[0]-pos[0]);
+            ( xyz[0]-xRange[0] )/( xRange[1]-xRange[0] )*( pos2[0]-pos[0] );
           xyz[1] = pos[1] +
-            (xyz[1]-yRange[0])/(yRange[1]-yRange[0])*(pos2[1]-pos[1]);
+            ( xyz[1]-yRange[0] )/( yRange[1]-yRange[0] )*( pos2[1]-pos[1] );
+          //id = pts->InsertNextPoint( xyz );
+          //lines->InsertCellPoint( id );
           this->TransformPoint(pos, pos2, xyz, xyzTransform);
           id = pts->InsertNextPoint(xyzTransform);
           lines->InsertCellPoint(id);
           }
         }//for all input points
 
-      lines->UpdateCellCount(numLinePts);
+      lines->UpdateCellCount( numLinePts );
       if ( clippingRequired )
         {
-        this->ClipPlotData(pos,pos2,this->PlotData[doNum]);
+        this->ClipPlotData( pos,pos2,this->PlotData[doNum] );
         }
       }//loop over all input data sets
     }
@@ -439,38 +485,38 @@ void svkXYPlotActor::CreatePlotData(int *pos, int *pos2, double xRange[2],
   // Remove points/lines as directed by the user
   for ( i = 0; i < num; i++)
     {
-    if (!this->PlotCurveLines)
+    if (!this->PlotCurveLines )
       {
       if ( !this->PlotLines )
         {
-        this->PlotData[i]->SetLines(NULL);
+        this->PlotData[i]->SetLines( NULL );
         }
       }
     else
       {
-      if ( this->GetPlotLines(i) == 0)
+      if ( this->GetPlotLines( i ) == 0 )
         {
-        this->PlotData[i]->SetLines(NULL);
+        this->PlotData[i]->SetLines( NULL );
         }
       }
 
-    if (!this->PlotCurvePoints)
+    if (!this->PlotCurvePoints )
       {
-      if ( !this->PlotPoints || (this->LegendActor->GetEntrySymbol(i) &&
-                                 this->LegendActor->GetEntrySymbol(i) !=
-                                 this->GlyphSource->GetOutput()))
+      if ( !this->PlotPoints || ( this->LegendActor->GetEntrySymbol( i ) &&
+                                  this->LegendActor->GetEntrySymbol( i ) !=
+                                  this->GlyphSource->GetOutput() ) )
         {
-        this->PlotData[i]->SetVerts(NULL);
+        this->PlotData[i]->SetVerts( NULL );
         }
       }
     else
       {
-      if ( this->GetPlotPoints(i) == 0 ||
-          (this->LegendActor->GetEntrySymbol(i) &&
-           this->LegendActor->GetEntrySymbol(i) !=
-           this->GlyphSource->GetOutput()))
+      if ( this->GetPlotPoints( i ) == 0 ||
+           ( this->LegendActor->GetEntrySymbol( i ) &&
+             this->LegendActor->GetEntrySymbol( i ) !=
+             this->GlyphSource->GetOutput() ) )
         {
-        this->PlotData[i]->SetVerts(NULL);
+        this->PlotData[i]->SetVerts( NULL );
         }
       }
     }
