@@ -89,8 +89,9 @@ class svkXYPlotActor : public vtkXYPlotActor
         // vtk type revision macro
         vtkTypeMacro( svkXYPlotActor,vtkObject );
    
-        static svkXYPlotActor*       New();
+        static svkXYPlotActor*      New();
         void ViewportToPlotCoordinate(vtkViewport *viewport, double &u, double &v);
+        vtkAlgorithm*               GetDataObjectInputConnectionHolder();
 
     protected:
         svkXYPlotActor();

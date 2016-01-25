@@ -171,7 +171,8 @@ void svkDetailedPlotDirector::AddInput( vtkDataArray* array, int component, vtkD
         this->xyPlotActor->AddDataObjectInput(dataObject);
         dataObject->Delete();
         this->xyPlotActor->SetXValuesToValue();
-        int numPlots = this->xyPlotActor->GetDataObjectInputList()->GetNumberOfItems();
+        //int numPlots = this->xyPlotActor->GetDataObjectInputList()->GetNumberOfItems();
+        int numPlots = this->xyPlotActor->GetDataObjectInputConnectionHolder()->GetNumberOfInputPorts(); 
         this->xyPlotActor->GetLegendActor()->SetNumberOfEntries(numPlots);
         if( sourceToObserve != NULL ) {
             sourceToObserve->AddObserver(vtkCommand::ModifiedEvent, dataModifiedCB);
@@ -200,10 +201,13 @@ void svkDetailedPlotDirector::AddInput( vtkDataArray* array, int component, vtkD
  */
 void svkDetailedPlotDirector::RegenerateMagnitudeArrays()
 {
-    vtkDataObjectCollection* allData = this->xyPlotActor->GetDataObjectInputList();
-    int numPlots = allData->GetNumberOfItems();
+    //vtkDataObjectCollection* allData = this->xyPlotActor->GetDataObjectInputList();
+    vtkAlgorithm* allDataAlgo = this->xyPlotActor->GetDataObjectInputConnectionHolder();
+
+    int numPlots = allDataAlgo->GetNumberOfInputPorts();
     for( int i = 0; i < numPlots; i++ ) {
-        this->GenerateMagnitudeArray( allData->GetItem(i)->GetFieldData()->GetArray(1), allData->GetItem(i)->GetFieldData()->GetArray(2) );
+        //this->GenerateMagnitudeArray( allData->GetItem(i)->GetFieldData()->GetArray(1), allData->GetItem(i)->GetFieldData()->GetArray(2) );
+        this->GenerateMagnitudeArray( allDataAlgo->GetInputDataObject(i, 0)->GetFieldData()->GetArray(1), allDataAlgo->GetInputDataObject(i,0)->GetFieldData()->GetArray(2) );
     }
 }
 
@@ -245,7 +249,7 @@ void svkDetailedPlotDirector::RemoveAllInputs( )
         this->dataModifiedCB->SetCallback( UpdateData );
         this->dataModifiedCB->SetClientData( (void*)this );
     }
-    this->xyPlotActor->RemoveAllInputs();
+    this->xyPlotActor->RemoveAllDataSetInputConnections();
     this->numPoints = -1;
 }
 
@@ -525,8 +529,12 @@ int svkDetailedPlotDirector::GetPointIndexFromXValue( double xValue )
  */
 double svkDetailedPlotDirector::GetYValueFromIndex( int plotIndex, int pointIndex )
 {
-    vtkDataObjectCollection* collection = this->xyPlotActor->GetDataObjectInputList();
-    vtkDataObject* dataObject = collection->GetItem( plotIndex );
+    //vtkDataObjectCollection* collection = this->xyPlotActor->GetDataObjectInputList();
+    //vtkDataObject* dataObject = collection->GetItem( plotIndex );
+
+    vtkAlgorithm* collection = this->xyPlotActor->GetDataObjectInputConnectionHolder();
+    vtkDataObject* dataObject = collection->GetInputDataObject(plotIndex, 0);
+
     int component = this->xyPlotActor->GetDataObjectYComponent( plotIndex );
     int arrayComponent;
     int arrayIndex = dataObject->GetFieldData()->GetArrayContainingComponent( component, arrayComponent );
@@ -607,7 +615,8 @@ void svkDetailedPlotDirector::UpdateCursorLocation( vtkObject* subject, unsigned
             xValue << u ;
             director->GetRuler()->SetTitle(xValue.str().c_str() );
             director->GetRuler()->SetVisibility( true );
-            for( int i = 0; i < director->GetPlotActor()->GetDataObjectInputList()->GetNumberOfItems(); i++ ) {
+            int numPlots = director->GetPlotActor()->GetDataObjectInputConnectionHolder()->GetNumberOfInputPorts(); 
+            for( int i = 0; i < numPlots; i++ ) {
                 double plotValue = director->GetYValueFromXValue( i, u);
                 std::stringstream yValue;
                 yValue.precision(3);
