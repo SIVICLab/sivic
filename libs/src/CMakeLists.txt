@@ -325,6 +325,7 @@ IF( BUILD_VIZ_LIBRARY )
         svkLabeledDataMapper.cc
         svkVizUtils.cc
         svkXYPlotActor.cc
+        svkXYPlotActorConnections.cc
         svkOverlayView.cc
         svkOverlayViewController.cc
         svkDetailedPlotDirector.cc

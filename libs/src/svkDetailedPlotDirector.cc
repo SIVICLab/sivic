@@ -42,6 +42,9 @@
 
 #include <svkDetailedPlotDirector.h>
 #include <vtkObjectFactory.h>
+#include <vtkGlyphSource2D.h>
+#include <vtkLegendBoxActor.h>
+#include <vtkFieldData.h>
 
 using namespace svk;
 
