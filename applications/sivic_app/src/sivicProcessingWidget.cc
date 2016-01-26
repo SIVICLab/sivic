@@ -38,7 +38,7 @@
 #include <vtkSivicController.h>
 
 vtkStandardNewMacro( sivicProcessingWidget );
-vtkCxxRevisionMacro( sivicProcessingWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicProcessingWidget, "$Revision$");
 
 
 /*! 
@@ -175,7 +175,7 @@ void sivicProcessingWidget::ExecuteFFT()
         // We'll turn the renderer off to avoid rendering intermediate steps
         this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
         svkMrsImageFFT* imageFFT = svkMrsImageFFT::New();
-        imageFFT->SetInput( data );
+        imageFFT->SetInputData( data );
         imageFFT->Update();
         data->Modified();
         imageFFT->Delete();
@@ -212,7 +212,7 @@ void sivicProcessingWidget::ExecuteRecon()
             string spatialDomain1 = data->GetDcmHeader()->GetStringValue( "SVK_RowsDomain");
             string spatialDomain2 = data->GetDcmHeader()->GetStringValue( "SVK_SliceDomain");
 
-            spatialFFT->SetInput( data );
+            spatialFFT->SetInputData( data );
             spatialFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
             if ( spatialDomain0.compare("KSPACE") == 0 && spatialDomain1.compare("KSPACE") == 0 && spatialDomain2.compare("KSPACE") == 0 )  {
                 spatialFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
@@ -233,9 +233,9 @@ void sivicProcessingWidget::ExecuteRecon()
             spectralFFT->AddObserver(vtkCommand::ProgressEvent, progressCallback);
             this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing FFT...");
             if ( this->spatialButton->GetSelectedState() ) {
-                spectralFFT->SetInput( spatialFFT->GetOutput() );
+                spectralFFT->SetInputData( spatialFFT->GetOutput() );
             } else {
-                spectralFFT->SetInput( data );
+                spectralFFT->SetInputData( data );
             }
             spectralFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
             if ( domain.compare("TIME") == 0 ) {
@@ -245,7 +245,7 @@ void sivicProcessingWidget::ExecuteRecon()
             }
             spectralFFT->Update();
             data->Modified();
-            data->Update();
+            //data->Update();
             spectralFFT->RemoveObserver( progressCallback);
         }
         

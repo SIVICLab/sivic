@@ -101,6 +101,7 @@ class svkImageViewer2 : public vtkImageViewer2
         int                                 axialSlice;
         int                                 coronalSlice;
         int                                 sagittalSlice;
+        void                                UpdateInputInformation(); 
 
     protected:
 

@@ -99,7 +99,7 @@ class sivicSpectraViewWidget : public sivicKWCompositeWidget
     public:
 
         static sivicSpectraViewWidget *New();
-        vtkTypeRevisionMacro(sivicSpectraViewWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicSpectraViewWidget,sivicKWCompositeWidget);
 
         void    SetSyncOverlayWL( bool syncOverlayWL );
         void    SetCenterImage( bool centerImage );

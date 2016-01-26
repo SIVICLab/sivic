@@ -11,7 +11,7 @@
 #include <vtkSivicController.h>
 
 vtkStandardNewMacro( sivicPreprocessingWidget );
-vtkCxxRevisionMacro( sivicPreprocessingWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicPreprocessingWidget, "$Revision$");
 
 
 /*! 
@@ -430,7 +430,7 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
 
         bool executeZeroFill = false;
         svkMrsZeroFill* zeroFill = svkMrsZeroFill::New();
-        zeroFill->SetInput(data);
+        zeroFill->SetInputData(data);
 
         if( zeroFillSpec.compare("double") == 0 ) {
             zeroFill->SetNumberOfSpecPointsToDouble();
@@ -486,7 +486,7 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
             vtkFloatArray* window = vtkFloatArray::New();
             svkApodizationWindow::GetLorentzianWindow( window, data, fwhh );
-            af->SetInput( data );
+            af->SetInputData( data );
             af->SetWindow( window );
             af->Update();
             af->Delete();
@@ -514,7 +514,7 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
                 center = atof( centerDefault );
             }
             svkApodizationWindow::GetGaussianWindow( window, data, fwhh, center );
-            af->SetInput( data );
+            af->SetInputData( data );
             af->SetWindow( window );
             af->Update();
             af->Delete();

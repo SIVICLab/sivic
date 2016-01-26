@@ -91,10 +91,10 @@ INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
 ###################################
 #   VTK
 ###################################
-INCLUDE(${CMAKE_ROOT}/Modules/FindVTK.cmake)
-IF (USE_VTK_FILE)
-    INCLUDE(${USE_VTK_FILE})
-ENDIF (USE_VTK_FILE)
+#INCLUDE(${CMAKE_ROOT}/Modules/FindVTK.cmake)
+#IF (USE_VTK_FILE)
+#    INCLUDE(${USE_VTK_FILE})
+#ENDIF (USE_VTK_FILE)
 
 ###################################
 #   Windows/Unix options

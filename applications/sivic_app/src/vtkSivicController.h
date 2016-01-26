@@ -135,7 +135,7 @@ class vtkSivicController : public vtkObject
 {
     public:
 
-        vtkTypeRevisionMacro( vtkSivicController, vtkObject );
+        vtkTypeMacro( vtkSivicController, vtkObject );
         static vtkSivicController* New(); 
 
         vtkSivicController();

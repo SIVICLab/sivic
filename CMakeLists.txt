@@ -98,10 +98,11 @@ IF(UNIX)
     ENDIF( BUILD_EPIC )
 ENDIF(UNIX)
 
+
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE)
+FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE )
 INCLUDE(${VTK_USE_FILE})
 
 
@@ -109,7 +110,9 @@ INCLUDE(${VTK_USE_FILE})
 #   KWWidgets
 ###################################
 IF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
-    FIND_PACKAGE(KWWidgets REQUIRED)
+    FIND_PACKAGE(KWWidgets REQUIRED PATHS /opt/src/freeware/kwwidgets/KWWidgets_VTK6_install/lib/KWWidgets HINTS /opt/src/freeware/kwwidgets/KWWidgets_VTK6_install/lib/KWWidgets )
+    MESSAGE(${KWWidgets_USE_FILE})
+    INCLUDE(${KWWidgets_USE_FILE})
     IF( NOT BUILD_VIZ_LIBRARY  )
         message( FATAL_ERROR "ERROR: You must turn BUILD_VIZ_LIBRARY on to build requested components (BUILD_SIVIC, BUILD_EXAMPLES, BUILD_APPS, BUILD_OSIRIX, BUILD_SLICER)")
     ENDIF( NOT BUILD_VIZ_LIBRARY )

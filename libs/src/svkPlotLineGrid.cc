@@ -258,7 +258,7 @@ void svkPlotLineGrid::AllocatePolyData()
 			}
 		}
 		pointIds->Delete();
-		this->mapper->SetInput( this->polyData );
+		this->mapper->SetInputData( this->polyData );
 	}
 }
 
@@ -649,7 +649,7 @@ void svkPlotLineGrid::GenerateActor()
     if( this->plotGridActor == NULL ) {
         this->plotGridActor = vtkActor::New();
     }
-	this->mapper->SetInput( this->polyData );
+	this->mapper->SetInputData( this->polyData );
 	plotGridActor->SetMapper( this->mapper );
 
     delete[] voxelIndex;

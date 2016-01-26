@@ -1878,11 +1878,12 @@ void svkOverlayView::ResetWindowLevel()
 {
     if( dataVector[MRI] != NULL ) {
 
-        this->imageViewer->GetInput()->UpdateInformation();
-        this->imageViewer->GetInput()->SetUpdateExtent
-            (this->imageViewer->GetInput()->GetWholeExtent());
+        //this->imageViewer->GetInput()->UpdateInformation();
+        //this->imageViewer->GetInput()->SetUpdateExtent
+            //(this->imageViewer->GetInput()->GetWholeExtent());
+        //this->imageViewer->GetInput()->Update();
+        this->imageViewer->UpdateInputInformation(); 
 
-        this->imageViewer->GetInput()->Update();
         double window;
         double level;
         svkMriImageData::SafeDownCast(dataVector[MRI])->GetAutoWindowLevel(window, level);

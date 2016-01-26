@@ -73,6 +73,8 @@
 
 namespace svk {
 
+class vtkXYPlotActorConnections;
+
 /*! 
  *  The purpose of the DataModel class is two fold. The first is to maintain
  *  a hash of svkImageData objects that can be accessed and modified by any
@@ -97,9 +99,9 @@ class svkXYPlotActor : public vtkXYPlotActor
         svkXYPlotActor();
         ~svkXYPlotActor();
 
-        virtual void CreatePlotData(int *pos, int *pos2, double xRange[2],
-                                    double yRange[2], double *norms,
-                                    int numDS, int numDO);
+        //virtual void CreatePlotData(int *pos, int *pos2, double xRange[2],
+                                    //double yRange[2], double *norms,
+                                    //int numDS, int numDO);
 
 };
 

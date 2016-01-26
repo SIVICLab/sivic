@@ -760,3 +760,23 @@ svkImageData* svkImageViewer2::GetInput( )
 {
     return this->data;
 }
+
+
+/*
+ *  Updates the input algorithm info .
+ */
+void svkImageViewer2::UpdateInputInformation()
+{
+    vtkAlgorithm* input = this->GetInputAlgorithm();
+    input->UpdateInformation();
+
+    vtkStreamingDemandDrivenPipeline::SetUpdateExtent(
+        this->GetInputInformation(),
+        vtkStreamingDemandDrivenPipeline::GetWholeExtent(
+            this->GetInputInformation()
+        )
+    );
+    input->Update(); 
+
+}
+

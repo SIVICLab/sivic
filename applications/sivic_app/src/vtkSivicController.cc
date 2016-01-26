@@ -45,7 +45,7 @@ using namespace svk;
 
 
 vtkStandardNewMacro( vtkSivicController );
-vtkCxxRevisionMacro( vtkSivicController, "$Revision$");
+//vtkCxxRevisionMacro( vtkSivicController, "$Revision$");
 
 const int vtkSivicController::ANATOMY_BRAIN = 0;
 const int vtkSivicController::ANATOMY_PROSTATE = 1;
@@ -1865,8 +1865,8 @@ void vtkSivicController::SaveMetaboliteMaps()
         char* cStrFilename = new char [filename.size()+1];
         strcpy (cStrFilename, filename.c_str());
 
-        vtkstd::string root = svkImageReader2::GetFileRoot( cStrFilename ); 
-        vtkstd::string ext = svkImageReader2::GetFileExtension( cStrFilename ); 
+        string root = svkImageReader2::GetFileRoot( cStrFilename ); 
+        string ext = svkImageReader2::GetFileExtension( cStrFilename ); 
         int fileType; 
         if ( ext.compare("DCM") == 0 ) {
             fileType = 5;       // MRI
@@ -1934,8 +1934,8 @@ void vtkSivicController::SaveImageFromModel( const char* modelObjectName, bool a
 			char* cStrFilename = new char [filename.size()+1];
 			strcpy (cStrFilename, filename.c_str());
 
-			vtkstd::string root = svkImageReader2::GetFileRoot( cStrFilename );
-			vtkstd::string ext = svkImageReader2::GetFileExtension( cStrFilename );
+			string root = svkImageReader2::GetFileRoot( cStrFilename );
+			string ext = svkImageReader2::GetFileExtension( cStrFilename );
 			int fileType;
 			if ( ext.compare("DCM") == 0 ) {
 				fileType = 5;       // MRI
@@ -1991,7 +1991,7 @@ void vtkSivicController::SaveMetMapData( svkImageData* image, char* fileName, in
     writer->SetFileName(fileName);
     writerFactory->Delete();
 
-    writer->SetInput( image ); 
+    writer->SetInputData( image ); 
     writer->Write();
 
     writer->Delete();
@@ -2018,7 +2018,7 @@ void vtkSivicController::SaveData( char* fileName )
     writer->SetFileName(fileName);
     writerFactory->Delete();
 
-    writer->SetInput( this->GetActive4DImageData() );
+    writer->SetInputData( this->GetActive4DImageData() );
 
     writer->Write();
     writer->Delete();
@@ -3792,7 +3792,7 @@ void vtkSivicController::ExitSivic(vtkObject* subject, unsigned long, void* this
  */
 void vtkSivicController::GetMRSDefaultPPMRange( svkImageData* mrsData, float& ppmMin, float& ppmMax )
 {
-    vtkstd::string nucleus = mrsData->GetDcmHeader()->GetStringValue( "ResonantNucleus" );
+    string nucleus = mrsData->GetDcmHeader()->GetStringValue( "ResonantNucleus" );
     if ( nucleus.find("13C") !=string::npos ) {
         ppmMin = PPM_13C_DEFAULT_MIN; 
         ppmMax = PPM_13C_DEFAULT_MAX;

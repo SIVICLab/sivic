@@ -107,20 +107,20 @@ if ( EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib"
     SET(DCMTK_OFLOG oflog )
 endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
 
+
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE)
-
-IF(VTK_FOUND)
-  INCLUDE(${VTK_USE_FILE})
-ENDIF(VTK_FOUND)
+#FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE)
+#IF(VTK_FOUND)
+#  INCLUDE(${VTK_USE_FILE})
+#ENDIF(VTK_FOUND)
 
 
 ###################################
 #   KWWidgets
 ###################################
-INCLUDE(${KWWidgets_USE_FILE})
+#INCLUDE(${KWWidgets_USE_FILE})
 
 
 if( BUILD_PROFILER)

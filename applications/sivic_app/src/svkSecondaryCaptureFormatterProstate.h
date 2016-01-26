@@ -47,7 +47,6 @@
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
 #include <vtkGraphicsFactory.h>
-#include <vtkImagingFactory.h>
 #include <vtkImageWriter.h>
 #include <vtkRenderLargeImage.h>
 #include <vtkWindowToImageFilter.h>
@@ -77,7 +76,7 @@ class svkSecondaryCaptureFormatterProstate : public svkSecondaryCaptureFormatter
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkSecondaryCaptureFormatterProstate, svkSecondaryCaptureFormatter);
+        vtkTypeMacro( svkSecondaryCaptureFormatterProstate, svkSecondaryCaptureFormatter);
    
         static svkSecondaryCaptureFormatterProstate* New();  
 

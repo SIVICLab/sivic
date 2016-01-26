@@ -52,22 +52,22 @@ vtkStandardNewMacro(svkXYPlotActor);
 
 //----------------------------------------------
 //----------------------------------------------
-vtkCxxSetObjectMacro(vtkXYPlotActor,TitleTextProperty,vtkTextProperty);
-vtkCxxSetObjectMacro(vtkXYPlotActor,AxisLabelTextProperty,vtkTextProperty);
+//vtkCxxSetObjectMacro(vtkXYPlotActor,TitleTextProperty,vtkTextProperty);
+//vtkCxxSetObjectMacro(vtkXYPlotActor,AxisLabelTextProperty,vtkTextProperty);
 
-class vtkXYPlotActorConnections: public vtkAlgorithm
-{
-public:
-  static vtkXYPlotActorConnections *New();
-  vtkTypeMacro(vtkXYPlotActorConnections,vtkAlgorithm);
-
-  vtkXYPlotActorConnections()
-  {
-    this->SetNumberOfInputPorts( 1 );
-  }
-};
-
-vtkStandardNewMacro(vtkXYPlotActorConnections);
+//class vtkXYPlotActorConnections: public vtkAlgorithm
+//{
+//public:
+  //static vtkXYPlotActorConnections *New();
+  //vtkTypeMacro(vtkXYPlotActorConnections,vtkAlgorithm);
+//
+  //vtkXYPlotActorConnections()
+  //{
+    //this->SetNumberOfInputPorts( 1 );
+  //}
+//};
+//
+//vtkStandardNewMacro(vtkXYPlotActorConnections);
 //----------------------------------------------
 //----------------------------------------------
 
@@ -130,6 +130,7 @@ static inline int vtkXYPlotActorGetComponent(vtkFieldData* field,
  * @param numDS
  * @param numDO
  */
+/*
 void vtkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
                                      double yRange[2], double *lengths,
                                      int numDS, int numDO )
@@ -521,7 +522,7 @@ void vtkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
       }
     }
 }
-
+*/
 
 /*!
  *  Modified to adjust for reversed Axis.
@@ -551,4 +552,10 @@ void svkXYPlotActor::ViewportToPlotCoordinate(vtkViewport *viewport, double &u, 
   v = ((v - p0[1]) / (double)(p2[1] - p0[1]))
     *(this->YComputedRange[1] - this->YComputedRange[0])
     + this->YComputedRange[0];
+}
+
+
+vtkAlgorithm* svkXYPlotActor::GetDataObjectInputConnectionHolder()
+{
+    return vtkAlgorithm::SafeDownCast(this->DataObjectInputConnectionHolder); 
 }

@@ -316,7 +316,7 @@ void svkOverlayViewController::CreateDataVisualization( )
     vtkCubeSource* textBacking = vtkCubeSource::New();
     textBacking->SetBounds(0,1,0,1,0,0);
     vtkPolyDataMapper2D* myPD2DMapper = vtkPolyDataMapper2D::New();
-    myPD2DMapper->SetInput( textBacking->GetOutput() );
+    myPD2DMapper->SetInputData( textBacking->GetOutput() );
    
     vtkActor2D* backingActor = vtkActor2D::New(); 
     backingActor->SetMapper( myPD2DMapper);
@@ -945,10 +945,12 @@ void svkOverlayViewController::ColorWindowLevel( vtkObject* subject, unsigned lo
         return;
     } 
     if (eid == vtkCommand::ResetWindowLevelEvent) {
-        dvController->dataVector[MET]->UpdateInformation();
-        dvController->dataVector[MET]->SetUpdateExtent( 
-        dvController->dataVector[MET]->GetWholeExtent() );
-        dvController->dataVector[MET]->Update();
+        //  vtk6 migration: I'm not sure how to get the information from the object's source algo to update this. 
+        //  comment out for now
+        //dvController->dataVector[MET]->UpdateInformation();
+        //dvController->dataVector[MET]->SetUpdateExtent( 
+        //dvController->dataVector[MET]->GetWholeExtent() );
+        //dvController->dataVector[MET]->Update();
         double *range = dvController->dataVector[MET]->GetScalarRange();
         myView->windowLevelerAxial->GetLookupTable()->SetRange(range[0], range[1]);
         myView->windowLevelerCoronal->GetLookupTable()->SetRange(range[0], range[1]);

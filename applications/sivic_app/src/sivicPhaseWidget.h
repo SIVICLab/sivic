@@ -62,7 +62,7 @@ class sivicPhaseWidget : public sivicKWCompositeWidget
     public:
 
         static sivicPhaseWidget *New();
-        vtkTypeRevisionMacro(sivicPhaseWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicPhaseWidget,sivicKWCompositeWidget);
 
 
     protected:

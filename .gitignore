@@ -52,3 +52,10 @@ applications/cmd_line/src/svk_volume_diff
 applications/cmd_line/src/svk_zscore
 applications/sivic_app/src/SivicKWCallbacksLibInit.cxx
 applications/sivic_app/src/vtkSivicControllerTcl.cxx
+Build
+LocalMake/
+applications/scanner/GE_console/svk/
+nbproject/private/launcher.properties
+stash/
+working/
+

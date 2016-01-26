@@ -59,7 +59,7 @@ class sivicKWCompositeWidget : public vtkKWCompositeWidget
     public:
 
         static sivicKWCompositeWidget *New();
-        vtkTypeRevisionMacro(sivicKWCompositeWidget,vtkKWCompositeWidget);
+        vtkTypeMacro(sivicKWCompositeWidget,vtkKWCompositeWidget);
         virtual void SetSivicController( vtkSivicController* );
         virtual void SetPlotController( svkPlotGridViewController* plotController );
         virtual void SetOverlayController( svkOverlayViewController* overlayController );

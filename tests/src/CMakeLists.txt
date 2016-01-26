@@ -103,11 +103,10 @@ endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.li
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK)
-
-IF (USE_VTK_FILE)
-    INCLUDE(${USE_VTK_FILE})
-ENDIF (USE_VTK_FILE)
+#FIND_PACKAGE(VTK)
+#IF (USE_VTK_FILE)
+#    INCLUDE(${USE_VTK_FILE})
+#ENDIF (USE_VTK_FILE)
 
 FIND_PATH(DCMTK_DIR dctk.h)
 
