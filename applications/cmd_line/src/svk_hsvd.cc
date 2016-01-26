@@ -282,7 +282,7 @@ int main (int argc, char** argv)
     if ( writeFilter ) {
         hsvd->ExportFilterImage(); 
     }
-    hsvd->SetInput( reader->GetOutput() ); 
+    hsvd->SetInputData( reader->GetOutput() ); 
     hsvd->SetModelOrder( modelOrder ); 
     if ( limitToSelectionBox ) {
         hsvd->OnlyFitSpectraInVolumeLocalization(); 
@@ -323,7 +323,7 @@ int main (int argc, char** argv)
 
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( svkMrsImageData::SafeDownCast( reader->GetOutput() ) );
+    writer->SetInputData( svkMrsImageData::SafeDownCast( reader->GetOutput() ) );
 
     // ===============================================  
     //  Set the input command line into the data set 
@@ -348,7 +348,7 @@ int main (int argc, char** argv)
         string filterImageName = outputFileName; 
         filterImageName.append("_filter"); 
         filterWriter->SetFileName( filterImageName.c_str() );
-        filterWriter->SetInput( hsvd->GetFilterImage() ); 
+        filterWriter->SetInputData( hsvd->GetFilterImage() ); 
 
         // ===============================================  
         //  Set the input command line into the data set 

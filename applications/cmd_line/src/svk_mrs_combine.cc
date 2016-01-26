@@ -216,7 +216,7 @@ int main (int argc, char** argv)
     //  Combine coils
     //  ===============================================
     svkMRSCombine* coilCombine = svkMRSCombine::New();
-    coilCombine->SetInput( reader->GetOutput() );
+    coilCombine->SetInputData( reader->GetOutput() );
     coilCombine->SetCombinationDimension( svkMRSCombine::COIL );   
     coilCombine->SetCombinationMethod( combinationType );          
     if ( combinationType == svkMRSCombine::WEIGHTED_ADDITION ) {
@@ -237,7 +237,7 @@ int main (int argc, char** argv)
 
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( coilCombine->GetOutput() );
+    writer->SetInputData( coilCombine->GetOutput() );
     writer->Write();
     writer->Delete();
 

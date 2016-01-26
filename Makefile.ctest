@@ -78,6 +78,8 @@ update_test_cases:
 #
 configure_testing: clean_results 
 	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
+configure_testing_vtk6: clean_results 
+	(${RM_CACHE} ${CONFIG_BASE_VTK6} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 #
 # 	Configure for debug, but no testing
@@ -138,6 +140,8 @@ experimental: configure_testing
 
 #   Does not perform memory checking
 experimental_fast: configure_testing
+	${XVFB_RUN} ${CMAKE_DIR}/ctest -D Experimental --output-log ${OUTPUT_LOG} 
+experimental_fast_vtk6: configure_testing_vtk6
 	${XVFB_RUN} ${CMAKE_DIR}/ctest -D Experimental --output-log ${OUTPUT_LOG} 
 
 nightly: configure_testing

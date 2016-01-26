@@ -425,7 +425,7 @@ int main (int argc, char** argv)
     // ===============================================  
     vtkSmartPointer< svkCorrectDCOffset > dc = vtkSmartPointer< svkCorrectDCOffset >::New(); 
     if ( dcCorrection ) {
-        dc->SetInput( reader->GetOutput() ); 
+        dc->SetInputData( reader->GetOutput() ); 
         dc->Update(); 
 
         //  if this step is included, then reset the current algo to be 
@@ -448,7 +448,7 @@ int main (int argc, char** argv)
 
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( svkMrsImageData::SafeDownCast( currentImage ) );
+    writer->SetInputData( svkMrsImageData::SafeDownCast( currentImage ) );
     if ( oneTimePtPerFile ) { 
         svkDdfVolumeWriter::SafeDownCast( writer )->SetOneTimePointsPerFile();
     }

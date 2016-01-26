@@ -216,7 +216,7 @@ int main (int argc, char** argv)
 
     //  Reorder/sample EPSI data: 
     svkEPSIReorder* reorder = svkEPSIReorder::New();
-    reorder->SetInput( reader->GetOutput() ); 
+    reorder->SetInputData( reader->GetOutput() ); 
     reorder->SetEPSIType( type );
     reorder->SetNumSamplesToSkip( skip );
     reorder->SetNumEPSILobes( numLobes );
@@ -240,7 +240,7 @@ int main (int argc, char** argv)
     }
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( reorder->GetOutput() );
+    writer->SetInputData( reorder->GetOutput() );
 
     // ===============================================  
     //  Set the input command line into the data set 
