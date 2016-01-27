@@ -258,11 +258,11 @@ SET(SVK_LIBS
 
 SET(SVK_VIZ_LIBS
     svkviz
-    vtkRendering
-    vtkVolumeRendering
-    vtkGraphics
-    vtkHybrid
-    vtkInfovis
+    #vtkRendering
+    #vtkVolumeRendering
+    #vtkGraphics
+    #vtkHybrid
+    #vtkInfovis
 )
 
 
