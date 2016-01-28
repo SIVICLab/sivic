@@ -314,7 +314,15 @@ TARGET_LINK_LIBRARIES(
     ${NETAPI}
     ${PLATFORM_LIBS}
     ${ITK_LIBS_PRE}
-
+    GLU
+    GL
+    SM
+    ICE
+    X11
+    Xext
+    Xt
+    Xss 
+    Xft
 )
 
 IF (NOT WIN32)
