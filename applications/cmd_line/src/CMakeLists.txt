@@ -256,10 +256,10 @@ SET(SVK_LIBS
 )
 
 SET(SVK_INFOVIS_LIBS
-    libvtkInfovisCore-6.3.a            
-    //libvtkInfovisLayoutTCL-6.3.a 
-    //libvtkInfovisCoreTCL-6.3.a         
-    libvtkInfovisLayout-6.3.a         
+    #vtkInfovisCore-6.3.a            
+    #libvtkInfovisLayoutTCL-6.3.a 
+    #libvtkInfovisCoreTCL-6.3.a         
+    #vtkInfovisLayout-6.3.a         
 )
 
 SET(SVK_VIZ_LIBS
@@ -624,7 +624,7 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     svk_image_stats
 	${SVK_LIBS}
-    $(SVK_INFOVIS_LIBS)
+    ${SVK_INFOVIS_LIBS}
 )
 
 ADD_EXECUTABLE(
@@ -634,7 +634,7 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     svk_image_pipeline
 	${SVK_LIBS}
-    $(SVK_INFOVIS_LIBS)
+    ${SVK_INFOVIS_LIBS}
 )
 
 ADD_EXECUTABLE(
