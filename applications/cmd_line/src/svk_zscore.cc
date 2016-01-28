@@ -255,7 +255,7 @@ int main (int argc, char** argv)
 
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( zscore->GetOutput() );
+    writer->SetInputData( zscore->GetOutput() );
     writer->Write();
     writer->Delete();
 

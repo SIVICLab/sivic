@@ -133,7 +133,7 @@ int main (int argc, char** argv)
     svkPhaseSpec* phaser = svkPhaseSpec::New();
     svkMrsImageData* mrsData = svkMrsImageData::New();
     mrsData->DeepCopy( svkMrsImageData::SafeDownCast(reader->GetOutput()) );
-    phaser->SetInput( mrsData );
+    phaser->SetInputData( mrsData );
     phaser->SetChannel( 0 );
 
     phaser->SetLinearPhasePivot( 512 );
@@ -168,7 +168,7 @@ int main (int argc, char** argv)
     }
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( mrsData );
+    writer->SetInputData( mrsData );
 
     // ===============================================  
     //  Write data to file: 

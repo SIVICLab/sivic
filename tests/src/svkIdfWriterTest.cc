@@ -80,7 +80,7 @@ int main (int argc, char** argv)
                              );
     writer->SetFileName("idf_out" );
 
-    writer->SetInput( reader->GetOutput() );
+    writer->SetInputData( reader->GetOutput() );
     writer->Write();
 
     writer->Delete(); 

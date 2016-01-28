@@ -191,10 +191,10 @@ void MemoryTest()
     svkImageData* secondOverlay = model->LoadFile( globalArgs.secondOverlayName );
     secondOverlay->Register(NULL);
 
-    firstSpectra->Update();
-    secondSpectra->Update();
-    firstOverlay->Update();
-    secondOverlay->Update();
+    //firstSpectra->Update();
+    //secondSpectra->Update();
+    //firstOverlay->Update();
+    //secondOverlay->Update();
 
     vtkRenderWindow* window = vtkRenderWindow::New(); 
     vtkRenderWindowInteractor* rwi = window->MakeRenderWindowInteractor();
@@ -277,7 +277,7 @@ void RenderingTest()
 
     svkImageData* firstSpectra = model->LoadFile( globalArgs.firstSpectraName );
     firstSpectra->Register(NULL);
-    firstSpectra->Update();
+    //firstSpectra->Update();
     svkImageData* firstOverlay = NULL;
     if( globalArgs.firstOverlayName != NULL ) {
         string overlayRoot = string( globalArgs.firstOverlayName );
@@ -286,7 +286,7 @@ void RenderingTest()
         rootName += overlayRoot.substr(path+1,ext-path-1);
         firstOverlay =  model->LoadFile( globalArgs.firstOverlayName );
         firstOverlay->Register(NULL);
-        firstOverlay->Update();
+        //firstOverlay->Update();
     }
 
     vtkRenderWindow* window = vtkRenderWindow::New(); 
@@ -357,7 +357,7 @@ void OrientationTest( )
 
     svkImageData* firstSpectra = model->LoadFile( globalArgs.firstSpectraName );
     firstSpectra->Register(NULL);
-    firstSpectra->Update();
+    //firstSpectra->Update();
     svkImageData* firstOverlay = NULL;
     if( globalArgs.firstOverlayName != NULL ) {
         string overlayRoot = string( globalArgs.firstOverlayName );
@@ -366,7 +366,7 @@ void OrientationTest( )
         rootName += overlayRoot.substr(path+1,ext-path-1);
         firstOverlay =  model->LoadFile( globalArgs.firstOverlayName );
         firstOverlay->Register(NULL);
-        firstOverlay->Update();
+        //firstOverlay->Update();
     }
 
     vtkRenderWindow* window = vtkRenderWindow::New(); 

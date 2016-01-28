@@ -280,12 +280,12 @@ if ( inputFileName3.length() == 0 ) {
     kplWriter->SetFileName( kplFile.c_str() );
     ktransWriter->SetFileName( ktransFile.c_str() );
 
-    pyrWriter->SetInput( dynamics->GetOutput(0) );      // port 0 is pyr  fitted values
-    lacWriter->SetInput( dynamics->GetOutput(1) );      // port 1 is lac  fitted values
-    ureaWriter->SetInput( dynamics->GetOutput(2) );     // port 2 is urea fitted values
-    t1allWriter->SetInput( dynamics->GetOutput(3) );    // port 3 is T1all map 
-    kplWriter->SetInput( dynamics->GetOutput(4) );      // port 4 is Kpl map 
-    ktransWriter->SetInput( dynamics->GetOutput(5) );   // port 5 is Ktrans map 
+    pyrWriter->SetInputData( dynamics->GetOutput(0) );      // port 0 is pyr  fitted values
+    lacWriter->SetInputData( dynamics->GetOutput(1) );      // port 1 is lac  fitted values
+    ureaWriter->SetInputData( dynamics->GetOutput(2) );     // port 2 is urea fitted values
+    t1allWriter->SetInputData( dynamics->GetOutput(3) );    // port 3 is T1all map 
+    kplWriter->SetInputData( dynamics->GetOutput(4) );      // port 4 is Kpl map 
+    ktransWriter->SetInputData( dynamics->GetOutput(5) );   // port 5 is Ktrans map 
 
     pyrWriter->Write();
     lacWriter->Write();

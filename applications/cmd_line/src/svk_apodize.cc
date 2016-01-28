@@ -208,7 +208,7 @@ int main (int argc, char** argv)
     }
 
     svkMrsApodizationFilter* apodizeFilter = svkMrsApodizationFilter::New();
-    apodizeFilter->SetInput( reader->GetOutput() );
+    apodizeFilter->SetInputData( reader->GetOutput() );
     apodizeFilter->SetWindow( window );
     apodizeFilter->Update();
 
@@ -226,7 +226,7 @@ int main (int argc, char** argv)
 
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( apodizeFilter->GetOutput() );
+    writer->SetInputData( apodizeFilter->GetOutput() );
     writer->Write();
     writer->Delete();
 

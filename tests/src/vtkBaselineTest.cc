@@ -61,7 +61,7 @@ int main ( int argc, char** argv )
     cone->SetResolution( 10 );
   
     vtkPolyDataMapper *coneMapper = vtkPolyDataMapper::New();
-    coneMapper->SetInput( cone->GetOutput() );
+    coneMapper->SetInputData( cone->GetOutput() );
 
     vtkActor *coneActor = vtkActor::New();
     coneActor->SetMapper( coneMapper );

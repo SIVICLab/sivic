@@ -203,7 +203,6 @@ ENDIF(WIN32)
 if ( BUILD_ITK )
     SET( ITK_LIBS 
         svkNumerical 
-        #cminpack 
         ITKDICOMParser
     )
     SET( ITK_LIBS_PRE
@@ -254,6 +253,13 @@ SET(SVK_LIBS
     ofstd 
     ${PLATFORM_LIBS}
     ${ITK_LIBS_PRE}
+)
+
+SET(SVK_INFOVIS_LIBS
+    libvtkInfovisCore-6.3.a            
+    //libvtkInfovisLayoutTCL-6.3.a 
+    //libvtkInfovisCoreTCL-6.3.a         
+    libvtkInfovisLayout-6.3.a         
 )
 
 SET(SVK_VIZ_LIBS
@@ -618,7 +624,7 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     svk_image_stats
 	${SVK_LIBS}
-    vtkInfovis
+    $(SVK_INFOVIS_LIBS)
 )
 
 ADD_EXECUTABLE(
@@ -628,7 +634,7 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     svk_image_pipeline
 	${SVK_LIBS}
-    vtkInfovis
+    $(SVK_INFOVIS_LIBS)
 )
 
 ADD_EXECUTABLE(
