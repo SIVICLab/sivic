@@ -112,7 +112,6 @@ void svkMrsImageFFT::ConvertArrayToImageComplex( vtkDataArray* spectrum, vtkImag
 int svkMrsImageFFT::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    this->UpdateInformation();
     int* wholeExtent = this->GetOutputInformation(0)->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
     
     bool useWholeExtent = false; 
@@ -265,6 +264,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                     && kZeroShiftWindow[2] != 0 ) {
                     preKZeroShifter->SetShiftWindow( kZeroShiftWindow );
                     preKZeroShifter->SetInputData( currentData );
+                    preKZeroShifter->Update( );
                     currentData = preKZeroShifter->GetOutput();
                 }
 
@@ -275,6 +275,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                     && this->mode == REVERSE ) {
                     voxelShifter->SetShiftWindow( this->voxelShift );
                     voxelShifter->SetInputData( currentData );
+                    voxelShifter->Update( );
                     currentData = voxelShifter->GetOutput();
                 }
 
@@ -282,16 +283,19 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                 if( this->preCorrectCenter ) {
                     preIfc->SetReverseCenter( true );
                     preIfc->SetInputData(currentData);
+                    preIfc->Update();
                     currentData = preIfc->GetOutput();
                 }
 
                 // Do the Fourier Transform
                 fourierFilter->SetInputData(currentData);
                 currentData = fourierFilter->GetOutput();
+                fourierFilter->Update();
 
                 // And correct the center....
                 if( this->postCorrectCenter ) {
                     postIfc->SetInputData(currentData);
+                    postIfc->Update();
                     currentData = postIfc->GetOutput();
                 }
 
@@ -301,6 +305,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                     && kZeroShiftWindow[2] != 0 ) {
                     postKZeroShifter->SetShiftWindow( kZeroShiftWindow );
                     postKZeroShifter->SetInputData( currentData );
+                    postKZeroShifter->Update( );
                     currentData = postKZeroShifter->GetOutput();
                 }
 
@@ -311,15 +316,14 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                     && this->mode == FORWARD ) {
                     voxelShifter->SetShiftWindow( this->voxelShift );
                     voxelShifter->SetInputData( currentData );
+                    voxelShifter->Update( );
                     currentData = voxelShifter->GetOutput();
                 }
 
-                fourierFilter->Update(); 
                 data->SetImage( currentData, point, timePt, channel );
             }
         }
     }
-    cout << endl;
     if( preIfc != NULL ) {
         preIfc->Delete(); 
         preIfc = NULL; 
@@ -360,7 +364,6 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->Update();
     return 1; 
 }
 

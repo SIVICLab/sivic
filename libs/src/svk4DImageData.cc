@@ -366,7 +366,7 @@ void  svk4DImageData::GetImage(  svkImageData* image,
                     1
                 );
 	        }
-	        //image->AllocateScalars();
+	        image->AllocateScalars(vtkDataType, numComponents);
 			image->CopyDcos( this );
 			//image->GetIncrements();
 
@@ -379,6 +379,7 @@ void  svk4DImageData::GetImage(  svkImageData* image,
 			} else {
 				pixelData->SetNumberOfComponents( 1 );
 			}
+            
 
 			int numVoxels = this->Extent[5] * this->Extent[3] * this->Extent[1];
 			pixelData->SetNumberOfTuples( numVoxels );
