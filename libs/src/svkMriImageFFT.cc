@@ -143,7 +143,6 @@ int svkMriImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
         this->UpdateHeader( data->GetDcmHeader() );
         data->SyncVTKImageDataToDcmHeader();
         data->Modified();
-        this->Update();
     } else {
         this->UpdateHeader( this->GetOutput()->GetDcmHeader() );
         this->GetOutput()->SyncVTKImageDataToDcmHeader();

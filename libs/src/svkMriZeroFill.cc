@@ -334,7 +334,6 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
         inputData->DeepCopy( targetData );
         inputData->SyncVTKImageDataToDcmHeader();
         inputData->Modified();
-        this->Update();
     } else {
         this->GetOutput()->DeepCopy( targetData );
         this->GetOutput()->SyncVTKImageDataToDcmHeader();
