@@ -146,7 +146,6 @@ void svkImageFourierCenter::ThreadedExecute(vtkImageData *inData, vtkImageData *
     numberOfComponents = outData->GetNumberOfScalarComponents();
     outPtr0 = static_cast<double *>(outData->GetScalarPointerForExtent(outExt));
 
-    this->UpdateInformation();
     int* wholeExtent = this->GetOutputInformation(0)->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
 
     // permute to make the filtered axis come first
