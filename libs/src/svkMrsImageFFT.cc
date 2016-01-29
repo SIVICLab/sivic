@@ -529,7 +529,6 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->Update();
 
     return 1; 
 } 
