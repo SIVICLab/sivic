@@ -227,6 +227,7 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     }
     translateExtent->SetExtentTranslation( extentTranslation ); 
     translateExtent->SetInputData( inputData );
+    translateExtent->Update(); 
    
     // Now we can use the vtk pad algorithm 
     vtkImageConstantPad* pad = NULL;

@@ -88,7 +88,7 @@ configure_debug: clean_results
 	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_DEBUG} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 configure_debug_vtk6: clean_results 
-	(${RM_CACHE} ${CONFIG_BASE_VTK6} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_DEBUG} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
+	(${RM_CACHE} ${CONFIG_BASE_VTK6} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_DEBUG} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 #
 # 	configure for sourceforge release (not OsiriX)
