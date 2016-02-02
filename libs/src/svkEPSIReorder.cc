@@ -272,7 +272,7 @@ int svkEPSIReorder::RequestData( vtkInformation* request, vtkInformationVector**
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->Update();
+    //this->Update();
 
     return 1; 
 } 

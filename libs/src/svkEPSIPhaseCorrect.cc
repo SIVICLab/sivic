@@ -225,7 +225,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->Update();
+    //this->Update();
 
     for (int i = 0; i < this->numEPSIkRead; i++ ) {
         delete [] epsiPhaseArray[i]; 
