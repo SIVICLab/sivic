@@ -417,7 +417,9 @@ void OrientationTest( )
     
     plotController->SetWindowLevelRange( minValue, maxValue, 1 );
     cout << "Setting range to: " << minValue << " " << maxValue << endl;
-    plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
+    if( firstOverlay != NULL ) {
+        plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
+    }
 
     int firstSlice = firstSpectra->GetFirstSlice(svkDcmHeader::AXIAL);
     int lastSlice = firstSpectra->GetLastSlice(svkDcmHeader::AXIAL);
