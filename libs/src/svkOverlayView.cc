@@ -1704,6 +1704,7 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
             string resultInfo = this->GetDataCompatibility( reslicer->GetOutput(), targetIndex );
             if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
                 this->SetInputPostReslice( reslicer->GetOutput(), targetIndex );
+                input = reslicer->GetOutput();
                 didReslice = true;
             }
             reslicer->Delete();
@@ -1711,7 +1712,7 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
 
         //================================================================================
        
-        if( target->IsA("svk4DImageData") ) {
+        if( input != NULL && input->IsA("svkMriImageData") && target->IsA("svk4DImageData") ) {
             double targetOrigin[3]; 
             float imageToSpecSliceThickness;
             if ( this->OriginShiftRequired(input, target, targetOrigin) == true ) {

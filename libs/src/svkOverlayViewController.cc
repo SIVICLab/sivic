@@ -282,6 +282,7 @@ void svkOverlayViewController::SetInput( svkImageData* data, int index)
     } else if( index == MR4D && data != NULL ) {
         if( dataVector[MR4D] != NULL ) {
             dataVector[MR4D]->Delete();
+            dataVector[MR4D] = NULL;
         }
         data->Register( this );
         dataVector[MR4D] = data;
