@@ -94,7 +94,7 @@ int main (int argc, char** argv)
     int    operation     = 0;  
     float  scalingFactor = 1;
     bool   verbose       = false;
-    int    outputType;
+    int    outputType = 0;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
 
