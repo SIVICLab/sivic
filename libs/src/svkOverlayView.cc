@@ -341,7 +341,7 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
     }
     
     // We need to execute these before resolving the state
-    imageViewer->SetInput( dataVector[MRI] );
+    imageViewer->SetInputData( dataVector[MRI] );
     imageViewer->SetSlice( slice );
     
     if( resetViewState ) {

@@ -290,9 +290,10 @@ void svkImageViewer2::InstallPipeline()
      * is not virtual, so we need to cast it to get our GetOutput method which copies
      * the correct dcos on output.
      */
-    this->axialImageActor->SetInputData(this->axialWinLevel->GetOutput());
-    this->coronalImageActor->SetInputData(this->coronalWinLevel->GetOutput());
-    this->sagittalImageActor->SetInputData(this->sagittalWinLevel->GetOutput());
+    this->axialImageActor->GetMapper()->SetInputConnection(this->axialWinLevel->GetOutputPort());
+    this->coronalImageActor->GetMapper()->SetInputConnection(this->coronalWinLevel->GetOutputPort());
+    this->sagittalImageActor->GetMapper()->SetInputConnection(this->sagittalWinLevel->GetOutputPort());
+
     }
 }
 
@@ -300,7 +301,7 @@ void svkImageViewer2::InstallPipeline()
 /*!
  * Sets the input. Was overriden to allow the use of svkImageData object.
  */
-void svkImageViewer2::SetInput(svkImageData *in)
+void svkImageViewer2::SetInputData(svkImageData *in)
 {
     if( this->data != NULL ) {
         this->data->Delete();

@@ -48,6 +48,7 @@
 #define SVK_IMAGE_VIEWER_2_H
 
 #include <vtkImageViewer2.h>
+#include <vtkImageMapper3D.h>
 #include <vtkTransform.h>
 #include <vtkImageActor.h>
 #include <vtkRenderWindow.h>
@@ -77,7 +78,7 @@ class svkImageViewer2 : public vtkImageViewer2
    
         static svkImageViewer2*             New();  
         
-        void                                SetInput( svkImageData *in );
+        void                                SetInputData( svkImageData *in );
         virtual void                        SetSlice( int slice );
         virtual void                        SetSlice( int slice, svkDcmHeader::Orientation sliceOrientation );
         virtual void                        SetActiveVolume( int volume );
