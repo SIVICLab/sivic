@@ -175,7 +175,7 @@ void svkDetailedPlotDirector::AddInput( vtkDataArray* array, int component, vtkD
         dataObject->Delete();
         this->xyPlotActor->SetXValuesToValue();
         //int numPlots = this->xyPlotActor->GetDataObjectInputList()->GetNumberOfItems();
-        int numPlots = this->xyPlotActor->GetDataObjectInputConnectionHolder()->GetNumberOfInputPorts(); 
+        int numPlots = this->xyPlotActor->GetDataObjectInputConnectionHolder()->GetNumberOfInputConnections(0);
         this->xyPlotActor->GetLegendActor()->SetNumberOfEntries(numPlots);
         if( sourceToObserve != NULL ) {
             sourceToObserve->AddObserver(vtkCommand::ModifiedEvent, dataModifiedCB);
@@ -192,6 +192,7 @@ void svkDetailedPlotDirector::AddInput( vtkDataArray* array, int component, vtkD
         // We need to call Modified on the Legend text to get around a VTK bug.
         // Without this the font family goes back to default for added inputs
         this->xyPlotActor->GetLegendActor()->GetEntryTextProperty()->Modified();
+        this->glyphGenerator->Update();
         this->xyPlotActor->GetLegendActor()->SetEntrySymbol(numPlots-1, this->glyphGenerator->GetOutput());
     }
 
@@ -207,10 +208,10 @@ void svkDetailedPlotDirector::RegenerateMagnitudeArrays()
     //vtkDataObjectCollection* allData = this->xyPlotActor->GetDataObjectInputList();
     vtkAlgorithm* allDataAlgo = this->xyPlotActor->GetDataObjectInputConnectionHolder();
 
-    int numPlots = allDataAlgo->GetNumberOfInputPorts();
+    int numPlots = allDataAlgo->GetNumberOfInputConnections(0);
     for( int i = 0; i < numPlots; i++ ) {
         //this->GenerateMagnitudeArray( allData->GetItem(i)->GetFieldData()->GetArray(1), allData->GetItem(i)->GetFieldData()->GetArray(2) );
-        this->GenerateMagnitudeArray( allDataAlgo->GetInputDataObject(i, 0)->GetFieldData()->GetArray(1), allDataAlgo->GetInputDataObject(i,0)->GetFieldData()->GetArray(2) );
+        this->GenerateMagnitudeArray( allDataAlgo->GetInputDataObject(0, i)->GetFieldData()->GetArray(1), allDataAlgo->GetInputDataObject(0,i)->GetFieldData()->GetArray(2) );
     }
 }
 
@@ -618,7 +619,7 @@ void svkDetailedPlotDirector::UpdateCursorLocation( vtkObject* subject, unsigned
             xValue << u ;
             director->GetRuler()->SetTitle(xValue.str().c_str() );
             director->GetRuler()->SetVisibility( true );
-            int numPlots = director->GetPlotActor()->GetDataObjectInputConnectionHolder()->GetNumberOfInputPorts(); 
+            int numPlots = director->GetPlotActor()->GetDataObjectInputConnectionHolder()->GetNumberOfInputConnections(0);
             for( int i = 0; i < numPlots; i++ ) {
                 double plotValue = director->GetYValueFromXValue( i, u);
                 std::stringstream yValue;

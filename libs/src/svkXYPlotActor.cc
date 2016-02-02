@@ -1884,6 +1884,7 @@ void svkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
                                      int numDS, int numDO )
 {
   double xyz[3]; xyz[2] = 0.;
+  double xyzTransform[3];
   int i, numLinePts, doNum, num;
   vtkIdType numPts, ptId, id;
   double length, x[3], xPrev[3];
@@ -2034,7 +2035,9 @@ void svkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
               ( xyz[0]-xRange[0] )/( xRange[1]-xRange[0] )*( pos2[0]-pos[0] );
             xyz[1] = pos[1] +
               ( xyz[1]-yRange[0] )/( yRange[1]-yRange[0] )*( pos2[1]-pos[1] );
-            id = pts->InsertNextPoint( xyz );
+            //id = pts->InsertNextPoint( xyz );
+            this->TransformPoint(pos, pos2, xyz, xyzTransform);
+            id = pts->InsertNextPoint(xyzTransform);
             lines->InsertCellPoint( id );
             }
           }
@@ -2052,7 +2055,9 @@ void svkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
             ( xyz[0]-xRange[0] )/( xRange[1]-xRange[0] )*( pos2[0]-pos[0] );
           xyz[1] = pos[1] +
             ( xyz[1]-yRange[0] )/( yRange[1]-yRange[0] )*( pos2[1]-pos[1] );
-          id = pts->InsertNextPoint( xyz );
+          //id = pts->InsertNextPoint( xyz );
+          this->TransformPoint(pos, pos2, xyz, xyzTransform);
+          id = pts->InsertNextPoint(xyzTransform);
           lines->InsertCellPoint( id );
           }
         }//for all input points
@@ -2187,7 +2192,9 @@ void svkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
               ( xyz[0]-xRange[0] )/( xRange[1]-xRange[0] )*( pos2[0]-pos[0] );
             xyz[1] = pos[1] +
               ( xyz[1]-yRange[0] )/( yRange[1]-yRange[0] )*( pos2[1]-pos[1] );
-            id = pts->InsertNextPoint( xyz );
+            //id = pts->InsertNextPoint( xyz );
+            this->TransformPoint(pos, pos2, xyz, xyzTransform);
+            id = pts->InsertNextPoint(xyzTransform);
             lines->InsertCellPoint( id );
             }
           }
@@ -2204,7 +2211,9 @@ void svkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
             ( xyz[0]-xRange[0] )/( xRange[1]-xRange[0] )*( pos2[0]-pos[0] );
           xyz[1] = pos[1] +
             ( xyz[1]-yRange[0] )/( yRange[1]-yRange[0] )*( pos2[1]-pos[1] );
-          id = pts->InsertNextPoint( xyz );
+          //id = pts->InsertNextPoint( xyz );
+          this->TransformPoint(pos, pos2, xyz, xyzTransform);
+          id = pts->InsertNextPoint(xyzTransform);
           lines->InsertCellPoint( id );
           }
         }//for all input points
@@ -2392,18 +2401,24 @@ void svkXYPlotActor::PlaceAxes( vtkViewport *viewport, int *size,
 //----------------------------------------------------------------------------
 void svkXYPlotActor::ViewportToPlotCoordinate( vtkViewport *viewport, double &u, double &v )
 {
-  int *p0, *p1, *p2;
+    int *p0, *p1, *p2;
 
-  // XAxis, YAxis are in viewport coordinates already
-  p0 = this->XAxis->GetPositionCoordinate()->GetComputedViewportValue( viewport );
-  p1 = this->XAxis->GetPosition2Coordinate()->GetComputedViewportValue( viewport );
-  p2 = this->YAxis->GetPositionCoordinate()->GetComputedViewportValue( viewport );
+    // XAxis, YAxis are in viewport coordinates already
+    if( this->ReverseXAxis == false ) {
+        p0 = this->XAxis->GetPositionCoordinate()->GetComputedViewportValue(viewport);
+        p1 = this->XAxis->GetPosition2Coordinate()->GetComputedViewportValue(viewport);
+        p2 = this->YAxis->GetPositionCoordinate()->GetComputedViewportValue(viewport);
+    } else {
+        p0 = this->XAxis->GetPosition2Coordinate()->GetComputedViewportValue(viewport);
+        p1 = this->XAxis->GetPositionCoordinate()->GetComputedViewportValue(viewport);
+        p2 = this->YAxis->GetPositionCoordinate()->GetComputedViewportValue(viewport);
+    }
 
-  u = ( ( u - p0[0] ) / ( double )( p1[0] - p0[0] ) )
-    *( this->XComputedRange[1] - this->XComputedRange[0] )
+    u = ((u - p0[0]) / (double)(p1[0] - p0[0]))
+    *(this->XComputedRange[1] - this->XComputedRange[0])
     + this->XComputedRange[0];
-  v = ( ( v - p0[1] ) / ( double )( p2[1] - p0[1] ) )
-    *( this->YComputedRange[1] - this->YComputedRange[0] )
+    v = ((v - p0[1]) / (double)(p2[1] - p0[1]))
+    *(this->YComputedRange[1] - this->YComputedRange[0])
     + this->YComputedRange[0];
 }
 
