@@ -93,8 +93,15 @@ svkPlotGridView::svkPlotGridView()
     this->SetProp( svkPlotGridView::VOL_SELECTION, NULL );
     this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrids[0]->GetPlotGridActor()  );
 
+    this->detailedPlotDirector = svkDetailedPlotDirector::New();
+    this->SetProp( svkPlotGridView::DETAILED_PLOT, this->detailedPlotDirector->GetPlotActor());
+    this->TurnPropOn( svkPlotGridView::DETAILED_PLOT );
+    this->SetProp( svkPlotGridView::RULER, this->detailedPlotDirector->GetRuler());
+    this->TurnPropOn( svkPlotGridView::RULER );
+
     svkOrientedImageActor* overlayActor = svkOrientedImageActor::New();
     this->SetProp( svkPlotGridView::OVERLAY_IMAGE, overlayActor );
+    this->TurnPropOff( svkPlotGridView::OVERLAY_IMAGE );
 	vtkActor2D* metActor = vtkActor2D::New();
 	this->SetProp( svkPlotGridView::OVERLAY_TEXT, metActor );
 	metActor->Delete();
@@ -102,11 +109,6 @@ svkPlotGridView::svkPlotGridView()
 
     overlayActor->Delete();
 
-    this->detailedPlotDirector = svkDetailedPlotDirector::New();
-    this->SetProp( svkPlotGridView::DETAILED_PLOT, this->detailedPlotDirector->GetPlotActor());
-    this->TurnPropOn( svkPlotGridView::DETAILED_PLOT );
-    this->SetProp( svkPlotGridView::RULER, this->detailedPlotDirector->GetRuler());
-    this->TurnPropOn( svkPlotGridView::RULER );
 
     this->colorTransfer = NULL;
     this->tlcBrc[0] = -1; 
