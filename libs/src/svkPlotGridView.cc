@@ -1610,9 +1610,11 @@ void svkPlotGridView::GeneratePlotGridActor( )
     svk4DImageData::SafeDownCast( this->dataVector[MR4D] )->GetPolyDataGrid( grid );
     vtkCleanPolyData* cleaner = vtkCleanPolyData::New();
     cleaner->SetInputData( grid );
+    cleaner->Update();
     grid->Delete();
 
     entireGridMapper->SetInputData( cleaner->GetOutput() );
+    entireGridMapper->Update();
     cleaner->Delete();
     vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID))->SetMapper( entireGridMapper );
     entireGridMapper->Delete();
