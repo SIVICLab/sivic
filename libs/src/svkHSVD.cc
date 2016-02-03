@@ -272,7 +272,6 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->Update();
 
     delete [] this->selectionBoxMask; 
 
