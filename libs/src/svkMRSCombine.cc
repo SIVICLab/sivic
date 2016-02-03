@@ -120,7 +120,6 @@ int svkMRSCombine::RequestData( vtkInformation* request, vtkInformationVector** 
     //  Trigger observer update via modified event:
     this->GetOutput()->GetProvenance()->AddAlgorithm( this->GetClassName() );
     this->GetInput()->Modified();
-    this->Update();
     
     return 1; 
 
