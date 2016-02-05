@@ -972,7 +972,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
 
         svkImageClip* metTextClipper = svkImageClip::New();
         metTextClipper->SetInputData( this->dataVector[MET] );
-        metMapper->SetInput( metTextClipper->GetOutput() );
+        metMapper->SetInputConnection( metTextClipper->GetOutputPort());
         metMapper->SetLabelModeToLabelScalars();
         metMapper->SetLabeledComponent(0);
         metMapper->GetLabelTextProperty()->ShadowOff();

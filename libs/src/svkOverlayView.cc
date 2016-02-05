@@ -1428,9 +1428,9 @@ void svkOverlayView::SetupOverlay()
                                     )->GetLabelTextProperty()->ItalicOff();
 
     vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
-                                    )->SetPosition(0.02,0.27);
+                                    )->SetPosition(0.03,0.23725);
     vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
-                                    )->SetPosition2(0.15,0.8);
+                                    )->SetPosition2(0.145,0.73)
 
     if( !this->GetRenderer( svkOverlayView::PRIMARY
                            )->HasViewProp( this->GetProp( svkOverlayView::COLOR_BAR) ) ) {
