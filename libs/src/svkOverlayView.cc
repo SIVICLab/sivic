@@ -1430,7 +1430,7 @@ void svkOverlayView::SetupOverlay()
     vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
                                     )->SetPosition(0.03,0.23725);
     vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
-                                    )->SetPosition2(0.145,0.73)
+                                    )->SetPosition2(0.145,0.73);
 
     if( !this->GetRenderer( svkOverlayView::PRIMARY
                            )->HasViewProp( this->GetProp( svkOverlayView::COLOR_BAR) ) ) {
