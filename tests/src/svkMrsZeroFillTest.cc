@@ -62,7 +62,7 @@ int main (int argc, char** argv)
     string fname(argv[1]);
     string fnameOut(argv[2]);
 
-    //  Combine coils using straight addition 
+    //  Double spectral point count and change spatial resolution
     svkMrsZeroFill* zf = svkMrsZeroFill::New();
     zf->SetNumberOfSpecPointsToDouble( ); 
     zf->SetOutputWholeExtent(0, 12, 0, 10, 0, 11 );
@@ -73,7 +73,7 @@ int main (int argc, char** argv)
     zf->Delete();
     zf = NULL;
 
-    //  Combine coils using straight addition 
+    //  Spec Points to next power of 2, no change in spatial
     zf = svkMrsZeroFill::New();
     zf->SetNumberOfSpecPointsToNextPower2( ); 
 
@@ -84,7 +84,7 @@ int main (int argc, char** argv)
     zf->Delete();
     zf = NULL;
 
-    //  Combine coils using straight addition 
+    //  change spatial only
     zf = svkMrsZeroFill::New();
     zf->SetOutputWholeExtent(0, 20, 0, 20, 0, 20 );
 
