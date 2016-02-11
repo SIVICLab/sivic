@@ -200,7 +200,8 @@ svkImageReaderFactory::~svkImageReaderFactory()
 void svkImageReaderFactory::QuickParse()
 {
     this->quickParse = true; 
-    this->gePFileReader->OnlyParseHeader(); 
+    this->gePFileReader->OnlyReadHeader(true); 
+    //this->gePFileReader->OnlyReadOneInputFile(); 
 }
 
 
@@ -219,4 +220,53 @@ svkImageReader2* svkImageReaderFactory::CreateImageReader2(const char* path)
         }
     }
     return ret;
+}
+
+
+/*!
+ *
+ */
+svkImageReader2* svkImageReaderFactory::CreateImageReader2( svkImageReader2::ReaderType readerType)
+{
+
+    if ( readerType == svkImageReader2::DICOM_MRS) {
+        return svkDcmMrsVolumeReader::New(); 
+    } else if ( readerType == svkImageReader2::DICOM_MRI) {
+        return svkDcmMriVolumeReader::New(); 
+    } else if ( readerType == svkImageReader2::DICOM_ENHANCED_MRI) {
+        return svkDcmEnhancedVolumeReader::New(); 
+    } else if ( readerType == svkImageReader2::DICOM_SEGMENTATION) {
+        return svkDcmSegmentationVolumeReader::New(); 
+    } else if ( readerType == svkImageReader2::DICOM_RAW) {
+        return svkDcmRawDataReader::New(); 
+    } else if ( readerType == svkImageReader2::SIEMENS_RDA) {
+        return svkSiemensRdaReader::New(); 
+    } else if ( readerType == svkImageReader2::VARIAN_FID) {
+        return svkVarianFidReader::New(); 
+    } else if ( readerType == svkImageReader2::VARIAN_FDF) {
+        return svkFdfVolumeReader::New(); 
+    } else if ( readerType == svkImageReader2::GE_PFILE) {
+        return svkGEPFileReader::New(); 
+    } else if ( readerType == svkImageReader2::GE_SDBM) {
+        return svkSdbmVolumeReader::New(); 
+    } else if ( readerType == svkImageReader2::GE_POSTAGE_STAMP) {
+        return svkGEPostageStampReader::New(); 
+    } else if ( readerType == svkImageReader2::GE_SIGNA_LX2) {
+        return svkGESignaLX2Reader::New(); 
+    } else if ( readerType == svkImageReader2::GE_SIGNA_5X) {
+        return svkGESigna5XReader::New(); 
+    } else if ( readerType == svkImageReader2::LC_MODEL_COORD) {
+        //return svkLCModelCoordReader::New(); 
+    } else if ( readerType == svkImageReader2::LC_MODEL_CSV) {
+        //return svkLCModelCSVReader::New(); 
+    } else if ( readerType == svkImageReader2::BRUKER_MRS) {
+        return svkBrukerDCMMRSReader::New(); 
+    } else if ( readerType == svkImageReader2::DDF) {
+        return svkDdfVolumeReader::New(); 
+    } else if ( readerType == svkImageReader2::IDF) {
+        return svkIdfVolumeReader::New(); 
+    } else {
+        return NULL;
+    }
+
 }

@@ -84,8 +84,12 @@ class svkImageReaderFactory : public vtkImageReader2Factory
         vtkTypeRevisionMacro(svkImageReaderFactory, vtkImageReader2Factory);
 
         //  Methods:
-        svkImageReader2*    CreateImageReader2( const char* path );
-        void                QuickParse(); 
+        svkImageReader2*                        CreateImageReader2( const char* path );
+
+        //  Create a concrete reader of the specified type: 
+        static svkImageReader2*                 CreateImageReader2( svkImageReader2::ReaderType readerType );
+
+        void                                    QuickParse(); 
 
 
     protected:

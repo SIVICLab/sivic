@@ -241,6 +241,11 @@ void svkDdfVolumeReader::ExecuteData(vtkDataObject* output)
 void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
 {
 
+    if ( this->onlyReadHeader == true ) {
+        return;
+    }
+
+
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
         if (this->GetDebug()) { 

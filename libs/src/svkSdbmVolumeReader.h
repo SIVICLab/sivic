@@ -74,6 +74,11 @@ class svkSdbmVolumeReader : public svkImageReader2
             return "GE sdbm File";
         }
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::GE_SDBM;
+        }
+
         //  Methods:
         virtual int     CanReadFile( const char* fname );
 

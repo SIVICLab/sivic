@@ -352,7 +352,7 @@ int main (int argc, char** argv)
     //  If printing header just print and return
     if ( printHeader || printShortHeader ) {
         reader->OnlyReadOneInputFile(); 
-        reader->OnlyParseHeader();
+        reader->OnlyReadHeader(true);
         reader->Update();
         if ( printHeader ) {
             reader->PrintHeader();

@@ -79,6 +79,11 @@ class svkVarianFidReader : public svkVarianReader
             return "Varian FID File";
         }
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::VARIAN_FID;
+        }
+
         //  Methods:
         virtual int             CanReadFile(const char* fname);
 

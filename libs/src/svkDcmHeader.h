@@ -680,7 +680,7 @@ class svkDcmHeader: public vtkObject
         virtual void    ReplaceOldElements( bool replaceElements ) = 0;
 
 
-        string  GetDcmPatientName( string PatientName ); 
+        string          GetDcmPatientName( string PatientName ); 
         void            SetDcmPatientName( string PatientName );
         void            SetPixelDataType( DcmPixelDataFormat dataType );
         int             GetPixelDataType( int vtkDataType = svkDcmHeader::UNDEFINED );
@@ -715,7 +715,7 @@ class svkDcmHeader: public vtkObject
         void            UpdateNumCoils();
 
         int             GetDimensionIndexPosition(string indexLabel); 
-        string  GetDimensionIndexLabel(int dimensionIndexNumber ); 
+        string          GetDimensionIndexLabel(int dimensionIndexNumber ); 
         void            AddDimensionIndex( svkDcmHeader::DimensionVector* dimensionVector, 
                             svkDcmHeader::DimensionIndexLabel indexType, int maxIndex = 0); 
         void            RemoveDimensionIndex( svkDcmHeader::DimensionIndexLabel indexType ); 
@@ -736,9 +736,11 @@ class svkDcmHeader: public vtkObject
                             svkDcmHeader::DimensionIndexLabel label2 
                         ); 
 
-        static DimensionIndexLabel StringToDimensionIndexLabel( string dimensionIndexLabelString );
-        static string      DimensionIndexLabelToString( svkDcmHeader::DimensionIndexLabel label); 
-        static DimensionIndexLabel GetDimensionLabelFromIndex( 
+        static DimensionIndexLabel 
+                        StringToDimensionIndexLabel( string dimensionIndexLabelString );
+        static string   DimensionIndexLabelToString( svkDcmHeader::DimensionIndexLabel label); 
+        static DimensionIndexLabel 
+                        GetDimensionLabelFromIndex( 
                                         svkDcmHeader::DimensionVector* dimensionVector, 
                                         int index ); 
         static int      GetDimensionVectorValue(svkDcmHeader::DimensionVector* dimensionVector, 

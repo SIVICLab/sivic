@@ -143,7 +143,7 @@ sub get_last_revision() {
     ###############################################################################
     #  Parse to get the current revision
     ###############################################################################
-    my @tags = `git ls-remote -t -q`;
+    my @tags = `git ls-remote --tags .`;
     my $last_revision_commit;
     my @last_revision_number;
     foreach my $tag (@tags) {
@@ -221,7 +221,7 @@ sub check_repository_status($)
 sub create_git_tag($)
 {
     my( $new_tag ) = @_;
-    if( system("git tag $new_tag") != 0 ) {
+    if( system("git tag -f $new_tag") != 0 ) {
         print "ERROR: Could not create git tag: $new_tag.\n";
         exit(1);
     } 

@@ -89,6 +89,11 @@ class svkSiemensRdaReader : public svkImageReader2
             return "Siemens RDA File";
         }
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::SIEMENS_RDA;
+        }
+
         //  Methods:
         virtual int             CanReadFile(const char* fname);
 

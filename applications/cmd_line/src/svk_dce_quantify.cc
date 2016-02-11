@@ -227,11 +227,12 @@ int main (int argc, char** argv)
     //  output file format. 
     // ===============================================  
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    svkImageWriter* baseHtWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut));
-    svkImageWriter* peakHtWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut)); 
-    svkImageWriter* peakTimeWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut)); 
-    svkImageWriter* maxSlopeWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut)); 
-    svkImageWriter* washoutWriter  = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut));
+    svkImageWriter* baseHtWriter     = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut));
+    svkImageWriter* peakHtWriter     = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut)); 
+    svkImageWriter* peakTimeWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut)); 
+    svkImageWriter* maxSlopeWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut)); 
+    svkImageWriter* washoutWriter    = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut));
+    svkImageWriter* washoutPosWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter(dataTypeOut));
     writerFactory->Delete();
     
     if (peakHtWriter == NULL || peakTimeWriter == NULL || maxSlopeWriter == NULL) { 
@@ -239,23 +240,26 @@ int main (int argc, char** argv)
         exit(1);
     }
     
-    string baseHtFile   = outputFileName;
-    string peakHtFile   = outputFileName;  
-    string peakTimeFile = outputFileName;  
-    string maxSlopeFile = outputFileName;  
-    string washoutFile  = outputFileName;
+    string baseHtFile     = outputFileName;
+    string peakHtFile     = outputFileName;  
+    string peakTimeFile   = outputFileName;  
+    string maxSlopeFile   = outputFileName;  
+    string washoutFile    = outputFileName;
+    string washoutPosFile = outputFileName;
 
     baseHtFile.append("_dce_base_ht");
     peakHtFile.append("_dce_peak_ht");  
     peakTimeFile.append("_dce_peak_time");  
     maxSlopeFile.append("_dce_up_slope");  
     washoutFile.append("_dce_washout");
+    washoutPosFile.append("_dce_washout_pos");
 
     baseHtWriter->SetFileName(baseHtFile.c_str());
     peakHtWriter->SetFileName(peakHtFile.c_str());
     peakTimeWriter->SetFileName(peakTimeFile.c_str());
     maxSlopeWriter->SetFileName(maxSlopeFile.c_str());
     washoutWriter->SetFileName(washoutFile.c_str());
+    washoutPosWriter->SetFileName(washoutPosFile.c_str());
 
     // Hack to use ImageCopy to write out integer value dicoms
     svkImageCopy* baseHtCopier = svkImageCopy::New();
@@ -282,24 +286,26 @@ int main (int argc, char** argv)
     maxSlopeCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
     maxSlopeCopier->Update();
 
-    svkImageCopy* washoutCopier = svkImageCopy::New();
-    washoutCopier->SetInput(dceQuant->GetOutput(4));  // port 4 is washout map
-    washoutCopier->SetSeriesDescription("DCE Washout");
-    washoutCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
-    washoutCopier->Update();
+    svkImageCopy* washoutPosCopier = svkImageCopy::New();
+    washoutPosCopier->SetInput(dceQuant->GetOutput(5));  // port 5 is positive washout map
+    washoutPosCopier->SetSeriesDescription("DCE Washout");
+    washoutPosCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
+    washoutPosCopier->Update();
 
 
     baseHtWriter->SetInput(baseHtCopier->GetOutput());
     peakHtWriter->SetInput(peakHtCopier->GetOutput());
     peakTimeWriter->SetInput(peakTimeCopier->GetOutput());
     maxSlopeWriter->SetInput(maxSlopeCopier->GetOutput());
-    washoutWriter->SetInput(washoutCopier->GetOutput());
+    washoutPosWriter->SetInput(washoutPosCopier->GetOutput());
+    washoutWriter->SetInput(dceQuant->GetOutput(4));  // port 4 is washout map
 
     baseHtWriter->Write();
     peakHtWriter->Write();
     peakTimeWriter->Write();
     maxSlopeWriter->Write();
     washoutWriter->Write();
+    washoutPosWriter->Write();
 
     // ===============================================  
 
@@ -311,11 +317,12 @@ int main (int argc, char** argv)
     peakTimeWriter->Delete();
     maxSlopeWriter->Delete();
     washoutWriter->Delete();
+    washoutPosWriter->Delete();
     baseHtCopier->Delete();
     peakHtCopier->Delete();
     peakTimeCopier->Delete();
     maxSlopeCopier->Delete();
-    washoutCopier->Delete();
+    washoutPosCopier->Delete();
 
     reader->Delete();
 
