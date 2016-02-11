@@ -78,15 +78,18 @@ int main (int argc, char** argv)
     usemsg += "svk_get_voxel_centers -i input_file_name -o output_file_name \n";
     usemsg += "                                                                         \n";
     usemsg += "   -i  name                Name of the MRS DDF file.                  \n";
+    usemsg += "   -r  name                Name of an MRI File to calculate Center of mass (optional) \n";
     usemsg += "   -o name                Name of outputfile (ASCII).                  \n";
     usemsg += "   -v           Print a list of the coordinates in the stdout.       \n";
     usemsg += "   -h           Print this help mesage.                                  \n";
     usemsg += "                                                                         \n";
-    usemsg += "Application that outputs the centers of voxel in LPS coordinates   \n";
+    usemsg += "Application that outputs the voxel centers in LPS coordinates. \n";
+    usemsg += " Optionally last line contains the center of mass of the -r MRI image   \n";
     usemsg += "                                                                         \n";
 
 
     string inputFileName;
+    string mriFileName;
     string outputFileName;
 
     bool isVerbose = false;
@@ -105,10 +108,13 @@ int main (int argc, char** argv)
     // ===============================================
     int i;
     int option_index = 0;
-    while ( ( i = getopt_long(argc, argv, "i:o:hv", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:r:o:hv", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
+                break;
+            case 'r':
+                mriFileName.assign( optarg );
                 break;
             case 'o':
                 outputFileName.assign(optarg);
@@ -200,6 +206,26 @@ int main (int argc, char** argv)
 		}
 	}
 	if (mStream!=NULL){
+		// Show the center of mass as a last argument
+		if (mriFileName.length()!=0){
+			vtkSmartPointer< svkImageReaderFactory > readerFactoryMRI = vtkSmartPointer< svkImageReaderFactory >::New();
+			svkImageReader2* mriReader = readerFactoryMRI->CreateImageReader2(mriFileName.c_str());
+			if (mriReader == NULL) {
+				cerr << "Can not determine appropriate reader for test data: " << mriFileName << endl;
+				exit(1);
+			}
+			mriReader->SetFileName( mriFileName.c_str() );
+			mriReader->Update();
+			svkMriImageData* mriData = svkMriImageData::SafeDownCast( mriReader->GetOutput() );
+			double centerOfMass[3];
+			mriData->GetCenterOfMass(centerOfMass);
+			mriReader->Delete();
+
+			fprintf(mStream, "%f, %f, %f\n", centerOfMass[0], centerOfMass[1], centerOfMass[2]);
+			if ( isVerbose ) {
+				cout <<  centerOfMass[0] << ", " <<centerOfMass[1] << ", "<<centerOfMass[2] << endl;
+			}
+		}
 		fclose(mStream);
 	}
     // ===============================================

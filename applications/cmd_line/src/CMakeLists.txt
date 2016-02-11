@@ -618,6 +618,15 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_convert_xml_format
+    svk_convert_xml_format.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_convert_xml_format
+    ${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_image_stats
     svk_image_stats.cc
 )
@@ -754,6 +763,7 @@ SET(APPS
     svk_peak_pick
     svk_volume_diff
     svk_psd_prescription_convert
+    svk_convert_xml_format
 )
 if ( BUILD_CLAPACK )
     LIST(APPEND APPS svk_hsvd)
