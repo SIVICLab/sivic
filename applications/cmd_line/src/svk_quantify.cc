@@ -74,7 +74,7 @@ int main (int argc, char** argv)
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_quantify -i input_file_name -o output_root_name -t output_data_type              \n";
     usemsg += "             (--peak_center ppm --peak_width ppm --peak_name name | --xml file )     \n";
-    usemsg += "             [ --algo type ] [ -b ]                                                  \n"; 
+    usemsg += "             [ --algo type ] [ -b ] [ -s ]                                           \n"; 
     usemsg += "             [--verbose ] [ -h ]                                                     \n"; 
     usemsg += "                                                                                     \n";  
     usemsg += "   -i input_file_name        name of file to convert.                                \n"; 
@@ -84,6 +84,9 @@ int main (int argc, char** argv)
     usemsg += "                                 3 = UCSF IDF                                        \n";  
     usemsg += "                                 6 = DICOM_MRI                                       \n";  
     usemsg += "   -b                        Only fit inside volume selection                        \n"; 
+    usemsg += "   -s                        Scale output data to full floating point range for idf  \n"; 
+    usemsg += "                             output. Default is to cast double precision results to  \n"; 
+    usemsg += "                             float.                                                  \n"; 
     usemsg += "   --xml               file  XML quantification config file                          \n"; 
     usemsg += "   --peak_center       ppm   Chemical shift of peak 1 center                         \n";
     usemsg += "   --peak_width        ppm   Width in ppm of peak 1 integration                      \n";
@@ -121,6 +124,11 @@ int main (int argc, char** argv)
     svkMetaboliteMap::algorithm algo = svkMetaboliteMap::PEAK_HT; 
     int     algoInt; 
     bool    onlyQuantifySelectedVolume = false;   
+    /*
+     *   Data comes out with double precision, so for idf output it either needs 
+     *   to be cast to float OR re-scaled to the full-floating point range. 
+     */
+    bool    castResultsToFloatForIdf = true;   
 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
@@ -153,7 +161,7 @@ int main (int argc, char** argv)
     // ===============================================
     int i;
     int option_index = 0;
-    while ( ( i = getopt_long(argc, argv, "i:o:t:bh", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:t:bsh", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -166,6 +174,9 @@ int main (int argc, char** argv)
                 break;
             case 'b':
                 onlyQuantifySelectedVolume = true;   
+                break;
+            case 's':
+                castResultsToFloatForIdf = false;   
                 break;
            case FLAG_PEAK_CENTER:
                 peakCenterPPM = atof( optarg);
@@ -267,6 +278,11 @@ int main (int argc, char** argv)
     reader->SetFileName( inputFileName.c_str() );
     reader->Update(); 
 
+    vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
+    svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    if ( castResultsToFloatForIdf && writer != NULL && writer->IsA( "svkIdfVolumeWriter" ) ) {
+        svkIdfVolumeWriter::SafeDownCast( writer )->SetCastDoubleToFloat( true ); 
+    } 
 
     //  if using XML config, then quantify all mets here, else only quantify the specified peak: 
     if ( xmlFileName.length() != 0 ) {
@@ -279,12 +295,9 @@ int main (int argc, char** argv)
             quantMets->LimitToSelectedVolume();
         }    
         quantMets->SetInput( reader->GetOutput() ); 
-        quantMets->LimitToSelectedVolume();    
         quantMets->Update();
         vtkstd::vector<svkMriImageData*>* metMapVector = quantMets->GetMetMaps();
     
-        vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
-        svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
         
         if ( writer == NULL ) {
             cerr << "Can not determine writer of type: " << dataTypeOut << endl;
@@ -298,9 +311,6 @@ int main (int argc, char** argv)
             outputMap.append( (*metMapVector)[mapId]->GetDcmHeader()->GetStringValue("SeriesDescription") );    
             writer->SetFileName( outputMap.c_str() ); 
             writer->SetInput( (*metMapVector)[mapId] );
-            if ( writer->IsA( "svkIdfVolumeWriter" ) ) {
-                svkIdfVolumeWriter::SafeDownCast( writer )->SetCastDoubleToFloat( true ); 
-            }
     
             //  Set the input command line into the data set provenance:
             reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
@@ -370,8 +380,6 @@ int main (int argc, char** argv)
         // ===============================================  
         if ( isVerbose == false ) {
     
-            vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
-            svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
         
             if ( writer == NULL ) {
                 cerr << "Can not determine writer of type: " << dataTypeOut << endl;
@@ -390,6 +398,10 @@ int main (int argc, char** argv)
         quant->Delete(); 
     }
     reader->Delete();
+    if( writer != NULL ) {
+        writer->Delete();
+    }
+
 
     return 0; 
 }
