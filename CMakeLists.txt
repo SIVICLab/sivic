@@ -110,7 +110,7 @@ INCLUDE(${VTK_USE_FILE})
 #   KWWidgets
 ###################################
 IF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
-    FIND_PACKAGE(KWWidgets REQUIRED PATHS /opt/src/freeware/kwwidgets/KWWidgets_VTK6_install/lib/KWWidgets HINTS /opt/src/freeware/kwwidgets/KWWidgets_VTK6_install/lib/KWWidgets )
+    FIND_PACKAGE(KWWidgets REQUIRED )
     MESSAGE(${KWWidgets_USE_FILE})
     INCLUDE(${KWWidgets_USE_FILE})
     IF( NOT BUILD_VIZ_LIBRARY  )

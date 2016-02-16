@@ -5,6 +5,8 @@
 #	$Date$
 #
 
+OSTYPE := $(shell uname -s)
+
 VTK_DIR         = /netopt/lib/vtk-5.6
 VTK6_DIR        = /opt/src/freeware/vtk/VTK-6.3.0/Linux_x86_64_debug_install/./lib/cmake/vtk-6.3/
 KWW_DIR     	= /netopt/kwwidgets_2.0_56/lib/KWWidgets
@@ -14,7 +16,6 @@ DCMTK_DIR       = /netopt/dicom
 SIVIC_ROOT      = $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 SVK_TEST_ROOT   = ${SIVIC_ROOT}/test_data
 OUTPUT_LOG      = ${PWD}/ctest_logs/atom 
-#CMAKE_DIR       = /netopt/bin
 CMAKE_DIR       = /usr/bin
 CMAKE_DIR_GE    = /usr/local/bin
 XVFB_RUN        = ${SIVIC_ROOT}/tests/scripts/xvfb-run
@@ -22,17 +23,26 @@ SVN_COMMAND     = /netopt/bin/svn
 CLAPACK_DIR     = /opt/src/freeware/clapack/clapack-3.2.1-CMAKE
 ITK_DIR         = /netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4
 ADD_LINK_DIRS   = 
-
-
+	
 #   Mac OS X
-ifeq ($(OSTYPE), darwin)
-	DCMTK_DIR     = /usr/local/dicom
-	CLAPACK_DIR   = /Users/jasonc/freeware/clapack-3.2.1-CMAKE
-	VTK_DIR       = /usr/local/lib/vtk-5.6
-	ITK_DIR       = /usr/local/ITK_UNIVERSAL/lib/cmake/ITK-4.4
-	CONFIG_OSIRIX = -DBUILD_OSIRIX=ON 
-	ADD_LINK_DIRS = -DADD_LINK_DIRS=/opt/local/lib
+ifeq ($(OSTYPE),Darwin)
+	CMAKE_DIR               := /opt/local/bin
+	DCMTK_DIR               := /usr/local/dicom
+	CLAPACK_DIR             := /Users/jasonc/freeware/clapack-3.2.1-CMAKE
+	VTK_DIR                 := /usr/local/vtk6.3/lib/cmake/vtk-6.3
+	KWWidgets_DIR           := /usr/local/kwwidgets_vtk6/lib/KWWidgets
+	KWW_DIR                 := /usr/local/kwwidgets_vtk6/lib/KWWidgets
+	CMAKE_PREFIX_PATH       := ${VTK_DIR}
+	ITK_DIR                 := /usr/local/ITK4.9/lib/cmake/ITK-4.9
+	CONFIG_OSIRIX           := -DBUILD_OSIRIX=ON
+	ADD_LINK_DIRS           := -DADD_LINK_DIRS=/opt/local/lib
+	CMAKE_CXX_FLAGS         := -I/usr/X11R6/include
+	CMAKE_EXE_LINKER_FLAGS  := -L/usr/X11R6/lib
+	OPENGL_INCLUDE_DIR      := /usr/X11R6/include
+	OPENGL_gl_LIBRARY       := -framework OpenGL;/usr/X11R6/lib/libGL.dylib
+	OPENGL_glu_LIBRARY      := /usr/X11R6/lib/libGLU.dylib
 endif
+
 
 ifeq ($(OS), SunOS)
 if ( "`/bin/uname`" == "SunOS" ) then
@@ -47,13 +57,54 @@ endif
 CMAKE_CXX_FLAGS_TEST = "-g -O0 -fprofile-arcs -ftest-coverage"
 
 RM_CACHE          = ${RM} CMakeCache.txt;
-CONFIG_OPTS       = -DVTK_DIR=${VTK_DIR} -DKWWidgets_DIR=${KWW_DIR} -DBUILD_CLAPACK=ON -DBUILD_ITK=ON -DITK_DIR=${ITK_DIR} -DCLAPACK_DIR=${CLAPACK_DIR} -DDCMTK_DIR=${DCMTK_DIR} -DBUILD_APPS=ON -DBUILD_EXAMPLES=OFF -DGETOPT_LIB=${GETOPT_LIB} -DBUILD_SIVIC=ON -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -DSVNCOMMAND=${SVN_COMMAND} -DCMAKE_VERBOSE_MAKEFILE=ON -DMAKECOMMAND="/usr/bin/gmake -i -j4" 
-CONFIG_OPTS_VTK6  = -DVTK_DIR=${VTK6_DIR} -DKWWidgets_DIR=${KWW6_DIR} -DBUILD_CLAPACK=ON -DBUILD_ITK=ON -DITK_DIR=${ITK_DIR} -DCLAPACK_DIR=${CLAPACK_DIR} -DDCMTK_DIR=${DCMTK_DIR} -DBUILD_APPS=ON -DBUILD_EXAMPLES=OFF -DGETOPT_LIB=${GETOPT_LIB} -DBUILD_SIVIC=ON -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -DSVNCOMMAND=${SVN_COMMAND} -DCMAKE_VERBOSE_MAKEFILE=ON -DMAKECOMMAND="/usr/bin/gmake -i -j4" 
+CONFIG_OPTS       = -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} \
+                    -DKWWidgets_DIR=${KWWidgets_DIR}         \
+                    -DVTK_DIR=${VTK_DIR}                     \
+                    -DKWWidgets_DIR=${KWW_DIR}               \
+                    -DBUILD_CLAPACK=ON                       \
+                    -DBUILD_ITK=ON                           \
+                    -DITK_DIR=${ITK_DIR}                     \
+                    -DCLAPACK_DIR=${CLAPACK_DIR}             \
+                    -DDCMTK_DIR=${DCMTK_DIR}                 \
+                    -DBUILD_APPS=ON                          \
+                    -DBUILD_EXAMPLES=OFF                     \
+                    -DGETOPT_LIB=${GETOPT_LIB}               \
+                    -DBUILD_SIVIC=ON                         \
+                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}     \
+                    -DSVNCOMMAND=${SVN_COMMAND}              \
+                    -DCMAKE_VERBOSE_MAKEFILE=ON              \
+                    -DMAKECOMMAND="/usr/bin/gmake -i -j4" 
+CONFIG_OPTS_VTK6  = -DVTK_DIR=${VTK6_DIR}                    \
+                    -DKWWidgets_DIR=${KWW6_DIR}              \
+                    -DBUILD_CLAPACK=ON                       \
+                    -DBUILD_ITK=ON                           \ 
+                    -DITK_DIR=${ITK_DIR}                     \
+                    -DCLAPACK_DIR=${CLAPACK_DIR}             \
+                    -DDCMTK_DIR=${DCMTK_DIR}                 \
+                    -DBUILD_APPS=ON                          \
+                    -DBUILD_EXAMPLES=OFF                     \
+                    -DGETOPT_LIB=${GETOPT_LIB}               \
+                    -DBUILD_SIVIC=ON                         \
+                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}     \
+                    -DSVNCOMMAND=${SVN_COMMAND}              \
+                    -DCMAKE_VERBOSE_MAKEFILE=ON              \
+                    -DMAKECOMMAND="/usr/bin/gmake -i -j4" 
 CONFIG_BASE         = ${CMAKE_DIR}/cmake ${CONFIG_OPTS} 
+ifeq ($(OSTYPE),Darwin)
+	CONFIG_BASE +=  -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
+                    -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	     \
+                    -DOPENGL_gl_LIBRARY="${OPENGL_gl_LIBRARY}"           \
+                    -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
+endif
 CONFIG_BASE_GE      = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS} 
 CONFIG_BASE_VTK6    = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_VTK6} 
 CONFIG_BASE_GE_VTK6 = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_VTK6} 
-CONFIG_TEST_ON      = -DUSE_OFF_SCREEN_TESTING=ON  -DBUILD_TESTING=ON  -DBUILD_GRAPHICS_TESTING=ON -DSVK_TEST_ROOT=${SVK_TEST_ROOT} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS_TEST} -DDART_TESTING_TIMEOUT=6000
+CONFIG_TEST_ON      = -DUSE_OFF_SCREEN_TESTING=ON               \                       
+                      -DBUILD_TESTING=ON                        \ 
+                      -DBUILD_GRAPHICS_TESTING=ON               \ 
+                      -DSVK_TEST_ROOT=${SVK_TEST_ROOT}          \ 
+                      -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS_TEST} \ 
+                      -DDART_TESTING_TIMEOUT=6000
 CONFIG_TEST_OFF     = -DUSE_OFF_SCREEN_TESTING=OFF -DBUILD_TESTING=OFF -DBUILD_GRAPHICS_TESTING=OFF 
 CONFIG_UCSF_ON      = -DUCSF_INTERNAL=ON  -DBUILD_CREATE_RAW=ON 
 CONFIG_UCSF_OFF     = -DUCSF_INTERNAL=OFF -DBUILD_CREATE_RAW=OFF 
