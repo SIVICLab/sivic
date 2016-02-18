@@ -143,6 +143,7 @@ ENDIF( NOT WIN32 )
 #############################################
 
 LINK_DIRECTORIES(
+    ${VTK_DIR}/../../
 	${LIBRARY_OUTPUT_PATH}
     ../../../libs/${PLATFORM}
     ../${PLATFORM}
@@ -242,6 +243,8 @@ SET(SVK_LIBS
     svkTypeUtils
     svkadapt 
     #   this needs to be refined since includeing all the libs quadruples the static binary size
+    ${VTK_LIBRARIES}
+    vtkImagingSources-6.3.a
     vtkFiltersHybrid-6.3
     vtkFiltersGeneral-6.3
     vtkCommonDataModel-6.3
@@ -276,6 +279,12 @@ SET(SVK_LIBS
     vtkfreetype-6.3
     vtkftgl-6.3
     vtkRenderingVolume-6.3
+    vtkImagingStencil-6.3.a
+    vtkIOInfovis-6.3.a
+    vtkInfovisCore-6.3.a
+    vtkInfovisLayout-6.3.a
+    vtkViewsInfovis-6.3.a
+    vtkFiltersStatistics-6.3.a
     vtkImagingStatistics-6.3
     vtkIOXMLParser-6.3
     vtkexpat-6.3
@@ -340,25 +349,27 @@ SET(SVK_LIBS
     ofstd 
     ${PLATFORM_LIBS}
     ${ITK_LIBS_PRE}
+    GLU
+    GL
+    SM
+    ICE
+    X11
+    Xext
+    Xt
+    Xss 
+    Xft
 )
 
 SET(SVK_INFOVIS_LIBS
-    #vtkInfovisCore-6.3.a            
-    #libvtkInfovisLayoutTCL-6.3.a 
-    #libvtkInfovisCoreTCL-6.3.a         
-    #vtkInfovisLayout-6.3.a         
 )
 
-SET(SVK_VIZ_LIBS
-    svkviz
-    #vtkRendering
-    #vtkVolumeRendering
-    #vtkGraphics
-    #vtkHybrid
-    #vtkInfovis
-)
-
-
+IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    SET(SVK_VIZ_LIBS
+        svkviz
+        OSMesa
+    )
+    SET(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -framework OpenGL")
+ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin)
 
 
 ADD_EXECUTABLE(
