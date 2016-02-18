@@ -296,19 +296,11 @@ TARGET_LINK_LIBRARIES(
     svkPSD
     svkTypeUtils
     svkadapt
+    ${KWWidgets_LIBRARIES}
     ${VTK_LIBRARIES} 
-    #vtkRendering
-    #vtkGraphics
-    #vtkHybrid
-    #vtkImaging
-    #vtkIO
-    #vtkFiltering
-    #vtkCommon
     dcmdata
     ${DCMTK_OFLOG}
     ofstd 
-    ${KWWidgets_LIBRARIES}
-    #KWCallbacksExampleLib
     SivicKWCallbacksLib
 	${ZLIB}
     ${NETAPI}

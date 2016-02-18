@@ -143,6 +143,7 @@ ENDIF( NOT WIN32 )
 #############################################
 
 LINK_DIRECTORIES(
+    ${VTK_DIR}/../../
 	${LIBRARY_OUTPUT_PATH}
     ../../../libs/${PLATFORM}
     ../${PLATFORM}
@@ -242,36 +243,133 @@ SET(SVK_LIBS
     svkTypeUtils
     svkadapt 
     #   this needs to be refined since includeing all the libs quadruples the static binary size
-    ${VTK_LIBRARIES} 
-    #vtkImaging
-    #vtkIO
-    #vtkFiltering
-    #vtkCommon
-    #vtkInfovis
+    ${VTK_LIBRARIES}
+    vtkImagingSources-6.3.a
+    vtkFiltersHybrid-6.3
+    vtkFiltersGeneral-6.3
+    vtkCommonDataModel-6.3
+    vtkCommonMath-6.3
+    vtkCommonCore-6.3
+    vtksys-6.3
+    vtkCommonMisc-6.3
+    vtkCommonSystem-6.3
+    vtkCommonTransforms-6.3
+    vtkFiltersCore-6.3
+    vtkCommonExecutionModel-6.3
+    vtkImagingCore-6.3
+    vtkRenderingCore-6.3
+    vtkCommonColor-6.3
+    vtkFiltersExtraction-6.3
+    vtkImagingFourier-6.3
+    vtkFiltersGeometry-6.3
+    vtkFiltersSources-6.3
+    vtkRenderingImage-6.3
+    vtkImagingHybrid-6.3
+    vtkIOImage-6.3
+    vtkIOCore-6.3
+    vtkzlib-6.3
+    vtkmetaio-6.3
+    vtkjpeg-6.3
+    vtkpng-6.3
+    vtktiff-6.3
+    vtkInteractionStyle-6.3
+    vtkRenderingAnnotation-6.3
+    vtkImagingColor-6.3
+    vtkRenderingFreeType-6.3
+    vtkfreetype-6.3
+    vtkftgl-6.3
+    vtkRenderingVolume-6.3
+    vtkImagingStencil-6.3.a
+    vtkIOInfovis-6.3.a
+    vtkInfovisCore-6.3.a
+    vtkInfovisLayout-6.3.a
+    vtkViewsInfovis-6.3.a
+    vtkFiltersStatistics-6.3.a
+    vtkImagingStatistics-6.3
+    vtkIOXMLParser-6.3
+    vtkexpat-6.3
+    vtkRenderingContext2D-6.3
+    vtkRenderingGL2PS-6.3
+    vtkRenderingContextOpenGL-6.3
+    vtkRenderingOpenGL-6.3
+    vtkRenderingLOD-6.3
+    vtkImagingMath-6.3
+    vtkRenderingLabel-6.3
+    vtkRenderingVolumeOpenGL-6.3
+    vtkInteractionImage-6.3
+    vtkRenderingLIC-6.3
+    vtkRenderingGL2PS-6.3
+    vtkRenderingContextOpenGL-6.3
+    vtkRenderingContext2D-6.3
+    vtkRenderingLabel-6.3
+    vtkRenderingAnnotation-6.3
+    vtkImagingColor-6.3
+    vtkRenderingFreeType-6.3
+    vtkftgl-6.3
+    vtkfreetype-6.3
+    vtkRenderingVolume-6.3
+    vtkInteractionStyle-6.3
+    vtkFiltersHybrid-6.3
+    vtkRenderingOpenGL-6.3
+    vtkRenderingCore-6.3
+    vtkCommonColor-6.3
+    vtkFiltersGeometry-6.3
+    vtkFiltersSources-6.3
+    vtkImagingHybrid-6.3
+    vtkIOImage-6.3
+    vtkmetaio-6.3
+    vtkpng-6.3
+    vtktiff-6.3
+    vtkjpeg-6.3
+    GLU
+    GL
+    SM
+    ICE
+    X11
+    Xext
+    Xt
+    vtkIOXMLParser-6.3
+    vtkIOXML-6.3.a
+    vtkexpat-6.3
+    vtkFiltersExtraction-6.3
+    vtkFiltersGeneral-6.3
+    vtkFiltersCore-6.3
+    vtkImagingFourier-6.3
+    vtkImagingCore-6.3
+    vtkIOCore-6.3
+    vtkCommonExecutionModel-6.3
+    vtkCommonDataModel-6.3
+    vtkCommonMisc-6.3
+    vtkCommonSystem-6.3
+    vtkCommonTransforms-6.3
+    vtkCommonMath-6.3
+    vtkCommonCore-6.3
     dcmdata
     ${DCMTK_OFLOG}
     ofstd 
     ${PLATFORM_LIBS}
     ${ITK_LIBS_PRE}
+    GLU
+    GL
+    SM
+    ICE
+    X11
+    Xext
+    Xt
+    Xss 
+    Xft
 )
 
 SET(SVK_INFOVIS_LIBS
-    #vtkInfovisCore-6.3.a            
-    #libvtkInfovisLayoutTCL-6.3.a 
-    #libvtkInfovisCoreTCL-6.3.a         
-    #vtkInfovisLayout-6.3.a         
 )
 
-SET(SVK_VIZ_LIBS
-    svkviz
-    #vtkRendering
-    #vtkVolumeRendering
-    #vtkGraphics
-    #vtkHybrid
-    #vtkInfovis
-)
-
-
+IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    SET(SVK_VIZ_LIBS
+        svkviz
+        OSMesa
+    )
+    SET(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -framework OpenGL")
+ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin)
 
 
 ADD_EXECUTABLE(
