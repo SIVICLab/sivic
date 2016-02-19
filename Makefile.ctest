@@ -23,6 +23,7 @@ SVN_COMMAND     = /netopt/bin/svn
 CLAPACK_DIR     = /opt/src/freeware/clapack/clapack-3.2.1-CMAKE
 ITK_DIR         = /netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4
 ADD_LINK_DIRS   = 
+CMAKE_PREFIX_PATH = ${VTK_DIR}
 	
 #   Mac OS X
 ifeq ($(OSTYPE),Darwin)
@@ -32,7 +33,6 @@ ifeq ($(OSTYPE),Darwin)
 	VTK_DIR                 := /usr/local/vtk6.3/lib/cmake/vtk-6.3
 	KWWidgets_DIR           := /usr/local/kwwidgets_vtk6/lib/KWWidgets
 	KWW_DIR                 := /usr/local/kwwidgets_vtk6/lib/KWWidgets
-	CMAKE_PREFIX_PATH       := ${VTK_DIR}
 	ITK_DIR                 := /usr/local/ITK4.9/lib/cmake/ITK-4.9
 	ADD_LINK_DIRS           := -DADD_LINK_DIRS=/opt/local/lib
 	CMAKE_CXX_FLAGS         := -I/usr/X11R6/include
@@ -73,10 +73,11 @@ CONFIG_OPTS       = -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} \
                     -DSVNCOMMAND=${SVN_COMMAND}              \
                     -DCMAKE_VERBOSE_MAKEFILE=ON              \
                     -DMAKECOMMAND="/usr/bin/gmake -i -j4" 
-CONFIG_OPTS_VTK6  = -DVTK_DIR=${VTK6_DIR}                    \
+CONFIG_OPTS_VTK6  = -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} \
+					-DVTK_DIR=${VTK6_DIR}                    \
                     -DKWWidgets_DIR=${KWW6_DIR}              \
                     -DBUILD_CLAPACK=ON                       \
-                    -DBUILD_ITK=ON                           \ 
+                    -DBUILD_ITK=ON                           \
                     -DITK_DIR=${ITK_DIR}                     \
                     -DCLAPACK_DIR=${CLAPACK_DIR}             \
                     -DDCMTK_DIR=${DCMTK_DIR}                 \
@@ -98,11 +99,11 @@ endif
 CONFIG_BASE_GE      = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS} 
 CONFIG_BASE_VTK6    = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_VTK6} 
 CONFIG_BASE_GE_VTK6 = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_VTK6} 
-CONFIG_TEST_ON      = -DUSE_OFF_SCREEN_TESTING=ON               \                       
-                      -DBUILD_TESTING=ON                        \ 
-                      -DBUILD_GRAPHICS_TESTING=ON               \ 
-                      -DSVK_TEST_ROOT=${SVK_TEST_ROOT}          \ 
-                      -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS_TEST} \ 
+CONFIG_TEST_ON      = -DUSE_OFF_SCREEN_TESTING=ON               \
+                      -DBUILD_TESTING=ON                        \
+                      -DBUILD_GRAPHICS_TESTING=ON               \
+                      -DSVK_TEST_ROOT=${SVK_TEST_ROOT}          \
+                      -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS_TEST} \
                       -DDART_TESTING_TIMEOUT=6000
 CONFIG_TEST_OFF     = -DUSE_OFF_SCREEN_TESTING=OFF -DBUILD_TESTING=OFF -DBUILD_GRAPHICS_TESTING=OFF 
 CONFIG_UCSF_ON      = -DUCSF_INTERNAL=ON  -DBUILD_CREATE_RAW=ON 
