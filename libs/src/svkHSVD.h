@@ -156,9 +156,10 @@ class svkHSVD : public svkThreadedImageAlgorithm
         void    AddDampingFilterRule(
                     float dampingThreshold
         );
-
+        bool                GetFitSuccessStatus();
         void                ExportFilterImage();
         svkMrsImageData*    GetFilterImage();
+        svkMriImageData*    GetFitSuccessImage();
         void                OnlyFitSpectraInVolumeLocalization();
         void                SetModelOrder( int modelOrder );
 
@@ -167,7 +168,7 @@ class svkHSVD : public svkThreadedImageAlgorithm
         void                SetErrorHandlingFilterToZeroOn();
         void                SetErrorHandlingIgnoreError();       
 
-        void                SetThresholdModelDifference( float percentDifference );
+        void                SetThresholdModelDifference( float percentDifferenceUp, float percentDifferenceDown );
 
         void                SetSingleThreaded();
     
@@ -216,17 +217,15 @@ class svkHSVD : public svkThreadedImageAlgorithm
         void    svkHSVDExecute(int ext[6], int id); 
         void    HSVDFitCellSpectrum( int cellID );
         bool    HSVD( int cellID, vector< vector <double> >* hsvdModel );
-        void    GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsvdModel, bool bCellOK);
+        void    GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsvdModel, bool cellFit);
         void    SubtractFilter();
         void    CheckInputSpectralDomain();
         void    CheckOutputSpectralDomain();
         bool    CanFitSignal( const doublecomplex* signal, int numPts ); 
-        bool    CheckQualityOfFit(
-                    doublecomplex*  fitAmplitude, 
-                    doublecomplex*  fitFreq, 
-                    int             filterOrder,  
-                    vtkFloatArray*  signalSpectrum, 
-                    double*         percentDeviation
+        bool    GetFilterFailStatus(
+                    int cellID,
+                    vtkFloatArray* filterSpec,
+                    float* qfactor
                 );
 
         void    MatMat(
@@ -264,9 +263,11 @@ class svkHSVD : public svkThreadedImageAlgorithm
         int                         numTimePoints;
         double                      spectralWidth; 
         //vtkFloatArray*              apodizationWindow;
-        double                      thresholdModelDifferencePercent;
-    
+        double                      thresholdRMSRatioDown;
+        double                      thresholdRMSRatioUp;
+        int numberPtsToCheckQuality;
         HSVDBehaviorOnError         errorHandlingFlag;
+        svkMriImageData* fitSuccessMap;
 
 
 };
