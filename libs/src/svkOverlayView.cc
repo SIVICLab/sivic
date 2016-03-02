@@ -1347,18 +1347,33 @@ void svkOverlayView::SetupOverlay()
     this->windowLevelerSagittal->SetOutputFormatToRGBA();
     this->windowLevelerSagittal->Update();
 
+    //this->axialImageActor->GetMapper()->SetInputConnection(this->axialWinLevel->GetOutputPort());
+
+    //svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
+                                   //)->SetInputData( this->windowLevelerAxial->GetOutput() );
+    //svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
+                                   //)->SetInputData( this->windowLevelerAxial->GetOutput() );
+    //svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
+                                   //)->SetInputData( this->windowLevelerCoronal->GetOutput() );
+    //svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
+                                   //)->SetInputData( this->windowLevelerCoronal->GetOutput() );
+    //svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
+                                   //)->SetInputData( this->windowLevelerSagittal->GetOutput() );
+    //svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
+                                   //)->SetInputData( this->windowLevelerSagittal->GetOutput() );
+
     svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
-                                   )->SetInputData( this->windowLevelerAxial->GetOutput() );
+                                   )->GetMapper()->SetInputConnection( this->windowLevelerAxial->GetOutputPort() );
     svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
-                                   )->SetInputData( this->windowLevelerAxial->GetOutput() );
+                                   )->GetMapper()->SetInputConnection( this->windowLevelerAxial->GetOutputPort() );
     svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
-                                   )->SetInputData( this->windowLevelerCoronal->GetOutput() );
+                                   )->GetMapper()->SetInputConnection( this->windowLevelerCoronal->GetOutputPort() );
     svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
-                                   )->SetInputData( this->windowLevelerCoronal->GetOutput() );
+                                   )->GetMapper()->SetInputConnection( this->windowLevelerCoronal->GetOutputPort() );
     svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
-                                   )->SetInputData( this->windowLevelerSagittal->GetOutput() );
+                                   )->GetMapper()->SetInputConnection( this->windowLevelerSagittal->GetOutputPort() );
     svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
-                                   )->SetInputData( this->windowLevelerSagittal->GetOutput() );
+                                   )->GetMapper()->SetInputConnection( this->windowLevelerSagittal->GetOutputPort() );
 
     this->SetInterpolationType( this->interpolationType );
     this->SetOverlayOpacity( this->overlayOpacity );
