@@ -870,8 +870,8 @@ bool svkHSVD::GetFilterFailStatus(int cellID, vtkFloatArray* filterSpec, float* 
         signal->GetTupleValue(i, tuple); // get first amplitude of the time signal
         filterSpec->GetTupleValue(i, filtertuple);
 
-        rmsSignal += pow(tuple[0],2.);
-        rmsFilter   += pow(filtertuple[0],2.);
+        rmsSignal += pow(tuple[0],2.f);
+        rmsFilter   += pow(filtertuple[0],2.f);
     }
 
     rmsSignal = sqrt(rmsSignal/this->numberPtsToCheckQuality);
