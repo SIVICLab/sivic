@@ -63,4 +63,23 @@ make the standalone version:
 Build a release version, and the .app file is under build/Release folder
 run make_standalone.csh
 
-build project in packagemaker which includes SIVIC.app
+##################################
+    create dmg
+##################################
+1.  new disk image from folder, select SIVIC_DISTRIBUTION
+    -> save as SIVIC_DISTRIBUTION.dmg
+double click on resulting in finder to see contents
+also “get info” 
+drag ./background/sivic_logo.icns onto icon in get_info window
+
+2.  create a new image ( + new image)  name it SIVIC.dmg
+
+3.  click on the info for the SIVIC.dmg and add (drag) the SIVIC_DISTRIBUTION.dmg into it.  Also, rename the image as SIVIC
+
+4.  add the sivic_logo.icns from inside the original SIVIC_DISTRIBUTION/.background to this outter disk image as well. 
+
+5.  create an alias to  “Applications” and drag that into the SIVIC.dmg (requires clicking on “Applications” in finder and selecting “show in enclosing folder”, then right click again and create an alias. drag the alias into the SIVIC.dmg folder
+
+6.  Also TBD.  add alias to install the OsiriX plugin:   /Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin
+
+eject the SIVIC.dmg and test

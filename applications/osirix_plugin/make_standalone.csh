@@ -1,7 +1,6 @@
 #!/bin/csh
 
 mkdir -p SIVIC.app/Contents/Resources
-mkdir -p SIVIC.app/.background
 
 cp -rp plugin_depends/tk8.5                                                     SIVIC.app/Contents/Resources
 cp -rp plugin_depends/tcl8.5                                                    SIVIC.app/Contents/Resources
@@ -11,7 +10,6 @@ cp SIVIC                                                                        
 cp standalone/Info.plist                                                        SIVIC.app/Contents
 cp Icons/prism_blue.icns                                                        SIVIC.app/Contents/Resources/prism.icns
 cp /usr/local/dicom/share/dcmtk/dicom.dic                                       SIVIC.app/Contents/Resources/
-cp sivic_logo_64_64.jpg                                                         SIVIC.app/.background/
 
 
 #   Add standalone tools: 
@@ -97,3 +95,7 @@ cp ../../working/release/applications/cmd_line/src/svk_psd_prescription_convert 
 
 chmod -R 775 SIVIC.app
 
+mkdir -p SIVIC_DISTRIBUTION 
+mkdir -p SIVIC_DISTRIBUTION/.background
+mv ./SIVIC.app ./SIVIC_DISTRIBUTION/
+cp -r sivic_logo.icns                                                           SIVIC_DISTRIBUTION/.background/
