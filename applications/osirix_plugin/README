@@ -66,20 +66,28 @@ run make_standalone.csh
 ##################################
     create dmg
 ##################################
-1.  new disk image from folder, select SIVIC_DISTRIBUTION
-    -> save as SIVIC_DISTRIBUTION.dmg
-double click on resulting in finder to see contents
-also “get info” 
-drag ./background/sivic_logo.icns onto icon in get_info window
+http://www.ploem.be/blog/?page_id=26
 
-2.  create a new image ( + new image)  name it SIVIC.dmg
+1.  create a new image ( + new image)  name it SIVIC.dmg
+2.  open it
+        drag SIVIC.app into the image
 
-3.  click on the info for the SIVIC.dmg and add (drag) the SIVIC_DISTRIBUTION.dmg into it.  Also, rename the image as SIVIC
+3. click on the info for the SIVIC.dmg and add (drag) the contents of SIVIC_DISTRIBUTION (SIVIC.app .background/) into it.  
 
-4.  add the sivic_logo.icns from inside the original SIVIC_DISTRIBUTION/.background to this outter disk image as well. 
+4.  in finder, rename the mounted image from "DISK IMAGE" to SIVIC
 
-5.  create an alias to  “Applications” and drag that into the SIVIC.dmg (requires clicking on “Applications” in finder and selecting “show in enclosing folder”, then right click again and create an alias. drag the alias into the SIVIC.dmg folder
+5.  set the sivic_logo.icns from inside the original SIVIC_DISTRIBUTION/.background as the icon for this .dmg (get info and drag/drop) 
+
+6.  create an alias to  “Applications” and drag that into the SIVIC.dmg (requires clicking on “Applications” in finder and selecting “show in enclosing folder”, then right click again and create an alias. drag the alias into the SIVIC.dmg folder
+
+        contents should include:  
+                .background
+                Applications alias
+                SIVIC.app
 
 6.  Also TBD.  add alias to install the OsiriX plugin:   /Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin
 
-eject the SIVIC.dmg and test
+7.  select SIVIC.dmg in left panel in disk utility:  right click and select "convert SIVIC.dmg"  (replace current version with compressed version)
+
+make a copy and test opening it
+
