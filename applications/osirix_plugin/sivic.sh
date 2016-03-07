@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 
-#   Copyright © 2009-2014 The Regents of the University of California.
+#   Copyright © 2009-2016 The Regents of the University of California.
 #   All Rights Reserved.
 # 
 #   Redistribution and use in source and binary forms, with or without
@@ -52,20 +52,20 @@ echo ${plugin_path}
 DYLD_FRAMEWORK_PATH="${plugin_path}/Frameworks"
 export DYLD_FRAMEWORK_PATH
 
-DYLD_LIBRARY_PATH="${plugin_path}:${plugin_path}/tcl8.5:${plugin_path}/Tk8.5:${plugin_path}/vtk-5.6:${plugin_path}/KWWidgets"
+DYLD_LIBRARY_PATH="${plugin_path}:${plugin_path}/tcl8.5/lib:${plugin_path}/tk8.5/lib"
 export DYLD_LIBRARY_PATH
 set | grep  DYLD_FRAMEWORK_PATH
 set | grep  DYLD_LIBRARY_PATH
 
-PATH="${plugin_path}:${plugin_path}/tcl8.5/:${plugin_path}/tk8.5/:${PATH}"
+PATH="${plugin_path}:${plugin_path}/tcl8.5/lib:${plugin_path}/tk8.5/lib:${PATH}"
 export PATH
 set | grep PATH
 
-TCL_LIBRARY="${plugin_path}/tcl8.5/"
+TCL_LIBRARY="${plugin_path}/tcl8.5/lib/tcl8.5"
 export TCL_LIBRARY
 set | grep TCL_LIBRARY
 
-TK_LIBRARY="${plugin_path}/tk8.5/"
+TK_LIBRARY="${plugin_path}/tk8.5/lib/tk8.5"
 export TK_LIBRARY
 set | grep TK_LIBRARY 
 

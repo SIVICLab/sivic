@@ -94,7 +94,7 @@ cp ../../working/release/applications/cmd_line/src/svk_psd_prescription_convert 
 
 
 chmod -R 775 SIVIC.app
-
+rm -rf SIVIC_DISTRIBUTION
 mkdir -p SIVIC_DISTRIBUTION 
 mkdir -p SIVIC_DISTRIBUTION/.background
 mv ./SIVIC.app ./SIVIC_DISTRIBUTION/
