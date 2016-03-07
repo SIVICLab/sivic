@@ -46,6 +46,7 @@
 
 current=`pwd`
 depend_dir="./plugin_depends"
+rm -rf ${depend_dir}
 mkdir ${depend_dir} 
 
 cp -RL /usr/local/tcl8.5 ${depend_dir}
