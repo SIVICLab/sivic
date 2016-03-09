@@ -53,6 +53,7 @@ extern "C" {
 #include <svkImageReader2.h>
 #include <svkImageThreshold.h>
 #include <svkUtils.h>
+#include <svkXMLUtils.h>
 #include <vtkXMLUtilities.h>
 #include <svkImageAlgorithmPipeline.h>
 
@@ -132,7 +133,7 @@ int main (int argc, char** argv)
         exit(1);
     }
 
-    vtkXMLDataElement* configXML = svkUtils::ReadXMLAndSubstituteVariables( configFileName, xmlVariables);
+    vtkXMLDataElement* configXML = svkXMLUtils::ReadXMLAndSubstituteVariables( configFileName, xmlVariables);
 
     svkImageAlgorithmPipeline* pipeline = svkImageAlgorithmPipeline::New();
     pipeline->SetInputPortsFromXML(configXML);

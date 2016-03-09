@@ -616,6 +616,7 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     svk_image_stats
 	${SVK_LIBS}
+    svkXMLUtils
     vtkInfovis
 )
 
@@ -626,6 +627,7 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     svk_image_pipeline
 	${SVK_LIBS}
+    svkXMLUtils
     vtkInfovis
 )
 

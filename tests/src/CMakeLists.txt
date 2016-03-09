@@ -457,6 +457,7 @@ IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(
         svkDadSatsXMLTest_c
         ${SVK_LIBS}
+        svkXMLUtils
         vtkIO
     )
     ADD_EXECUTABLE(
@@ -466,6 +467,7 @@ IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(
         svkDadTrajectoryXMLTest_c
         ${SVK_LIBS}
+        svkXMLUtils
         vtkIO
     )
 ENDIF(NOT WIN32)
