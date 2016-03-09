@@ -56,6 +56,7 @@
 #include <vtkObject.h>
 #include <vtkXMLDataElement.h>
 #include <svkSatBandsXML.h>
+#include <svkXMLUtils.h>
 
 #include "svkTypes.h"
 

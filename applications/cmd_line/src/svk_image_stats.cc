@@ -53,6 +53,7 @@ extern "C" {
 #include <svkImageReader2.h>
 #include <svkImageThreshold.h>
 #include <svkUtils.h>
+#include <svkXMLUtils.h>
 #include <svkTypeUtils.h>
 #include <vtkXMLUtilities.h>
 #include <svkImageStatistics.h>
@@ -175,7 +176,7 @@ int main (int argc, char** argv)
     xmlVariables.push_back( rootNameVariable );
 
     // Lets start by reading the configuration file
-    vtkXMLDataElement* configXML = svkUtils::ReadXMLAndSubstituteVariables( configFileName, xmlVariables);
+    vtkXMLDataElement* configXML = svkXMLUtils::ReadXMLAndSubstituteVariables( configFileName, xmlVariables);
 
 
     if( verbose ) {
@@ -208,7 +209,7 @@ int main (int argc, char** argv)
         defaultMeasures.push_back("sum");
 
         string roiListPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:INPUT_ROI_LIST";
-        vtkXMLDataElement* roiListElem = svkUtils::FindNestedElementWithPath(configXML, roiListPath);
+        vtkXMLDataElement* roiListElem = svkXMLUtils::FindNestedElementWithPath(configXML, roiListPath);
         vector<string> defaultROIs;
         for( int i = 0; i < roiListElem->GetNumberOfNestedElements(); i++ ) {
             defaultROIs.push_back(roiListElem->GetNestedElement(i)->GetAttribute("input_id"));
@@ -216,7 +217,7 @@ int main (int argc, char** argv)
 
         int numMaps = 0;
         string imageListPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:INPUT_IMAGE_LIST";
-        vtkXMLDataElement* imageListElem = svkUtils::FindNestedElementWithPath(configXML, imageListPath);
+        vtkXMLDataElement* imageListElem = svkXMLUtils::FindNestedElementWithPath(configXML, imageListPath);
         vector<string> defaultImages;
         for( int i = 0; i < imageListElem->GetNumberOfNestedElements(); i++ ) {
             string inputImageName = imageListElem->GetNestedElement(i)->GetAttribute("input_id");
@@ -249,14 +250,14 @@ int main (int argc, char** argv)
         // Get smooth value
         // Get nbins value
         string nbinsElemPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:NUM_BINS";
-        vtkXMLDataElement* nbinsElem = svkUtils::FindNestedElementWithPath(configXML,nbinsElemPath);
+        vtkXMLDataElement* nbinsElem = svkXMLUtils::FindNestedElementWithPath(configXML,nbinsElemPath);
         if( nbinsElem != NULL ) {
             nbins = nbinsElem->GetCharacterData();
         } else {
             cout << "ERROR:no svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:NUM_BINS element in config file!" << endl;
         }
         string smoothElemPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:SMOOTH_BINS";
-        vtkXMLDataElement* smoothElem = svkUtils::FindNestedElementWithPath(configXML,smoothElemPath);
+        vtkXMLDataElement* smoothElem = svkXMLUtils::FindNestedElementWithPath(configXML,smoothElemPath);
         if( smoothElem != NULL ) {
             smooth = smoothElem->GetCharacterData();
         } else {
@@ -450,7 +451,7 @@ int main (int argc, char** argv)
         string normalMeasure = "";
         string normalROI = "";
         string normMethodPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:NORMALIZATION_METHOD";
-        vtkXMLDataElement* normMethodElem = svkUtils::FindNestedElementWithPath(configXML, normMethodPath);
+        vtkXMLDataElement* normMethodElem = svkXMLUtils::FindNestedElementWithPath(configXML, normMethodPath);
         if( normMethodElem != NULL ) {
             int normMethodEnum = svkTypeUtils::StringToInt(normMethodElem->GetCharacterData());
             if( normMethodEnum == svkImageStatistics::MODE ) {
@@ -459,11 +460,11 @@ int main (int argc, char** argv)
                 normalMeasure = "mean";
             }
             string normIndexPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:NORMALIZATION_ROI_INDEX";
-            vtkXMLDataElement* normIndexElem = svkUtils::FindNestedElementWithPath(configXML, normIndexPath);
+            vtkXMLDataElement* normIndexElem = svkXMLUtils::FindNestedElementWithPath(configXML, normIndexPath);
             if( normIndexElem != NULL ) {
                 int index = svkTypeUtils::StringToInt( normIndexElem->GetCharacterData() );
                 string roiListPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:INPUT_ROI_LIST";
-                vtkXMLDataElement* roiListElem = svkUtils::FindNestedElementWithPath(configXML, roiListPath);
+                vtkXMLDataElement* roiListElem = svkXMLUtils::FindNestedElementWithPath(configXML, roiListPath);
                 if( roiListElem != NULL ) {
                     vtkXMLDataElement* roiNormElem = roiListElem->GetNestedElement(index);
                     if(roiNormElem != NULL ) {

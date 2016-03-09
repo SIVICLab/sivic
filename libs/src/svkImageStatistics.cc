@@ -173,8 +173,8 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             nextResult->SetName("results");
             string imageLabel = image->GetDcmHeader()->GetStringValue("SeriesDescription");
             string roiLabel = roi->GetDcmHeader()->GetStringValue("SeriesDescription");
-            svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE", imageLabel);
-            svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",   roiLabel);
+            svkXMLUtils::CreateNestedXMLDataElement( nextResult, "IMAGE", imageLabel);
+            svkXMLUtils::CreateNestedXMLDataElement( nextResult, "ROI",   roiLabel);
             vtkXMLDataElement* statistics = vtkXMLDataElement::New();
             bool geometriesMatch = true;
             if( roi != NULL ) {
@@ -272,7 +272,7 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
         if( this->GetShouldCompute(COMPUTE_VOLUME)) {
             // Volume In Cubic Centimeters
             string volumeString = this->DoubleToString( (accumulator->GetVoxelCount()*pixelVolume)/1000.0 );
-            svkUtils::CreateNestedXMLDataElement( results, "volume", volumeString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "volume", volumeString);
         }
 
         if( this->GetShouldCompute(COMPUTE_MAX)) {
@@ -284,7 +284,7 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
                 max /= normalization;
             }
             string maxString = this->DoubleToString( max );
-            vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "max", maxString);
+            vtkXMLDataElement* elem = svkXMLUtils::CreateNestedXMLDataElement( results, "max", maxString);
             if( normalization != 0 ) {
                 elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
@@ -300,7 +300,7 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
                 min /= normalization;
             }
             string minString = this->DoubleToString( min );
-            vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "min", minString);
+            vtkXMLDataElement* elem = svkXMLUtils::CreateNestedXMLDataElement( results, "min", minString);
             if( normalization != 0 ) {
                 elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
@@ -312,7 +312,7 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
                 mean /= normalization;
             }
             string meanString = this->DoubleToString( mean );
-            vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "mean", meanString);
+            vtkXMLDataElement* elem = svkXMLUtils::CreateNestedXMLDataElement( results, "mean", meanString);
             if( normalization != 0 ) {
                 elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
@@ -326,7 +326,7 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
                 sum /= normalization;
             }
             string sumString = this->DoubleToString( sum );
-            vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "sum", sumString);
+            vtkXMLDataElement* elem = svkXMLUtils::CreateNestedXMLDataElement( results, "sum", sumString);
             if( normalization != 0 ) {
                 elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
@@ -338,7 +338,7 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
                 stdev /= normalization;
             }
             string stdevString = this->DoubleToString( stdev );
-            vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "sd", stdevString);
+            vtkXMLDataElement* elem = svkXMLUtils::CreateNestedXMLDataElement( results, "sd", stdevString);
             if( normalization != 0 ) {
                 elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
@@ -361,7 +361,7 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
                     }
                 }
                 string valueString = this->DoubleToString(mode);
-                svkUtils::CreateNestedXMLDataElement( results, "mode", valueString);
+                svkXMLUtils::CreateNestedXMLDataElement( results, "mode", valueString);
             }
         }
 
@@ -428,18 +428,18 @@ void svkImageStatistics::ComputeOrderStatistics(svkMriImageData* image, svkMriIm
 
         if( this->GetShouldCompute(COMPUTE_QUANTILES)) {
             string valueString = this->DoubleToString( decileResults->GetValueByName(0,"0.1-quantile").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "percent10", valueString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "percent10", valueString);
             valueString = this->DoubleToString( quartileResults->GetValueByName(0,"First Quartile").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "percent25", valueString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "percent25", valueString);
             valueString = this->DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "median", valueString);
             valueString = this->DoubleToString( quartileResults->GetValueByName(0,"Third Quartile").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "percent75", valueString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "percent75", valueString);
             valueString = this->DoubleToString( decileResults->GetValueByName(0,"0.9-quantile").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "percent90", valueString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "percent90", valueString);
         } else if( this->GetShouldCompute(COMPUTE_MEDIAN)) {
             string valueString = this->DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "median", valueString);
         }
 
 
@@ -493,13 +493,13 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
         /*
         if( this->GetShouldCompute(COMPUTE_SUM)){
             string valueString = this->DoubleToString( statResults->GetValueByName(0,"Sum").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "sum", valueString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "sum", valueString);
         }
         */
         if( this->GetShouldCompute(COMPUTE_MOMENT_2) && numPixelsInROI > 0 ) {
             if( statResults->GetRowData()->GetArray("M2")->GetNumberOfTuples() > 0 ){
                 string valueString = this->DoubleToString( statResults->GetValueByName(0,"M2").ToDouble() );
-                svkUtils::CreateNestedXMLDataElement( results, "moment2", valueString);
+                svkXMLUtils::CreateNestedXMLDataElement( results, "moment2", valueString);
             } else {
                 cout << "WARNING: Could not calculate M2 " << endl;
             }
@@ -507,7 +507,7 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
         if( this->GetShouldCompute(COMPUTE_MOMENT_3) && numPixelsInROI > 0 ){
             if( statResults->GetRowData()->GetArray("M3")->GetNumberOfTuples() > 0 ){
                 string valueString = this->DoubleToString( statResults->GetValueByName(0,"M3").ToDouble() );
-                svkUtils::CreateNestedXMLDataElement( results, "moment3", valueString);
+                svkXMLUtils::CreateNestedXMLDataElement( results, "moment3", valueString);
             } else {
                 cout << "WARNING: Could not calculate M3 " << endl;
             }
@@ -515,14 +515,14 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
         if( this->GetShouldCompute(COMPUTE_MOMENT_4) && numPixelsInROI > 0 ){
             if( statResults->GetRowData()->GetArray("M4")->GetNumberOfTuples() > 0 ){
                 string valueString = this->DoubleToString( statResults->GetValueByName(0,"M4").ToDouble() );
-                svkUtils::CreateNestedXMLDataElement( results, "moment4", valueString);
+                svkXMLUtils::CreateNestedXMLDataElement( results, "moment4", valueString);
             } else {
                 cout << "WARNING: Could not calculate M4 " << endl;
             }
         }
         if( this->GetShouldCompute(COMPUTE_VARIANCE)){
             string valueString = this->DoubleToString( statResults->GetValueByName(0,"Variance").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "variance", valueString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "variance", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_SAMPLE_KURTOSIS)){
             string valueString = this->DoubleToString( statResults->GetValueByName(0,"g2 Kurtosis").ToDouble() );
@@ -534,19 +534,19 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
                 valueString = "0.0";
             }
 
-            svkUtils::CreateNestedXMLDataElement( results, "kurtosis", valueString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "kurtosis", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_SAMPLE_SKEWNESS)){
             string valueString = this->DoubleToString( statResults->GetValueByName(0,"g1 Skewness").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "skewness", valueString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "skewness", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_POPULATION_KURTOSIS)){
             string valueString = this->DoubleToString( statResults->GetValueByName(0,"G2 Kurtosis").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "populationkurtosis", valueString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "populationkurtosis", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_POPULATION_SKEWNESS)){
             string valueString = this->DoubleToString( statResults->GetValueByName(0,"G1 Skewness").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "populationskewness", valueString);
+            svkXMLUtils::CreateNestedXMLDataElement( results, "populationskewness", valueString);
         }
     }
 }
@@ -603,7 +603,7 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                     value /= normalization;
                 }
                 string valueString = this->DoubleToString( value );
-                vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "mode", valueString);
+                vtkXMLDataElement* elem = svkXMLUtils::CreateNestedXMLDataElement( results, "mode", valueString);
                 if( normalization != 0 ) {
                     elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
                 }
@@ -623,23 +623,23 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                 if( this->GetShouldCompute(COMPUTE_QUANTILES)) {
                     if( ((double)i)/numIntervals == 0.1 ) {
                         string valueString = this->DoubleToString( percentile );
-                        elem = svkUtils::CreateNestedXMLDataElement( results, "percent10", valueString);
+                        elem = svkXMLUtils::CreateNestedXMLDataElement( results, "percent10", valueString);
                     } else if( ((double)i)/numIntervals == 0.25 ) {
                         string valueString = this->DoubleToString( percentile );
-                        elem = svkUtils::CreateNestedXMLDataElement( results, "percent25", valueString);
+                        elem = svkXMLUtils::CreateNestedXMLDataElement( results, "percent25", valueString);
                     } else if( ((double)i)/numIntervals == 0.5 ) {
                         string valueString = this->DoubleToString( percentile );
-                        elem = svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
+                        elem = svkXMLUtils::CreateNestedXMLDataElement( results, "median", valueString);
                     } else if( ((double)i)/numIntervals == 0.75 ) {
                         string valueString = this->DoubleToString( percentile );
-                        elem = svkUtils::CreateNestedXMLDataElement( results, "percent75", valueString);
+                        elem = svkXMLUtils::CreateNestedXMLDataElement( results, "percent75", valueString);
                     } else if( ((double)i)/numIntervals == 0.90 ) {
                         string valueString = this->DoubleToString( percentile );
-                        elem = svkUtils::CreateNestedXMLDataElement( results, "percent90", valueString);
+                        elem = svkXMLUtils::CreateNestedXMLDataElement( results, "percent90", valueString);
                     }
                 } else if( this->GetShouldCompute(COMPUTE_MEDIAN) && ((double)i)/numIntervals == 0.5 ) {
                         string valueString = this->DoubleToString( percentile );
-                        elem = svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
+                        elem = svkXMLUtils::CreateNestedXMLDataElement( results, "median", valueString);
                 }
                 if( elem != NULL && normalization != 0) {
                     elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
