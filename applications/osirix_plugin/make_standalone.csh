@@ -4,7 +4,7 @@ mkdir -p SIVIC.app/Contents/Resources
 
 cp -rp plugin_depends/tk8.5                                                     SIVIC.app/Contents/Resources
 cp -rp plugin_depends/tcl8.5                                                    SIVIC.app/Contents/Resources
-cp ../../working/release/applications/sivic_app/Darwin_i386/sivic         SIVIC.app/Contents/Resources
+cp ../../working/release/applications/sivic_app/Darwin_i386/sivic               SIVIC.app/Contents/Resources
 cp sivic.sh                                                                     SIVIC.app/Contents/Resources
 cp SIVIC                                                                        SIVIC.app/SIVIC.sh
 cp standalone/Info.plist                                                        SIVIC.app/Contents
@@ -94,4 +94,8 @@ cp ../../working/release/applications/cmd_line/src/svk_psd_prescription_convert 
 
 
 chmod -R 775 SIVIC.app
-
+rm -rf SIVIC_DISTRIBUTION
+mkdir -p SIVIC_DISTRIBUTION 
+mkdir -p SIVIC_DISTRIBUTION/.background
+mv ./SIVIC.app ./SIVIC_DISTRIBUTION/
+cp -r sivic_logo.icns                                                           SIVIC_DISTRIBUTION/.background/
