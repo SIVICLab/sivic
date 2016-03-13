@@ -159,7 +159,8 @@ void svkIdfVolumeWriter::WriteData()
     int numSlices = hdr->GetNumberOfSlices();
     int numVolumes = this->GetImageDataInput(0)->GetPointData()->GetNumberOfArrays();
 
-    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
+    int vtkDataType = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() ); 
+    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( vtkDataType ); 
     if ( dataType == svkDcmHeader::SIGNED_FLOAT_8 ) {
         this->InitDoublePixelRange(); 
     }
@@ -406,7 +407,8 @@ string svkIdfVolumeWriter::GetHeaderString( int vol )
         << date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3]
         << endl;
 
-    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
+    int vtkDataType = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() ); 
+    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( vtkDataType ); 
     if (dataType == svkDcmHeader::UNSIGNED_INT_1) {
         out << "filetype:   2     entry/pixel:  1     DICOM format images" << endl;
     } else if (dataType == svkDcmHeader::UNSIGNED_INT_2) {
@@ -418,8 +420,10 @@ string svkIdfVolumeWriter::GetHeaderString( int vol )
         out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
     } else if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
         out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
+    } else {
+        cout << "ERROR: Can not determine IDF filetype." << endl;
+        exit(1);
     }
-
 
     double center[3];
     this->GetIDFCenter(center);

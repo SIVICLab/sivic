@@ -127,12 +127,12 @@ void svkImageFourierCenter::ThreadedExecute(vtkImageData *inData, vtkImageData *
         static_cast<double>(this->GetNumberOfIterations());
   
     // this filter expects that the input be doubles.
-    if (inData->GetScalarType() != VTK_DOUBLE) {
+    if (  vtkImageData::GetScalarType( inData->GetInformation() ) != VTK_DOUBLE) {
         vtkErrorMacro(<< "Execute: Input must be be type double.");
         return;
     }
     // this filter expects that the output be doubles.
-    if (outData->GetScalarType() != VTK_DOUBLE) {
+    if (vtkImageData::GetScalarType( outData->GetInformation() ) != VTK_DOUBLE) {
         vtkErrorMacro(<< "Execute: Output must be be type double.");
         return;
     }

@@ -173,7 +173,8 @@ void svkDICOMEnhancedMRIWriter::InitPixelData( svkDcmHeader* dcmHeader )
 
     int offset = 0; 
 
-    switch ( this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ) ) {
+    int vtkDataType = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() ); 
+    switch ( this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( vtkDataType ) ) {
 
         case svkDcmHeader::UNSIGNED_INT_1:
         {

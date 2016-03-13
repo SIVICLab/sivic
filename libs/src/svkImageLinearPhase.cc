@@ -241,7 +241,7 @@ void svkImageLinearPhase::ThreadedExecute(vtkImageData *inData, vtkImageData *ou
   outPtr = outData->GetScalarPointerForExtent(outExt);
   
   // this filter expects that the output be doubles.
-  if (outData->GetScalarType() != VTK_DOUBLE)
+  if (vtkImageData::GetScalarType( outData->GetInformation() ) != VTK_DOUBLE)
     {
     vtkErrorMacro(<< "Execute: Output must be be type double.");
     return;
@@ -256,7 +256,7 @@ void svkImageLinearPhase::ThreadedExecute(vtkImageData *inData, vtkImageData *ou
     }
 
   // choose which templated function to call.
-  switch (inData->GetScalarType())
+  switch ( vtkImageData::GetScalarType( inData->GetInformation() ) )
     {
     vtkTemplateMacro(
       vtkImageLinearPhaseExecute(this, inData, inExt, 

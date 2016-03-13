@@ -781,7 +781,10 @@ void svkOverlayViewController::UpdateCursorLocation(vtkObject* subject, unsigned
         out << projection[2];
         writePos += 9;
         out.seekp( writePos );
-		int dataType = targetData->GetDcmHeader()->GetPixelDataType( targetData->GetScalarType() );
+
+        int vtkDataType =  vtkImageData::GetScalarType( targetData->GetInformation() ); 
+		int dataType = targetData->GetDcmHeader()->GetPixelDataType( vtkDataType ); 
+
         if (dataType == svkDcmHeader::UNSIGNED_INT_1 || dataType == svkDcmHeader::UNSIGNED_INT_2 || dataType == svkDcmHeader::SIGNED_INT_2) {
 			out.precision(0);
         } else {
