@@ -188,6 +188,12 @@ void svkImageData::CopyMetaData( vtkDataObject* src, svkDcmHeader::DcmPixelDataF
     this->CopyDcos( src );
     if( castToFormat != svkDcmHeader::UNDEFINED ) {
         this->CastDataFormat( castToFormat );
+    } else {
+        cout << "svkImageData::DeepCopy::CoyMetaData: TYPE: " << vtkImageData::GetScalarType( src->GetInformation() ) << endl; 
+        vtkImageData::SetScalarType( 
+            vtkImageData::GetScalarType( src->GetInformation() ), 
+            this->GetInformation()
+        ); 
     }
 
 }
@@ -416,7 +422,6 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
         }
 
         this->GetDcmHeader()->SetPixelDataType( castToFormat );
-        //this->SetScalarType( dataTypeVtk );
         vtkDataObject::SetPointDataActiveScalarInfo(
             this->GetInformation(), 
             dataTypeVtk, 

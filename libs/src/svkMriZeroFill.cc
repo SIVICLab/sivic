@@ -228,6 +228,10 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     translateExtent->SetExtentTranslation( extentTranslation ); 
     translateExtent->SetInputData( inputData );
     translateExtent->Update(); 
+    vtkImageData::SetScalarType( 
+        vtkImageData::GetScalarType( inputData->GetInformation() ), 
+        translateExtent->GetOutput()->GetInformation() 
+    ); 
    
     // Now we can use the vtk pad algorithm 
     vtkImageConstantPad* pad = NULL;
@@ -236,6 +240,10 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     pad->SetConstant(0.0);
     pad->SetInputData(translateExtent->GetOutput());
     pad->Update();
+    vtkImageData::SetScalarType( 
+        vtkImageData::GetScalarType( inputData->GetInformation() ), 
+        pad->GetOutput()->GetInformation() 
+    ); 
 
     // Now let's move the origin to the appropriate location
     double* spacing = inputData->GetSpacing();
@@ -300,7 +308,6 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     linearShift->SetInputData( targetData );
     linearShift->Update();
 
-
     // We need to scale the image by the updated size
     // This is because the FFT scalse up by the number of points
     // and the IFFT divides by it.
@@ -313,7 +320,11 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     multiply->SetOperationToMultiplyByK();
     multiply->SetInputData( linearShift->GetOutput() );
     multiply->Update();
-   
+    vtkImageData::SetScalarType( 
+        vtkImageData::GetScalarType( linearShift->GetOutput()->GetInformation() ), 
+        multiply->GetOutput()->GetInformation() 
+    ); 
+
     targetData->DeepCopy(multiply->GetOutput());
 
     // After the Linear Phase the BitsAllocated and PixelRepresentation must be reset

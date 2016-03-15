@@ -126,6 +126,17 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
                             vtkInformationVector* outputVector 
                         );
 
+        int             SVKRequestDataPreExec( 
+                            vtkInformation* request, 
+                            vtkInformationVector** inputVector, 
+                            vtkInformationVector* outputVector 
+                        );
+        int             SVKRequestDataPostExec( 
+                            vtkInformation* request, 
+                            vtkInformationVector** inputVector, 
+                            vtkInformationVector* outputVector 
+                        );
+
         virtual void    ThreadedRequestData(
                             vtkInformation* request,
                             vtkInformationVector** inputVector,

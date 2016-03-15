@@ -311,6 +311,15 @@ void  svk4DImageData::GetImage(  svkImageData* image,
         );
     	image->SyncVTKImageDataToDcmHeader();
 
+        vtkDataArray* firstArray = this->GetCellData()->GetArray(0);
+        // We have to have at least one array to get an image from it
+        int numComponents = 1; 
+        if( firstArray != NULL ) {
+            numComponents = firstArray->GetNumberOfComponents();
+        }
+
+        vtkDataObject::SetPointDataActiveScalarInfo( image->GetInformation(), vtkDataType, numComponents );
+
         this->GetImage( image, point, indexArray, component, vtkDataType );
     }
 }

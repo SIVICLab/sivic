@@ -191,6 +191,7 @@ int svkDcmHeader::GetPixelDataType( int vtkDataType )
 {
     int bitsPerWord = this->GetIntValue( "BitsAllocated" );
     int pixRep = this->GetIntValue( "PixelRepresentation");
+    //cout << "GETPIXELDATATYPE: " << bitsPerWord << " " << pixRep << " " << vtkDataType << endl;
     if ( bitsPerWord == 8 && pixRep == 0 ) {
         return svkDcmHeader::UNSIGNED_INT_1;
     } else if ( bitsPerWord == 16 && pixRep == 0 ) {
