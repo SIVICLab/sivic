@@ -384,7 +384,7 @@ int main (int argc, char** argv)
         string fitSuccessMapImageName = outputFileName;
         fitSuccessMapImageName.append("_successmap");
         fitSuccessMapWriter->SetFileName( fitSuccessMapImageName.c_str() );
-        fitSuccessMapWriter->SetInput( hsvd->GetFitSuccessImage() );
+        fitSuccessMapWriter->SetInputData( hsvd->GetFitSuccessImage() );
 
         // ===============================================
         //  Set the input command line into the data set
