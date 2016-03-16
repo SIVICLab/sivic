@@ -293,7 +293,9 @@ void svkGEPFileReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInfo
     if ( ! this->onlyReadHeader ) {
         vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
+        vtkImageData::SetScalarType(VTK_FLOAT, outInfo);     
         svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
+        vtkImageData::SetScalarType(VTK_FLOAT, data->GetInformation());     
 
         vtkDebugMacro( << this->GetClassName() << " FileName: " << this->FileName );
         this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);
@@ -304,7 +306,6 @@ void svkGEPFileReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInfo
         this->GetOutput()->SetDcos(dcos);
 
         string pfileName = this->GetFileNames()->GetValue(0); 
-        //this->mapper->ReadData(pfileName, data);
         this->mapper->ReadData(this->GetFileNames(), data);
 
         //  resync any header changes with the svkImageData object's member variables
