@@ -414,6 +414,10 @@ int svkObliqueReslice::RequestData( vtkInformation* request, vtkInformationVecto
 
     	if( i == 0 ) {
 			//  Copy the vtkImageAlgo output to the allocated svkImageData output image
+            vtkImageData::SetScalarType(
+                vtkImageData::GetScalarType( this->reslicer->GetImageDataInput(0)->GetInformation()),
+                this->reslicer->GetOutput()->GetInformation()
+            );
 			this->GetOutput()->DeepCopy( this->reslicer->GetOutput() );
     	} else {
     		// We need to copy the data array after each update because it will be reused
