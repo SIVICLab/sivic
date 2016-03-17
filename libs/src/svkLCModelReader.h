@@ -62,7 +62,6 @@ class svkLCModelReader : public svkImageReader2
 
     public:
 
-        static svkLCModelReader* New();
         vtkTypeRevisionMacro( svkLCModelReader, svkImageReader2);
 
         // Description: 
@@ -86,6 +85,8 @@ class svkLCModelReader : public svkImageReader2
         string                                      GetSeriesDescription();
         void                                        GetVoxelIndexFromFileName(string lcmodelFileName, int* col, int* row, int* slice); 
         string                                      metName;
+        virtual string                              GetFileSeriesDescription( string fileName ); 
+
 
 
     private:

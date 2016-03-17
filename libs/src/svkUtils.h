@@ -56,8 +56,6 @@
 #include <vtkDirectory.h>
 #include <svkMriImageData.h>
 #include <svkMrsImageData.h>
-#include <vtkXMLDataElement.h>
-#include <vtkXMLUtilities.h>
 
 #ifdef WIN32
 #include <windows.h>
@@ -122,16 +120,6 @@ class svkUtils : public vtkObject
         static bool               AreValuesClose(double x[3], double y[3], double maxRatio = 0.01 );
         static int                GetNumberOfDigits( int value, bool isMinusDigit = false );
         static void               GetRealpath( const char * path, int size, char* realpath );
-        static vtkXMLDataElement* CreateNestedXMLDataElement( 
-                                    vtkXMLDataElement* parent, 
-                                    string name, 
-                                    string value 
-                                  );
-        static vtkXMLDataElement* ReadXMLAndSubstituteVariables(
-                                    string xmlFileName, 
-                                    vector<string> xmlVariables 
-                                  );
-        static vtkXMLDataElement* FindNestedElementWithPath( vtkXMLDataElement* root, string xmlPath);
         static void               ReadLine(ifstream* fs, istringstream* iss);   
 
 

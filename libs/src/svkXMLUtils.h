@@ -40,68 +40,73 @@
  */
 
 
-#ifndef SVK_DCM_MRS_VOLUME_READER_H
-#define SVK_DCM_MRS_VOLUME_READER_H
-
-#include <svkDcmVolumeReader.h>
+#ifndef SVK_XML_UTILS_H
+#define SVK_XML_UTILS_H
 
 
+#include <string>
+#include <map>
+#include <vector>
+#include <stdio.h>
+#include <sstream>
+#include <vtkObjectFactory.h>
+#include <vtkObject.h>
+#include <vtkXMLDataElement.h>
+#include <vtkXMLUtilities.h>
+
+#ifdef WIN32
+#include <windows.h>
+#define MAXPATHLEN 260
+#else
+#include <sys/param.h>
+#include <pwd.h>
+#endif
 namespace svk {
 
 
+using namespace std;
 /*! 
- *  
+ *  UCSF specific utilities.
  */
-
-class svkDcmMrsVolumeReader : public svkDcmVolumeReader 
+class svkXMLUtils : public vtkObject
 {
 
     public:
 
-        static svkDcmMrsVolumeReader* New();
-        vtkTypeRevisionMacro( svkDcmMrsVolumeReader, svkDcmVolumeReader );
+
+        // vtk type revision macro
+        vtkTypeRevisionMacro( svkXMLUtils, vtkObject );
+  
+        // vtk initialization 
+        static svkXMLUtils* New();  
+
+        static vtkXMLDataElement* CreateNestedXMLDataElement( 
+                                    vtkXMLDataElement* parent, 
+                                    string name, 
+                                    string value 
+                                  );
+        static vtkXMLDataElement* ReadXMLAndSubstituteVariables(
+                                    string xmlFileName, 
+                                    vector<string> xmlVariables 
+                                  );
+        static vtkXMLDataElement* FindNestedElementWithPath( vtkXMLDataElement* root, string xmlPath);
+        static bool               GetNestedElementCharacterDataWithPath( vtkXMLDataElement* root, string xmlPath, string* data );
+        static bool               SetNestedElementWithPath( vtkXMLDataElement* root, string xmlPath, string value );
+        static void               ReadLine(ifstream* fs, istringstream* iss);   
+        static vector<string>     SplitString( string str, string token );
 
 
-        // Description: 
-        // A descriptive name for this format
-        virtual const char* GetDescriptiveName() {
-            return "DICOM MRS File";
-        }
 
-        virtual svkImageReader2::ReaderType GetReaderType()
-        {
-            return svkImageReader2::DICOM_MRS;
-        }
+	protected:
 
-
-        //  Methods:
-        virtual int CanReadFile(const char* fname);
-
-
-    protected:
-
-        svkDcmMrsVolumeReader();
-        ~svkDcmMrsVolumeReader();
-
-        virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
-        virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
-
-
-    private:
-
-        virtual void    LoadData(svkImageData* data); 
-        virtual void    InitPrivateHeader(); 
-        void            SetCellSpectrum(svkImageData* data, int x, int y, int z, int timePt, int coilNum, int numComponents, float* specData); 
-
-        int             numFreqPts;
-        int             numTimePts;
-
-
+       svkXMLUtils();
+       ~svkXMLUtils();
+        
 };
 
 
 }   //svk
 
 
-#endif //SVK_DCM_MRS_VOLUME_READER_H
 
+#endif //SVK_XML_UTILS

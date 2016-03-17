@@ -127,7 +127,7 @@ long int svkTypeUtils::StringToLInt( string longIntString )
  *  @param intVal
  *  @return string equivalent
  */
-string svkTypeUtils::IntToString( int intVal )
+string svkTypeUtils::IntToString( long intVal )
 {
     ostringstream intStream;
     intStream << intVal;

@@ -45,6 +45,7 @@
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
 #include <svkObliqueReslice.h>
+#include <string>
 #ifdef WIN32
 extern "C" {
 #include <getopt.h>
@@ -201,7 +202,10 @@ int main (int argc, char** argv)
 
 
     svkObliqueReslice* reslicer = svkObliqueReslice::New();
-    reslicer->SetInput( inputReader->GetOutput() );
+    // We are going copy this image to avoid trigging the reader to change its extent
+    svkMriImageData* input = svkMriImageData::New();
+    input->DeepCopy(inputReader->GetOutput());
+    reslicer->SetInput( input );
     reslicer->SetInterpolationMode(interpolationMode);
 
     svkImageReader2* targetReader = readerFactory->CreateImageReader2(targetFileName.c_str());
@@ -211,42 +215,28 @@ int main (int argc, char** argv)
     }
     targetReader->SetFileName( targetFileName.c_str() );
     targetReader->Update(); 
-    reslicer->SetTargetDcosFromImage( targetReader->GetOutput() ); 
+    svkImageData* target = NULL;
+    if( svkMrsImageData::SafeDownCast(targetReader->GetOutput()) != NULL){
+        target = svkMrsImageData::New();
+        target->DeepCopy(targetReader->GetOutput());
+
+    } else if( svkMriImageData::SafeDownCast(targetReader->GetOutput()) != NULL){
+        target = svkMriImageData::New();
+        target->DeepCopy(targetReader->GetOutput());
+    }
+
+    reslicer->SetTarget( target );
 
     if ( magX != 1 || magY != 1 || magZ !=1 ) {
         reslicer->SetMagnificationFactors( magX, magY, magZ);
     }
 
     if (match) {
-        reslicer->SetOutputSpacing(targetReader->GetOutput()->GetSpacing());
-        // Get the ijk voxel position from the input image that matches the origin of the target
-        // NOTE: GetIndexFromPosition returns a double index, representing fractions of voxels 
-        double index[3];
-        inputReader->GetOutput()->GetIndexFromPosition(targetReader->GetOutput()->GetOrigin(), index);
-
-        double* inputSpacing = inputReader->GetOutput()->GetSpacing();
-        double* inputOrigin  = inputReader->GetOutput()->GetOrigin();
-        double outputOrigin[3];
-
-        // See comment in GetIndexFromPosition to understand why 0.5 is subtracted
-        outputOrigin[0] = inputOrigin[0] + (index[0] - 0.5) * inputSpacing[0];
-        outputOrigin[1] = inputOrigin[1] + (index[1] - 0.5) * inputSpacing[1];
-        outputOrigin[2] = inputOrigin[2] + (index[2] - 0.5) * inputSpacing[2];
-
-        reslicer->SetOutputOrigin(outputOrigin);
-        reslicer->SetOutputExtent(targetReader->GetOutput()->GetExtent());
+        reslicer->SetMatchSpacingAndFovOn();
     }
 
     reslicer->Update();
 
-    if (match) {
-        // Check if input and target/output centerpoints are aligned
-        bool aligned = reslicer->AreCenterpointsAligned();
-        if (!aligned) {
-            cout << "Input and Target centerpoints are not aligned- this is currently unsupported" << endl;
-            exit(1);
-        }
-    }
 
     vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New();
     svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( dataTypeOut ));
@@ -255,6 +245,8 @@ int main (int argc, char** argv)
     writer->SetInput( reslicer->GetOutput() );
     writer->Write();
     writer->Delete();
+    input->Delete();
+    target->Delete();
     inputReader->Delete();
     targetReader->Delete();
     reslicer->Delete();

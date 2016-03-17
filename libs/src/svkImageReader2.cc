@@ -49,6 +49,7 @@
 #include <vtkStringArray.h>
 #include <svkMriImageData.h>
 #include <svkMrsImageData.h>
+#include <svkImageReaderFactory.h>
 
 
 using namespace svk;
@@ -75,6 +76,7 @@ svkImageReader2::svkImageReader2()
     this->dataArray = NULL;
     this->readOneInputFile = false;
     this->onlyGlobFiles = false;
+    this->onlyReadHeader = false;
 
 }
 
@@ -561,6 +563,19 @@ void svkImageReader2::SetProvenance()
 }
 
 
+/*!
+ *  *  If only the idf header is to be read.  Sometimes this acts as a template for processing, but 
+ *   *  there isn't an associated data file.  
+ *    */
+void svkImageReader2::OnlyReadHeader(bool onlyReadHeader)
+{
+    this->onlyReadHeader = onlyReadHeader;
+    if (this->GetDebug()) {
+        vtkWarningWithObjectMacro(this, "onlyReadHeader: " << this->onlyReadHeader);
+    }
+}
+
+
 /*
  *  Globs file names for multi-file data formats and sets them into a vtkStringArray 
  *  accessible via the GetFileNames() method. 
@@ -584,11 +599,17 @@ void svkImageReader2::GlobFileNames()
     sortFileNames->NumericSortOn();
     sortFileNames->Update();
 
+    //  =================================================================
     //  If globed file names are not similar, use only the 0th group. 
     //  If there is one group that group is used.
     //  If there are multiple groups and the input file cannot be associated with a group then use input filename only.
     //  If readOneInputFile is set, the groupsToUse remains -1 and only the literal input file is read.  
-    int groupToUse = -1;     
+    //  If a group is going to be loaded, check that the series descriptions are consistent. 
+    //  =================================================================
+    
+    //  by default do not use a group, but rather just the single input file name (groupToUse = -1).  
+    int groupToUse = -1;    
+
     if ( this->readOneInputFile == false ) {
         if (sortFileNames->GetNumberOfGroups() > 1 ) {
 
@@ -616,7 +637,34 @@ void svkImageReader2::GlobFileNames()
     }
     
     if( groupToUse != -1 ) {
+
+        vtkStringArray* group = sortFileNames->GetNthGroup(groupToUse); 
+        int numFilesInGroup = group->GetNumberOfValues();
+        cout << "NUM VALUES: " <<  numFilesInGroup << endl;
+
+        //  Before setting the file names for this group, confirm that if more than
+        //  one file in the group that they all have the same series description
+        //  all have the same series description    
+        if ( numFilesInGroup > 1 ) {   
+            
+            string referenceSeriesDescription = this->GetFileSeriesDescription( fileName ); 
+            //cout << "REF SERIES DESCRIPTION: " << referenceSeriesDescription << endl; 
+      
+            vtkStringArray* seriesGroup = vtkStringArray::New();  
+            for (int i = 0; i < numFilesInGroup; i++) {
+                string groupFileName = sortFileNames->GetNthGroup( groupToUse )->GetValue(i); 
+                string seriesDescription = this->GetFileSeriesDescription( groupFileName ); 
+                //cout << "SERIES DESCRIPTION: " << seriesDescription << endl;
+                if ( seriesDescription.compare( referenceSeriesDescription ) == 0 ) {
+                    seriesGroup->InsertNextValue( groupFileName ); 
+                }
+            }
+            this->SetFileNames( seriesGroup ); 
+            seriesGroup->Delete(); 
+    } else {
         this->SetFileNames( sortFileNames->GetNthGroup( groupToUse ) );
+    }
+
     } else {
         vtkStringArray* inputFile = vtkStringArray::New();
         inputFile->InsertNextValue( fileName.c_str() );
@@ -639,3 +687,21 @@ void svkImageReader2::GlobFileNames()
     }
 }
 
+
+/*!
+ *  get the series description for this file for globbing purposes: 
+ */
+string svkImageReader2::GetFileSeriesDescription( string fileName ) 
+{
+
+    svkImageReader2::ReaderType readerType = this->GetReaderType(); 
+    svkImageReader2* reader = svkImageReaderFactory::CreateImageReader2( readerType );
+    reader->SetFileName( fileName.c_str() );
+    reader->OnlyReadOneInputFile();
+    reader->OnlyReadHeader( true ); 
+    reader->Update();
+    string seriesDescription =  reader->GetOutput()->GetDcmHeader()->GetStringValue( "SeriesDescription" ); 
+    reader->Delete(); 
+    return seriesDescription; 
+}
+      

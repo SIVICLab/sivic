@@ -69,6 +69,8 @@ void initCustomFilterVector( vector< vector<float> >* customFilter, float ppmVal
 int main (int argc, char** argv)
 {
 
+    int exitstatus = 1; // error!
+
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";   
     usemsg += "svk_hsvd -i input_file_name -o output_file_root [ -t output_data_type ]          \n"; 
@@ -81,7 +83,8 @@ int main (int argc, char** argv)
     usemsg += "   -t                type   Target data type:                                    \n";
     usemsg += "                                 2 = UCSF DDF                                    \n";
     usemsg += "                                 4 = DICOM_MRS (default)                         \n";
-    usemsg += "   -f                       Write out filter image                               \n"; 
+    usemsg += "   -f                       Write out filter image                               \n";
+    usemsg += "   -q                      Write out success map image                 \n";
     usemsg += "   -b                       only filter spectra in selection box, others         \n"; 
     usemsg += "                            are zeroed out.                                      \n"; 
     usemsg += "   -m                order  model order (default = 25)                           \n"; 
@@ -96,7 +99,7 @@ int main (int argc, char** argv)
     usemsg += "                                 2 = IGNORE_ERROR                                \n";
     usemsg += "   --singleThreaded         Execute the algorithm as a single                    \n";
     usemsg += "                            thread, e.g. on grids (default is multi-threaded).   \n";
-    usemsg += "   -h                       Print this help mesage.                              \n"; 
+    usemsg += "   -h                       Print this help message.                              \n";
     usemsg += "                                                                                 \n";  
     usemsg += "HSVD filter to remove baseline components from spectra.                          \n";  
     usemsg += "Default is to remove water by filtering all frequencies downfield                \n"; 
@@ -108,6 +111,7 @@ int main (int argc, char** argv)
     string  inputFileName; 
     string  outputFileName;
     bool    writeFilter = false; 
+    bool    writeFitSuccessMap = false;
     int     modelOrder = 25; 
     bool    limitToSelectionBox = false; 
     bool    filterWater = false; 
@@ -148,7 +152,7 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "i:o:t:m:fbwlh", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:t:m:fbqwlh", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -163,6 +167,9 @@ int main (int argc, char** argv)
                 break;
             case 'f':
                 writeFilter = true; 
+                break;
+            case 'q':
+                writeFitSuccessMap = true;
                 break;
             case 'b':
                 limitToSelectionBox = true; 
@@ -193,7 +200,7 @@ int main (int argc, char** argv)
                 break;
             case 'h':
                 cout << usemsg << endl;
-                exit(1);  
+                exit(exitstatus);
                 break;
             default:
                 ;
@@ -219,7 +226,7 @@ int main (int argc, char** argv)
          
     ) {
         cout << usemsg << endl;
-        exit(1); 
+        exit(exitstatus);
     }
 
     //  Validate filters: 
@@ -227,14 +234,14 @@ int main (int argc, char** argv)
         if ( customFilter[k].size() != 2 ) {
             cout << "Error, custom filter must be specfied with ppm1,ppm2 pairs " << endl;
             cout << usemsg << endl;
-            exit(1); 
+            exit(exitstatus);
         }
         cout << "Custom filter: " << customFilter[k][0] << " - " << customFilter[k][1] << endl;
     }
 
     if( ! svkUtils::FilePathExists( inputFileName.c_str() ) ) {
         cerr << "Input file can not be loaded (may not exist) " << inputFileName << endl;
-        exit(1); 
+        exit(exitstatus);
     }
 
     cout << "file name: " << inputFileName << endl;
@@ -261,7 +268,7 @@ int main (int argc, char** argv)
 
     if (reader == NULL) {
         cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
-        exit(1);
+        exit(exitstatus);
     }
 
     reader->SetFileName( inputFileName.c_str() );
@@ -308,6 +315,8 @@ int main (int argc, char** argv)
 
     hsvd->Update();
 
+    bool bAllCellsFit = hsvd->GetFitSuccessStatus();
+
     // ===============================================  
     //  Write the data out to the specified file type.  
     //  Use an svkImageWriterFactory to obtain the
@@ -318,7 +327,7 @@ int main (int argc, char** argv)
 
     if ( writer == NULL ) {
         cerr << "Can not determine writer of type: " << dataTypeOut << endl;
-        exit(1);
+        exit(exitstatus);
     }
 
 
@@ -343,7 +352,7 @@ int main (int argc, char** argv)
         svkImageWriter* filterWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
         if ( filterWriter == NULL ) {
             cerr << "Can not determine filter writer of type: " << dataTypeOut << endl;
-            exit(1);
+            exit(exitstatus);
         }
         string filterImageName = outputFileName; 
         filterImageName.append("_filter"); 
@@ -364,6 +373,33 @@ int main (int argc, char** argv)
         
     }
 
+    //  Write out the fit success map if requested.
+    if ( writeFitSuccessMap ) {
+
+        svkImageWriter* fitSuccessMapWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( svkImageWriterFactory::IDF ) );
+        if ( fitSuccessMapWriter == NULL ) {
+            cerr << "Can not determine filter writer of type: " << dataTypeOut << endl;
+            exit(exitstatus);
+        }
+        string fitSuccessMapImageName = outputFileName;
+        fitSuccessMapImageName.append("_successmap");
+        fitSuccessMapWriter->SetFileName( fitSuccessMapImageName.c_str() );
+        fitSuccessMapWriter->SetInput( hsvd->GetFitSuccessImage() );
+
+        // ===============================================
+        //  Set the input command line into the data set
+        //  provenance:
+        // ===============================================
+        hsvd->GetFitSuccessImage()->GetProvenance()->SetApplicationCommand( cmdLine );
+
+        // ===============================================
+        //  Write data to file:
+        // ===============================================
+        fitSuccessMapWriter->Write();
+        fitSuccessMapWriter->Delete();
+
+    }
+
     // ===============================================  
     //  Clean up: 
     // ===============================================  
@@ -371,7 +407,11 @@ int main (int argc, char** argv)
     reader->Delete();
     hsvd->Delete();
 
-    return 0; 
+    if (bAllCellsFit){
+        exitstatus = 0;
+    }
+
+    return exitstatus;
 }
 
 

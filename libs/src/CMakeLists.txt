@@ -279,6 +279,11 @@ ADD_LIBRARY(
     svkF2C.cc
 )
 
+ADD_LIBRARY(
+    svkXMLUtils
+
+    svkXMLUtils.cc
+)
 
 ADD_LIBRARY(
     svkTypeUtils
@@ -292,6 +297,7 @@ ADD_LIBRARY(
 
     svkFileUtils.cc
     svkSatBandsXML.cc
+    svkDataAcquisitionDescriptionXML.cc
 )
 
 

@@ -58,7 +58,6 @@ using namespace svk;
 
 
 vtkCxxRevisionMacro(svkLCModelReader, "$Rev$");
-vtkStandardNewMacro(svkLCModelReader);
 
 
 /*!
@@ -105,7 +104,7 @@ void svkLCModelReader::ExecuteInformation()
 
 
 /*!
- *
+ *  Construct a series descrition for the file being loaded
  */
 string svkLCModelReader::GetSeriesDescription()
 {
@@ -229,5 +228,16 @@ int svkLCModelReader::FillInputPortInformation( int port, vtkInformation* info )
     }
     */
     return 1;
+}
+
+
+/*!
+ *  get the series description for this file for globbing purposes to ensure all
+ *  files have the same series description.  For the LCModel reader this isn't 
+ *  relevant so just return an empty string.  
+ */
+string svkLCModelReader::GetFileSeriesDescription( string fileName )
+{
+    return ""; 
 }
 

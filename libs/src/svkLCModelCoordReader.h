@@ -65,6 +65,13 @@ class svkLCModelCoordReader : public svkLCModelReader
         static svkLCModelCoordReader* New();
         vtkTypeRevisionMacro( svkLCModelCoordReader, svkLCModelReader );
 
+        //  Enum reader type
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::LC_MODEL_COORD;
+        }
+        
+
         //  Methods:
         virtual int             CanReadFile( const char* fname );
         void                    SetDataStartDelimiter( string delimiterString ); 

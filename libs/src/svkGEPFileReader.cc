@@ -82,7 +82,7 @@ svkGEPFileReader::svkGEPFileReader()
     this->progressCallback->SetCallback( UpdateProgressCallback );
     this->progressCallback->SetClientData( (void*)this );
 
-    this->onlyParseHeader = false; 
+    this->onlyReadHeader = false; 
     this->checkSeriesUID  = true; 
 
     this->deidPatientId   = UNASSIGNED_ID; 
@@ -126,15 +126,6 @@ svkGEPFileReader::~svkGEPFileReader()
          //delete this->inputArgs[ mapIter->first ];  
         cout << " need to clean up memory" << endl; 
     }
-}
-
-
-/*!
- *
- */
-void svkGEPFileReader::OnlyParseHeader()
-{
-    this->onlyParseHeader = true; 
 }
 
 
@@ -185,11 +176,11 @@ int svkGEPFileReader::CanReadFile(const char* fname)
 
                 if ( isGEPFile ) { 
                     this->SetFileName( fname ); 
-                    this->ReadGEPFile(); 
-                    if ( this->onlyParseHeader ) {
+                    if ( this->onlyReadHeader ) {
                         //  Just for parsing header, don't care about mapping
                         isKnownPSD = true;
                     } else {
+                        this->ReadGEPFile(); 
                         // We may already have a mapper from can read.
                         if( this->mapper != NULL ) {
                             this->mapper->Delete();
@@ -261,7 +252,7 @@ void svkGEPFileReader::ExecuteInformation()
         this->InitDcmHeader(); 
 
         //  Only need to call this if we are using the data, not printing header
-        if ( ! this->onlyParseHeader ) {
+        if ( ! this->onlyReadHeader ) {
             this->SetupOutputInformation();
         }
 
@@ -299,7 +290,7 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
     this->tmpFileNames = NULL;
 
 
-    if ( ! this->onlyParseHeader ) {
+    if ( ! this->onlyReadHeader ) {
         vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
         svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
@@ -426,7 +417,7 @@ void svkGEPFileReader::InitDcmHeader()
     //  the svkImageData's DICOM header.
     this->ReadGEPFile(); 
 
-    if ( ! this->onlyParseHeader ) {
+    if ( ! this->onlyReadHeader ) {
         //  Fill in data set specific values using the appropriate mapper type:
         this->mapper = this->GetPFileMapper(); 
     
@@ -784,7 +775,7 @@ string svkGEPFileReader::GetSeriesUID(const char* fname)
 
             svkGEPFileReader* tmpReader = svkGEPFileReader::New();
             tmpReader->SetFileName(fname);
-            tmpReader->OnlyParseHeader(); 
+            tmpReader->OnlyReadHeader(true); 
             tmpReader->checkSeriesUID = false; 
             tmpReader->OnlyReadOneInputFile(); 
             tmpReader->Update();
@@ -3474,7 +3465,7 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, string key, string deidStri
 void svkGEPFileReader::ModifyRawField( string rawField, string value)
 {
 
-    this->OnlyParseHeader(); 
+    this->OnlyReadHeader(true); 
     this->ReadGEPFile(); 
 
     //  Now the pfMap has been initialized as follows.  Use the 
@@ -3544,7 +3535,7 @@ void svkGEPFileReader::SetDeidentificationLandmarkUID(string deidLandmarkUID)
 void svkGEPFileReader::Deidentify()
 {
 
-    this->OnlyParseHeader(); 
+    this->OnlyReadHeader(true); 
     this->ReadGEPFile(); 
 
     //  If ID isn't specified, then use default here: 

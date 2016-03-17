@@ -60,6 +60,7 @@
 #include <svkXML.h>
 #include <vtkAlgorithmOutput.h>
 #include <svkImageReaderFactory.h>
+#include <string>
 
 namespace svk {
 
@@ -105,6 +106,7 @@ class svkAlgorithmPortMapper : public vtkObject
             SVK_INT,
             SVK_DOUBLE ,
             SVK_STRING,
+            SVK_IMAGE_DATA,
             SVK_MR_IMAGE_DATA,
             SVK_MRS_IMAGE_DATA,
             SVK_4D_IMAGE_DATA,
@@ -197,6 +199,9 @@ class svkAlgorithmPortMapper : public vtkObject
 
         //! Setter that converts a filename into an svkImageData object
         void                     SetMRSImageInputPortValue( int port, string filename );
+
+        //! Basic getter.
+        svkImageData*            GetImageInputPortValue( int port, int connection = 0);
 
         //! Basic getter.
         svkMriImageData*         GetMRImageInputPortValue( int port, int connection = 0);

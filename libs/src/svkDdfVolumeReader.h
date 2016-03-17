@@ -76,6 +76,11 @@ class svkDdfVolumeReader : public svkImageReader2
             return "UCSF DDF Spectroscopy File";
         }
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::DDF;
+        }
+
         //  Methods:
         virtual int     CanReadFile( const char* fname );
 

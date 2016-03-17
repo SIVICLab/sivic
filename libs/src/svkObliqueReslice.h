@@ -47,6 +47,8 @@
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
 #include <vtkImageReslice.h>
+#include <vtkMatrix4x4.h>
+#include <vtkTransform.h>
 
 #include <svkImageAlgorithm.h>
 #include <svkImageAlgorithmWithPortMapper.h>
@@ -71,6 +73,8 @@ class svkObliqueReslice : public svkImageAlgorithmWithPortMapper
 
         enum {
             INPUT_IMAGE = 0,
+            TARGET_IMAGE,
+            MATCH_SPACING_AND_FOV,
             INTERPOLATION_MODE
         } svkObliqueResliceInput;
 
@@ -83,16 +87,12 @@ class svkObliqueReslice : public svkImageAlgorithmWithPortMapper
 
 
         //  Set the target orientation from a target image or the dcos explicitily:
-        void                    SetTargetDcosFromImage(svkImageData* image);
+        void                    SetTarget(svkImageData* image);
         void                    SetTargetDcos(double dcos[3][3]);   //fillinputportinfo
         void                    SetMagnificationFactors( float x, float y, float z); 
-        void                    SetOutputSpacing( double spacing[3] ); 
-        void                    SetOutputOrigin( double origin[3] ); 
-        void                    GetOutputOrigin( double origin[3] ); 
-        void                    SetOutputExtent( int extent[6] );
+        void                    SetMatchSpacingAndFovOn( );
         void                    SetInterpolationMode(int interpolationMode);
         svkInt*                 GetInterpolationMode();
-        bool                    AreCenterpointsAligned();
 
     protected:
 
@@ -118,15 +118,15 @@ class svkObliqueReslice : public svkImageAlgorithmWithPortMapper
         //  Methods:
         virtual void        UpdateProvenance();
         virtual void        UpdateHeader();
+        bool                GetMatchSpacingAndFovOn( );
         void                SetReslicedHeaderSpacing();
         void                SetReslicedHeaderPerFrameFunctionalGroups();
         void                SetReslicedHeaderOrientation();
         void                SetRotationMatrix( );
-        void                RotateAxes(double axesIn[3][3], double rotatedAxes[3][3]);
         void                Print3x3(double matrix[3][3], string name);
         bool                IsDcosInitialized(); 
-        bool                Magnify(); 
-        void                CalculateCenterpoint(svkImageData* image, double* imageCenter);
+        bool                Magnify();
+        void                ComputeTopLeftCorner(double newTlc[3]);
 
 
 
@@ -134,7 +134,6 @@ class svkObliqueReslice : public svkImageAlgorithmWithPortMapper
         vtkImageReslice*    reslicer;
         svkImageData*       reslicedImage; 
         double              targetDcos[3][3]; 
-        double              rotation[3][3]; 
         double              newSpacing[3]; 
         int                 newNumVoxels[3]; 
         float               magnification[3]; 

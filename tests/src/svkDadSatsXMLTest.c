@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/tests/src/svkSatBandsXML.c $
+ *  $Rev: 2083 $
+ *  $Author: jccrane $
+ *  $Date: 2014-10-20 18:48:28 -0700 (Mon, 20 Oct 2014) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -41,6 +41,7 @@
 
 
 #include <svkSatBandsXML.h>
+#include <svkDataAcquisitionDescriptionXML.h>
 #include <stdio.h>
 #include <stdlib.h>     
 
@@ -48,13 +49,18 @@
 int main(const int argc, const char **argv)
 {
     int   status; 
-    void* xml = svkSatBandsXML_New( argv[1], &status );
-    const char* outputfile = argv[2];
+    void* dadXML = svkDataAcquisitionDescriptionXML_Read( argv[1], &status );
+    void* satBandsXML = svkDataAcquisitionDescriptionXML_GetSatBandsXML( dadXML );
+    const char* outputfile = argv[2]; 
+    if( satBandsXML == NULL ) {
+        printf("ERROR: satBandsXML object could not be created from XML.\n"); 
+        exit(1);
+    }
 
-    int numberPressBoxSats = svkSatBandsXML_GetNumberOfPressBoxSats( xml ); 
+    int numberPressBoxSats = svkSatBandsXML_GetNumberOfPressBoxSats( satBandsXML ); 
     printf("Number of PressBox Sats = %d\n", numberPressBoxSats); 
 
-    int numberAutoSats = svkSatBandsXML_GetNumberOfAutoSats( xml ); 
+    int numberAutoSats = svkSatBandsXML_GetNumberOfAutoSats( satBandsXML ); 
     printf("Number of Auto Sats = %d\n", numberAutoSats); 
 
 
@@ -67,7 +73,7 @@ int main(const int argc, const char **argv)
 
     for ( satNumber = 1; satNumber <= numberPressBoxSats; satNumber++ ) {
 
-        svkSatBandsXML_GetPressBoxSat( xml, satNumber, &normalX, &normalY, &normalZ, &thickness, &distance ); 
+        svkSatBandsXML_GetPressBoxSat( satBandsXML, satNumber, &normalX, &normalY, &normalZ, &thickness, &distance ); 
 
         printf("number:    %d\n", satNumber ); 
         printf("normalX:   %f\n", normalX ); 
@@ -80,7 +86,7 @@ int main(const int argc, const char **argv)
 
     for ( satNumber = 1; satNumber <= numberAutoSats; satNumber++ ) {
 
-        svkSatBandsXML_GetAutoSat( xml, satNumber, &normalX, &normalY, &normalZ, &thickness, &distance ); 
+        svkSatBandsXML_GetAutoSat( satBandsXML, satNumber, &normalX, &normalY, &normalZ, &thickness, &distance ); 
 
         printf("number:    %d\n", satNumber ); 
         printf("normalX:   %f\n", normalX ); 
@@ -93,7 +99,7 @@ int main(const int argc, const char **argv)
 
     FILE* f = fopen( outputfile, "w" ); 
     if (f == NULL) {
-        printf("Error opening file!\n");
+        printf("Error opening file: %s!\n", outputfile );
         exit(1);
     }
 
@@ -101,7 +107,7 @@ int main(const int argc, const char **argv)
     float boxCenter[3];
     float boxThickness[3];
     float boxAngles[3];
-    svkSatBandsXML_GetPRESSBoxParameters(xml, boxCenter, boxThickness, boxAngles);
+    svkSatBandsXML_GetPRESSBoxParameters(satBandsXML, boxCenter, boxThickness, boxAngles);
 
     printf("\n\n");
     printf("PRESS: origin:   %f %f %f\n", boxCenter[0], boxCenter[1], boxCenter[2]);
@@ -118,7 +124,7 @@ int main(const int argc, const char **argv)
         float angles[3];
         float xmlthickness;
         float xmldistance;
-        svkSatBandsXML_GetAutoSatParameters(xml, satNumber, angles, &xmlthickness, &xmldistance);
+        svkSatBandsXML_GetAutoSatParameters(satBandsXML, satNumber, angles, &xmlthickness, &xmldistance);
         printf("SVK(SATBANDS): a = %f, b = %f, d = %f t = %f w = %f\n", 
                 angles[2], angles[1], xmldistance, xmlthickness, 0.0);
         fprintf(f, "SVK(SATBANDS): a = %f, b = %f, d = %f t = %f w = %f\n", 
@@ -127,7 +133,7 @@ int main(const int argc, const char **argv)
     
     fclose(f);
 
-    svkSatBandsXML_Delete( xml ); 
+    svkDataAcquisitionDescriptionXML_Delete( dadXML ); 
 
     return (0);
 }

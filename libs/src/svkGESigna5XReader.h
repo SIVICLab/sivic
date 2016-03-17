@@ -88,6 +88,11 @@ class svkGESigna5XReader : public svkImageReader2
             return "GE Genesis Signa 5X File";
         }
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::GE_SIGNA_5X;
+        }
+
 
     protected:
 

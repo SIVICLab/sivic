@@ -65,43 +65,52 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_image_mathematics --i1 input_file_name [ --i2 input_file_name ]          \n";  
-    usemsg += "                      -o output_file_root -p operation                       \n"; 
+    usemsg += "                      -o output_file_root -p operation                       \n";
+    usemsg += "                      [-s scale_factor] [--output_type typeID]               \n"; 
     usemsg += "                                                                             \n";  
     usemsg += "   --i1          input_file_name     Name of input file 1                    \n"; 
     usemsg += "   --i2          input_file_name     Name of input file 2 (binary operation) \n"; 
     usemsg += "   -o            output_file_root    Root name of output (no extension)      \n";  
-    usemsg += "   -p            operation            Operator:                              \n";  
+    usemsg += "   -p            operation           Operator:                               \n";  
     usemsg += "                                         1 = +                               \n";  
     usemsg += "                                         2 = -                               \n";  
     usemsg += "                                         3 = *                               \n";  
     usemsg += "                                         4 = /                               \n";  
     usemsg += "                                         5 = * k (Scale by constant)         \n";  
-    usemsg += "   -s            scale factor        float scaling factor                    \n";
+    usemsg += "   -s            scale_factor        float scaling factor                    \n";
+    usemsg += "   --output_type typeID              Optional output type:                   \n";
+    usemsg += "                                         1 = Unsigned Integer                \n";  
+    usemsg += "                                         2 = Float                           \n";
     usemsg += "   -v                                Verbose output.                         \n";
     usemsg += "   -h                                Print help mesage.                      \n";  
     usemsg += "                                                                             \n";  
-    usemsg += "Applies specified operation to input image                                   \n";  
-    usemsg += "                                                                             \n";  
+    usemsg += "Applies specified operation to one or more input images. Dynamically         \n";  
+    usemsg += "determines datatype of output image, unless specified.                       \n"; 
+    usemsg += "                                                                             \n"; 
 
     string inputFileName1; 
     string inputFileName2; 
     string outputFileName; 
-    int    operation = 0;  
+    int    operation     = 0;  
     float  scalingFactor = 1;
-    bool   verbose = false;
+    bool   verbose       = false;
+    int    outputType;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
+
     enum FLAG_NAME {
         FLAG_FILE_1 = 0, 
-        FLAG_FILE_2
+        FLAG_FILE_2,
+        OUTPUT_TYPE
     };
 
     static struct option long_options[] =
     {
-        {"i1",    required_argument, NULL,  FLAG_FILE_1},
-        {"i2",    required_argument, NULL,  FLAG_FILE_2},
+        {"i1",          required_argument, NULL,  FLAG_FILE_1},
+        {"i2",          required_argument, NULL,  FLAG_FILE_2},
+        {"output_type", required_argument, NULL,  OUTPUT_TYPE},
         {0, 0, 0, 0}
     };
 
@@ -110,7 +119,7 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:o:s:p:hv", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:o:s:p:fhv", long_options, &option_index)) != EOF) {
         switch (i) {
             case FLAG_FILE_1:
                 inputFileName1.assign( optarg );
@@ -126,6 +135,9 @@ int main (int argc, char** argv)
                 break;
             case 's':
                 scalingFactor = atof(optarg);
+                break;
+            case OUTPUT_TYPE:
+                outputType = atoi(optarg);
                 break;
             case 'v':
                 verbose = true;
@@ -151,6 +163,11 @@ int main (int argc, char** argv)
         cout << "Invalid operation: " << operation << endl;
         cout << usemsg << endl;
         exit(1); 
+    }
+
+    if (outputType && (outputType != 1 && outputType != 2) ) {
+        cout << "Output type must be 1 for Integer, 2 for Float." << endl;
+        exit(1);
     }
 
     if( verbose ) {
@@ -194,12 +211,13 @@ int main (int argc, char** argv)
     //  Set the input command line into the data set provenance:
     reader1->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
 
-    //  Scale image by constant factor: 
+    //  Set up math operations: 
     svkImageMathematics* math = svkImageMathematics::New();
     math->SetInput1( reader1->GetOutput() );
     if ( reader2 != NULL ) {
         math->SetInput2( reader2->GetOutput() ); 
     }
+
     if ( operation == 1 ) {
         math->SetOperationToAdd();   
     } else if ( operation == 2 ) {
@@ -211,7 +229,13 @@ int main (int argc, char** argv)
     } else if ( operation == 5 ) {
         math->SetOperationToMultiplyByK();   
         math->SetConstantK( scalingFactor );
-    } 
+    }
+
+    //  By default, output is the greater of the input datatypes
+    //  Explicity request float math on two integer inputs for float results
+    if(outputType) {
+        math->SetOutputType(outputType);
+    }
     math->Update();
 
     // If the type is supported be svkImageWriterFactory then use it, otherwise use the vtkXMLWriter

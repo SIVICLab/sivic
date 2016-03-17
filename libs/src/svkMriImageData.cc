@@ -100,7 +100,7 @@ svkMriImageData::~svkMriImageData()
  *  \param window output reference
  *  \param level output reference 
  *  \param numBins the number of bins used to make the histogram 
- *  \param excludeFactor the number of standard deviations used to define the window 
+ *  \param excludeFactor the percentage of pixels excluded from each end when defining the window. 
  *  
  */
 void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int numBins, double excludeFactor )
