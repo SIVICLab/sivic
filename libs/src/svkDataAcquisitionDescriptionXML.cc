@@ -45,7 +45,7 @@
 #include <svkSatBandsXML.h>
 #include <svkTypeUtils.h>
 #include <svkFileUtils.h>
-#include <svkUtils.h>
+#include <svkXMLUtils.h>
 #include <vtkXMLUtilities.h>
 #include <vtkXMLDataParser.h>
 #include <vtkMath.h>
@@ -240,21 +240,21 @@ void svkDataAcquisitionDescriptionXML::InitializeEmptyXMLFile()
     this->dataAcquisitionDescriptionXML->SetName("svk_data_acquisition_description");
 
     // Create Encoding Element
-    vtkXMLDataElement* versionElem = svkUtils::CreateNestedXMLDataElement( this->dataAcquisitionDescriptionXML, "version" , XML_VERSION );
-    vtkXMLDataElement* encodingElem = svkUtils::CreateNestedXMLDataElement( this->dataAcquisitionDescriptionXML, "encoding" , "" );
-    vtkXMLDataElement* trajectoryElem = svkUtils::CreateNestedXMLDataElement( encodingElem, "trajectory" , "" );
-    vtkXMLDataElement* trajectoryDescElem = svkUtils::CreateNestedXMLDataElement( encodingElem, "trajectoryDescription" , "" );
-    vtkXMLDataElement* trajectoryIDElem = svkUtils::CreateNestedXMLDataElement( trajectoryDescElem, "identifier" , "" );
-    vtkXMLDataElement* trajectoryCommentElem = svkUtils::CreateNestedXMLDataElement( trajectoryDescElem, "comment" , "" );
-    vtkXMLDataElement* spaceElem = svkUtils::CreateNestedXMLDataElement( encodingElem, "encodedSpace" , "" );
-    vtkXMLDataElement* matrixElem = svkUtils::CreateNestedXMLDataElement( spaceElem, "matrixSize" , "" );
-    vtkXMLDataElement* matrixXElem = svkUtils::CreateNestedXMLDataElement( matrixElem, "x" , "" );
-    vtkXMLDataElement* matrixYElem = svkUtils::CreateNestedXMLDataElement( matrixElem, "y" , "" );
-    vtkXMLDataElement* matrixZElem = svkUtils::CreateNestedXMLDataElement( matrixElem, "z" , "" );
-    vtkXMLDataElement* fovElem = svkUtils::CreateNestedXMLDataElement( spaceElem, "fieldOfView_mm" , "" );
-    vtkXMLDataElement* fovXElem = svkUtils::CreateNestedXMLDataElement( fovElem, "x" , "" );
-    vtkXMLDataElement* fovYElem = svkUtils::CreateNestedXMLDataElement( fovElem, "y" , "" );
-    vtkXMLDataElement* fovZElem = svkUtils::CreateNestedXMLDataElement( fovElem, "z" , "" );
+    vtkXMLDataElement* versionElem = svkXMLUtils::CreateNestedXMLDataElement( this->dataAcquisitionDescriptionXML, "version" , XML_VERSION );
+    vtkXMLDataElement* encodingElem = svkXMLUtils::CreateNestedXMLDataElement( this->dataAcquisitionDescriptionXML, "encoding" , "" );
+    vtkXMLDataElement* trajectoryElem = svkXMLUtils::CreateNestedXMLDataElement( encodingElem, "trajectory" , "" );
+    vtkXMLDataElement* trajectoryDescElem = svkXMLUtils::CreateNestedXMLDataElement( encodingElem, "trajectoryDescription" , "" );
+    vtkXMLDataElement* trajectoryIDElem = svkXMLUtils::CreateNestedXMLDataElement( trajectoryDescElem, "identifier" , "" );
+    vtkXMLDataElement* trajectoryCommentElem = svkXMLUtils::CreateNestedXMLDataElement( trajectoryDescElem, "comment" , "" );
+    vtkXMLDataElement* spaceElem = svkXMLUtils::CreateNestedXMLDataElement( encodingElem, "encodedSpace" , "" );
+    vtkXMLDataElement* matrixElem = svkXMLUtils::CreateNestedXMLDataElement( spaceElem, "matrixSize" , "" );
+    vtkXMLDataElement* matrixXElem = svkXMLUtils::CreateNestedXMLDataElement( matrixElem, "x" , "" );
+    vtkXMLDataElement* matrixYElem = svkXMLUtils::CreateNestedXMLDataElement( matrixElem, "y" , "" );
+    vtkXMLDataElement* matrixZElem = svkXMLUtils::CreateNestedXMLDataElement( matrixElem, "z" , "" );
+    vtkXMLDataElement* fovElem = svkXMLUtils::CreateNestedXMLDataElement( spaceElem, "fieldOfView_mm" , "" );
+    vtkXMLDataElement* fovXElem = svkXMLUtils::CreateNestedXMLDataElement( fovElem, "x" , "" );
+    vtkXMLDataElement* fovYElem = svkXMLUtils::CreateNestedXMLDataElement( fovElem, "y" , "" );
+    vtkXMLDataElement* fovZElem = svkXMLUtils::CreateNestedXMLDataElement( fovElem, "z" , "" );
 
     versionElem->Delete();
     encodingElem->Delete();
@@ -286,7 +286,7 @@ int svkDataAcquisitionDescriptionXML::SetXMLFileName( string xmlFileName )
     // Now we have to remove the old xml file
     this->ClearXMLFile();
     this->xmlFileName = xmlFileName;
-    if( !svkUtils::FilePathExists( this->xmlFileName.c_str() ) ) {
+    if( !svkFileUtils::FilePathExists( this->xmlFileName.c_str() ) ) {
         cout << "ERROR, XML file not found:" << this->xmlFileName << endl;
         return 1;
 
@@ -385,7 +385,7 @@ int svkDataAcquisitionDescriptionXML::WriteXMLFile( string xmlFileName )
             this->dataAcquisitionDescriptionXML->PrintXML(cout, vtkIndent());
         }
         vtkXMLUtilities::WriteElementToFile( this->dataAcquisitionDescriptionXML, xmlFileName.c_str(), &indent );
-        if( svkUtils::FilePathExists(xmlFileName.c_str())) {
+        if( svkFileUtils::FilePathExists(xmlFileName.c_str())) {
             status = 0;
         }
     }
@@ -423,9 +423,9 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string ty
                     errorFound = true;
                 }
             } else {
-                paramElem =  svkUtils::CreateNestedXMLDataElement(trajDescElem, type, "");
-                nameElem =  svkUtils::CreateNestedXMLDataElement(paramElem, "name", name);
-                valueElem =  svkUtils::CreateNestedXMLDataElement(paramElem, "value", value);
+                paramElem =  svkXMLUtils::CreateNestedXMLDataElement(trajDescElem, type, "");
+                nameElem =  svkXMLUtils::CreateNestedXMLDataElement(paramElem, "name", name);
+                valueElem =  svkXMLUtils::CreateNestedXMLDataElement(paramElem, "value", value);
                 errorFound = false;
                 if( paramElem != NULL ) {
                     paramElem->Delete();
@@ -463,7 +463,7 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryParameter( vtkstd:
 {
     vtkstd::string parameterValue = "";
     vtkXMLDataElement* userParamElem = this->GetTrajectoryParameterElement(type, name);
-    vtkXMLDataElement* valueElem =  svkUtils::FindNestedElementWithPath(userParamElem, "value");
+    vtkXMLDataElement* valueElem =  svkXMLUtils::FindNestedElementWithPath(userParamElem, "value");
     if( valueElem != NULL ) {
         parameterValue = valueElem->GetCharacterData();
     } else {
@@ -491,12 +491,12 @@ vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetTrajectoryParameterEleme
                 paramElemName = paramElem->GetName();
             }
             if( !paramElemName.empty() && paramElemName == type ) {
-                vtkXMLDataElement* nameElem =  svkUtils::FindNestedElementWithPath(paramElem, "name");
+                vtkXMLDataElement* nameElem =  svkXMLUtils::FindNestedElementWithPath(paramElem, "name");
                 vtkstd::string paramName = "";
                 if( nameElem != NULL ) {
                     paramName = nameElem->GetCharacterData();
                 }
-                vtkXMLDataElement* valueElem =  svkUtils::FindNestedElementWithPath(paramElem, "value");
+                vtkXMLDataElement* valueElem =  svkXMLUtils::FindNestedElementWithPath(paramElem, "value");
                 if( !paramName.empty() && paramName == name && valueElem != NULL ) {
                     userParamElem = paramElem;
                     break;
@@ -526,7 +526,7 @@ int svkDataAcquisitionDescriptionXML::GetXMLVersion()
 vtkXMLDataElement* svkDataAcquisitionDescriptionXML::FindNestedElementWithPath( string xmlPath )
 {
     vtkXMLDataElement* elem = NULL;
-    elem = svkUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, xmlPath );
+    elem = svkXMLUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, xmlPath );
     if( elem == NULL ) {
         cout << "ERROR: Could not locate element at path: " << xmlPath << endl;
     }
@@ -542,7 +542,7 @@ vtkXMLDataElement* svkDataAcquisitionDescriptionXML::FindNestedElementWithPath( 
 const char * svkDataAcquisitionDescriptionXML::GetDataWithPath( const char* xmlPath )
 {
     string data = "";
-    bool foundData = svkUtils::GetNestedElementCharacterDataWithPath( this->dataAcquisitionDescriptionXML, xmlPath, &data );
+    bool foundData = svkXMLUtils::GetNestedElementCharacterDataWithPath( this->dataAcquisitionDescriptionXML, xmlPath, &data );
     if( !foundData ) {
         cout << "ERROR: Could get character data at path: " << xmlPath << endl;
     }
@@ -559,7 +559,7 @@ const char * svkDataAcquisitionDescriptionXML::GetDataWithPath( const char* xmlP
  */
 int svkDataAcquisitionDescriptionXML::SetDataWithPath( const char* xmlPath, const char* value )
 {
-    bool wasSet = svkUtils::SetNestedElementWithPath( this->dataAcquisitionDescriptionXML, xmlPath, value);
+    bool wasSet = svkXMLUtils::SetNestedElementWithPath( this->dataAcquisitionDescriptionXML, xmlPath, value);
     if( !wasSet ) {
         cout << "ERROR: Could not set value <" << value << "> for element " << xmlPath << endl;
         return -1;
@@ -578,7 +578,7 @@ int svkDataAcquisitionDescriptionXML::SetDataWithPath( const char* xmlPath, cons
 vtkXMLDataElement* svkDataAcquisitionDescriptionXML::AddElementWithParentPath( const char* parentPath, const char* name )
 {
     vtkXMLDataElement* parent = this->FindNestedElementWithPath(parentPath);
-    vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( parent, name, "" );
+    vtkXMLDataElement* elem = svkXMLUtils::CreateNestedXMLDataElement( parent, name, "" );
     if( elem == NULL ) {
         cout << "ERROR: Could not add element " << name << " with parent path " << parentPath << endl;
     }

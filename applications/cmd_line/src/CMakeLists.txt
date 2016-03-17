@@ -755,6 +755,7 @@ TARGET_LINK_LIBRARIES(
     svk_image_stats
 	${SVK_LIBS}
     ${SVK_INFOVIS_LIBS}
+    svkXMLUtils
 )
 
 ADD_EXECUTABLE(
@@ -765,6 +766,7 @@ TARGET_LINK_LIBRARIES(
     svk_image_pipeline
 	${SVK_LIBS}
     ${SVK_INFOVIS_LIBS}
+    svkXMLUtils
 )
 
 ADD_EXECUTABLE(

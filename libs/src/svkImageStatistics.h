@@ -67,6 +67,7 @@
 #include <svkDataValidator.h>
 #include <vtkSortDataArray.h>
 #include <vtkVariant.h>
+#include <svkXMLUtils.h>
 
 namespace svk {
 

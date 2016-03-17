@@ -869,8 +869,8 @@ bool svkHSVD::GetFilterFailStatus(int cellID, vtkFloatArray* filterSpec, float* 
         signal->GetTupleValue(i, tuple); // get first amplitude of the time signal
         filterSpec->GetTupleValue(i, filtertuple);
 
-        rmsSignal += pow(tuple[0],2.);
-        rmsFilter   += pow(filtertuple[0],2.);
+        rmsSignal += pow(tuple[0],2.f);
+        rmsFilter   += pow(filtertuple[0],2.f);
     }
 
     rmsSignal = sqrt(rmsSignal/this->numberPtsToCheckQuality);
@@ -1048,19 +1048,26 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
 
 bool svkHSVD::GetFitSuccessStatus(){
 
+    svkDcmHeader::DimensionVector dimensionVector =  this->fitSuccessMap->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector loopVector = dimensionVector;
     bool bResult = false;
+
     if (this->fitSuccessMap == NULL){
         return bResult;
     }
-
+    bResult = true;
     int numCells = this->fitSuccessMap->GetNumberOfCells();
 
-    bResult = (*(this->fitSuccessMap->GetImagePixel(0)) == 1.0?true:false); // first cell
-
-    for (int i=1; i<numCells && (bResult == true);i++){
-        bResult &=  (*(this->fitSuccessMap->GetImagePixel(i)) == 1.0?true:false);
+    for (int i=0; i<numCells && (bResult == true);i++){
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, i );
+        // If only PRESSBox we should only consider cells in the Box
+        if ( this->onlyFitInVolumeLocalization == true ) {
+            int spatialCellIndex = svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &dimensionVector, &loopVector);
+            if ( this->selectionBoxMask[spatialCellIndex] == 1 ){
+                bResult &=  (*(this->fitSuccessMap->GetImagePixel(i)) == 1.0?true:false);
+            }
+        }
     }
-
     return bResult;
 }
 
