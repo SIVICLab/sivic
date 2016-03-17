@@ -58,7 +58,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGEPFileReader, "$Rev$");
+//vtkCxxRevisionMacro(svkGEPFileReader, "$Rev$");
 vtkStandardNewMacro(svkGEPFileReader);
 
 
@@ -278,7 +278,7 @@ void svkGEPFileReader::ExecuteInformation()
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkGEPFileReader::ExecuteData(vtkDataObject* output)
+void svkGEPFileReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     this->FileNames = vtkStringArray::New();
@@ -293,7 +293,9 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
     if ( ! this->onlyReadHeader ) {
         vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-        svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+        vtkImageData::SetScalarType(VTK_FLOAT, outInfo);     
+        svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
+        vtkImageData::SetScalarType(VTK_FLOAT, data->GetInformation());     
 
         vtkDebugMacro( << this->GetClassName() << " FileName: " << this->FileName );
         this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);
@@ -304,7 +306,6 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
         this->GetOutput()->SetDcos(dcos);
 
         string pfileName = this->GetFileNames()->GetValue(0); 
-        //this->mapper->ReadData(pfileName, data);
         this->mapper->ReadData(this->GetFileNames(), data);
 
         //  resync any header changes with the svkImageData object's member variables

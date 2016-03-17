@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkPlotLine, "$Rev$");
+//vtkCxxRevisionMacro(svkPlotLine, "$Rev$");
 vtkStandardNewMacro(svkPlotLine);
 
 

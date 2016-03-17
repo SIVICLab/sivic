@@ -105,7 +105,7 @@ int main (int argc, char** argv)
     //  Pass data through your algorithm:
     // ===============================================  
     svkAlgoTemplate* algo = svkAlgoTemplate::New();
-    algo->SetInput( reader->GetOutput() ); 
+    algo->SetInputData( reader->GetOutput() ); 
     algo->Update();
 
 
@@ -127,7 +127,7 @@ int main (int argc, char** argv)
     // ===============================================  
     //  Write output of algorithm to file:    
     // ===============================================  
-    writer->SetInput( algo->GetOutput() );
+    writer->SetInputData( algo->GetOutput() );
     writer->Write();
 
 

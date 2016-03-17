@@ -79,7 +79,7 @@ class svkMRSKinetics: public svkImageAlgorithm
 
     public:
 
-        vtkTypeRevisionMacro( svkMRSKinetics, svkImageAlgorithm);
+        vtkTypeMacro( svkMRSKinetics, svkImageAlgorithm);
         static                  svkMRSKinetics* New();
 
         typedef enum {

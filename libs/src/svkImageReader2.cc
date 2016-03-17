@@ -55,7 +55,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageReader2, "$Rev$");
+//vtkCxxRevisionMacro(svkImageReader2, "$Rev$");
 
 
 /*!
@@ -360,32 +360,40 @@ void svkImageReader2::SetupOutputScalarData()
         //  ============================
         //  Set data type:
         //  ============================
+        vtkInformation* outInfo = this->GetOutput()->GetInformation(); 
+            
         if (  this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
             this->SetDataScalarTypeToUnsignedChar();
             this->dataArray = vtkUnsignedCharArray::New();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::UNSIGNED_INT_1 );
+            vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_UNSIGNED_CHAR, 1);
         } else if (  this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
             this->SetDataScalarTypeToUnsignedShort();
             this->dataArray = vtkUnsignedShortArray::New();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::UNSIGNED_INT_2 );
+            vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_UNSIGNED_SHORT, 1);
         } else if (  this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
             this->SetDataScalarTypeToShort();
             this->dataArray = vtkShortArray::New();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::SIGNED_INT_2 );
+            vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_SHORT, 1);
         } else if (  this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
             this->SetDataScalarTypeToFloat();
             this->dataArray = vtkFloatArray::New();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::SIGNED_FLOAT_4 );
+            vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_FLOAT, 1);
         } else if (  this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_8 ) {
             this->SetDataScalarTypeToDouble();
             this->dataArray = vtkDoubleArray::New();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::SIGNED_FLOAT_8 );
+            vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_DOUBLE, 1);
         } else {
             vtkErrorWithObjectMacro( this, "Unsupported data type: " << this->GetFileType() );
         }
 
         this->dataArray->SetName("pixels");
         this->SetNumberOfScalarComponents(1);
+
     } 
 }
 

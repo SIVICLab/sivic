@@ -65,7 +65,7 @@ class svkTransform : public svkImageInPlaceFilter
     public:
 
         static svkTransform* New();
-        vtkTypeRevisionMacro( svkTransform, svkImageInPlaceFilter);
+        vtkTypeMacro( svkTransform, svkImageInPlaceFilter);
 
         void                SetTranslationLPS(float dL, float dP, float dS);
         void                SetTranslationCRS(float dx, float dy, float dz);

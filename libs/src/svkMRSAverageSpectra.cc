@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRSAverageSpectra, "$Rev$");
+//vtkCxxRevisionMacro(svkMRSAverageSpectra, "$Rev$");
 vtkStandardNewMacro(svkMRSAverageSpectra);
 
 

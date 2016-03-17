@@ -99,7 +99,7 @@ class svkImageMathematics : public vtkImageMathematics
         svkAlgorithmPortMapper* GetPortMapper();
 
 
-        vtkTypeRevisionMacro( svkImageMathematics, vtkImageMathematics);
+        vtkTypeMacro( svkImageMathematics, vtkImageMathematics);
         virtual void    Update(); 
 
         //! Prints all input parameters set.

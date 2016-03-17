@@ -50,7 +50,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkFastCellData, "$Rev$");
+//vtkCxxRevisionMacro(svkFastCellData, "$Rev$");
 vtkStandardNewMacro(svkFastCellData);
 
 

@@ -126,7 +126,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
         } svkNormalizationOptions;
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageStatistics, svkGenericAlgorithmWithPortMapper );
+        vtkTypeMacro( svkImageStatistics, svkGenericAlgorithmWithPortMapper );
   
         // vtk initialization 
         static svkImageStatistics* New();

@@ -234,7 +234,7 @@ int main (int argc, char** argv)
     if ( transformSpecDomain ) {
 
         svkMrsImageFFT* imageFFT = svkMrsImageFFT::New();
-        imageFFT->SetInput( reader->GetOutput() );
+        imageFFT->SetInputData( reader->GetOutput() );
 
         imageFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL ); 
         string specDomain = hdr->GetStringValue( "SignalDomainColumns"); 
@@ -258,7 +258,7 @@ int main (int argc, char** argv)
 
         svkMrsImageFFT* spatialFFT = svkMrsImageFFT::New();
 
-        spatialFFT->SetInput( reader->GetOutput() );
+        spatialFFT->SetInputData( reader->GetOutput() );
         spatialFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
 
         string domainCol = hdr->GetStringValue( "SVK_ColumnsDomain");
@@ -293,7 +293,7 @@ int main (int argc, char** argv)
     }
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( svkMrsImageData::SafeDownCast( reader->GetOutput() ) );
+    writer->SetInputData( svkMrsImageData::SafeDownCast( reader->GetOutput() ) );
 
     // ===============================================  
     //  Set the input command line into the data set 

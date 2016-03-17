@@ -61,7 +61,7 @@ class svkDICOMMRIWriter : public svkDICOMImageWriter
     public:
 
         static svkDICOMMRIWriter* New();
-        vtkTypeRevisionMacro( svkDICOMMRIWriter, svkDICOMImageWriter);
+        vtkTypeMacro( svkDICOMMRIWriter, svkDICOMImageWriter);
 
         //  Methods:
         virtual void    Write();

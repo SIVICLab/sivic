@@ -294,7 +294,7 @@ int main (int argc, char** argv)
         if ( onlyQuantifySelectedVolume ) { 
             quantMets->LimitToSelectedVolume();
         }    
-        quantMets->SetInput( reader->GetOutput() ); 
+        quantMets->SetInputData( reader->GetOutput() ); 
         quantMets->Update();
         vtkstd::vector<svkMriImageData*>* metMapVector = quantMets->GetMetMaps();
     
@@ -310,7 +310,7 @@ int main (int argc, char** argv)
             outputMap.append("/");    
             outputMap.append( (*metMapVector)[mapId]->GetDcmHeader()->GetStringValue("SeriesDescription") );    
             writer->SetFileName( outputMap.c_str() ); 
-            writer->SetInput( (*metMapVector)[mapId] );
+            writer->SetInputData( (*metMapVector)[mapId] );
     
             //  Set the input command line into the data set provenance:
             reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
@@ -321,7 +321,7 @@ int main (int argc, char** argv)
     } else {
 
         svkMetaboliteMap* quant = svkMetaboliteMap::New();
-        quant->SetInput( reader->GetOutput() ); 
+        quant->SetInputData( reader->GetOutput() ); 
 
         if ( isVerbose ) { 
             quant->SetVerbose( isVerbose ); 
@@ -387,7 +387,7 @@ int main (int argc, char** argv)
             }
     
             writer->SetFileName( outputFileRoot.c_str() );
-            writer->SetInput( quant->GetOutput() );
+            writer->SetInputData( quant->GetOutput() );
     
             //  Set the input command line into the data set provenance:
             reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );

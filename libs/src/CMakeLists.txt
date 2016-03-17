@@ -91,10 +91,10 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE( VTK REQUIRED )
-IF(VTK_FOUND)
-  INCLUDE(${VTK_USE_FILE})
-ENDIF(VTK_FOUND)
+#FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE)
+#IF(VTK_FOUND)
+#  INCLUDE(${VTK_USE_FILE})
+#ENDIF(VTK_FOUND)
 
 
 
@@ -316,11 +316,7 @@ IF( BUILD_VIZ_LIBRARY )
         svkDataViewController.cc
         svkPlotGridView.cc
         svkPlotGridViewController.cc
-        svkDetailedPlotDirector.cc
-        svkXYPlotActor.cc
         svkOverlaySelector.cc
-        svkOverlayView.cc
-        svkOverlayViewController.cc
         svkLabeledDataMapper.cc
         svkSatBandSet.cc
         svkImageTopologyGenerator.cc
@@ -333,6 +329,11 @@ IF( BUILD_VIZ_LIBRARY )
         svkImageMapToColors.cc
         svkLabeledDataMapper.cc
         svkVizUtils.cc
+        svkXYPlotActor.cc
+        svkXYPlotActorConnections.cc
+        svkOverlayView.cc
+        svkOverlayViewController.cc
+        svkDetailedPlotDirector.cc
         ${SVK_ORIENTED_IMAGE_ACTOR_SRC}
     )
 ENDIF( BUILD_VIZ_LIBRARY )

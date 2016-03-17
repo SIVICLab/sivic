@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkPlotGridView, "$Rev$");
+//vtkCxxRevisionMacro(svkPlotGridView, "$Rev$");
 vtkStandardNewMacro(svkPlotGridView);
 
 
@@ -93,8 +93,15 @@ svkPlotGridView::svkPlotGridView()
     this->SetProp( svkPlotGridView::VOL_SELECTION, NULL );
     this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrids[0]->GetPlotGridActor()  );
 
+    this->detailedPlotDirector = svkDetailedPlotDirector::New();
+    this->SetProp( svkPlotGridView::DETAILED_PLOT, this->detailedPlotDirector->GetPlotActor());
+    this->TurnPropOn( svkPlotGridView::DETAILED_PLOT );
+    this->SetProp( svkPlotGridView::RULER, this->detailedPlotDirector->GetRuler());
+    this->TurnPropOn( svkPlotGridView::RULER );
+
     svkOrientedImageActor* overlayActor = svkOrientedImageActor::New();
     this->SetProp( svkPlotGridView::OVERLAY_IMAGE, overlayActor );
+    this->TurnPropOff( svkPlotGridView::OVERLAY_IMAGE );
 	vtkActor2D* metActor = vtkActor2D::New();
 	this->SetProp( svkPlotGridView::OVERLAY_TEXT, metActor );
 	metActor->Delete();
@@ -102,11 +109,6 @@ svkPlotGridView::svkPlotGridView()
 
     overlayActor->Delete();
 
-    this->detailedPlotDirector = svkDetailedPlotDirector::New();
-    this->SetProp( svkPlotGridView::DETAILED_PLOT, this->detailedPlotDirector->GetPlotActor());
-    this->TurnPropOn( svkPlotGridView::DETAILED_PLOT );
-    this->SetProp( svkPlotGridView::RULER, this->detailedPlotDirector->GetRuler());
-    this->TurnPropOn( svkPlotGridView::RULER );
 
     this->colorTransfer = NULL;
     this->tlcBrc[0] = -1; 
@@ -969,8 +971,8 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
   	    }
 
         svkImageClip* metTextClipper = svkImageClip::New();
-        metTextClipper->SetInput( this->dataVector[MET] );
-        metMapper->SetInput( metTextClipper->GetOutput() );
+        metTextClipper->SetInputData( this->dataVector[MET] );
+        metMapper->SetInputConnection( metTextClipper->GetOutputPort());
         metMapper->SetLabelModeToLabelScalars();
         metMapper->SetLabeledComponent(0);
         metMapper->GetLabelTextProperty()->ShadowOff();
@@ -1003,7 +1005,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         }
         this->windowLevel = svkImageMapToColors::New();
         metTextClipper->Update();
-        this->windowLevel->SetInput( this->dataVector[MET] );
+        this->windowLevel->SetInputData( this->dataVector[MET] );
         if( this->colorTransfer == NULL ) {
             this->colorTransfer = svkLookupTable::New();
         }
@@ -1022,7 +1024,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         this->windowLevel->Update( );
 
 
-        svkOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetInput(this->windowLevel->GetOutput());
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetInputData(this->windowLevel->GetOutput());
         bool isOverlayImageOn = this->IsPropOn(svkPlotGridView::OVERLAY_IMAGE); 
         if( this->GetRenderer( svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) ) ) {
             this->GetRenderer( svkPlotGridView::PRIMARY)->RemoveActor( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) );
@@ -1398,7 +1400,7 @@ void svkPlotGridView::ResliceImage(svkImageData* input, svkImageData* target)
 {
     //  if (orthogonal orientations) {
     svkObliqueReslice* reslicer = svkObliqueReslice::New();
-    reslicer->SetInput( input );
+    reslicer->SetInputData( input );
     reslicer->SetTarget( target );
     reslicer->Update();
     this->SetInput( reslicer->GetOutput(), MET );
@@ -1607,10 +1609,12 @@ void svkPlotGridView::GeneratePlotGridActor( )
     vtkPolyData* grid = vtkPolyData::New();
     svk4DImageData::SafeDownCast( this->dataVector[MR4D] )->GetPolyDataGrid( grid );
     vtkCleanPolyData* cleaner = vtkCleanPolyData::New();
-    cleaner->SetInput( grid );
+    cleaner->SetInputData( grid );
+    cleaner->Update();
     grid->Delete();
 
-    entireGridMapper->SetInput( cleaner->GetOutput() );
+    entireGridMapper->SetInputData( cleaner->GetOutput() );
+    entireGridMapper->Update();
     cleaner->Delete();
     vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID))->SetMapper( entireGridMapper );
     entireGridMapper->Delete();

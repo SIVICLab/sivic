@@ -226,7 +226,7 @@ int main (int argc, char** argv)
             vtkSmartPointer< svkImageWriterFactory > writerFactory1 = vtkSmartPointer< svkImageWriterFactory >::New(); 
             svkImageWriter* writer1 = static_cast<svkImageWriter*>( writerFactory1->CreateImageWriter( dataTypeOut1 ) ); 
             writer1->SetFileName( "test.ddf");
-            writer1->SetInput( svkMriImageData::SafeDownCast( mriData1 ) );
+            writer1->SetInputData( svkMriImageData::SafeDownCast( mriData1 ) );
             writer1->Write();*/
 
 
@@ -248,7 +248,7 @@ int main (int argc, char** argv)
 
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( svkMrsImageData::SafeDownCast( mrsData ) );
+    writer->SetInputData( svkMrsImageData::SafeDownCast( mrsData ) );
     writer->Write();
 
 

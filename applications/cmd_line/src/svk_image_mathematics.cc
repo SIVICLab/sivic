@@ -94,7 +94,7 @@ int main (int argc, char** argv)
     int    operation     = 0;  
     float  scalingFactor = 1;
     bool   verbose       = false;
-    int    outputType;
+    int    outputType = 0;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
 
@@ -213,9 +213,9 @@ int main (int argc, char** argv)
 
     //  Set up math operations: 
     svkImageMathematics* math = svkImageMathematics::New();
-    math->SetInput1( reader1->GetOutput() );
+    math->SetInput1Data( reader1->GetOutput() );
     if ( reader2 != NULL ) {
-        math->SetInput2( reader2->GetOutput() ); 
+        math->SetInput2Data( reader2->GetOutput() ); 
     }
 
     if ( operation == 1 ) {
@@ -249,7 +249,7 @@ int main (int argc, char** argv)
 
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( math->GetOutput() );
+    writer->SetInputData( math->GetOutput() );
     writer->Write();
     writer->Delete();
 

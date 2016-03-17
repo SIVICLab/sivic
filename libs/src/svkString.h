@@ -63,7 +63,7 @@ class svkString : public vtkDataObject
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkString, vtkDataObject );
+        vtkTypeMacro( svkString, vtkDataObject );
   
         // vtk initialization 
         static svkString* New();  

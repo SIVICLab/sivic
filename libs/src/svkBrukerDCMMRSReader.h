@@ -65,7 +65,7 @@ class svkBrukerDCMMRSReader : public svkDcmVolumeReader
     public:
 
         static svkBrukerDCMMRSReader* New();
-        vtkTypeRevisionMacro( svkBrukerDCMMRSReader, svkDcmVolumeReader );
+        vtkTypeMacro( svkBrukerDCMMRSReader, svkDcmVolumeReader );
 
 
         // Description: 

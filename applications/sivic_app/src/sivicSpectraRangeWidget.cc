@@ -41,7 +41,7 @@
 #define MAXIMUM_RANGE_FACTOR 20 
 
 vtkStandardNewMacro( sivicSpectraRangeWidget );
-vtkCxxRevisionMacro( sivicSpectraRangeWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicSpectraRangeWidget, "$Revision$");
 
 
 

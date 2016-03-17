@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkSecondaryCaptureFormatterProstate, "$Rev$");
+//vtkCxxRevisionMacro(svkSecondaryCaptureFormatterProstate, "$Rev$");
 vtkStandardNewMacro(svkSecondaryCaptureFormatterProstate);
 
 
@@ -280,15 +280,15 @@ void svkSecondaryCaptureFormatterProstate::RenderCombinedImage( int firstFrame, 
             wtif->Update( );
 
             tmpData->DeepCopy( wtif->GetOutput() );
-            tmpData->Update();
-            sliceAppender->SetInput(m-firstFrame, tmpData );
+            //tmpData->Update();
+            sliceAppender->SetInputData(m-firstFrame, tmpData );
             wtif->Delete();
         }
 
         if( flipImage ) {  
             vtkImageFlip* flipper = vtkImageFlip::New();
             flipper->SetFilteredAxis( 1 );
-            flipper->SetInput( sliceAppender->GetOutput() );
+            flipper->SetInputData( sliceAppender->GetOutput() );
             flipper->Update();
             outputImage->DeepCopy( flipper->GetOutput() );
             flipper->Delete();
@@ -479,15 +479,15 @@ void svkSecondaryCaptureFormatterProstate::RenderCombinedImage( int firstFrame, 
             wtif->Update( );
 
             tmpData->DeepCopy( wtif->GetOutput() );
-            tmpData->Update();
-            sliceAppender->SetInput(m-firstFrame, tmpData );
+            //tmpData->Update();
+            sliceAppender->SetInputData(m-firstFrame, tmpData );
             wtif->Delete();
         }
 
         if( flipImage ) {  
             vtkImageFlip* flipper = vtkImageFlip::New();
             flipper->SetFilteredAxis( 1 );
-            flipper->SetInput( sliceAppender->GetOutput() );
+            flipper->SetInputData( sliceAppender->GetOutput() );
             flipper->Update();
             outputImage->DeepCopy( flipper->GetOutput() );
             flipper->Delete();
@@ -740,24 +740,24 @@ void svkSecondaryCaptureFormatterProstate::WriteCombinedWithSummaryCapture( vtkI
     outputImageCopy1->SetDcmHeader( outputImage->GetDcmHeader() );
     outputImageCopy1->GetDcmHeader()->Register( outputImageCopy1 );
     this->RenderCombinedImage( firstFrame, lastFrame, outputImageCopy1, flipImage, print );
-    sliceAppender->SetInput(0, outputImageCopy1 );
+    sliceAppender->SetInputData(0, outputImageCopy1 );
     firstFrame = firstFrame-2 < 0 ? 0 : firstFrame-2;
     int numSummaryImages = 0; 
     int currentSummaryImage = 1;
     sliceAppender->Update();
     outputImage->DeepCopy( sliceAppender->GetOutput() );
-    outputImage->Update();
+    //outputImage->Update();
     if( preview ) {
         this->PreviewImage( outputImage );
     }
     if( !writer->IsA("svkImageWriter") ) {  
         vtkImageData* imageCopy = vtkImageData::New();
         imageCopy->DeepCopy( outputImage );
-        imageCopy->Update();
-        writer->SetInput( imageCopy );
+        //imageCopy->Update();
+        writer->SetInputData( imageCopy );
         imageCopy->Delete();
     } else {
-        writer->SetInput( outputImage );
+        writer->SetInputData( outputImage );
     }
     writer->Write();
 

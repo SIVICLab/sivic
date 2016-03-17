@@ -50,7 +50,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkTransform, "$Rev$");
+//vtkCxxRevisionMacro(svkTransform, "$Rev$");
 vtkStandardNewMacro(svkTransform);
 
 

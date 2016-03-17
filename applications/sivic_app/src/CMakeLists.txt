@@ -115,17 +115,15 @@ endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.li
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK REQUIRED)
-IF(VTK_FOUND)
-  INCLUDE(${VTK_USE_FILE})
-ENDIF(VTK_FOUND)
+#FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE)
+#INCLUDE(${VTK_USE_FILE})
 
 
 ###################################
 #   KWWidgets
 ###################################
-INCLUDE(${KWWidgets_USE_FILE})
-include("${KWWidgets_CMAKE_DIR}/KWWidgetsTclTkMacros.cmake")
+#INCLUDE(${KWWidgets_USE_FILE})
+#include("${KWWidgets_CMAKE_DIR}/KWWidgetsTclTkMacros.cmake")
 
 #
 #  This section creates a resource file that will be linked in to make static applications possible.
@@ -298,24 +296,25 @@ TARGET_LINK_LIBRARIES(
     svkPSD
     svkTypeUtils
     svkadapt
-    vtkRendering
-    vtkGraphics
-    vtkHybrid
-    vtkImaging
-    vtkIO
-    vtkFiltering
-    vtkCommon
+    ${KWWidgets_LIBRARIES}
+    ${VTK_LIBRARIES} 
     dcmdata
     ${DCMTK_OFLOG}
     ofstd 
-    ${KWWidgets_LIBRARIES}
-    #KWCallbacksExampleLib
     SivicKWCallbacksLib
 	${ZLIB}
     ${NETAPI}
     ${PLATFORM_LIBS}
     ${ITK_LIBS_PRE}
-
+    GLU
+    GL
+    SM
+    ICE
+    X11
+    Xext
+    Xt
+    Xss 
+    Xft
 )
 
 IF (NOT WIN32)

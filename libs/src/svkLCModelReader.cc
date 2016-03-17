@@ -57,7 +57,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkLCModelReader, "$Rev$");
+//vtkCxxRevisionMacro(svkLCModelReader, "$Rev$");
 
 
 /*!

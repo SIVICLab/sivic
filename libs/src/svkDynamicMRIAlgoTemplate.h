@@ -75,7 +75,7 @@ class svkDynamicMRIAlgoTemplate: public svkImageAlgorithm
 
     public:
 
-        vtkTypeRevisionMacro( svkDynamicMRIAlgoTemplate, svkImageAlgorithm);
+        vtkTypeMacro( svkDynamicMRIAlgoTemplate, svkImageAlgorithm);
         static                  svkDynamicMRIAlgoTemplate* New();
 
 

@@ -47,7 +47,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkAlgorithmPortMapper, "$Rev$");
+//vtkCxxRevisionMacro(svkAlgorithmPortMapper, "$Rev$");
 vtkStandardNewMacro(svkAlgorithmPortMapper);
 
 
@@ -823,9 +823,9 @@ void svkAlgorithmPortMapper::SetAlgorithmInputPort( int port, vtkDataObject* inp
 {
     if(input) {
         if( this->algo->GetNumberOfInputConnections( port ) == 0 ) {
-            this->algo->SetInputConnection(port, input->GetProducerPort());
+            this->algo->SetInputDataObject(port, input);
         } else {
-            this->algo->AddInputConnection(port, input->GetProducerPort());
+            this->algo->AddInputDataObject(port, input);
         }
     } else {
         // Setting a NULL input removes the connection.

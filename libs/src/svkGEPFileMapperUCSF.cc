@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGEPFileMapperUCSF, "$Rev$");
+//vtkCxxRevisionMacro(svkGEPFileMapperUCSF, "$Rev$");
 vtkStandardNewMacro(svkGEPFileMapperUCSF);
 
 

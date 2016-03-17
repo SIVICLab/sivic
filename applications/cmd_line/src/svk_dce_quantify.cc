@@ -263,42 +263,42 @@ int main (int argc, char** argv)
 
     // Hack to use ImageCopy to write out integer value dicoms
     svkImageCopy* baseHtCopier = svkImageCopy::New();
-    baseHtCopier->SetInput(dceQuant->GetOutput(0));  // port 0 is baseline ma
+    baseHtCopier->SetInputData(dceQuant->GetOutput(0));  // port 0 is baseline ma
     baseHtCopier->SetSeriesDescription("DCE Baseline");
     baseHtCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
     baseHtCopier->Update();
 
     svkImageCopy* peakHtCopier = svkImageCopy::New();
-    peakHtCopier->SetInput(dceQuant->GetOutput(1));  // port 1 is peakHt map
+    peakHtCopier->SetInputData(dceQuant->GetOutput(1));  // port 1 is peakHt map
     peakHtCopier->SetSeriesDescription("DCE Peak Value");
     peakHtCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
     peakHtCopier->Update();
 
     svkImageCopy* peakTimeCopier = svkImageCopy::New();
-    peakTimeCopier->SetInput(dceQuant->GetOutput(2));  // port 2 is peakTimet map
+    peakTimeCopier->SetInputData(dceQuant->GetOutput(2));  // port 2 is peakTimet map
     peakTimeCopier->SetSeriesDescription("DCE Peak Time");
     peakTimeCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
     peakTimeCopier->Update();
 
     svkImageCopy* maxSlopeCopier = svkImageCopy::New();
-    maxSlopeCopier->SetInput(dceQuant->GetOutput(3));  // port 3 is max slope map 
+    maxSlopeCopier->SetInputData(dceQuant->GetOutput(3));  // port 3 is max slope map 
     maxSlopeCopier->SetSeriesDescription("DCE Slope");
     maxSlopeCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
     maxSlopeCopier->Update();
 
     svkImageCopy* washoutPosCopier = svkImageCopy::New();
-    washoutPosCopier->SetInput(dceQuant->GetOutput(5));  // port 5 is positive washout map
+    washoutPosCopier->SetInputData(dceQuant->GetOutput(5));  // port 5 is positive washout map
     washoutPosCopier->SetSeriesDescription("DCE Washout");
     washoutPosCopier->SetOutputDataType(svkDcmHeader::UNSIGNED_INT_2);
     washoutPosCopier->Update();
 
 
-    baseHtWriter->SetInput(baseHtCopier->GetOutput());
-    peakHtWriter->SetInput(peakHtCopier->GetOutput());
-    peakTimeWriter->SetInput(peakTimeCopier->GetOutput());
-    maxSlopeWriter->SetInput(maxSlopeCopier->GetOutput());
-    washoutPosWriter->SetInput(washoutPosCopier->GetOutput());
-    washoutWriter->SetInput(dceQuant->GetOutput(4));  // port 4 is washout map
+    baseHtWriter->SetInputData(baseHtCopier->GetOutput());
+    peakHtWriter->SetInputData(peakHtCopier->GetOutput());
+    peakTimeWriter->SetInputData(peakTimeCopier->GetOutput());
+    maxSlopeWriter->SetInputData(maxSlopeCopier->GetOutput());
+    washoutPosWriter->SetInputData(washoutPosCopier->GetOutput());
+    washoutWriter->SetInputData(dceQuant->GetOutput(4));  // port 4 is washout map
 
     baseHtWriter->Write();
     peakHtWriter->Write();

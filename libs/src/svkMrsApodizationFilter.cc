@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMrsApodizationFilter, "$Rev$");
+//vtkCxxRevisionMacro(svkMrsApodizationFilter, "$Rev$");
 vtkStandardNewMacro(svkMrsApodizationFilter);
 
 

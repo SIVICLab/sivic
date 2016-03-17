@@ -58,7 +58,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRSKinetics, "$Rev$");
+//vtkCxxRevisionMacro(svkMRSKinetics, "$Rev$");
 vtkStandardNewMacro(svkMRSKinetics);
 
 

@@ -93,42 +93,42 @@ void TestPhase( string name, double shiftWindow[3], svkImageData* data )
 
     // First lets fft the data
     svkMriImageFFT* fft = svkMriImageFFT::New();
-    fft->SetInput( data );
+    fft->SetInputData( data );
     fft->Update();
 
     // Next we center it
     svkImageFourierCenter* center = svkImageFourierCenter::New();
-    center->SetInput( fft->GetOutput() );
+    center->SetInputData( fft->GetOutput() );
     center->Update();
 
     // Next we apply our phase shift
     svkImageLinearPhase* phase = svkImageLinearPhase::New();
     phase->SetShiftWindow( shiftWindow );
-    phase->SetInput( center->GetOutput() );
+    phase->SetInputData( center->GetOutput() );
     phase->Update();
   
     // Now we return k = 0 to the origin 
     svkImageFourierCenter* uncenter = svkImageFourierCenter::New();
     uncenter->SetReverseCenter( true );
-    uncenter->SetInput( phase->GetOutput() );
+    uncenter->SetInputData( phase->GetOutput() );
     uncenter->Update();
 
     // Now we copy the result into an svkMriImageData object 
     svkMriImageData* fftPhased = svkMriImageData::New(); 
     fftPhased->DeepCopy(fft->GetOutput());
     fftPhased->DeepCopy( uncenter->GetOutput() );
-    fftPhased->Update();
+    //fftPhased->Update();
     fftPhased->SyncVTKImageDataToDcmHeader();
 
     //Now we reverse the center
     svkMriImageFFT* rfft = svkMriImageFFT::New();
     rfft->SetFFTMode( svkMriImageFFT::REVERSE );
-    rfft->SetInput( fftPhased  );
+    rfft->SetInputData( fftPhased  );
     rfft->Update();
     
     vtkImageExtractComponents* real = vtkImageExtractComponents::New();
     real->SetComponents( 0 );
-    real->SetInput( rfft->GetOutput() );
+    real->SetInputData( rfft->GetOutput() );
     real->Update();
 
     // We need an svkMri image data object. The svkImageFourierCenter algorihtm
@@ -138,7 +138,7 @@ void TestPhase( string name, double shiftWindow[3], svkImageData* data )
     realPhasedData->DeepCopy(rfft->GetOutput());
 
     realPhasedData->ShallowCopy( real->GetOutput() );
-    realPhasedData->Update();
+    //realPhasedData->Update();
     realPhasedData->SyncVTKImageDataToDcmHeader();
 
     string nameReal = string(name);
@@ -148,7 +148,7 @@ void TestPhase( string name, double shiftWindow[3], svkImageData* data )
 
     vtkImageExtractComponents* imag = vtkImageExtractComponents::New();
     imag->SetComponents( 1 );
-    imag->SetInput( rfft->GetOutput() );
+    imag->SetInputData( rfft->GetOutput() );
     imag->Update();
 
     // We need an svkMri image data object. The svkImageFourierCenter algorihtm
@@ -158,7 +158,7 @@ void TestPhase( string name, double shiftWindow[3], svkImageData* data )
     imagPhasedData->DeepCopy(rfft->GetOutput());
 
     imagPhasedData->DeepCopy( imag->GetOutput() );
-    imagPhasedData->Update();
+    //imagPhasedData->Update();
 
     string nameImag = string(name);
     WriteData( nameImag.append("Imag"), imagPhasedData );
@@ -179,7 +179,7 @@ void WriteData( string name, svkImageData* data )
     svkIdfVolumeWriter* writer = svkIdfVolumeWriter::New();
     writer->SetCastDoubleToFloat( true );
     writer->SetFileName( name.c_str() );
-    writer->SetInput( data );
+    writer->SetInputData( data );
     writer->Write();
     writer->Delete();
 }

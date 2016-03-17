@@ -78,7 +78,7 @@ class svkImageActor : public vtkImageActor
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageActor,vtkImageActor );
+        vtkTypeMacro( svkImageActor,vtkImageActor );
    
         static svkImageActor*  New();
         void ComputeMatrix();

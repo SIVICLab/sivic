@@ -44,6 +44,7 @@
 #include <svkDcmHeader.h>
 #include <svkDICOMParser.h>
 #include <vector>
+#include <set>
 
 #include "svkDcmHeader.h"
 
@@ -51,7 +52,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDcmHeader, "$Rev$");
+//vtkCxxRevisionMacro(svkDcmHeader, "$Rev$");
 
 
 const float svkDcmHeader::UNKNOWN_TIME = -1;
@@ -190,6 +191,7 @@ int svkDcmHeader::GetPixelDataType( int vtkDataType )
 {
     int bitsPerWord = this->GetIntValue( "BitsAllocated" );
     int pixRep = this->GetIntValue( "PixelRepresentation");
+    //cout << "GETPIXELDATATYPE: " << bitsPerWord << " " << pixRep << " " << vtkDataType << endl;
     if ( bitsPerWord == 8 && pixRep == 0 ) {
         return svkDcmHeader::UNSIGNED_INT_1;
     } else if ( bitsPerWord == 16 && pixRep == 0 ) {

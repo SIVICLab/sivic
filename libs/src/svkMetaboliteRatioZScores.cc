@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMetaboliteRatioZScores, "$Rev$");
+//vtkCxxRevisionMacro(svkMetaboliteRatioZScores, "$Rev$");
 vtkStandardNewMacro(svkMetaboliteRatioZScores);
 
 

@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMrsZeroFill, "$Rev$");
+//vtkCxxRevisionMacro(svkMrsZeroFill, "$Rev$");
 vtkStandardNewMacro(svkMrsZeroFill);
 
 
@@ -462,7 +462,7 @@ int svkMrsZeroFill::RequestDataSpatial( vtkInformation* request, vtkInformationV
     // Apply a half voxel  difference phase shift. This is because the sampled points of the data has changed.
     svkMrsLinearPhase* linearShift = svkMrsLinearPhase::New();
     linearShift->SetShiftWindow( shiftWindow );
-    linearShift->SetInput( outputData );
+    linearShift->SetInputData( outputData );
     linearShift->Update();
 
 

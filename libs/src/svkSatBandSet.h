@@ -74,7 +74,7 @@ class svkSatBandSet : public vtkObject
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkSatBandSet,vtkObject );
+        vtkTypeMacro( svkSatBandSet,vtkObject );
    
         static svkSatBandSet*       New();  
         svkSatBandSet();

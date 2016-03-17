@@ -75,14 +75,14 @@ int main (int argc, char** argv)
     float fwhh = 4.0;
 
     svkApodizationWindow::GetLorentzianWindow( window, data, fwhh );
-    af->SetInput( data );
+    af->SetInputData( data );
     af->SetWindow( window );
     af->Update();
 
 
     svkDdfVolumeWriter* writer = svkDdfVolumeWriter::New();
     writer->SetFileName( fnameOut.c_str() );    
-    writer->SetInput( af->GetOutput() );
+    writer->SetInputData( af->GetOutput() );
     writer->Write();
     writer->Delete();
 

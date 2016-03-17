@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkByteSwap, "$Rev$");
+//vtkCxxRevisionMacro(svkByteSwap, "$Rev$");
 
 
 /*!

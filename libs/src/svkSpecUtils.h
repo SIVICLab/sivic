@@ -64,7 +64,7 @@ class svkSpecUtils : public vtkObject
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkSpecUtils, vtkObject );
+        vtkTypeMacro( svkSpecUtils, vtkObject );
         
         static float    GetMagnigutude(vtkFloatArray* spectrum, int point); 
         static void     PhaseSpectrum(vtkFloatArray* spectrum, float phase, int point, float phasedPoint[2]); 

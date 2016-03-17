@@ -77,7 +77,7 @@ class svkDataView : public vtkObject
     // if these are accessed only via the corresponding controller, then these don't need to be public
     public:
 
-        vtkTypeRevisionMacro( svkDataView, vtkObject);
+        vtkTypeMacro( svkDataView, vtkObject);
 
         svkDataView();
         ~svkDataView();

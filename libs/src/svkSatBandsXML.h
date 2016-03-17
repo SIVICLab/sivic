@@ -81,7 +81,7 @@ class svkSatBandsXML: public vtkObject
     public:
 
         static svkSatBandsXML* New();
-        vtkTypeRevisionMacro( svkSatBandsXML, vtkObject);
+        vtkTypeMacro( svkSatBandsXML, vtkObject);
 
         int                         SetXMLFileName( vtkstd::string xmlFileName );     
         int                         ParseXML( vtkXMLDataElement* satBandsElement );

@@ -59,7 +59,7 @@ class svkDcmMrsVolumeReader : public svkDcmVolumeReader
     public:
 
         static svkDcmMrsVolumeReader* New();
-        vtkTypeRevisionMacro( svkDcmMrsVolumeReader, svkDcmVolumeReader );
+        vtkTypeMacro( svkDcmMrsVolumeReader, svkDcmVolumeReader );
 
 
         // Description: 

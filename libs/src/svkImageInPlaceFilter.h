@@ -71,7 +71,7 @@ class svkImageInPlaceFilter : public vtkImageInPlaceFilter
 
     public:
 
-        vtkTypeRevisionMacro( svkImageInPlaceFilter, vtkImageInPlaceFilter);
+        vtkTypeMacro( svkImageInPlaceFilter, vtkImageInPlaceFilter);
         svkImageData*       GetOutput(); 
         svkImageData*       GetOutput(int port); 
         svkImageData*       GetImageDataInput(int port);

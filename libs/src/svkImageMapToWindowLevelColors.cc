@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageMapToWindowLevelColors, "$Rev$");
+//vtkCxxRevisionMacro(svkImageMapToWindowLevelColors, "$Rev$");
 vtkStandardNewMacro(svkImageMapToWindowLevelColors);
 
 

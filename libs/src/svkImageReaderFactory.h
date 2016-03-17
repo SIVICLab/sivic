@@ -81,7 +81,7 @@ class svkImageReaderFactory : public vtkImageReader2Factory
     public:
 
         static svkImageReaderFactory* New();
-        vtkTypeRevisionMacro(svkImageReaderFactory, vtkImageReader2Factory);
+        vtkTypeMacro(svkImageReaderFactory, vtkImageReader2Factory);
 
         //  Methods:
         svkImageReader2*                        CreateImageReader2( const char* path );

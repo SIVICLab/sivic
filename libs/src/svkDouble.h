@@ -62,7 +62,7 @@ class svkDouble : public vtkDataObject
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkDouble, vtkDataObject );
+        vtkTypeMacro( svkDouble, vtkDataObject );
   
         // vtk initialization 
         static svkDouble* New();  

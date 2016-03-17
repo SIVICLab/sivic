@@ -60,7 +60,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkLCModelCoordReader, "$Rev$");
+//vtkCxxRevisionMacro(svkLCModelCoordReader, "$Rev$");
 vtkStandardNewMacro(svkLCModelCoordReader);
 
 
@@ -133,12 +133,12 @@ int svkLCModelCoordReader::CanReadFile(const char* fname)
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkLCModelCoordReader::ExecuteData(vtkDataObject* output)
+void svkLCModelCoordReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-    svkImageData* data = svkMrsImageData::SafeDownCast( this->AllocateOutputData(output) );
+    svkImageData* data = svkMrsImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
     // Make sure the output data has the correct dimmensions: 
     this->GlobFileNames();
@@ -333,7 +333,7 @@ void svkLCModelCoordReader::CheckOutputPtsPerPPM()
 
     if ( zeroFillFactor > 1 ) {
         svkMrsZeroFill* zeroFill = svkMrsZeroFill::New();
-        zeroFill->SetInput( this->GetImageDataInput(0) );
+        zeroFill->SetInputData( this->GetImageDataInput(0) );
         zeroFill->SetNumberOfSpecPoints( numSpecPtsIn * zeroFillFactor ); 
         zeroFill->Update(); 
         zeroFill->Delete();

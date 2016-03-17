@@ -74,7 +74,7 @@ class svkMriImageData: public svkImageData
 
     public:
 
-        vtkTypeRevisionMacro( svkMriImageData, svkImageData);
+        vtkTypeMacro( svkMriImageData, svkImageData);
         static svkMriImageData* New();
         static vtkObject*       NewObject();
 

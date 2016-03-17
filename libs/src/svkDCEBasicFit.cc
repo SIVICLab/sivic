@@ -61,7 +61,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDCEBasicFit, "$Rev$");
+//vtkCxxRevisionMacro(svkDCEBasicFit, "$Rev$");
 vtkStandardNewMacro(svkDCEBasicFit);
 
 

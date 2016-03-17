@@ -50,9 +50,9 @@
 #include <svkImageReader2.h>
 #include <svkMRSIOD.h>
 
-#include <vtkstd/map>
-#include <vtkstd/vector>
-#include <vtkstd/string>
+#include <map>
+#include <vector>
+#include <string>
 #include <vtkStringArray.h>
 
 
@@ -67,7 +67,7 @@ class svkGEPFileMapper : public vtkObject
 
     public:
 
-        vtkTypeRevisionMacro( svkGEPFileMapper, vtkObject );
+        vtkTypeMacro( svkGEPFileMapper, vtkObject );
         static          svkGEPFileMapper* New();
 
         /*!
@@ -91,16 +91,16 @@ class svkGEPFileMapper : public vtkObject
         };
 
         virtual void            InitializeDcmHeader(
-                                    vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >  pfMap, 
+                                    map <string, vector< string > >  pfMap, 
                                     svkDcmHeader* header, 
                                     float pfileVersion, 
                                     int swapBytes, 
-                                    vtkstd::map < vtkstd::string, void* >  inputArgs
+                                    map < string, void* >  inputArgs
                                 );
         virtual void            ReadData( vtkStringArray* pFileNames, svkImageData* data );
-        vtkstd::string          GetProgressText( );
-        void                    SetProgressText( vtkstd::string progressText );
-        static vtkstd::string   ConvertGEDateToDICOM( vtkstd::string geDate ); 
+        string                  GetProgressText( );
+        void                    SetProgressText( string progressText );
+        static string           ConvertGEDateToDICOM( string geDate ); 
 
         void                    SetPfileName( string pfileName );      
 
@@ -134,7 +134,7 @@ class svkGEPFileMapper : public vtkObject
         virtual void            InitMRSpatialSaturationMacro();
         virtual void            InitSatBand( float satRAS[3], float translation); 
         virtual void            InitMRSpectroscopyModule();
-        virtual vtkstd::string  GetVolumeLocalizationTechnique();
+        virtual string          GetVolumeLocalizationTechnique();
         virtual void            InitVolumeLocalizationSeq();
         virtual void            InitMRSpectroscopyDataModule();
         virtual void            InitK0Sampled( svkDcmHeader* hdr );
@@ -181,29 +181,29 @@ class svkGEPFileMapper : public vtkObject
         virtual void            InitSpecTuple( int numFreqPts, int freqPt, float* tuple, vtkDataArray* dataArray ); 
 
 
-        int                     GetHeaderValueAsInt(vtkstd::string key);
-        long long int           GetHeaderValueAsLongInt(vtkstd::string key); 
-        float                   GetHeaderValueAsFloat(vtkstd::string key);
-        vtkstd::string          GetHeaderValueAsString(vtkstd::string key);
+        int                     GetHeaderValueAsInt(string key);
+        long long int           GetHeaderValueAsLongInt(string key); 
+        float                   GetHeaderValueAsFloat(string key);
+        string                  GetHeaderValueAsString(string key);
         virtual bool            WasIndexSampled(int xIndex, int yIndex, int zIndex); 
 
 
-        vtkstd::string                          progressText;
-        vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >         
-                                                pfMap;
+        string                                  progressText;
+        map <string, vector< string > >         pfMap;        
+                                          
         svkDcmHeader*                           dcmHeader; 
         float                                   pfileVersion;
         int*                                    specData; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         int                                     chopVal; 
-        vtkstd::map < vtkstd::string, void* >   inputArgs; 
+        map < string, void* >   inputArgs; 
         int                                     swapBytes;
         svkMRSIOD*                              iod;
         double                                  progress; 
 
-        bool                                    isInputArgSet(vtkstd::string argName);
-        bool                                    GetInputArgStringValue(vtkstd::string argName, vtkstd::string* argValue);
-        bool                                    GetInputArgBoolValue(vtkstd::string argName, bool* argValue);
+        bool                                    isInputArgSet(string argName);
+        bool                                    GetInputArgStringValue(string argName, string* argValue);
+        bool                                    GetInputArgBoolValue(string argName, bool* argValue);
 
         virtual void                            ReorderEPSI( svkMrsImageData* data );
         string                                  GetNucleus(); 

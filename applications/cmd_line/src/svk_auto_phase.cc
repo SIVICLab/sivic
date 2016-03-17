@@ -250,9 +250,9 @@ int main (int argc, char** argv)
     // ===============================================  
     //  Write output of algorithm to file:    
     // ===============================================  
-    mrsWriter->SetInput( phaser->GetImageDataInput(0) );
+    mrsWriter->SetInputData( phaser->GetImageDataInput(0) );
     mrsWriter->Write();
-    mriWriter->SetInput( phaser->GetOutput(0) );
+    mriWriter->SetInputData( phaser->GetOutput(0) );
     mriWriter->Write();
 
     //  clean up:

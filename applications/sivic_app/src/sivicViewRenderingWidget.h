@@ -59,7 +59,7 @@ class sivicViewRenderingWidget : public sivicKWCompositeWidget
     public:
 
         static sivicViewRenderingWidget *New();
-        vtkTypeRevisionMacro(sivicViewRenderingWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicViewRenderingWidget,sivicKWCompositeWidget);
 
         void SetOrientation( svkDcmHeader::Orientation orientation );
         void ResetInfoText( );

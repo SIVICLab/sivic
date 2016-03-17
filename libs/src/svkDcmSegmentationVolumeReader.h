@@ -58,7 +58,7 @@ class svkDcmSegmentationVolumeReader : public svkDcmVolumeReader
     public:
 
         static svkDcmSegmentationVolumeReader* New();
-        vtkTypeRevisionMacro( svkDcmSegmentationVolumeReader, svkDcmVolumeReader );
+        vtkTypeMacro( svkDcmSegmentationVolumeReader, svkDcmVolumeReader );
 
         // Description: 
         // A descriptive name for this format

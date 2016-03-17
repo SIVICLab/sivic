@@ -43,7 +43,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkImageAlgorithmPipeline, "$Rev$");
+//vtkCxxRevisionMacro(svkImageAlgorithmPipeline, "$Rev$");
 vtkStandardNewMacro(svkImageAlgorithmPipeline);
 
 //! Constructor

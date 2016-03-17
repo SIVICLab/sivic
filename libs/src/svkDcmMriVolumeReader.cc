@@ -49,15 +49,15 @@
 #include <vtkMath.h>
 #include <svkIOD.h>
 #include <svkEnhancedMRIIOD.h>
-#include <vtkstd/vector>
-#include <vtkstd/utility>
+#include <vector>
+#include <utility>
 #include <sstream>
 
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDcmMriVolumeReader, "$Rev$");
+//vtkCxxRevisionMacro(svkDcmMriVolumeReader, "$Rev$");
 vtkStandardNewMacro(svkDcmMriVolumeReader);
 
 

@@ -61,7 +61,7 @@ class svkDcmVolumeReader : public svkImageReader2
 
     public:
 
-        vtkTypeRevisionMacro( svkDcmVolumeReader, svkImageReader2);
+        vtkTypeMacro( svkDcmVolumeReader, svkImageReader2);
 
         static float                            GetFloatValAttribute7( vtkstd::vector< vtkstd::string > vec ); 
         static int                              GetIntValAttribute8( vtkstd::vector< vtkstd::string > vec ); 
@@ -82,7 +82,7 @@ class svkDcmVolumeReader : public svkImageReader2
 
 
         virtual void                            ExecuteInformation();
-        virtual void                            ExecuteData(vtkDataObject* output); 
+        virtual void                            ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo); 
         ProprietarySOP                          ContainsProprietaryContent( svkImageData* data );
         void                                    InitFileNames(); 
         void                                    OnlyReadInputFile(); 

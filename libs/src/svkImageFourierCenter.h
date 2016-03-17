@@ -78,7 +78,7 @@ class svkImageFourierCenter : public vtkImageDecomposeFilter
 
     public:
         static svkImageFourierCenter *New();
-        vtkTypeRevisionMacro(svkImageFourierCenter,vtkImageDecomposeFilter);
+        vtkTypeMacro(svkImageFourierCenter,vtkImageDecomposeFilter);
     
         void SetReverseCenter( bool reverseCenter );
 

@@ -49,7 +49,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDICOMRawDataWriter, "$Rev$");
+//vtkCxxRevisionMacro(svkDICOMRawDataWriter, "$Rev$");
 vtkStandardNewMacro(svkDICOMRawDataWriter);
 
 

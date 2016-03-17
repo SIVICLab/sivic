@@ -69,7 +69,7 @@ class svkFastCellData : public vtkCellData
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkFastCellData,vtkCellData );
+        vtkTypeMacro( svkFastCellData,vtkCellData );
    
         static svkFastCellData*       New();
         

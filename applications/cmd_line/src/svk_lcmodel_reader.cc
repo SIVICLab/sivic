@@ -204,7 +204,7 @@ int main (int argc, char** argv)
         }
 
         mapWriter->SetFileName( outputFileName.c_str() );
-        mapWriter->SetInput(  currentImage  );
+        mapWriter->SetInputData(  currentImage  );
 
         // ===============================================  
         //  Set the input command line into the data set 
@@ -287,7 +287,7 @@ int main (int argc, char** argv)
 
             string fn = outputFileName + suffixStrings[i]; 
             mrsWriter->SetFileName( fn.c_str()  );
-            mrsWriter->SetInput(  coordReader->GetOutput() );
+            mrsWriter->SetInputData(  coordReader->GetOutput() );
 
             // ===============================================  
             //  Set the input command line into the data set 

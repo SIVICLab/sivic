@@ -52,7 +52,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGEPFileMapperUCSFfidcsiDev0, "$Rev$");
+//vtkCxxRevisionMacro(svkGEPFileMapperUCSFfidcsiDev0, "$Rev$");
 vtkStandardNewMacro(svkGEPFileMapperUCSFfidcsiDev0);
 
 
@@ -429,7 +429,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     tmpReorderData->DeepCopy( data ); 
 
     svkEPSIReorder* reorder = svkEPSIReorder::New();    
-    reorder->SetInput( tmpReorderData ); 
+    reorder->SetInputData( tmpReorderData ); 
     reorder->SetEPSIType( svkEPSIReorder::SYMMETRIC ); 
 
     //  between lobes, throw out the last and first point before resuming sampling
@@ -651,7 +651,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::EPSIPhaseCorrection( svkImageData* data, in
     numRead -= 2; 
     epsiPhase->SetNumEPSIkRead( numRead );
     epsiPhase->SetEPSIAxis( epsiAxis );
-    epsiPhase->SetInput( tmpData ); 
+    epsiPhase->SetInputData( tmpData ); 
     //tmpData->GetDcmHeader()->PrintDcmHeader(); 
     epsiPhase->Update(); 
 
@@ -677,7 +677,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::FlipAxis( svkImageData* data, int axis, int
     if (lobe != -1) {
         flip->SetFilteredChannel( lobe ); 
     }
-    flip->SetInput( tmpData ); 
+    flip->SetInputData( tmpData ); 
     flip->Update(); 
 
     data->DeepCopy( flip->GetOutput() ); 
@@ -923,6 +923,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             epsiKData[i].Real = overgrid[i*2];
                             epsiKData[i].Imag = overgrid[i*2+1];
                         }
+
                         svkMrsImageFFT::IFFTShift( epsiKData, gridSize );
                         vtkImageFourierFilter* rfft = vtkImageRFFT::New();
                         rfft->ExecuteRfft( epsiKData, epsiXData, gridSize );
@@ -931,14 +932,19 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                         //  epsiXData should correspond to Fn_overgrid in 
                         //  Matlab implementation
                         for( int i = 0; i < gridSize; i++ ) {
+                            //cout << "EXD 11: " << epsiXData[i].Real << endl;
                             epsiXData[i].Real = epsiXData[i].Real / apodCor[i]; 
                             epsiXData[i].Imag = epsiXData[i].Imag / apodCor[i]; 
+                            //cout << "EXD 12: " << epsiXData[i].Real << endl;
                             //cout << "epsiXData: " << epsiXData[i].Real << " " << epsiXData[i].Imag   << endl;
                         }
-
+                        //cout << "IMAX: " << integralMax << " " << offset << endl;
                         for( int i = 0; i < gridSize; i++ ) {
                             epsiXData[i].Real = epsiXData[i + offset].Real; 
                             epsiXData[i].Imag = epsiXData[i + offset].Imag; 
+                            //  TODO:  the values of epsiXData above index 26 do not seem to be correct but also 
+                            //  aren't used  
+                            //cout << "EXD: " << i << " " << epsiXData[i].Real << " " << apodCor[i] << endl;
                         }
 
                         //================================================
@@ -951,6 +957,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                         vtkImageFourierFilter* fft = vtkImageFFT::New();
                         fft->ExecuteFft( epsiXData, epsiKData, integralMax);
 
+                        //for ( int k = 0; k < integralMax; k++ ) {
+                            //cout << "TUPTUP 7: " <<  epsiKData[k].Real << endl;; 
+                        //}
                         svkMrsImageFFT::FFTShift( epsiKData, integralMax);
 
                         //  Set the Gridded k-space data back into the data set: 
@@ -1096,14 +1105,13 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetRolloffCorrection( int gridSize, float w
         if ( arg[0] >= 0 ) {
             // all real
             arg[0] = static_cast<float>( pow( static_cast<double>(arg[0]), 0.5) ); 
-            apodCor[i] = sin( arg[0] ) / arg[0];
+            apodCor[i] = static_cast<float>(sinf( arg[0] )) / arg[0];
         } else {
             // all imag 
             arg[1] = static_cast<float>( pow( static_cast<double>( -1 * arg[0]), 0.5) ); 
             arg[0] = 0;     
-            apodCor[i] = sinh( arg[1] ) / arg[1];
+            apodCor[i] = sinh( static_cast<double>(arg[1]) ) / arg[1];
         }
-
     }
 
 }    
@@ -1251,13 +1259,12 @@ double svkGEPFileMapperUCSFfidcsiDev0::GetBessel0Term( float arg, int index)
 {
 
     float besselTerm = pow( static_cast<float>(-1), index );
-    besselTerm *= pow( (arg/2), 2*index ); 
+    besselTerm *= pow( static_cast<double>(arg/2), 2*index ); 
     if (besselTerm == HUGE_VAL ) {
         cout << "ERROR: " << this->GetClassName() << " Can not get Gessel0Term for " << arg << " " << index << endl;
         cout << "ERROR: " << this->GetClassName() << " value out of range " << endl; 
         exit(1); 
     }
-    
     besselTerm /= pow( static_cast<double>( vtkMath::Factorial( index) ), 2); 
 
     //  account for alternating i ^ (2*index)
@@ -1347,7 +1354,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::FFTShift( svkImageData* data )
     svkMrsImageFourierCenter* fftShift = svkMrsImageFourierCenter::New(); 
     fftShift->SetShiftDomain( svkMrsImageFourierCenter::SPATIAL ); 
     fftShift->SetShiftDirection( svkMrsImageFourierCenter::FORWARD); 
-    fftShift->SetInput( tmpData ); 
+    fftShift->SetInputData( tmpData ); 
     fftShift->Update(); 
 
     data->DeepCopy( fftShift->GetOutput() ); 

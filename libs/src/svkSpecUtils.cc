@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkSpecUtils, "$Rev$");
+//vtkCxxRevisionMacro(svkSpecUtils, "$Rev$");
 
 
 const float svkSpecUtils::ZERO_KELVIN = 273.0;       

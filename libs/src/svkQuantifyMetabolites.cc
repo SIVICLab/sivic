@@ -62,7 +62,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkQuantifyMetabolites, "$Rev$");
+//vtkCxxRevisionMacro(svkQuantifyMetabolites, "$Rev$");
 vtkStandardNewMacro(svkQuantifyMetabolites);
 
 
@@ -135,7 +135,7 @@ void svkQuantifyMetabolites::GenerateRegionMaps()
     vtkXMLDataElement* quantXML;
     vtkXMLDataElement* algoXML;
     svkMetaboliteMap* mapGen = svkMetaboliteMap::New();
-    mapGen->SetInput( this->GetImageDataInput(0) ); 
+    mapGen->SetInputData( this->GetImageDataInput(0) ); 
     if ( isVerbose ) {
         mapGen->SetVerbose(isVerbose); 
     }
@@ -296,8 +296,8 @@ void svkQuantifyMetabolites::GenerateRatioMaps()
                 mathR->DivideByZeroToCOn();
             }
             //cout << "NI: " << *numeratorImage << endl;
-            mathR->SetInput1( numeratorImage ); 
-            mathR->SetInput2( denominatorImage ); 
+            mathR->SetInput1Data( numeratorImage ); 
+            mathR->SetInput2Data( denominatorImage ); 
             cout << "============================" << endl;
             cout << "divide images" << endl;
             cout << "============================" << endl;
@@ -347,8 +347,8 @@ void svkQuantifyMetabolites::GetNumeratorAndDenominatorImages( vtkXMLDataElement
     svkImageMathematics* mathD = svkImageMathematics::New(); 
     mathN->SetOperationToAdd();
     mathD->SetOperationToAdd();
-    mathN->SetInput1( numeratorImage );     
-    mathD->SetInput1( denominatorImage );     
+    mathN->SetInput1Data( numeratorImage );     
+    mathD->SetInput1Data( denominatorImage );     
 
     svkImageData* inputImage = svkMrsImageData::New();
     inputImage->ZeroCopy( this->metMapVector[0] );
@@ -372,16 +372,16 @@ void svkQuantifyMetabolites::GetNumeratorAndDenominatorImages( vtkXMLDataElement
             delete iss;
             elementID++;    
             if ( quantType.compare("NUMERATOR") == 0 ) {
-                mathN->SetInput2( this->metMapVector[quantNum] ); 
+                mathN->SetInput2Data( this->metMapVector[quantNum] ); 
                 mathN->Update();
                 numeratorImage->DeepCopy( mathN->GetOutput() ); 
-                mathN->SetInput1( numeratorImage ); 
+                mathN->SetInput1Data( numeratorImage ); 
                 numeratorFound = true;
             } else if ( quantType.compare("DENOMINATOR") == 0 ) {
-                mathD->SetInput2( this->metMapVector[quantNum] ); 
+                mathD->SetInput2Data( this->metMapVector[quantNum] ); 
                 mathD->Update();
                 denominatorImage->DeepCopy( mathD->GetOutput() ); 
-                mathD->SetInput1( denominatorImage ); 
+                mathD->SetInput1Data( denominatorImage ); 
                 denominatorFound = true;
             }
             

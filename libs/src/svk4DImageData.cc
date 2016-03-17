@@ -50,7 +50,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svk4DImageData, "$Rev$");
+//vtkCxxRevisionMacro(svk4DImageData, "$Rev$");
 vtkStandardNewMacro(svk4DImageData);
 
 
@@ -311,6 +311,15 @@ void  svk4DImageData::GetImage(  svkImageData* image,
         );
     	image->SyncVTKImageDataToDcmHeader();
 
+        vtkDataArray* firstArray = this->GetCellData()->GetArray(0);
+        // We have to have at least one array to get an image from it
+        int numComponents = 1; 
+        if( firstArray != NULL ) {
+            numComponents = firstArray->GetNumberOfComponents();
+        }
+
+        vtkDataObject::SetPointDataActiveScalarInfo( image->GetInformation(), vtkDataType, numComponents );
+
         this->GetImage( image, point, indexArray, component, vtkDataType );
     }
 }
@@ -352,13 +361,21 @@ void  svk4DImageData::GetImage(  svkImageData* image,
 
 			// Setup image dimensions
 			image->SetExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
-			image->SetScalarType( vtkDataType );
+
 	        if( component > 1) {
-				image->SetNumberOfScalarComponents( numComponents );
+                vtkDataObject::SetPointDataActiveScalarInfo(
+                    image->GetInformation(),
+                    vtkDataType,
+                    numComponents
+                );
 	        } else {
-				image->SetNumberOfScalarComponents( 1 );
+                vtkDataObject::SetPointDataActiveScalarInfo(
+                    image->GetInformation(),
+                    vtkDataType,
+                    1
+                );
 	        }
-	        //image->AllocateScalars();
+	        image->AllocateScalars(vtkDataType, numComponents);
 			image->CopyDcos( this );
 			//image->GetIncrements();
 
@@ -371,6 +388,7 @@ void  svk4DImageData::GetImage(  svkImageData* image,
 			} else {
 				pixelData->SetNumberOfComponents( 1 );
 			}
+            
 
 			int numVoxels = this->Extent[5] * this->Extent[3] * this->Extent[1];
 			pixelData->SetNumberOfTuples( numVoxels );

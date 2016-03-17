@@ -200,7 +200,7 @@ int main (int argc, char** argv)
 
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( svkMrsImageData::SafeDownCast( currentImage ) );
+    writer->SetInputData( svkMrsImageData::SafeDownCast( currentImage ) );
     writer->SetBasisFileName( basisFileName ); 
     if ( writeMultiRawFile == true ) {
         writer->UseSingleRawFile( false ); 

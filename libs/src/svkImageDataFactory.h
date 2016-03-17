@@ -66,7 +66,7 @@ class svkImageDataFactory: public vtkObjectFactory
 
     public:
 
-        vtkTypeRevisionMacro( svkImageDataFactory, vtkObjectFactory );
+        vtkTypeMacro( svkImageDataFactory, vtkObjectFactory );
         static svkImageDataFactory* New();
         static svkImageData*        CreateInstance (const char *vtkclassname); 
         virtual const char*         GetDescription();

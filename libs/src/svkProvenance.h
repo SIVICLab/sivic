@@ -65,7 +65,7 @@ class svkProvenance: public vtkObject
     public:
 
         static svkProvenance* New();
-        vtkTypeRevisionMacro( svkProvenance, vtkObject );
+        vtkTypeMacro( svkProvenance, vtkObject );
 
         void                            AddAlgorithm(string algoName); 
         template <class ArgType> void   AddAlgorithmArg(

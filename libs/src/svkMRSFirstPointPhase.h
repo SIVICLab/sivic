@@ -64,7 +64,7 @@ class svkMRSFirstPointPhase : public svkMRSAutoPhase
 
     public:
 
-        vtkTypeRevisionMacro( svkMRSFirstPointPhase, svkMRSAutoPhase );
+        vtkTypeMacro( svkMRSFirstPointPhase, svkMRSAutoPhase );
         static          svkMRSFirstPointPhase* New();
         
 

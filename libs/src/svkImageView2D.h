@@ -66,7 +66,7 @@ class svkImageView2D : public svkDataView
     public:
 
         static svkImageView2D* New();
-        vtkTypeRevisionMacro( svkImageView2D, svkDataView );
+        vtkTypeMacro( svkImageView2D, svkDataView );
 
         //  Methods:
         virtual void        SetInput( svkImageData* data, int index = 0 );

@@ -104,7 +104,7 @@ class svkImageLinearPhase : public vtkImageFourierFilter
 {
     public:
         static svkImageLinearPhase *New();
-        vtkTypeRevisionMacro(svkImageLinearPhase,vtkImageFourierFilter);
+        vtkTypeMacro(svkImageLinearPhase,vtkImageFourierFilter);
         void SetShiftWindow( double shiftWindow[3] );
         void ExecuteLinearPhase( vtkImageComplex* in, vtkImageComplex* out, int N, vtkImageComplex* phaseArray );
         void CreatePhaseArray( int N, vtkImageComplex* phaseArray );

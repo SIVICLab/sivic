@@ -62,7 +62,7 @@ class svkImageReader2 : public vtkImageReader2
 
     public:
 
-        vtkTypeRevisionMacro( svkImageReader2, vtkImageReader2);
+        vtkTypeMacro( svkImageReader2, vtkImageReader2);
 
         typedef enum {
             UNDEFINED = -1,

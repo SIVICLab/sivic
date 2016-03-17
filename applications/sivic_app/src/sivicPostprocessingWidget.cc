@@ -38,7 +38,7 @@
 #include <vtkSivicController.h>
 
 vtkStandardNewMacro( sivicPostprocessingWidget );
-vtkCxxRevisionMacro( sivicPostprocessingWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicPostprocessingWidget, "$Revision$");
 
 
 /*! 
@@ -171,7 +171,7 @@ void sivicPostprocessingWidget::ExecuteHSVD()
         svkHSVD* hsvd = svkHSVD::New();
         hsvd->AddObserver(vtkCommand::ProgressEvent, progressCallback);
         this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing HSVD baseline removal");
-        hsvd->SetInput( data ); 
+        hsvd->SetInputData( data ); 
         //hsvd->SetModelOrder( modelOrder );
 
         if ( this->selectionBoxOnlyButton->GetSelectedState() ) {
@@ -193,7 +193,6 @@ void sivicPostprocessingWidget::ExecuteHSVD()
         hsvd->RemoveObserver( progressCallback );
 
         data->Modified();
-        data->Update();
 
         string stringFilename = "hsvd";
         this->sivicController->Open4DImage( data, stringFilename);

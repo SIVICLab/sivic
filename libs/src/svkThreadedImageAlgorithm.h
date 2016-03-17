@@ -73,7 +73,7 @@ class svkThreadedImageAlgorithm : public vtkThreadedImageAlgorithm
 
     public:
 
-        vtkTypeRevisionMacro( svkThreadedImageAlgorithm, vtkThreadedImageAlgorithm);
+        vtkTypeMacro( svkThreadedImageAlgorithm, vtkThreadedImageAlgorithm);
         svkImageData*               GetOutput(); 
         virtual svkImageData*       GetOutput(int port); 
         svkImageData*               GetImageDataInput(int port);

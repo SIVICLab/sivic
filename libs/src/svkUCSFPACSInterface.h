@@ -70,7 +70,7 @@ class svkUCSFPACSInterface : public svkPACSInterface
 
     public:
 
-        vtkTypeRevisionMacro( svkUCSFPACSInterface, svkPACSInterface);
+        vtkTypeMacro( svkUCSFPACSInterface, svkPACSInterface);
     
         static svkUCSFPACSInterface* New();
 

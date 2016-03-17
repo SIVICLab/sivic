@@ -204,7 +204,7 @@ int main (int argc, char** argv)
 		writerFactory->Delete();
 		writer->SetFileName( outputFileName.c_str() );
         svkImageThreshold* thresholder = svkImageThreshold::New();
-        thresholder->SetInput(currentImage);
+        thresholder->SetInputData(currentImage);
         if( convertToByteMask ) {
             thresholder->SetOutputScalarType( VTK_UNSIGNED_CHAR );
         }
@@ -213,7 +213,7 @@ int main (int argc, char** argv)
         thresholder->SetMaskOutputValue( outputValue );
         thresholder->Update();
         currentImage = thresholder->GetOutput();
-		writer->SetInput( currentImage );
+		writer->SetInputData( currentImage );
 		writer->Write();
 		writer->Delete();
 		thresholder->Delete();

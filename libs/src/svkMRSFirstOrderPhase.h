@@ -64,7 +64,7 @@ class svkMRSFirstOrderPhase : public svkMRSZeroOrderPhase
 
     public:
 
-        vtkTypeRevisionMacro( svkMRSFirstOrderPhase, svkMRSZeroOrderPhase );
+        vtkTypeMacro( svkMRSFirstOrderPhase, svkMRSZeroOrderPhase );
         static          svkMRSFirstOrderPhase* New();
         
 

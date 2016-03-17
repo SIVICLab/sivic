@@ -35,7 +35,6 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-#cmake_policy(SET CMP0002 OLD)
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0015 OLD)
 endif(COMMAND cmake_policy)
@@ -104,7 +103,6 @@ endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.li
 #   VTK
 ###################################
 FIND_PACKAGE(VTK)
-
 IF (USE_VTK_FILE)
     INCLUDE(${USE_VTK_FILE})
 ENDIF (USE_VTK_FILE)
@@ -142,6 +140,7 @@ INCLUDE(CTest)
 
 
 LINK_DIRECTORIES(
+    ${VTK_DIR}../../    
     ../${PLATFORM}
     ../lib/${PLATFORM}
     ${DCMTK_DIR}/lib
@@ -184,10 +183,98 @@ SET(SVK_LIBS
     svkPSD
     svkTypeUtils
     svkadapt 
-    vtkIO
-    vtkImaging
-    vtkFiltering
-    vtkCommon
+    vtkFiltersHybrid-6.3
+    vtkFiltersGeneral-6.3
+    vtkCommonDataModel-6.3
+    vtkCommonMath-6.3
+    vtkCommonCore-6.3
+    vtksys-6.3
+    vtkCommonMisc-6.3
+    vtkCommonSystem-6.3
+    vtkCommonTransforms-6.3
+    vtkFiltersCore-6.3
+    vtkCommonExecutionModel-6.3
+    vtkImagingCore-6.3
+    vtkRenderingCore-6.3
+    vtkCommonColor-6.3
+    vtkFiltersExtraction-6.3
+    vtkImagingFourier-6.3
+    vtkFiltersGeometry-6.3
+    vtkFiltersSources-6.3
+    vtkRenderingImage-6.3
+    vtkImagingHybrid-6.3
+    vtkIOImage-6.3
+    vtkIOCore-6.3
+    vtkzlib-6.3
+    vtkmetaio-6.3
+    vtkjpeg-6.3
+    vtkpng-6.3
+    vtktiff-6.3
+    vtkInteractionStyle-6.3
+    vtkRenderingAnnotation-6.3
+    vtkImagingColor-6.3
+    vtkRenderingFreeType-6.3
+    vtkfreetype-6.3
+    vtkftgl-6.3
+    vtkRenderingVolume-6.3
+    vtkImagingStatistics-6.3
+    vtkIOXMLParser-6.3
+    vtkexpat-6.3
+    vtkRenderingContext2D-6.3
+    vtkRenderingGL2PS-6.3
+    vtkRenderingContextOpenGL-6.3
+    vtkRenderingOpenGL-6.3
+    vtkRenderingLOD-6.3
+    vtkImagingMath-6.3
+    vtkRenderingLabel-6.3
+    vtkRenderingVolumeOpenGL-6.3
+    vtkInteractionImage-6.3
+    vtkRenderingLIC-6.3
+    vtkRenderingGL2PS-6.3
+    vtkRenderingContextOpenGL-6.3
+    vtkRenderingContext2D-6.3
+    vtkRenderingLabel-6.3
+    vtkRenderingAnnotation-6.3
+    vtkImagingColor-6.3
+    vtkRenderingFreeType-6.3
+    vtkftgl-6.3
+    vtkfreetype-6.3
+    vtkRenderingVolume-6.3
+    vtkInteractionStyle-6.3
+    vtkFiltersHybrid-6.3
+    vtkRenderingOpenGL-6.3
+    vtkRenderingCore-6.3
+    vtkCommonColor-6.3
+    vtkFiltersGeometry-6.3
+    vtkFiltersSources-6.3
+    vtkImagingHybrid-6.3
+    vtkIOImage-6.3
+    vtkmetaio-6.3
+    vtkpng-6.3
+    vtktiff-6.3
+    vtkjpeg-6.3
+    GLU
+    GL
+    SM
+    ICE
+    X11
+    Xext
+    Xt
+    vtkIOXMLParser-6.3
+    vtkexpat-6.3
+    vtkFiltersExtraction-6.3
+    vtkFiltersGeneral-6.3
+    vtkFiltersCore-6.3
+    vtkImagingFourier-6.3
+    vtkImagingCore-6.3
+    vtkIOCore-6.3
+    vtkCommonExecutionModel-6.3
+    vtkCommonDataModel-6.3
+    vtkCommonMisc-6.3
+    vtkCommonSystem-6.3
+    vtkCommonTransforms-6.3
+    vtkCommonMath-6.3
+    vtkCommonCore-6.3
     dcmdata
     ${DCMTK_OFLOG}
     ofstd 
@@ -197,9 +284,22 @@ SET(SVK_LIBS
 
 SET(SVK_VIZ_LIBS
     svkviz
-    vtkRendering
-    vtkGraphics
-    vtkHybrid
+    #vtkRenderingAnnotation-6.3
+    #vtkRenderingContext2D-6.3
+    #vtkRenderingContextOpenGL-6.3
+    #vtkRenderingCore-6.3
+    #vtkRenderingFreeType-6.3
+    #vtkRenderingGL2PS-6.3
+    #vtkRenderingImage-6.3
+    #vtkRenderingLabel-6.3
+    #vtkRenderingLIC-6.3
+    #vtkRenderingLOD-6.3
+    #vtkRenderingOpenGL-6.3
+    #vtkRenderingVolume-6.3
+    #vtkRenderingVolumeOpenGL-6.3
+    #vtkRenderingCore-6.3
+    #vtkFiltersHybrid-6.3
+    #vtkImagingHybrid-6.3
 )
 
 
@@ -448,7 +548,7 @@ IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(
         svkSatBandsXML_c
         ${SVK_LIBS}
-        vtkIO
+        #vtkIO
     )
     ADD_EXECUTABLE(
         svkDadSatsXMLTest_c
@@ -458,7 +558,6 @@ IF(NOT WIN32)
         svkDadSatsXMLTest_c
         ${SVK_LIBS}
         svkXMLUtils
-        vtkIO
     )
     ADD_EXECUTABLE(
         svkDadTrajectoryXMLTest_c
@@ -467,8 +566,8 @@ IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(
         svkDadTrajectoryXMLTest_c
         ${SVK_LIBS}
+        vtkIOCore-6.3
         svkXMLUtils
-        vtkIO
     )
 ENDIF(NOT WIN32)
 

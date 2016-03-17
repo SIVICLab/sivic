@@ -70,7 +70,7 @@ class svkMRSAverageSpectra : public svkImageInPlaceFilter
     public:
 
         static svkMRSAverageSpectra* New();
-        vtkTypeRevisionMacro( svkMRSAverageSpectra, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMRSAverageSpectra, svkImageInPlaceFilter);
 
         void            LimitToSelectionBox(); 
         void            AverageMagnitudeSpectra();

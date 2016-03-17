@@ -39,6 +39,7 @@
 # For now we will use the linux test results for comparison on all platforms
 SET( DEFAULT_TEST_PLATFORM Linux_x86_64 )
 
+
 #############################################################
 #   Paths to binary applications and scripts
 #############################################################
@@ -50,7 +51,7 @@ IF(WIN32)
 ELSE(WIN32)
     SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/applications/cmd_line/${PLATFORM})
     SET( DIFF_COMMAND diff )
-    SET( TEST_PLATFORM ${PLATFORM} )
+    SET( TEST_PLATFORM "${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}" )
 ENDIF(WIN32)
 
 SET( DCM_2_XML_COMMAND ${DCMTK_DIR}/bin/dcm2xml )

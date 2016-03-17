@@ -66,7 +66,7 @@ class svkMrsImageFlip : public svkImageInPlaceFilter
     public:
 
         static svkMrsImageFlip* New();
-        vtkTypeRevisionMacro( svkMrsImageFlip, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMrsImageFlip, svkImageInPlaceFilter);
 
         void    SetFilteredAxis( int axis ); 
         void    SetFilteredChannel( int channel); 

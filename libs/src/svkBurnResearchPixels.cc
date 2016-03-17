@@ -49,7 +49,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkBurnResearchPixels, "$Rev$");
+//vtkCxxRevisionMacro(svkBurnResearchPixels, "$Rev$");
 vtkStandardNewMacro(svkBurnResearchPixels);
 
 
@@ -102,7 +102,7 @@ int svkBurnResearchPixels::RequestData( vtkInformation* request, vtkInformationV
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 
     return 1; 
 } 
@@ -136,7 +136,7 @@ double svkBurnResearchPixels::GetBurnValue()
     }
 */
     vtkImageAccumulate* histo = vtkImageAccumulate::New();
-    histo->SetInput( data );
+    histo->SetInputData( data );
     histo->Update();
 
     //  Get the input range for scaling:

@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDataValidator, "$Rev$");
+//vtkCxxRevisionMacro(svkDataValidator, "$Rev$");
 vtkStandardNewMacro(svkDataValidator);
 
 

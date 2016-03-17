@@ -62,7 +62,7 @@ class svkSpecPoint : public vtkObject
     public:
 
         static svkSpecPoint* New();
-        vtkTypeRevisionMacro( svkSpecPoint, vtkObject);
+        vtkTypeMacro( svkSpecPoint, vtkObject);
 
         void    SetDcmHeader(svkDcmHeader* hdr);
 

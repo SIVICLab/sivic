@@ -53,7 +53,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkEPSIReorder, "$Rev$");
+//vtkCxxRevisionMacro(svkEPSIReorder, "$Rev$");
 vtkStandardNewMacro(svkEPSIReorder);
 
 
@@ -272,7 +272,7 @@ int svkEPSIReorder::RequestData( vtkInformation* request, vtkInformationVector**
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    //this->Update();
 
     return 1; 
 } 

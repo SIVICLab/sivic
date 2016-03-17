@@ -71,7 +71,7 @@ class svk4DImageData: public svkImageData
 
     public:
 
-        vtkTypeRevisionMacro( svk4DImageData, svkImageData);
+        vtkTypeMacro( svk4DImageData, svkImageData);
         static svk4DImageData*  New();
         static vtkObject*       NewObject();
 

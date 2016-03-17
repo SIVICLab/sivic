@@ -175,7 +175,7 @@ int main (int argc, char** argv)
     inputReader->Update();
 
     svkTransform* transform = svkTransform::New();
-    transform->SetInput( inputReader->GetOutput() ); 
+    transform->SetInputData( inputReader->GetOutput() ); 
     transform->SetTranslationLPS( dl, dp, ds ); 
     transform->Update();
 
@@ -183,7 +183,7 @@ int main (int argc, char** argv)
     svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( dataTypeOut ) ); 
     writer->SetFileName( outputFileName.c_str() );
 
-    writer->SetInput( transform->GetOutput() );
+    writer->SetInputData( transform->GetOutput() );
     writer->Write();
     writer->Delete();
     inputReader->Delete();

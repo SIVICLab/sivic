@@ -37,7 +37,7 @@
 #include <vtkSivicController.h>
 #include <svkTypeUtils.h>
 vtkStandardNewMacro( sivicVoxelTaggingWidget );
-vtkCxxRevisionMacro( sivicVoxelTaggingWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicVoxelTaggingWidget, "$Revision$");
 
 
 /*! 

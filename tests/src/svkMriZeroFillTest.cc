@@ -76,7 +76,7 @@ int main (int argc, char** argv)
 
     // Create do padding by 1 extra pixel on each side
     svkMriZeroFill* padOne = svkMriZeroFill::New();
-    padOne->SetInput( data );
+    padOne->SetInputData( data );
 
     // Pad + 1 pixel. Remeber normally extent max is dim - 1 
     padOne->SetOutputWholeExtent(0, dims[0], 0, dims[1], 0, dims[2]);
@@ -89,11 +89,11 @@ int main (int argc, char** argv)
     target->DeepCopy( padOne->GetOutput() );
     vtkImageExtractComponents* real = vtkImageExtractComponents::New();
     real->SetComponents( 0 );
-    real->SetInput( padOne->GetOutput() );
+    real->SetInputData( padOne->GetOutput() );
     real->Update();
 
     target->DeepCopy( real->GetOutput() );
-    target->Update();
+    //target->Update();
     real->Delete();
     target->SyncVTKImageDataToDcmHeader();
 
@@ -102,7 +102,7 @@ int main (int argc, char** argv)
 
     // Create do padding by 1 extra pixel on each side
     svkMriZeroFill* padTwo = svkMriZeroFill::New();
-    padTwo->SetInput( data );
+    padTwo->SetInputData( data );
 
     // Pad + 2 pixel. Remeber normally extent max is dim - 1 
     padTwo->SetOutputWholeExtent(0, dims[0] + 1, 0, dims[1] + 1, 0, dims[2] + 1);
@@ -115,11 +115,11 @@ int main (int argc, char** argv)
     target->DeepCopy( padTwo->GetOutput() );
     real = vtkImageExtractComponents::New();
     real->SetComponents( 0 );
-    real->SetInput( padTwo->GetOutput() );
+    real->SetInputData( padTwo->GetOutput() );
     real->Update();
 
     target->DeepCopy( real->GetOutput() );
-    target->Update();
+    //target->Update();
     real->Delete();
     target->SyncVTKImageDataToDcmHeader();
 
@@ -140,7 +140,7 @@ void WriteData( string name, svkImageData* data )
     svkIdfVolumeWriter* writer = svkIdfVolumeWriter::New();
     writer->SetCastDoubleToFloat( true );
     writer->SetFileName( name.c_str() );
-    writer->SetInput( data );
+    writer->SetInputData( data );
     writer->Write();
     writer->Delete();
 }

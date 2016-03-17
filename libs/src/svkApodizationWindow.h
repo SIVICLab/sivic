@@ -65,7 +65,7 @@ class svkApodizationWindow : public vtkObject
 
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkApodizationWindow, vtkObject );
+        vtkTypeMacro( svkApodizationWindow, vtkObject );
   
         // vtk initialization 
         static svkApodizationWindow* New();  

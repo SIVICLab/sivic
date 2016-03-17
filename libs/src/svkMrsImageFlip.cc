@@ -48,7 +48,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMrsImageFlip, "$Rev$");
+//vtkCxxRevisionMacro(svkMrsImageFlip, "$Rev$");
 vtkStandardNewMacro(svkMrsImageFlip);
 
 
@@ -144,9 +144,9 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
                 vtkImageFlip* flip = vtkImageFlip::New();
                 flip->SetFilteredAxis( this->filteredAxis ); 
 
-                flip->SetInput( tmpData ); 
+                flip->SetInputData( tmpData ); 
                 tmpData = flip->GetOutput();
-                tmpData->Update();
+                flip->Update();
 
 
                 mrsData->SetImage( tmpData, freq, timePt, coil);
@@ -160,7 +160,7 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    //this->Update();
 
     return 1; 
 } 

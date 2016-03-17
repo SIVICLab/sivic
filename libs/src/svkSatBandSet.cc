@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkSatBandSet, "$Rev$");
+//vtkCxxRevisionMacro(svkSatBandSet, "$Rev$");
 vtkStandardNewMacro(svkSatBandSet);
 
 
@@ -441,7 +441,7 @@ void svkSatBandSet::GenerateSatBandsActor( )
             // I have no idea why this second SetCenter is need, but without the planes are off...
             polyDataPlaneSource->SetCenter( planeOrigin[0], planeOrigin[1], planeOrigin[2] );
             vtkPolyData* planeData = polyDataPlaneSource->GetOutput();
-            planeData->Update();
+            polyDataPlaneSource->Update();
 
             // Add the points of the planes to the set of corners for the hexahedron
             corners->InsertPoint( i*8 + 4*j, planeData->GetPoint(0) );
@@ -537,22 +537,22 @@ void svkSatBandSet::GenerateSatBandsActor( )
         clippers.push_back( vtkClipDataSet::New() );
         clippers.push_back( vtkClipDataSet::New() );
 
-        clippers[0]->SetInput( slabDataSet );
+        clippers[0]->SetInputData( slabDataSet );
         clippers[0]->SetClipFunction(clippingPlanes[0]);
 
-        clippers[1]->SetInput( clippers[0]->GetOutput() );
+        clippers[1]->SetInputData( clippers[0]->GetOutput() );
         clippers[1]->SetClipFunction(clippingPlanes[1]);
 
-        clippers[2]->SetInput( clippers[1]->GetOutput() );
+        clippers[2]->SetInputData( clippers[1]->GetOutput() );
         clippers[2]->SetClipFunction(clippingPlanes[2]);
 
-        clippers[3]->SetInput( clippers[2]->GetOutput() );
+        clippers[3]->SetInputData( clippers[2]->GetOutput() );
         clippers[3]->SetClipFunction(clippingPlanes[3]);
 
-        clippers[4]->SetInput( clippers[3]->GetOutput() );
+        clippers[4]->SetInputData( clippers[3]->GetOutput() );
         clippers[4]->SetClipFunction(clippingPlanes[4]);
 
-        clippers[5]->SetInput( clippers[4]->GetOutput() );
+        clippers[5]->SetInputData( clippers[4]->GetOutput() );
         clippers[5]->SetClipFunction(clippingPlanes[5]);
 
 
@@ -565,29 +565,29 @@ void svkSatBandSet::GenerateSatBandsActor( )
         cutters.push_back( vtkClipPolyData::New() );
         cutters.push_back( vtkClipPolyData::New() );
 
-        cutters[0]->SetInput( slabPolyData );
+        cutters[0]->SetInputData( slabPolyData );
         cutters[0]->SetClipFunction(clippingPlanes[0]);
 
-        cutters[1]->SetInput( cutters[0]->GetOutput() );
+        cutters[1]->SetInputData( cutters[0]->GetOutput() );
         cutters[1]->SetClipFunction(clippingPlanes[1]);
 
-        cutters[2]->SetInput( cutters[1]->GetOutput() );
+        cutters[2]->SetInputData( cutters[1]->GetOutput() );
         cutters[2]->SetClipFunction(clippingPlanes[2]);
 
-        cutters[3]->SetInput( cutters[2]->GetOutput() );
+        cutters[3]->SetInputData( cutters[2]->GetOutput() );
         cutters[3]->SetClipFunction(clippingPlanes[3]);
 
-        cutters[4]->SetInput( cutters[3]->GetOutput() );
+        cutters[4]->SetInputData( cutters[3]->GetOutput() );
         cutters[4]->SetClipFunction(clippingPlanes[4]);
 
-        cutters[5]->SetInput( cutters[4]->GetOutput() );
+        cutters[5]->SetInputData( cutters[4]->GetOutput() );
         cutters[5]->SetClipFunction(clippingPlanes[5]);
 
         vtkDataSetMapper* satBandMapper = vtkDataSetMapper::New();
         vtkPolyDataMapper* satBandOutlineMapper = vtkPolyDataMapper::New();
 
-        satBandMapper->SetInput(clippers[5]->GetOutput());
-        satBandOutlineMapper->SetInput( cutters[5]->GetOutput() );
+        satBandMapper->SetInputData(clippers[5]->GetOutput());
+        satBandOutlineMapper->SetInputData( cutters[5]->GetOutput() );
         clippers[0]->Delete();
         clippers[1]->Delete();
         clippers[2]->Delete();

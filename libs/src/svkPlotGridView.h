@@ -97,7 +97,7 @@ class svkPlotGridView : public svkDataView
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkPlotGridView, svkDataView );
+        vtkTypeMacro( svkPlotGridView, svkDataView );
 
         static svkPlotGridView*       New();
     

@@ -97,7 +97,7 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
 
     public:
 
-        vtkTypeRevisionMacro( svkGEPFileMapperUCSFfidcsiDev0, svkGEPFileMapperUCSF );
+        vtkTypeMacro( svkGEPFileMapperUCSFfidcsiDev0, svkGEPFileMapperUCSF );
         static svkGEPFileMapperUCSFfidcsiDev0* New();
 
         virtual void    ReadData(vtkStringArray* pFileNames, svkImageData* data); 

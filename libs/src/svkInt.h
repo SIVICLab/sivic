@@ -62,7 +62,7 @@ class svkInt : public vtkDataObject
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkInt, vtkDataObject );
+        vtkTypeMacro( svkInt, vtkDataObject );
   
         // vtk initialization 
         static svkInt* New();  

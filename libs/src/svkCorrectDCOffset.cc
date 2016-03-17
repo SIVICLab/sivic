@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkCorrectDCOffset, "$Rev$");
+//vtkCxxRevisionMacro(svkCorrectDCOffset, "$Rev$");
 vtkStandardNewMacro(svkCorrectDCOffset);
 
 
@@ -84,7 +84,6 @@ int svkCorrectDCOffset::RequestData( vtkInformation* request, vtkInformationVect
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
 
     return 1; 
 }
@@ -193,7 +192,6 @@ void svkCorrectDCOffset::CorrectDCOffset()
     }
 
     this->GetInput()->Modified();
-    this->GetInput()->Update();
 }
 
 

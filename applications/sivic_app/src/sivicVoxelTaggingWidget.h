@@ -66,7 +66,7 @@ class sivicVoxelTaggingWidget : public sivicKWCompositeWidget
     public:
 
         static sivicVoxelTaggingWidget *New();
-        vtkTypeRevisionMacro(sivicVoxelTaggingWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicVoxelTaggingWidget,sivicKWCompositeWidget);
 
 
     protected:

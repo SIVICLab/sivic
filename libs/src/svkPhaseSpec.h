@@ -70,7 +70,7 @@ class svkPhaseSpec : public svkImageInPlaceFilter
     public:
 
         static svkPhaseSpec* New();
-        vtkTypeRevisionMacro( svkPhaseSpec, svkImageInPlaceFilter);
+        vtkTypeMacro( svkPhaseSpec, svkImageInPlaceFilter);
 
         void            SetPhase0( float phase0 );
         float           GetPhase0();

@@ -67,14 +67,14 @@ int main (int argc, char** argv)
 
     //  Combine coils using straight addition 
     svkMRSCombine* combine = svkMRSCombine::New();
-    combine->SetInput( data );
+    combine->SetInputData( data );
     combine->SetCombinationMethod( svkMRSCombine::ADDITION ); 
     combine->SetCombinationDimension( svkMRSCombine::COIL );
     combine->Update();
 
     svkDdfVolumeWriter* writer = svkDdfVolumeWriter::New();
     writer->SetFileName( fnameOut.c_str() );    
-    writer->SetInput( combine->GetOutput() );
+    writer->SetInputData( combine->GetOutput() );
     writer->Write();
     writer->Delete();
 

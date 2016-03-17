@@ -62,7 +62,7 @@ class svkDICOMWriter : public svkImageWriter
 
     public:
 
-        vtkTypeRevisionMacro( svkDICOMWriter, svkImageWriter);
+        vtkTypeMacro( svkDICOMWriter, svkImageWriter);
 
         void            SetInput( vtkDataObject* input );
         void            SetInput(int index, vtkDataObject* input);

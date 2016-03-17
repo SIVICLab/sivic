@@ -74,7 +74,7 @@ class svkMrsImageData: public svk4DImageData
             CHANNEL
         } MrsVolumeIndex;
 
-        vtkTypeRevisionMacro( svkMrsImageData, svk4DImageData);
+        vtkTypeMacro( svkMrsImageData, svk4DImageData);
         static svkMrsImageData* New();
         static vtkObject*       NewObject();
 

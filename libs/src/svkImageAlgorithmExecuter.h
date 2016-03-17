@@ -71,7 +71,7 @@ class svkImageAlgorithmExecuter : public svkImageAlgorithm
     public:
 
         static svkImageAlgorithmExecuter* New();
-        vtkTypeRevisionMacro( svkImageAlgorithmExecuter, svkImageAlgorithm);
+        vtkTypeMacro( svkImageAlgorithmExecuter, svkImageAlgorithm);
 
         void   SetAlgorithm( vtkImageAlgorithm* algo );
 

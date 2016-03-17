@@ -68,7 +68,7 @@ class svkDcmtkAdapter: public svkDcmHeader
     public:
 
         static svkDcmtkAdapter* New();
-        vtkTypeRevisionMacro( svkDcmtkAdapter, svkDcmHeader);
+        vtkTypeMacro( svkDcmtkAdapter, svkDcmHeader);
 
 
     protected:

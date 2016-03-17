@@ -343,7 +343,7 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
         exit(1);
     }
     data->Register(NULL);
-    data->Update();
+    //data->Update();
     if( globalVars.debug ) {
         cout << "Data: " << *data << endl;
     }
@@ -622,7 +622,7 @@ void LoadOverlay( string overlayFileName ) {
             exit(1);
         }
         globalVars.overlay->Register(NULL);
-        globalVars.overlay->Update();
+        //globalVars.overlay->Update();
         if( !globalVars.overlay->IsA("svkMriImageData")) {
             cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
             cout << "Error: -o flag must be followed by an image file!" << endl;
@@ -654,7 +654,7 @@ void LoadSpectra( vector<string> spectraFileName ) {
             cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
         }
         globalVars.spectra[i]->Register(NULL);
-        globalVars.spectra[i]->Update();
+        //globalVars.spectra[i]->Update();
         // If there is a spectra loaded the the first window will be the spectra 
         globalVars.imageWindowOffset = 1;
         if( globalVars.debug ) {

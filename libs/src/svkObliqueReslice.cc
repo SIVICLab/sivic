@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkObliqueReslice, "$Rev$");
+//vtkCxxRevisionMacro(svkObliqueReslice, "$Rev$");
 vtkStandardNewMacro(svkObliqueReslice);
 
 
@@ -157,7 +157,7 @@ bool svkObliqueReslice::Magnify()
 void svkObliqueReslice::SetTarget(svkImageData* image)
 {
     image->GetDcmHeader()->GetDataDcos(this->targetDcos); 
-    this->SetInput(TARGET_IMAGE, image);
+    this->SetInputData(TARGET_IMAGE, image);
 }
 
 
@@ -203,7 +203,7 @@ bool svkObliqueReslice::IsDcosInitialized()
 int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    this->reslicer->SetInput( this->GetImageDataInput(0) ); 
+    this->reslicer->SetInputData( this->GetImageDataInput(0) ); 
 
      // Set interpolation mode
     int interpolationMode;
@@ -394,7 +394,7 @@ int svkObliqueReslice::RequestData( vtkInformation* request, vtkInformationVecto
     this->GetOutput()->SetDcos( this->targetDcos ); 
     string activeScalarName = this->GetImageDataInput(0)->GetPointData()->GetScalars()->GetName();
 
-    this->reslicer->SetInput( this->GetImageDataInput(0) );
+    this->reslicer->SetInputData( this->GetImageDataInput(0) );
 
     int numberOfVolumes = this->GetImageDataInput(0)->GetPointData()->GetNumberOfArrays();
 
@@ -408,12 +408,16 @@ int svkObliqueReslice::RequestData( vtkInformation* request, vtkInformationVecto
     	 *  have changed (although it really should). To get around this we switch the input to
     	 *  NULL and then back to force an update.
     	 */
-		this->reslicer->SetInput( NULL );
-		this->reslicer->SetInput( this->GetImageDataInput(0) );
+		this->reslicer->SetInputData( NULL );
+		this->reslicer->SetInputData( this->GetImageDataInput(0) );
     	this->reslicer->Update();
 
     	if( i == 0 ) {
 			//  Copy the vtkImageAlgo output to the allocated svkImageData output image
+            vtkImageData::SetScalarType(
+                vtkImageData::GetScalarType( this->reslicer->GetImageDataInput(0)->GetInformation()),
+                this->reslicer->GetOutput()->GetInformation()
+            );
 			this->GetOutput()->DeepCopy( this->reslicer->GetOutput() );
     	} else {
     		// We need to copy the data array after each update because it will be reused

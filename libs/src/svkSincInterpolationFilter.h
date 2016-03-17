@@ -85,7 +85,7 @@ class svkSincInterpolationFilter : public svkImageAlgorithm
     public:
 
         static svkSincInterpolationFilter* New();
-        vtkTypeRevisionMacro( svkSincInterpolationFilter, svkImageAlgorithm);
+        vtkTypeMacro( svkSincInterpolationFilter, svkImageAlgorithm);
 
         void             SetOperateInPlace( bool operateInPlace );
         svkImageData*    GetOutput();

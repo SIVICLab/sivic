@@ -66,7 +66,7 @@ class svkAlgoTemplate : public svkImageInPlaceFilter
     public:
 
         static svkAlgoTemplate* New();
-        vtkTypeRevisionMacro( svkAlgoTemplate, svkImageInPlaceFilter);
+        vtkTypeMacro( svkAlgoTemplate, svkImageInPlaceFilter);
 
 
     protected:

@@ -65,7 +65,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkImageFourierCenter, "$Revision$");
+//vtkCxxRevisionMacro(svkImageFourierCenter, "$Revision$");
 vtkStandardNewMacro(svkImageFourierCenter);
 
 
@@ -114,7 +114,7 @@ void svkImageFourierCenter::ThreadedExecute(vtkImageData *inData, vtkImageData *
     double *outPtr0, *outPtr1, *outPtr2;
     vtkIdType inInc0, inInc1, inInc2;
     vtkIdType outInc0, outInc1, outInc2;
-    int *wholeExtent, wholeMin0, wholeMax0; 
+    int wholeMin0, wholeMax0; 
     int inIdx0, outIdx0, idx1, idx2;
     int min0, max0, min1, max1, min2, max2;
     int numberOfComponents;
@@ -127,12 +127,12 @@ void svkImageFourierCenter::ThreadedExecute(vtkImageData *inData, vtkImageData *
         static_cast<double>(this->GetNumberOfIterations());
   
     // this filter expects that the input be doubles.
-    if (inData->GetScalarType() != VTK_DOUBLE) {
+    if (  vtkImageData::GetScalarType( inData->GetInformation() ) != VTK_DOUBLE) {
         vtkErrorMacro(<< "Execute: Input must be be type double.");
         return;
     }
     // this filter expects that the output be doubles.
-    if (outData->GetScalarType() != VTK_DOUBLE) {
+    if (vtkImageData::GetScalarType( outData->GetInformation() ) != VTK_DOUBLE) {
         vtkErrorMacro(<< "Execute: Output must be be type double.");
         return;
     }
@@ -145,7 +145,9 @@ void svkImageFourierCenter::ThreadedExecute(vtkImageData *inData, vtkImageData *
     // Get stuff needed to loop through the pixel
     numberOfComponents = outData->GetNumberOfScalarComponents();
     outPtr0 = static_cast<double *>(outData->GetScalarPointerForExtent(outExt));
-    wholeExtent = this->GetOutput()->GetWholeExtent();
+
+    int* wholeExtent = this->GetOutputInformation(0)->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
+
     // permute to make the filtered axis come first
     this->PermuteExtent(outExt, min0, max0, min1, max1, min2, max2);
     this->PermuteIncrements(inData->GetIncrements(), inInc0, inInc1, inInc2);

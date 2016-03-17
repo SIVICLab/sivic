@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDcmEnhancedVolumeReader, "$Rev$");
+//vtkCxxRevisionMacro(svkDcmEnhancedVolumeReader, "$Rev$");
 vtkStandardNewMacro(svkDcmEnhancedVolumeReader);
 
 
@@ -348,11 +348,18 @@ void svkDcmEnhancedVolumeReader::ExecuteInformation()
 {
     Superclass::ExecuteInformation();
     if( this->ArePixelsScaled( )  ) {
+        int vtkDataType; 
         if( this->useDoublePrecision ) {
-            this->GetOutput()->SetScalarType( VTK_DOUBLE );
+            vtkDataType = VTK_DOUBLE; 
         } else {
-            this->GetOutput()->SetScalarType( VTK_FLOAT );
+            vtkDataType = VTK_FLOAT; 
         }
+        vtkDataObject::SetPointDataActiveScalarInfo(
+            this->GetOutput()->GetInformation(),
+            vtkDataType,
+            this->GetOutput()->GetNumberOfScalarComponents()
+        );
+
     } 
 }
 

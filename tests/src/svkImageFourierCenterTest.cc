@@ -74,11 +74,11 @@ int main (int argc, char** argv)
 
 
     svkMriImageFFT* fft = svkMriImageFFT::New();
-    fft->SetInput( data );
+    fft->SetInputData( data );
     fft->Update();
 
     svkImageFourierCenter* center = svkImageFourierCenter::New();
-    center->SetInput( fft->GetOutput() );
+    center->SetInputData( fft->GetOutput() );
     center->Update();
 
 
@@ -93,7 +93,7 @@ int main (int argc, char** argv)
 
     vtkImageExtractComponents* real = vtkImageExtractComponents::New();
     real->SetComponents( 0 );
-    real->SetInput( centeredData );
+    real->SetInputData( centeredData );
     real->Update();
 
     svkMriImageData* realCenteredData = svkMriImageData::New(); 
@@ -110,7 +110,7 @@ int main (int argc, char** argv)
 
     svkImageFourierCenter* uncenter = svkImageFourierCenter::New();
     uncenter->SetReverseCenter( true );
-    uncenter->SetInput( centeredData );
+    uncenter->SetInputData( centeredData );
     uncenter->Update();
     
     // We need an svkMri image data object. The svkImageFourierCenter algorihtm
@@ -123,7 +123,7 @@ int main (int argc, char** argv)
 
     real = vtkImageExtractComponents::New();
     real->SetComponents( 0 );
-    real->SetInput( uncenteredData );
+    real->SetInputData( uncenteredData );
     real->Update();
 
     svkMriImageData* realUncenteredData = svkMriImageData::New(); 
@@ -152,7 +152,7 @@ void WriteData( string name, svkImageData* data )
     svkIdfVolumeWriter* writer = svkIdfVolumeWriter::New();
     writer->SetCastDoubleToFloat( true );
     writer->SetFileName( name.c_str() );
-    writer->SetInput( data );
+    writer->SetInputData( data );
     writer->Write();
     writer->Delete();
 }

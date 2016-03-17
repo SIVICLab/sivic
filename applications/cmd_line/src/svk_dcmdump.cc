@@ -60,7 +60,6 @@ int main ( int argc, char** argv )
         cout << "Cannot read file: " << argv[1] << endl;
         exit(1);
     }
-    data->Update();
     cout << "File: " << argv[0] << endl <<  "VTK Object: " << endl << *data << endl;
     cout << "SVK DICOM Header: " << endl;
     data->GetDcmHeader()->PrintDcmHeader();

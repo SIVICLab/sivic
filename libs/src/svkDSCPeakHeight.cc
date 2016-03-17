@@ -50,7 +50,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDSCPeakHeight, "$Rev$");
+//vtkCxxRevisionMacro(svkDSCPeakHeight, "$Rev$");
 vtkStandardNewMacro(svkDSCPeakHeight);
 
 
