@@ -229,13 +229,13 @@ int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkIn
                 value[comp]= spectrum->GetTuple(freq)[comp];
                 //Add to this frequency the spatial since for the current voxel  the current intensity.
                 if( piDeltaX != 0 ) {
-                    value[comp] *= sin(piDeltaX)/piDeltaX;
+                    value[comp] *= sin(static_cast<double>(piDeltaX))/piDeltaX;
                 }
                 if( piDeltaY != 0 ) {
-                    value[comp] *= sin(piDeltaY)/piDeltaY;
+                    value[comp] *= sin(static_cast<double>(piDeltaY))/piDeltaY;
                 }
                 if( piDeltaZ != 0 ) {
-                    value[comp] *= sin(piDeltaZ)/piDeltaZ;
+                    value[comp] *= sin(static_cast<double>(piDeltaZ))/piDeltaZ;
                 }
                 value[comp] += resultArrays[interpIndex]->GetTuple(freq)[comp];
             }
