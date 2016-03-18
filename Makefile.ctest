@@ -72,7 +72,7 @@ CONFIG_OPTS       = -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} \
                     -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}     \
                     -DSVNCOMMAND=${SVN_COMMAND}              \
                     -DCMAKE_VERBOSE_MAKEFILE=ON              \
-                    -DMAKECOMMAND="/usr/bin/gmake -i -j4" 
+                    -DMAKECOMMAND="/usr/bin/gmake -i -j64" 
 CONFIG_OPTS_VTK6  = -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} \
 					-DVTK_DIR=${VTK6_DIR}                    \
                     -DKWWidgets_DIR=${KWW6_DIR}              \
@@ -130,18 +130,18 @@ update_test_cases:
 #
 #   Configure build for Experimental / Nightly
 #
-configure_testing: clean_results 
+configure_testing_vtk5: clean_results 
 	(${RM_CACHE} ${CONFIG_BASE}      ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
-configure_testing_vtk6: clean_results 
+configure_testing: clean_results 
 	(${RM_CACHE} ${CONFIG_BASE_VTK6} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 #
 # 	Configure for debug, but no testing
 #
-configure_debug: clean_results 
+configure_debug_vtk5: clean_results 
 	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_DEBUG} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
-configure_debug_vtk6: clean_results 
+configure_debug: clean_results 
 	(${RM_CACHE} ${CONFIG_BASE_VTK6} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_DEBUG} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 #
@@ -193,9 +193,9 @@ experimental: configure_testing
 	${XVFB_RUN} ${CMAKE_DIR}/ctest -D ExperimentalSubmit    --verbose --output-log ${OUTPUT_LOG}
 
 #   Does not perform memory checking
-experimental_fast: configure_testing
+experimental_fast_vtk5: configure_testing_vtk5
 	${XVFB_RUN} ${CMAKE_DIR}/ctest -D Experimental --output-log ${OUTPUT_LOG} 
-experimental_fast_vtk6: configure_testing_vtk6
+experimental_fast: configure_testing
 	${XVFB_RUN} ${CMAKE_DIR}/ctest -D Experimental --output-log ${OUTPUT_LOG} 
 
 nightly: configure_testing
