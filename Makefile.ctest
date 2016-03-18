@@ -33,6 +33,7 @@ ifeq ($(OSTYPE),Darwin)
 	VTK_DIR                 := /usr/local/vtk6.3/lib/cmake/vtk-6.3
 	KWWidgets_DIR           := /usr/local/kwwidgets_vtk6/lib/KWWidgets
 	KWW_DIR                 := /usr/local/kwwidgets_vtk6/lib/KWWidgets
+	KWW6_DIR                := /usr/local/kwwidgets_vtk6/lib/KWWidgets
 	ITK_DIR                 := /usr/local/ITK4.9/lib/cmake/ITK-4.9
 	ADD_LINK_DIRS           := -DADD_LINK_DIRS=/opt/local/lib
 	CMAKE_CXX_FLAGS         := -I/usr/X11R6/include
@@ -90,14 +91,14 @@ CONFIG_OPTS_VTK6  = -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} \
                     -DCMAKE_VERBOSE_MAKEFILE=ON              \
                     -DMAKECOMMAND="/usr/bin/gmake -i -j4" 
 CONFIG_BASE         = ${CMAKE_DIR}/cmake ${CONFIG_OPTS} 
-ifeq ($(OSTYPE),Darwin)
-	CONFIG_BASE +=  -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
-                    -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	     \
-                    -DOPENGL_gl_LIBRARY="${OPENGL_gl_LIBRARY}"           \
-                    -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
-endif
 CONFIG_BASE_GE      = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS} 
 CONFIG_BASE_VTK6    = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_VTK6} 
+ifeq ($(OSTYPE),Darwin)
+	CONFIG_BASE_VTK6 += -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
+                        -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	     \
+                        -DOPENGL_gl_LIBRARY="${OPENGL_gl_LIBRARY}"           \
+                        -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
+endif
 CONFIG_BASE_GE_VTK6 = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_VTK6} 
 CONFIG_TEST_ON      = -DUSE_OFF_SCREEN_TESTING=ON               \
                       -DBUILD_TESTING=ON                        \
@@ -142,13 +143,13 @@ configure_debug_vtk5: clean_results
 	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_DEBUG} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 configure_debug: clean_results 
-	(${RM_CACHE} ${CONFIG_BASE_VTK6} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_DEBUG} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
+	(${RM_CACHE} ${CONFIG_BASE_VTK6} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_DEBUG} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 #
 # 	configure for sourceforge release (not OsiriX)
 #
 configure_dist: clean_results 
-	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
+	(${RM_CACHE} ${CONFIG_BASE_VTK6} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 
 #
