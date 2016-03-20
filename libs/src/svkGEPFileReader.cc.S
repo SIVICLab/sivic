@@ -77,7 +77,6 @@ svkGEPFileReader::svkGEPFileReader()
 
     this->gepf = NULL; 
     this->mapper = NULL; 
-    this->tmpFileNames = NULL;
 
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgressCallback );
@@ -140,7 +139,6 @@ int svkGEPFileReader::CanReadFile(const char* fname)
 
     bool    isGEPFile = false; 
     bool    isKnownPSD = false; 
-
 
     try {
 
@@ -250,6 +248,7 @@ void svkGEPFileReader::ExecuteInformation()
             exit(1);
         }
 
+
         this->InitDcmHeader(); 
 
         //  Only need to call this if we are using the data, not printing header
@@ -264,18 +263,14 @@ void svkGEPFileReader::ExecuteInformation()
     //  which is not correct for 3D multislice volume files. So store
     //  the files in a temporary array until after ExecuteData has been
     //  called, then reset the array.
-    if ( this->onlyReadHeader == false ) {
-        if (this->tmpFileNames != NULL ) {
-            this->tmpFileNames->Delete(); 
-        }
-        this->tmpFileNames = vtkStringArray::New();
-        this->tmpFileNames->DeepCopy(this->FileNames);
-        //for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
-            //cout << "INIT TMP: " << this->GetFileNames()->GetValue(fileNumber) << endl;
-        //}  	 	 
-        this->FileNames->Delete();
-        this->FileNames = NULL;
-    }
+    this->tmpFileNames = vtkStringArray::New();
+    this->tmpFileNames->DeepCopy(this->FileNames);
+    cout << "NUM TMP FILES: " << this->GetFileNames()->GetNumberOfValues() << endl;
+    for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
+        cout << "INIT TMP: " << this->GetFileNames()->GetValue(fileNumber) << endl;
+    }  	 	 
+    this->FileNames->Delete();
+    this->FileNames = NULL;
 
 }
 
@@ -287,12 +282,19 @@ void svkGEPFileReader::ExecuteInformation()
 void svkGEPFileReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
-    if ( this->onlyReadHeader == false ) {
-        this->FileNames = vtkStringArray::New();
-        this->FileNames->DeepCopy(this->tmpFileNames);
-        this->tmpFileNames->Delete();
-        this->tmpFileNames = NULL;
+    this->FileNames = vtkStringArray::New();
+    this->FileNames->DeepCopy(this->tmpFileNames);
 
+    cout << "ONLY READ ONE: " << this->readOneInputFile<< endl;
+
+    for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
+        cout << "EXEC Data W Info FNCHECK: " << this->GetFileNames()->GetValue(fileNumber) << endl;
+    }  	 	 
+    this->tmpFileNames->Delete();
+    this->tmpFileNames = NULL;
+
+
+    if ( ! this->onlyReadHeader ) {
         vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
         vtkImageData::SetScalarType(VTK_FLOAT, outInfo);     
@@ -307,6 +309,10 @@ void svkGEPFileReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInfo
         this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
         this->GetOutput()->SetDcos(dcos);
 
+        for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
+            cout << "READ DATA BOO : " << this->GetFileNames()->GetValue(fileNumber) << endl;
+        }
+        
         this->mapper->ReadData(this->GetFileNames(), data);
 
         //  resync any header changes with the svkImageData object's member variables
@@ -710,14 +716,12 @@ void svkGEPFileReader::ReadGEPFile()
         cout << "FN: " << this->GetFileName() << endl;
     }
         
-    // temporary workaround becaues pfiles from dynamic series don't share a series UID
-    this->checkSeriesUID = false;  
     string refSUID = this->GetSeriesUID( this->GetFileName());
-   
+    
+    cout << "ONLY READ ONE(PREGLOB): " << this->readOneInputFile << endl;
     this->GlobFileNames();  	 	 
 
     vtkStringArray* validatedFileNames = vtkStringArray::New();
-
     //  Verify that all the pfiles belong to the same series (same 
     //  series instance uid as specified input file): 
     for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
@@ -732,8 +736,9 @@ void svkGEPFileReader::ReadGEPFile()
     if (this->GetDebug()) { 
         cout << "NUMBER FILES: " <<  this->GetFileNames()->GetNumberOfValues() << endl;
         for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
-               cout << "VALIDATEDFN: " << this << " " << this->GetFileNames()->GetValue(fileNumber) << endl;
+               cout << "VALIDATEDFN: " << this->GetFileNames()->GetValue(fileNumber) << endl;
         }  	 	 
+        cout << "LOAD: " << this->GetFileNames()->GetValue(0) << endl; 
     }
 
 
@@ -789,7 +794,7 @@ string svkGEPFileReader::GetSeriesUID(const char* fname)
             tmpReader->Delete();    
 
         } catch (const exception& e) {
-            cerr << "ERROR opening or reading GE P-File (" << fname << "): " << e.what() << endl;
+            cerr << "ERROR opening or reading GE P-File (" << this->GetFileName() << "): " << e.what() << endl;
         }
     } else {
         seriesInstanceUID = "0"; 
@@ -3633,11 +3638,11 @@ void svkGEPFileReader::UpdateProgressCallback(vtkObject* subject, unsigned long,
  */
 string svkGEPFileReader::GetFileSeriesDescription( string fileName )
 {
+
     svkGEPFileReader* readerLocal = svkGEPFileReader::New( );
     readerLocal->SetFileName( fileName.c_str() );
-    readerLocal->OnlyReadHeader( true );
-    readerLocal->checkSeriesUID = false; 
     readerLocal->OnlyReadOneInputFile();
+    readerLocal->OnlyReadHeader( true );
     readerLocal->Update();
     string seriesDescription = readerLocal->GetPFMap()["rhs.se_desc"][3]; 
     readerLocal->Delete();
