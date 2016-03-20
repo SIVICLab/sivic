@@ -55,7 +55,33 @@ namespace svk {
 
 
 /*! 
- *  
+ *      Reads .dat files that containg scaling information about variable flip angle
+ *      acquisitions. 
+ *
+ *      Authors: 
+ *          Jason C. Crane
+ *          Peder E.Z. Larson
+ *          Beck(Marram) P. Olson 
+ *
+ *
+ *      Example V1 format: 
+ *          dat_type: variable_flip_angle
+ *          dat_version: 1
+ *          dat_content_name: brain_2d_17-Feb-2016
+ *          num_time_pts: 20
+ *          profile_bandwidth: 543.478261
+ *          profile_num_pts: 256
+ *          time_point: 1
+ *          signal_scaling: space_separated_float_values(256)
+ *          mz_scaling: space_separated_float_values(256)
+ *          time_point: 2
+ *          signal_scaling: space_separated_float_values(256)
+ *          mz_scaling: space_separated_float_values(256)
+ *          ...
+ *          time_point: 20 
+ *          signal_scaling: space_separated_float_values(256)
+ *          mz_scaling: space_separated_float_values(256)
+ *
  */
 class svkVariableFlipDatReader : public svkImageReader2 
 {
