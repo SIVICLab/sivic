@@ -197,9 +197,22 @@ endif( BUILD_CLAPACK )
 
 IF(WIN32)
 	SET(PLATFORM_LIBS getopt)
-	SET(PLATFORM_INCLUDE ../../../libs/getopt)
+	SET(PLATFORM_INCLUDE ../../../libs/getopt
+                         ${TK_INCLUDE}
+                         ${TK_INCLUDE}/../../win/rc
+    )
 ELSE(WIN32)
-    SET(PLATFORM_LIBS fontconfig)
+    SET(PLATFORM_LIBS fontconfig
+                      GLU
+                      GL
+                      SM
+                      ICE
+                      X11
+                      Xext
+                      Xt
+                      Xss 
+                      Xft
+    )
 ENDIF(WIN32)
 
 INCLUDE_DIRECTORIES(
@@ -306,15 +319,6 @@ TARGET_LINK_LIBRARIES(
     ${NETAPI}
     ${PLATFORM_LIBS}
     ${ITK_LIBS_PRE}
-    GLU
-    GL
-    SM
-    ICE
-    X11
-    Xext
-    Xt
-    Xss 
-    Xft
 )
 
 IF (NOT WIN32)

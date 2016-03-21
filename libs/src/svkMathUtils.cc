@@ -95,7 +95,7 @@ void svkMathUtils::MedianFilter1D( float* dynamicVoxelPtr, int arrayLength, int 
     int    padLength     = (int)(windowSize / 2);
     vector<double> window(windowSize);
     int totalPadLength = padLength*2;
-    double paddedArray[endPt + totalPadLength ];
+    double* paddedArray = new double[endPt + totalPadLength ];
     for ( int pt = 0; pt < (endPt + totalPadLength); pt++ ) {
         if((pt < padLength) || (pt >= ( endPt + padLength))) {
             paddedArray[pt] = 0;
@@ -115,6 +115,6 @@ void svkMathUtils::MedianFilter1D( float* dynamicVoxelPtr, int arrayLength, int 
         //      << window[2] <<  " "<< window[3] <<  " "<< window[4] <<  " " << endl;
         dynamicVoxelPtr[pt - padLength] = svkMathUtils::GetMedian(&window);
     }
-
+	delete paddedArray;
 }
 

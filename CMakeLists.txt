@@ -97,7 +97,9 @@ IF(UNIX)
         SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
     ENDIF( BUILD_EPIC )
 ENDIF(UNIX)
-
+IF (WIN32)
+    FIND_PATH(TK_INCLUDE "TK Include Path" )
+ENDIF(WIN32)
 
 ###################################
 #   VTK

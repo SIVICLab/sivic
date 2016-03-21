@@ -60,7 +60,17 @@ IF (CMAKE_SYSTEM_NAME MATCHES Linux)
         SET(EXECUTABLE_OUTPUT_PATH ../${PLATFORM})
         SET(LIBRARY_OUTPUT_PATH ../${PLATFORM})
     ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
-	SET(PLATFORM_LIBS z)
+	SET(PLATFORM_LIBS z
+                      GLU
+                      GL
+                      SM
+                      ICE
+                      X11
+                      Xext
+                      Xt
+                      Xss 
+                      Xft
+	)
 ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
     IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         SET(PLATFORM Darwin_i386)
@@ -374,17 +384,8 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin)
         dcmdata
         ${DCMTK_OFLOG}
         ofstd 
-        ${PLATFORM_LIBS}
         ${ITK_LIBS_PRE}
-        GLU
-        GL
-        SM
-        ICE
-        X11
-        Xext
-        Xt
-        Xss 
-        Xft
+        ${PLATFORM_LIBS}
     )
 ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin) 
 
