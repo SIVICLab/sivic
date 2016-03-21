@@ -244,7 +244,7 @@ int svkVariableFlipDatReader::GetNumTimePoints()
 
 
 /*!
- *
+ *  
  */ 
 float svkVariableFlipDatReader::GetProfileBandwidth()
 {
@@ -262,6 +262,10 @@ int  svkVariableFlipDatReader::GetProfileNumPoints()
 
 
 /*!
+ *  This is an array of scaling factors to be applied to the reconstructed data in 
+ *  frequency domain.  The bandwidth is defined (GetProfileBandwidth) with 0 hz at 
+ *  the center point ( GetNumTimePoints()/2 , e.g. 128 for 256 point profile.
+ *
  *  Index starts at 1 
  *  returns status 0 on success 
  */
