@@ -82,6 +82,15 @@ namespace svk {
  *          signal_scaling: space_separated_float_values(256)
  *          mz_scaling: space_separated_float_values(256)
  *
+ *      Thsigna_scaling arrays are array of scaling factors for each dynamic time point. 
+ *      The scaling factors are to be applied to the reconstructed data in 
+ *      frequency domain by dividing the complex intensities by the scaling factor at the 
+ *      corresponding frequency point.  The bandwidth is defined (GetProfileBandwidth) with 0 hz at 
+ *      the center point ( GetNumTimePoints()/2 , e.g. 128 for 256 point profile.
+ *
+ *      The time index starts at 1 
+ *      returns status 0 on success 
+
  */
 class svkVariableFlipDatReader : public svkImageReader2 
 {
