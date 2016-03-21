@@ -266,7 +266,7 @@ int  svkVariableFlipDatReader::GetProfileNumPoints()
  *  frequency domain.  The bandwidth is defined (GetProfileBandwidth) with 0 hz at 
  *  the center point ( GetNumTimePoints()/2 , e.g. 128 for 256 point profile.
  *
- *  Index starts at 1 
+ *  The time index starts at 1 
  *  returns status 0 on success 
  */
 int svkVariableFlipDatReader::GetSignalScaling( int timePt, vtkFloatArray* signalScale )
@@ -278,6 +278,8 @@ int svkVariableFlipDatReader::GetSignalScaling( int timePt, vtkFloatArray* signa
 
 /*!
  *
+ *  The time index starts at 1 
+ *  returns status 0 on success 
  */ 
 int svkVariableFlipDatReader::GetMzScaling( int timePt, vtkFloatArray* mzScale )
 {
