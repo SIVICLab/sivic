@@ -339,7 +339,7 @@ int svkVariableFlipDatReader::GetScaling( string type, int timePt, vtkFloatArray
                     value = value.substr(posStart);  
                     for ( int i = 0; i < this->GetProfileNumPoints(); i++ ) {
                         size_t posEnd = value.find_first_of(" ") ; 
-                        float scaleVal = stof( value.substr(0, posEnd) ); 
+                        float scaleVal = svkTypeUtils::StringToFloat( value.substr(0, posEnd) ); 
                         scale->SetTuple(i, &scaleVal);
                         //cout << "VALUE: " << i << " : " << scaleVal << endl; 
                         value = value.substr(posEnd + 1);  
