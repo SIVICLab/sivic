@@ -434,10 +434,12 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
     //  between lobes, throw out the last and first point before resuming sampling
     //  These are the zero crossings in symmetric EPSI. 
+    cout << "reorder: NumSamplesToSkip: " << 2 << endl;
     reorder->SetNumSamplesToSkip( 2 ); 
 
     //  this is the number of lobes in the EPSI sampling. For symmetric 
     //  epsi this is twice the number of frequence points (pos + neg)    
+    cout << "reorder: NumEPSILobes: " <<  this->GetHeaderValueAsInt( "rhr.rh_user10") << endl; 
     reorder->SetNumEPSILobes( this->GetHeaderValueAsInt( "rhr.rh_user10") ); 
 
     //============================================================
@@ -454,9 +456,11 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
     //  number of samples per lobe (ramps + plateau)  
     //  num spectral samples in FID is num time_pts / this value (
+    cout << "reorder: NumSamplesPerLobe: " <<  ( plateauTime + 2 * rampTime) / deltaT  << endl;
     reorder->SetNumSamplesPerLobe( ( plateauTime + 2 * rampTime) / deltaT );
 
     //  number of samples at start.  add 1 for the zero crossing
+    cout << "reorder: FirstSample: " <<  this->GetHeaderValueAsInt( "rhr.rh_user22" ) + 1  << endl;
     reorder->SetFirstSample( this->GetHeaderValueAsInt( "rhr.rh_user22" ) + 1 );
 
     //  EPSI Axis (user9) defines which axis is epsi encoded.  Swap the value of 
