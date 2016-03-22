@@ -491,6 +491,13 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //reorder->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
 
     data->DeepCopy( reorder->GetOutput() ); 
+
+cout << "DATA 2: " << *data << endl;
+vtkDataArray* dataArraytest = data->GetCellData()->GetArray( 1680);
+for (int i = 0; i < numFreqPts; i++) {
+    cout << "DATA21680 77: " << static_cast<vtkFloatArray*>(dataArraytest)->GetTuple(i)[0] << endl;
+}
+
     if ( this->GetDebug() ) {
         svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
         svkDcmHeader::DimensionVector loopIndex = dimensionVector;  //copy for specific loop 
@@ -566,9 +573,22 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  =================================================
     //  resample ramp data 
     //  =================================================
+cout << "DATA 3br: " << *data << endl;
+dataArraytest = data->GetCellData()->GetArray( 1680);
+for (int i = 0; i < numFreqPts; i++) {
+    cout << "DATA3br 1680 77: " << static_cast<vtkFloatArray*>(dataArraytest)->GetTuple(i)[0] << endl;
+}
+
+// the number of cells isn't correct after resamleramps: 
+// HERHERHER
     this->ResampleRamps( data, deltaT, plateauTime, rampTime, epsiAxis ); 
     //data->GetDcmHeader()->PrintDcmHeader(); 
     //data->GetDcmHeader()->GetDimensionIndexVector(); 
+cout << "DATA 3r: " << *data << endl;
+dataArraytest = data->GetCellData()->GetArray( 1680);
+for (int i = 0; i < numFreqPts; i++) {
+    cout << "DATA3r 1680 77: " << static_cast<vtkFloatArray*>(dataArraytest)->GetTuple(i)[0] << endl;
+}
 
     //  This results in a match to Matlab when comparing the k-space data output:     
     //  final_datap(:,:,:,:,t) = fftshift(fftn(kdatap));
@@ -610,6 +630,13 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
     tmpReorderData->Delete();
     reorder->Delete(); 
+
+cout << "DATA 3: " << *data << endl;
+dataArraytest = data->GetCellData()->GetArray( 1680);
+for (int i = 0; i < numFreqPts; i++) {
+    cout << "DATA3 1680 77: " << static_cast<vtkFloatArray*>(dataArraytest)->GetTuple(i)[0] << endl;
+}
+
 }
 
 
@@ -673,6 +700,24 @@ void svkGEPFileMapperUCSFfidcsiDev0::EPSIPhaseCorrection( svkImageData* data, in
 void svkGEPFileMapperUCSFfidcsiDev0::FlipAxis( svkImageData* data, int axis, int lobe) 
 {
 
+    //  Iterate through all neg lobes and swap the axis direction
+    //svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector(); 
+    //svkDcmHeader::DimensionVector loopVector = dimensionVector;  
+
+    //int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector ); 
+    //for (int cellID = 0; cellID < numCells; cellID++ ) { 
+//
+        //svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID ); 
+        //int lobe = hdr->GetDimensionVectorValue( &indexVector, svkDcmHeader::EPSI_ACQ_INDEX); 
+//
+        ////  Get the data from this cell and reverse it: 
+        //if ( lobe == 1 ) {
+            //vtkDataArray* targetDataArray = dynamicImage->GetCellData()->GetArray(targetCellIndex);
+        //}
+    //}
+    //
+
+    //  ===============================================
     svkMrsImageData* tmpData = svkMrsImageData::New();
     tmpData->DeepCopy( data ); 
 
@@ -858,9 +903,13 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector(); 
     svkDcmHeader::DimensionVector loopVector = dimensionVector;  
 
+    int numChannels = svkDcmHeader::GetDimensionVectorValue( &dimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1;
+
+
     int timePt = 0; // always 0 for this methods, only handles one time point at a time
     float* epsiKData0 = new float[ numEPSIVoxels * 2 ];
     float* overgrid = new float[ gridSize *2 ];
+    for ( int channel = 0; channel < numChannels; channel++) {
     for ( int lobe = 0; lobe < numLobes; lobe++) {
         //cout << "LOBE: " << lobe << endl;
         for ( int slice = 0; slice < regridDims[2]; slice++) {
@@ -882,6 +931,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::COL_INDEX, col); 
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX, row); 
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::SLICE_INDEX, slice); 
+                            svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::CHANNEL_INDEX, channel); 
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::EPSI_ACQ_INDEX, lobe); 
                             int cellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimensionVector, &loopVector); 
 
@@ -984,6 +1034,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::COL_INDEX, col); 
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX, row); 
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::SLICE_INDEX, slice); 
+                            svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::CHANNEL_INDEX, channel); 
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::EPSI_ACQ_INDEX, lobe); 
                             int cellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimensionVector, &loopVector); 
 
@@ -1014,6 +1065,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
             }
         }
     }
+    }
 
     //  dbg: 
     //vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( svkMrsImageData::SafeDownCast(data)->GetSpectrum( 0, 0, 0, 0, 0) ); 
@@ -1025,6 +1077,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     //  Remove all arrays with epsiAxis dimension greater
     //  than  integralMax, and reinit the DcmHeader!!!
     int numTimePoints = data->GetDcmHeader()->GetNumberOfTimePoints();
+    for ( int channel = 0; channel < numChannels; channel++) {
     for ( int lobe = 0; lobe < numLobes; lobe++) { // lobes are stored as coils or channels
         for (int timePt = 0; timePt < numTimePoints; timePt++) {
             for ( int slice = 0; slice < regridDims[2]; slice++) {
@@ -1045,9 +1098,11 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX, row); 
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::SLICE_INDEX, slice); 
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::TIME_INDEX, timePt); 
+                            svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::CHANNEL_INDEX, channel); 
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::EPSI_ACQ_INDEX, lobe); 
 
                             vtkstd::string arrayName = svk4DImageData::GetArrayName( &loopVector ); 
+cout << "REMOVE ARRAY: " << arrayName << endl;
                             data->GetCellData()->RemoveArray( arrayName.c_str() );
 
                         }
@@ -1055,6 +1110,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                 }
             }
         }
+    }
     }
 
     // Now reinit the DICOM header

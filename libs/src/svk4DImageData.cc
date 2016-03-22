@@ -288,7 +288,7 @@ void  svk4DImageData::GetZeroImage( svkImageData* image )
  */
 void  svk4DImageData::GetImage(  svkImageData* image,
                                  int point,
-                                 vtkstd::string seriesDescription,
+                                 string seriesDescription,
                                  int* indexArray,
                                  int component,
                                  int vtkDataType  )
@@ -321,6 +321,58 @@ void  svk4DImageData::GetImage(  svkImageData* image,
         vtkDataObject::SetPointDataActiveScalarInfo( image->GetInformation(), vtkDataType, numComponents );
 
         this->GetImage( image, point, indexArray, component, vtkDataType );
+    }
+}
+
+
+/*!
+ *  Method will extract a 3D volume into a vtkImageData object representing
+ *  a single 3D point from the 4+D representation. This is useful for spatial FFT's
+ *  and map generation. 
+ *
+ *  \param target image the point image (must be initialized)
+ *  \param point the point in the array you wish operate on 
+ *  \param seriesDescription for DCM header 
+ *  \param indexVector is the array of non-spatial indices, e.g. channel and time point for the image 
+ *                      we want to get
+ *  \param component (0 = real, 1=im, 2=cmplx) 
+ *
+ */
+void  svk4DImageData::GetImage(  svkImageData* image,
+                                 int point,
+                                 string seriesDescription,
+                                 svkDcmHeader::DimensionVector* indexVector,
+                                 int component,
+                                 int vtkDataType  )
+{
+    if( image != NULL ) {
+
+        svkEnhancedMRIIOD* iod = svkEnhancedMRIIOD::New();
+        iod->SetDcmHeader( image->GetDcmHeader() );
+        iod->InitDcmHeader();
+        iod->Delete();
+
+    	if ( vtkDataType == VTK_VOID ) {
+            vtkDataType = this->GetCellData()->GetArray(0)->GetDataType();
+        }
+
+        this->GetDcmHeader()->InitDerivedMRIHeader( 
+            image->GetDcmHeader(), 
+            vtkDataType, 
+            seriesDescription
+        );
+    	image->SyncVTKImageDataToDcmHeader();
+
+        vtkDataArray* firstArray = this->GetCellData()->GetArray(0);
+        // We have to have at least one array to get an image from it
+        int numComponents = 1; 
+        if( firstArray != NULL ) {
+            numComponents = firstArray->GetNumberOfComponents();
+        }
+
+        vtkDataObject::SetPointDataActiveScalarInfo( image->GetInformation(), vtkDataType, numComponents );
+
+        this->GetImage( image, point, indexVector, component, vtkDataType );
     }
 }
 
@@ -425,6 +477,120 @@ void  svk4DImageData::GetImage(  svkImageData* image,
 
 
 /*!
+ *   Method will extract a volume into a vtkImageData object representing
+ *   a single point in the spectra. This is usefull for spatial FFT's.
+ *
+ *  \param target image the point image (must be initialized)
+ *  \param point the point in the array you wish operate on 
+ *  \param component the component to operate on 
+ *  \param timePoint the time point to operate on 
+ *  \param channel the the channel to operate on 
+ *  \param component (0 = real, 1=im, 2=cmplx) 
+ *
+ */
+void  svk4DImageData::GetImage(  svkImageData* image,
+                                 int point,
+                                 svkDcmHeader::DimensionVector* indexVector,
+                                 int component,
+                                 int vtkDataType )
+{
+    if( image != NULL ) {
+    	vtkCellData* cellData = this->GetCellData();
+
+        //  Get the cell data from the template 4D object and use that to initialize the 
+        //  the point data (scalars) in the target image
+    	vtkDataArray* firstArray = cellData->GetArray(0);
+    	// We have to have at least one array to get an image from it
+    	if( firstArray != NULL ) {
+			int numComponents = firstArray->GetNumberOfComponents();
+			//int vtkDataType    = firstArray->GetDataType();
+			// Ideally this should copy the input type, but some algorithms (svkImageFourierCenter) require double input
+			// TODO: Update svkImageFourierCenter to support arbitrary input
+    	    if ( vtkDataType == VTK_VOID ) {
+                vtkDataType = this->GetCellData()->GetArray(0)->GetDataType();
+            }
+
+			// Setup image dimensions
+			image->SetExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
+
+	        if( component > 1) {
+                vtkDataObject::SetPointDataActiveScalarInfo(
+                    image->GetInformation(),
+                    vtkDataType,
+                    numComponents
+                );
+	        } else {
+                vtkDataObject::SetPointDataActiveScalarInfo(
+                    image->GetInformation(),
+                    vtkDataType,
+                    1
+                );
+	        }
+	        image->AllocateScalars(vtkDataType, numComponents);
+			image->CopyDcos( this );
+			//image->GetIncrements();
+
+			// Create a new array to hold the pixel data to represent 3D image volume
+			vtkDataArray* pixelData = vtkDataArray::CreateDataArray( vtkDataType );
+
+			// If the expected component in no 0 or 1 then copy all components
+			if( component > 1) {
+				pixelData->SetNumberOfComponents( numComponents );
+			} else {
+				pixelData->SetNumberOfComponents( 1 );
+			}
+            
+			int numVoxels = this->Extent[5] * this->Extent[3] * this->Extent[1];
+			pixelData->SetNumberOfTuples( numVoxels );
+			pixelData->SetName("pixels");
+
+            svkDcmHeader::DimensionVector loopVector = *indexVector;  
+            svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::COL_INDEX,   0);
+            svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX,   0);
+            svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::SLICE_INDEX, 0);
+            int firstCellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( indexVector, &loopVector);
+            int cellIndex = firstCellIndex; 
+
+            int voxelDims[3];  
+            svkDcmHeader::GetSpatialDimensions(indexVector, voxelDims); 
+
+			// Lets loop through using the linear index for speed
+			vtkDataArray* array = NULL;
+            for ( int slice = 0; slice < voxelDims[2]; slice++ ) {
+                for ( int row = 0; row < voxelDims[1]; row++ ) {
+                    for ( int col = 0; col < voxelDims[0]; col++ ) {
+
+                        svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::COL_INDEX,     col);
+                        svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX,     row);
+                        svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::SLICE_INDEX,   slice);
+                        cellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( indexVector, &loopVector);
+
+                        int target3DCellIndex = 
+                        svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( indexVector, &loopVector); 
+
+				        array = this->GetArray( cellIndex );
+				        if( component > 1 ) {
+					            for( int j = 0; j < numComponents; j++) {
+						            pixelData->SetComponent(target3DCellIndex, j, array->GetComponent(point, j ));
+					            }
+				        } else {
+                                // Second parameter should be hardcoded to 0 if only one component is required, since pixelData contains 
+                                // only one component and setting the imaginary part (1) creates unexpected results.
+					            pixelData->SetComponent(target3DCellIndex, 0, array->GetComponent( point, component));
+				        }
+                    }
+                }
+            }
+			image->GetPointData()->SetScalars( pixelData );
+			// We know this data is still held so lets fast delete it.
+			pixelData->FastDelete();
+		}
+    }
+
+}
+
+
+/*!
  *  Determins the number of slices for a given orientation.
  */
 int svk4DImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
@@ -507,9 +673,61 @@ void svk4DImageData::EstimateDataRange( double range[2], int minPt, int maxPt, i
 }
 
 
+ /*!   
+ *  Method will set a spectral point from a vtkImageData object representing
+ *  a single 3D image point in the spectra. This is usefull for spatial FFT's.
+ *
+ *  \param image the point image 
+ *  \param point the point in the array you wish operate on  (point in spectral domain, frequency or time)
+ *  \param dimensionVector represents non spatial volume indices to set 3D image into 
+ *
+ */
+void  svk4DImageData::SetImage( vtkImageData* image, int point, svkDcmHeader::DimensionVector* indexVector )
+{
+    if( image != NULL ) {
+
+        vtkDataArray* imageScalars = image->GetPointData()->GetScalars();
+        int numComponents = this->GetCellData()->GetArray(0)->GetNumberOfComponents();
+		vtkDataArray* array = NULL;
+
+        svkDcmHeader::DimensionVector loopVector = *indexVector;  
+        svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::COL_INDEX,   0);
+        svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX,   0);
+        svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::SLICE_INDEX, 0);
+        int firstCellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( indexVector, &loopVector);
+        int cellIndex = firstCellIndex; 
+
+        int voxelDims[3];  
+        svkDcmHeader::GetSpatialDimensions(indexVector, voxelDims); 
+
+
+        for ( int slice = 0; slice < voxelDims[2]; slice++ ) {
+            for ( int row = 0; row < voxelDims[1]; row++ ) {
+                for ( int col = 0; col < voxelDims[0]; col++ ) {
+
+                    svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::COL_INDEX,     col);
+                    svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX,     row);
+                    svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::SLICE_INDEX,   slice);
+                    cellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( indexVector, &loopVector);
+
+                    int spatialCellIndex =
+                        svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( indexVector, &loopVector);
+
+				    array = this->GetArray( cellIndex );
+
+			        for( int j = 0; j < numComponents; j++ ) {
+				        array->SetComponent( point, j,  imageScalars->GetComponent( spatialCellIndex, j ) );
+			        }
+			    }
+            }
+        }
+    }
+}
+
+
 /*!
  *   Method will set a spectral point from a vtkImageData object representing
- *   a single point in the spectra. This is usefull for spatial FFT's.
+ *   a single 3D image point in the spectra. This is usefull for spatial FFT's.
  *
  *  \param image the point image 
  *  \param point the point in the array you wish operate on 
@@ -539,6 +757,7 @@ void  svk4DImageData::SetImage( vtkImageData* image, int point, int* indexArray 
         }
     }
 }
+
 
 
 /*!
@@ -629,9 +848,9 @@ void svk4DImageData::SetArrayName( vtkDataArray* array, svkDcmHeader::DimensionV
 /*!
  *  Takes vector of dimension indices and constructs an array name for the cell data lookup. 
  */
-vtkstd::string svk4DImageData::GetArrayName( svkDcmHeader::DimensionVector* dimensionVector )
+string svk4DImageData::GetArrayName( svkDcmHeader::DimensionVector* dimensionVector )
 {
-    vtkstd::string arrayName; 
+    string arrayName; 
     int numDims =  dimensionVector->size();
     for ( int dimIndex = 0; dimIndex < numDims; dimIndex++) {
 

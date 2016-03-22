@@ -370,6 +370,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     svkDcmHeader::SetDimensionVectorValue(&outDimensionVector, svkDcmHeader::SLICE_INDEX, reorderedVoxels[2] - 1); 
     svkDcmHeader::SetDimensionVectorValue(&outDimensionVector, svkDcmHeader::TIME_INDEX, numTimePoints - 1); 
     svkDcmHeader::SetDimensionVectorValue(&outDimensionVector, svkDcmHeader::CHANNEL_INDEX, numChannels - 1); 
+
     reorderedImageData->GetDcmHeader()->AddDimensionIndex( &outDimensionVector, svkDcmHeader::EPSI_ACQ_INDEX, numEPSIAcquisitions - 1 ); 
     svkDcmHeader::DimensionVector outLoopVector = outDimensionVector; 
 
@@ -424,9 +425,9 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
         //  convert these indices to a frame number
         vtkFloatArray* epsiSpectrum = static_cast<vtkFloatArray*>(svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID) );
         //vtkFloatArray* epsiSpectrumAN = static_cast<vtkFloatArray*>(svkMrsImageData::SafeDownCast(data)->GetSpectrum( &inputLoopVector) );
-//cout << "CHECK ARRAY NAME (" << cellID <<  ") : "  <<  svkMrsImageData::SafeDownCast(data)->GetArrayName(&inputLoopVector) << endl;
-//cout << "CHECK in reorder: " << *epsiSpectrum->GetTuple(0) << endl; 
-//cout << "CHECK in reorder: " << *epsiSpectrumAN->GetTuple(0) << endl; 
+        //cout << "CHECK ARRAY NAME (" << cellID <<  ") : "  <<  svkMrsImageData::SafeDownCast(data)->GetArrayName(&inputLoopVector) << endl;
+        //cout << "CHECK in reorder: " << *epsiSpectrum->GetTuple(0) << endl; 
+        //cout << "CHECK in reorder: " << *epsiSpectrumAN->GetTuple(0) << endl; 
     
         //  define range of spatial dimension to expand (i.e. epsiAxis):  
         int xEPSI   = svkDcmHeader::GetDimensionVectorValue( &inputLoopVector, svkDcmHeader::COL_INDEX); 
@@ -479,6 +480,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
             if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
                 currentAcq = acq; //testing
             }
+            cout << "ACQ: " << acq << " " << currentAcq << endl;
 
             //  If numAcqs Per FID = 1, then reset the currentEPSIPt being read
             //  to the start of the FID: 
@@ -506,6 +508,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                             //  Now get the cell ID for this set of indices: 
                             int cellIDInner = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &outDimensionVector, &outLoopVector ); 
                             //svkDcmHeader::PrintDimensionIndexVector(&outDimensionVector); 
+                            //cout << " CELL ID: " << cellIDInner << endl;                    
                             //svkDcmHeader::PrintDimensionIndexVector(&outLoopVector); 
 
                             vtkDataArray* dataArray = reorderedImageData->GetCellData()->GetArray( cellIDInner );
@@ -519,6 +522,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                             float epsiTuple[2]; 
                             float tuple[2]; 
                             int epsiOffset; 
+
                             for (int i = 0; i < numFreqPts; i++) {
                                 epsiOffset = (lobeStride * numEPSIAcquisitionsPerFID * i ) + currentEPSIPt;
                                 epsiSpectrum->GetTupleValue(epsiOffset, epsiTuple); 
@@ -678,7 +682,6 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     data->GetProvenance()->AddAlgorithm( this->GetClassName() );
 
     reorderedImageData->Delete();
-
 
 }
 

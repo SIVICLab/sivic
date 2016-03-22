@@ -1162,6 +1162,7 @@ vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, svkD
         int numTimePts = svkDcmHeader::GetDimensionVectorValue(dimensionVector, svkDcmHeader::TIME_INDEX) + 1; 
         int coilNum    = svkDcmHeader::GetDimensionVectorValue(&loopVector, svkDcmHeader::CHANNEL_INDEX); 
         int timePt     = svkDcmHeader::GetDimensionVectorValue(&loopVector, svkDcmHeader::TIME_INDEX); 
+        int acq        = svkDcmHeader::GetDimensionVectorValue(&loopVector, svkDcmHeader::EPSI_ACQ_INDEX); 
         //cout << "coils: " << numCoils << " tp: " << numTimePts << " cindex " << coilNum << " tindex: "  << timePt << endl;
         if ( numCoils > 1 &&  this->AllTimePointsInEachFile() ) {
             fileNum = coilNum; 
@@ -1175,7 +1176,6 @@ vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, svkD
         } 
 
         if ( fileNum >= 0 ) {
-           vtkstd::string coilString;
            ostringstream oss;
            //  Add 1 to the file number so indexing doesn't start at 0.
            oss << fileNum + 1;
@@ -1186,6 +1186,11 @@ vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, svkD
            fileRoot.assign( fileRoot ); 
         }
         //cout << "ddf FN: " << fileNum << " -> " << fileRoot << endl;
+
+           ostringstream acqoss;
+           //  Add 1 to the file number so indexing doesn't start at 0.
+           acqoss << acq;
+           fileRoot.assign( fileRoot + "_" + acqoss.str() ) ;
 
     }
 

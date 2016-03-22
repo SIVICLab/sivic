@@ -139,11 +139,30 @@ vtkDataArray* svkMrsImageData::GetSpectrum( int i, int j, int k, int timePoint, 
  * @param seriesDescription
  */
 void  svkMrsImageData::GetImage( svkMriImageData* image, int point, int timePoint, int channel,
-int component, vtkstd::string seriesDescription, int vtkDataType)
+int component, string seriesDescription, int vtkDataType)
 {
     int indexArray[2] = { -1, -1 };
     this->GetIndexArray( timePoint, channel, indexArray );
     this->Superclass::GetImage( image, point, seriesDescription, indexArray, component, vtkDataType );
+}
+
+
+/*!
+ * Gets the 3D point volume image for the given dimensionIndex. User can specify a series description
+ * for the new volume.
+ *
+ * @param image
+ * @param point (frequency or time point from spectral dimension)
+ * @param dimensionIndexVector with non spatial indices representing 3D volume to retrieve 
+ *          only the non spatial indices are relevant. 
+ * @param channel
+ * @param component
+ * @param seriesDescription
+ */
+void  svkMrsImageData::GetImage( svkMriImageData* image, int point, svkDcmHeader::DimensionVector* dimensionVector, 
+int component, string seriesDescription, int vtkDataType)
+{
+    this->Superclass::GetImage( image, point, seriesDescription, dimensionVector, component, vtkDataType );
 }
 
 
@@ -162,6 +181,21 @@ void svkMrsImageData::SetImage( vtkImageData* image, int point, int timePoint, i
     this->Superclass::SetImage( image, point, indexArray );
 
 }
+
+
+/*!
+ * Sets the point volume image for the given index.
+ *
+ * @param image
+ * @param point (frequency or time point from spectral domain)
+ * @param dimensionVector represents non spatial volume indices to inset 3D image into
+ * @param channel
+ */
+void svkMrsImageData::SetImage( vtkImageData* image, int point, svkDcmHeader::DimensionVector* dimensionVector )
+{
+    this->Superclass::SetImage( image, point, dimensionVector);
+}
+
 
 /*!
  * Sets the point volume image for the given index.

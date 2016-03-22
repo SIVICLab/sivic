@@ -92,7 +92,17 @@ class svkMrsImageData: public svk4DImageData
                             int vtkDataType = VTK_VOID
                        );
 
+        void           GetImage( 
+                            svkMriImageData* image, 
+                            int point, 
+                            svkDcmHeader::DimensionVector* dimensionVector, 
+                            int component, 
+                            string seriesDescription, 
+                            int vtkDataType
+                       ); 
+
         void           SetImage( vtkImageData* image, int point, int timePoint = 0, int channel = 0 );
+        void           SetImage( vtkImageData* image, int point, svkDcmHeader::DimensionVector* dimensionVector );
         void           SetImageComponent( vtkImageData* image, int point, int timePoint = 0, int channel = 0, int component = 0); // real
 
         int            GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation, double tolerance = -1 );
