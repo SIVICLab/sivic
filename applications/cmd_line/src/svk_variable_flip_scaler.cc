@@ -186,7 +186,10 @@ int main (int argc, char** argv)
     // ===============================================  
     //  Get a GEPFile Reader. 
     // ===============================================  
-    svkDdfVolumeReader* reader = svkDdfVolumeReader::New();
+    svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+    svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
+    readerFactory->Delete();
+
     if (reader == NULL) {
         cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
         exit(1);
@@ -264,7 +267,9 @@ void ApplyScaling(svkMrsImageData* data, string datFileName )
                         vtkDataArray* spectrum = data->GetSpectrum(x,y,z,timePt,coilNum);
                         for( int f = 0; f < spectrum->GetNumberOfTuples(); f++) {
                             for( int c = 0; c < spectrum->GetNumberOfComponents(); c++) {
-                                spectrum->SetComponent(f,c, spectrum->GetComponent(f,c) * signalScale->GetTuple1(f));
+                                spectrum->SetComponent(f,c, ( spectrum->GetComponent(f,c) / signalScale->GetTuple1(f) ));
+                                //spectrum->SetComponent(f,c, ( spectrum->GetComponent(f,c) / signalScale->GetTuple1(f) )/20.0);
+                                //spectrum->SetComponent(f,c, signalScale->GetTuple1(f)*1000000000);
                             }
                         }
                     }
