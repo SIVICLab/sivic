@@ -55,9 +55,11 @@
 #include <svkDcmHeader.h>
 #include <svkGEPFileReader.h>
 #include <svkGEPFileMapper.h>
+#include <svkDdfVolumeReader.h>
 #include <svkImageAlgorithm.h>
 #include <svkEPSIReorder.h>
 #include <svkVariableFlipDatReader.h> 
+#include <svkTypeUtils.h>
 #ifdef WIN32
 extern "C" {
 #include <getopt.h>
@@ -71,6 +73,7 @@ extern "C" {
 
 using namespace svk;
 
+void ApplyScaling(svkMrsImageData* data, string datFileName, float minimumScalingFactor );
 
 int main (int argc, char** argv)
 {
@@ -81,6 +84,7 @@ int main (int argc, char** argv)
     usemsg += "                   [ --dat name ] [ -h ]                                             \n";
     usemsg += "                   --------------------------------------------------------------    \n"; 
     usemsg += "   -i                name    Name of file to convert.                                \n"; 
+    usemsg += "   -m                float   Minimum scaling factor.                                 \n";
     usemsg += "   --dat             name    Name of dat file with scaling factors.                  \n"; 
     usemsg += "   -o                name    Name of outputfile.                                     \n";
     usemsg += "   -t                type    Target data type:                                       \n";
@@ -97,6 +101,7 @@ int main (int argc, char** argv)
     string  inputFileName; 
     string  outputFileName;
     string  datFileName;
+    float   minimumScalingFactor = 0;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
     bool   onlyLoadSingleFile = false;
 
@@ -122,7 +127,7 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "i:o:t:h", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:t:m:h", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -138,6 +143,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_SINGLE:
                 onlyLoadSingleFile = true;
+                break;
+            case 'm':
+                minimumScalingFactor = svkTypeUtils::StringToFloat(optarg);
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -184,7 +192,10 @@ int main (int argc, char** argv)
     // ===============================================  
     //  Get a GEPFile Reader. 
     // ===============================================  
-    svkGEPFileReader* reader = svkGEPFileReader::New(); 
+    svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+    svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
+    readerFactory->Delete();
+
     if (reader == NULL) {
         cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
         exit(1);
@@ -198,18 +209,7 @@ int main (int argc, char** argv)
 
     svkImageData* currentImage = svkMrsImageData::SafeDownCast( reader->GetOutput() ); 
 
-    svkVariableFlipDatReader* datReader =  svkVariableFlipDatReader::New();
-    string datName = "/Users/jasonc/data/HMTRC_2016/flip_angle_dat/brain_2d_flip_profile.dat";
-    datReader->SetFileName( datName.c_str() );
-    //datReader->CanReadFile(datName.c_str()); 
-    datReader->Update();
-    cout << "DAT NTP: " << datReader->GetNumTimePoints() << endl;;
-    cout << "DAT NTP: " << datReader->GetProfileNumPoints() << endl;;
-    vtkFloatArray* signalScale = vtkFloatArray::New();
-    datReader->GetSignalScaling(7, signalScale);
-    for ( int i = 0; i < datReader->GetProfileNumPoints(); i++ ) {
-        cout << "CHECK THE SCALE time pt 7: " << i << " " << *signalScale->GetTuple(i) << endl;
-    }
+    ApplyScaling(svkMrsImageData::SafeDownCast(currentImage), datFileName, minimumScalingFactor);
 
     // ===============================================  
     //  Write the data out to the specified file type.  
@@ -247,3 +247,47 @@ int main (int argc, char** argv)
     return 0; 
 }
 
+void ApplyScaling(svkMrsImageData* data, string datFileName, float minimumScalingFactor )
+{
+    svkVariableFlipDatReader* datReader =  svkVariableFlipDatReader::New();
+    datReader->SetFileName( datFileName.c_str() );
+    //datReader->CanReadFile(datName.c_str());
+    datReader->Update();
+    cout << "DAT NTP: " << datReader->GetNumTimePoints() << endl;;
+    cout << "DAT NTP: " << datReader->GetProfileNumPoints() << endl;;
+    vtkFloatArray* signalScale = vtkFloatArray::New();
+    svkDcmHeader::DimensionVector inDimVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector loopVector = inDimVector;
+    int numInputCells = svkDcmHeader::GetNumberOfCells( &inDimVector );
+    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
+    int numVoxels[3];
+    data->GetNumberOfVoxels(numVoxels);
+    for (int timePt = 0; timePt < numTimePts; timePt++) {
+        datReader->GetSignalScaling(timePt+1, signalScale);
+        for (int coilNum = 0; coilNum < numCoils; coilNum++) {
+            for (int z = 0; z < numVoxels[2]; z++) {
+                for (int y = 0; y < numVoxels[1]; y++) {
+                    for (int x = 0; x < numVoxels[0]; x++) {
+                        vtkDataArray* spectrum = data->GetSpectrum(x,y,z,timePt,coilNum);
+                        for( int f = 0; f < spectrum->GetNumberOfTuples(); f++) {
+                            for( int c = 0; c < spectrum->GetNumberOfComponents(); c++) {
+                                if( signalScale->GetTuple1(f) > minimumScalingFactor ) {
+                                    spectrum->SetComponent(f,c, ( spectrum->GetComponent(f,c) / signalScale->GetTuple1(f) ));
+                                    //spectrum->SetComponent(f,c, ( spectrum->GetComponent(f,c) / signalScale->GetTuple1(f) )/20.0);
+                                } else if( minimumScalingFactor > 0 ) {
+                                    spectrum->SetComponent(f,c, ( spectrum->GetComponent(f,c) / minimumScalingFactor ));
+                                    //spectrum->SetComponent(f,c, ( spectrum->GetComponent(f,c) / minimumScalingFactor )/20.0);
+                                }
+                                //spectrum->SetComponent(f,c, signalScale->GetTuple1(f)*1000000000);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for ( int i = 0; i < datReader->GetProfileNumPoints(); i++ ) {
+        cout << "CHECK THE SCALE time pt 7: " << i << " " << *signalScale->GetTuple(i) << endl;
+    }
+}
