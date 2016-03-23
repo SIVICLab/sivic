@@ -98,7 +98,7 @@ class svkMrsImageData: public svk4DImageData
                             svkDcmHeader::DimensionVector* dimensionVector, 
                             int component, 
                             string seriesDescription, 
-                            int vtkDataType
+                            int vtkDataType = VTK_VOID
                        ); 
 
         void           SetImage( vtkImageData* image, int point, int timePoint = 0, int channel = 0 );

@@ -550,7 +550,8 @@ for (int i = 0; i < numFreqPts; i++) {
 
     //  flip first lobe along epsiAxis
     //  first gradient is negative in this sequence:
-    this->FlipAxis( data, epsiAxis, 0);    
+    //this->FlipAxis( data, epsiAxis, 0);     //original
+    this->FlipAxis( data, epsiAxis, 1);     //  new 2016    
 
     //data->GetDcmHeader()->PrintDcmHeader(); 
     //data->GetDcmHeader()->GetDimensionIndexVector(); 
@@ -584,7 +585,8 @@ for (int i = 0; i < numFreqPts; i++) {
     this->ResampleRamps( data, deltaT, plateauTime, rampTime, epsiAxis ); 
     //data->GetDcmHeader()->PrintDcmHeader(); 
     //data->GetDcmHeader()->GetDimensionIndexVector(); 
-cout << "DATA 3r: " << *data << endl;
+cout 
+<< "DATA 3r: " << *data << endl;
 dataArraytest = data->GetCellData()->GetArray( 1680);
 for (int i = 0; i < numFreqPts; i++) {
     cout << "DATA3r 1680 77: " << static_cast<vtkFloatArray*>(dataArraytest)->GetTuple(i)[0] << endl;
@@ -700,32 +702,24 @@ void svkGEPFileMapperUCSFfidcsiDev0::EPSIPhaseCorrection( svkImageData* data, in
 void svkGEPFileMapperUCSFfidcsiDev0::FlipAxis( svkImageData* data, int axis, int lobe) 
 {
 
-    //  Iterate through all neg lobes and swap the axis direction
-    //svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector(); 
-    //svkDcmHeader::DimensionVector loopVector = dimensionVector;  
+    //  Set the algorithm to only flip the odd lobes: 
+    svkDcmHeader::DimensionVector filterDimVector = data->GetDcmHeader()->GetDimensionIndexVector(); 
+    //  set all indices to -1 except for EPSI_ACQ_INDEX which is set to 1.  The index must match "1" in this dimension 
+    //  otherwise the flip algorith will skip that volume
+    for ( int i = 0; i < filterDimVector.size(); i++ ) {
+        svkDcmHeader::SetDimensionVectorValue(&filterDimVector, i, -1);
+    }
+    svkDcmHeader::SetDimensionVectorValue(&filterDimVector, svkDcmHeader::EPSI_ACQ_INDEX, lobe ); 
 
-    //int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector ); 
-    //for (int cellID = 0; cellID < numCells; cellID++ ) { 
-//
-        //svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID ); 
-        //int lobe = hdr->GetDimensionVectorValue( &indexVector, svkDcmHeader::EPSI_ACQ_INDEX); 
-//
-        ////  Get the data from this cell and reverse it: 
-        //if ( lobe == 1 ) {
-            //vtkDataArray* targetDataArray = dynamicImage->GetCellData()->GetArray(targetCellIndex);
-        //}
-    //}
-    //
 
-    //  ===============================================
     svkMrsImageData* tmpData = svkMrsImageData::New();
     tmpData->DeepCopy( data ); 
 
     svkMrsImageFlip* flip = svkMrsImageFlip::New(); 
     flip->SetFilteredAxis( axis ); 
-    if (lobe != -1) {
-        flip->SetFilteredChannel( lobe ); 
-    }
+    flip->SetFilterDomainIndices( &filterDimVector ); 
+    //flip->SetFilteredChannel( lobe ); 
+
     flip->SetInputData( tmpData ); 
     flip->Update(); 
 

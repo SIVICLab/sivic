@@ -396,11 +396,14 @@ void  svk4DImageData::GetImage(  svkImageData* image,
                                  int vtkDataType )
 {
     if( image != NULL ) {
+
+        //  Get the origin cell data to extract the image from:
     	vtkCellData* cellData = this->GetCellData();
 
         //  Get the cell data from the template 4D object and use that to initialize the 
         //  the point data (scalars) in the target image
     	vtkDataArray* firstArray = cellData->GetArray(0);
+
     	// We have to have at least one array to get an image from it
     	if( firstArray != NULL ) {
 			int numComponents = firstArray->GetNumberOfComponents();
@@ -494,15 +497,21 @@ void  svk4DImageData::GetImage(  svkImageData* image,
                                  int component,
                                  int vtkDataType )
 {
+
     if( image != NULL ) {
+
+        //  Get the origin cell data to extract the image from:
     	vtkCellData* cellData = this->GetCellData();
 
         //  Get the cell data from the template 4D object and use that to initialize the 
         //  the point data (scalars) in the target image
     	vtkDataArray* firstArray = cellData->GetArray(0);
+
     	// We have to have at least one array to get an image from it
     	if( firstArray != NULL ) {
+
 			int numComponents = firstArray->GetNumberOfComponents();
+
 			//int vtkDataType    = firstArray->GetDataType();
 			// Ideally this should copy the input type, but some algorithms (svkImageFourierCenter) require double input
 			// TODO: Update svkImageFourierCenter to support arbitrary input
@@ -544,17 +553,20 @@ void  svk4DImageData::GetImage(  svkImageData* image,
 			pixelData->SetNumberOfTuples( numVoxels );
 			pixelData->SetName("pixels");
 
+            int voxelDims[3];  
+            svkDcmHeader::DimensionVector sourceDims = this->GetDcmHeader()->GetDimensionIndexVector(); 
+            svkDcmHeader::GetSpatialDimensions(&sourceDims, voxelDims); 
+
             svkDcmHeader::DimensionVector loopVector = *indexVector;  
             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::COL_INDEX,   0);
             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX,   0);
             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::SLICE_INDEX, 0);
-            int firstCellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( indexVector, &loopVector);
+            int firstCellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &sourceDims, &loopVector);
             int cellIndex = firstCellIndex; 
 
-            int voxelDims[3];  
-            svkDcmHeader::GetSpatialDimensions(indexVector, voxelDims); 
+            cout << "GetImage dims: " << voxelDims[0] << " " << voxelDims[1] << " " << voxelDims[2] << endl;
 
-			// Lets loop through using the linear index for speed
+			// Lets loop through the spatial indices corresponding to the inut indexVector
 			vtkDataArray* array = NULL;
             for ( int slice = 0; slice < voxelDims[2]; slice++ ) {
                 for ( int row = 0; row < voxelDims[1]; row++ ) {
@@ -563,20 +575,23 @@ void  svk4DImageData::GetImage(  svkImageData* image,
                         svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::COL_INDEX,     col);
                         svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX,     row);
                         svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::SLICE_INDEX,   slice);
-                        cellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( indexVector, &loopVector);
+                        cellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &sourceDims, &loopVector);
 
                         int target3DCellIndex = 
-                        svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( indexVector, &loopVector); 
+                        svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &sourceDims, &loopVector); 
 
 				        array = this->GetArray( cellIndex );
+                        cout << component << " p:" << point << " 4D GetImage ( imageindex = " << target3DCellIndex << ") = " 
+                                << array->GetComponent(point, 0 ) << endl;
 				        if( component > 1 ) {
-					            for( int j = 0; j < numComponents; j++) {
-						            pixelData->SetComponent(target3DCellIndex, j, array->GetComponent(point, j ));
-					            }
+					        for( int j = 0; j < numComponents; j++) {
+						        pixelData->SetComponent(target3DCellIndex, j, array->GetComponent(point, j ));
+						        //pixelData->SetComponent(target3DCellIndex, j, target3DCellIndex); //test
+					        }
 				        } else {
-                                // Second parameter should be hardcoded to 0 if only one component is required, since pixelData contains 
-                                // only one component and setting the imaginary part (1) creates unexpected results.
-					            pixelData->SetComponent(target3DCellIndex, 0, array->GetComponent( point, component));
+                            // Second parameter should be hardcoded to 0 if only one component is required, since pixelData contains 
+                            // only one component and setting the imaginary part (1) creates unexpected results.
+					        pixelData->SetComponent(target3DCellIndex, 0, array->GetComponent( point, component));
 				        }
                     }
                 }
@@ -690,16 +705,18 @@ void  svk4DImageData::SetImage( vtkImageData* image, int point, svkDcmHeader::Di
         int numComponents = this->GetCellData()->GetArray(0)->GetNumberOfComponents();
 		vtkDataArray* array = NULL;
 
+        int voxelDims[3];  
+        svkDcmHeader::DimensionVector sourceDims = this->GetDcmHeader()->GetDimensionIndexVector(); 
+        svkDcmHeader::GetSpatialDimensions(&sourceDims, voxelDims); 
+
         svkDcmHeader::DimensionVector loopVector = *indexVector;  
         svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::COL_INDEX,   0);
         svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX,   0);
         svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::SLICE_INDEX, 0);
-        int firstCellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( indexVector, &loopVector);
+        int firstCellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &sourceDims, &loopVector);
         int cellIndex = firstCellIndex; 
 
-        int voxelDims[3];  
-        svkDcmHeader::GetSpatialDimensions(indexVector, voxelDims); 
-
+        cout << "SetImage dims: " << voxelDims[0] << " " << voxelDims[1] << " " << voxelDims[2] << endl;
 
         for ( int slice = 0; slice < voxelDims[2]; slice++ ) {
             for ( int row = 0; row < voxelDims[1]; row++ ) {
@@ -708,14 +725,15 @@ void  svk4DImageData::SetImage( vtkImageData* image, int point, svkDcmHeader::Di
                     svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::COL_INDEX,     col);
                     svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX,     row);
                     svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::SLICE_INDEX,   slice);
-                    cellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( indexVector, &loopVector);
+                    cellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &sourceDims, &loopVector);
 
                     int spatialCellIndex =
-                        svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( indexVector, &loopVector);
+                        svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &sourceDims, &loopVector);
 
 				    array = this->GetArray( cellIndex );
 
 			        for( int j = 0; j < numComponents; j++ ) {
+                        cout << "4D SetImage(sci=" << spatialCellIndex << ") = " << imageScalars->GetComponent( spatialCellIndex, j ) << endl;
 				        array->SetComponent( point, j,  imageScalars->GetComponent( spatialCellIndex, j ) );
 			        }
 			    }
