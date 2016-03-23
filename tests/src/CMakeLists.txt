@@ -76,6 +76,8 @@ ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
 
 IF(WIN32)
     SET(GNU_DIFFUTILS_PATH CACHE PATH "Location of gnu diffutils installation. Provides diff command for testing on Windows." )
+    SET(PLATFORM_LIB_DIR  ${VTK_DIR}/lib/${CMAKE_BUILD_TYPE})
+ELSE(WIN32)
 ENDIF(WIN32)
 
 
@@ -140,7 +142,8 @@ INCLUDE(CTest)
 
 
 LINK_DIRECTORIES(
-    ${VTK_DIR}../../    
+    ${VTK_DIR}/../../ 
+    ${PLATFORM_LIB_DIR}   
     ../${PLATFORM}
     ../lib/${PLATFORM}
     ${DCMTK_DIR}/lib
@@ -160,6 +163,14 @@ INCLUDE_DIRECTORIES(
 IF(WIN32)
 	SET(PLATFORM_LIBS getopt
 	                  netapi32)
+ELSE(WIN32)
+    Set(PLATFORM_LIBS GLU
+                      GL
+                      SM
+                      ICE
+                      X11
+                      Xext
+                      Xt)
 ENDIF(WIN32)
 
 
@@ -183,6 +194,7 @@ SET(SVK_LIBS
     svkPSD
     svkTypeUtils
     svkadapt 
+    ${VTK_LIBRARIES}
     vtkFiltersHybrid-6.3
     vtkFiltersGeneral-6.3
     vtkCommonDataModel-6.3
@@ -253,13 +265,6 @@ SET(SVK_LIBS
     vtkpng-6.3
     vtktiff-6.3
     vtkjpeg-6.3
-    GLU
-    GL
-    SM
-    ICE
-    X11
-    Xext
-    Xt
     vtkIOXMLParser-6.3
     vtkexpat-6.3
     vtkFiltersExtraction-6.3
