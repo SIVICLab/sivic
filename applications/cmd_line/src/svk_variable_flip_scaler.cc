@@ -59,6 +59,7 @@
 #include <svkImageAlgorithm.h>
 #include <svkEPSIReorder.h>
 #include <svkVariableFlipDatReader.h> 
+#include <svkTypeUtils.h>
 #ifdef WIN32
 extern "C" {
 #include <getopt.h>
@@ -72,7 +73,7 @@ extern "C" {
 
 using namespace svk;
 
-void ApplyScaling(svkMrsImageData* data, string datFileName );
+void ApplyScaling(svkMrsImageData* data, string datFileName, float minimumScalingFactor );
 
 int main (int argc, char** argv)
 {
@@ -83,6 +84,7 @@ int main (int argc, char** argv)
     usemsg += "                   [ --dat name ] [ -h ]                                             \n";
     usemsg += "                   --------------------------------------------------------------    \n"; 
     usemsg += "   -i                name    Name of file to convert.                                \n"; 
+    usemsg += "   -m                float   Minimum scaling factor.                                 \n";
     usemsg += "   --dat             name    Name of dat file with scaling factors.                  \n"; 
     usemsg += "   -o                name    Name of outputfile.                                     \n";
     usemsg += "   -t                type    Target data type:                                       \n";
@@ -99,6 +101,7 @@ int main (int argc, char** argv)
     string  inputFileName; 
     string  outputFileName;
     string  datFileName;
+    float   minimumScalingFactor = 0;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
     bool   onlyLoadSingleFile = false;
 
@@ -124,7 +127,7 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "i:o:t:h", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:t:m:h", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -140,6 +143,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_SINGLE:
                 onlyLoadSingleFile = true;
+                break;
+            case 'm':
+                minimumScalingFactor = svkTypeUtils::StringToFloat(optarg);
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -203,7 +209,7 @@ int main (int argc, char** argv)
 
     svkImageData* currentImage = svkMrsImageData::SafeDownCast( reader->GetOutput() ); 
 
-    ApplyScaling(svkMrsImageData::SafeDownCast(currentImage), datFileName);
+    ApplyScaling(svkMrsImageData::SafeDownCast(currentImage), datFileName, minimumScalingFactor);
 
 
     // ===============================================  
@@ -242,7 +248,7 @@ int main (int argc, char** argv)
     return 0; 
 }
 
-void ApplyScaling(svkMrsImageData* data, string datFileName )
+void ApplyScaling(svkMrsImageData* data, string datFileName, float minimumScalingFactor )
 {
     svkVariableFlipDatReader* datReader =  svkVariableFlipDatReader::New();
     datReader->SetFileName( datFileName.c_str() );
@@ -267,8 +273,13 @@ void ApplyScaling(svkMrsImageData* data, string datFileName )
                         vtkDataArray* spectrum = data->GetSpectrum(x,y,z,timePt,coilNum);
                         for( int f = 0; f < spectrum->GetNumberOfTuples(); f++) {
                             for( int c = 0; c < spectrum->GetNumberOfComponents(); c++) {
-                                spectrum->SetComponent(f,c, ( spectrum->GetComponent(f,c) / signalScale->GetTuple1(f) ));
-                                //spectrum->SetComponent(f,c, ( spectrum->GetComponent(f,c) / signalScale->GetTuple1(f) )/20.0);
+                                if( signalScale->GetTuple1(f) > minimumScalingFactor ) {
+                                    spectrum->SetComponent(f,c, ( spectrum->GetComponent(f,c) / signalScale->GetTuple1(f) ));
+                                    //spectrum->SetComponent(f,c, ( spectrum->GetComponent(f,c) / signalScale->GetTuple1(f) )/20.0);
+                                } else if( minimumScalingFactor > 0 ) {
+                                    spectrum->SetComponent(f,c, ( spectrum->GetComponent(f,c) / minimumScalingFactor ));
+                                    //spectrum->SetComponent(f,c, ( spectrum->GetComponent(f,c) / minimumScalingFactor )/20.0);
+                                }
                                 //spectrum->SetComponent(f,c, signalScale->GetTuple1(f)*1000000000);
                             }
                         }
