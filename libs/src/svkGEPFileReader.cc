@@ -640,7 +640,7 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
     }
 
   
-    if ( psd.compare("probe-p") == 0 || psd.find("presscsi") != string::npos ) { 
+    if ( ( psd.compare("probe-p") == 0 ) || ( psd.find("presscsi") != string::npos ) ) { 
 
         // product GE sequence:  
         aMapper = svkGEPFileMapper::New();
@@ -650,12 +650,12 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
         //  UCSF Prostate MRSI sequence 
         aMapper = svkGEPFileMapperUCSFProseProstate::New();
 
-    } else if ( psd.find("probe") != string::npos || psd.find("prose") != string::npos ) {
+    } else if ( ( psd.find("probe") != string::npos ) || ( psd.find("prose") != string::npos ) ) {
 
         //  Assume that if it's not an exact match that it is a UCSF research sequence. 
         aMapper = svkGEPFileMapperUCSF::New();
 
-    } else if ( psd.find("fidcsi_ucsf_dev0") != string::npos ) {
+    } else if ( ( psd.find("fidcsi_ucsf_dev0") != string::npos ) || ( psd.find("fidcsi_ucsf_multipulse") != string::npos ) ) {
 
         //  fidcsi ucsf sequence 
         aMapper = svkGEPFileMapperUCSFfidcsiDev0::New();
@@ -670,7 +670,7 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
         //  fidcsi ucsf sequence 
         aMapper = svkGEPFileMapperUCSFfidcsi::New();
 
-    } else if ( psd.compare("jpress") == 0 ||  psd.compare("mbrease_dev") == 0 ) {
+    } else if ( ( psd.compare("jpress") == 0 ) || ( psd.compare("mbrease_dev") == 0 ) ) {
 
         aMapper = svkGEPFileMapperMBrease::New();
 

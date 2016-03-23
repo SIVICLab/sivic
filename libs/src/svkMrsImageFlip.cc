@@ -148,7 +148,6 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
 
     //  get number of volumes (cells in this case with spatial dims set to 0)
     int numCells = svkDcmHeader::GetNumberOfCells( &dimVector );
-    cout << "NUMBER OF VOLS POTENTIAL FLIP: " << numCells << endl; 
     svkDcmHeader::PrintDimensionIndexVector( &dimVector ); 
 
     for ( int cellID = 0; cellID < numCells; cellID++ ) {
@@ -164,7 +163,6 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
             int filterDimValue = svkDcmHeader::GetDimensionVectorValue(this->filterDimVector, dimIndex); 
             if ( filterDimValue >=0 && loopIndexValue != filterDimValue ) {
                 svkDcmHeader::PrintDimensionIndexVector( this->filterDimVector); 
-                cout << "SKIP IT" << endl;
                 flipVolume = false;  
                 break; 
             }
@@ -179,26 +177,7 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
             for( int freq = 0; freq < numSpecPts; freq++ ) {
 
                 //mrsData->GetImage( singleFreqImage, freq, timePt, coil, 2, "");
-                mrsData->GetImage( singleFreqImage, freq, &loopVector, 2, "");  // components?  
-
-                if (freq == 0) {
-                
-                    cout << "FLIP THIS ONE: " << endl; 
-                    svkDcmHeader::PrintDimensionIndexVector( &loopVector ); 
-                    //  Original values: 
-                    //int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( indexVector, &loopVector);
-                    //svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimVector, &loopVector, cellID );
-                    
-                    //  print input array
-                    cout << "Extracted Image: " <<  endl;    
-                    int spatialID;
-                    spatialID = 0; 
-                    cout << " vox1: " << singleFreqImage->GetPointData()->GetScalars()->GetComponent(spatialID, 0)  << endl;
-                    spatialID = 1; 
-                    cout << " vox2: " << singleFreqImage->GetPointData()->GetScalars()->GetComponent(spatialID, 0)  << endl;
-                    spatialID = 77; 
-                    cout << " vox77: " << singleFreqImage->GetPointData()->GetScalars()->GetComponent(spatialID, 0)  << endl;
-                } 
+                mrsData->GetImage( singleFreqImage, freq, &loopVector, 2, "");  
 
                 singleFreqImage->Modified();
 

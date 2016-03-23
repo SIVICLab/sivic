@@ -492,12 +492,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
     data->DeepCopy( reorder->GetOutput() ); 
 
-cout << "DATA 2: " << *data << endl;
-vtkDataArray* dataArraytest = data->GetCellData()->GetArray( 1680);
-for (int i = 0; i < numFreqPts; i++) {
-    cout << "DATA21680 77: " << static_cast<vtkFloatArray*>(dataArraytest)->GetTuple(i)[0] << endl;
-}
-
     if ( this->GetDebug() ) {
         svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
         svkDcmHeader::DimensionVector loopIndex = dimensionVector;  //copy for specific loop 
@@ -574,23 +568,10 @@ for (int i = 0; i < numFreqPts; i++) {
     //  =================================================
     //  resample ramp data 
     //  =================================================
-cout << "DATA 3br: " << *data << endl;
-dataArraytest = data->GetCellData()->GetArray( 1680);
-for (int i = 0; i < numFreqPts; i++) {
-    cout << "DATA3br 1680 77: " << static_cast<vtkFloatArray*>(dataArraytest)->GetTuple(i)[0] << endl;
-}
 
-// the number of cells isn't correct after resamleramps: 
-// HERHERHER
     this->ResampleRamps( data, deltaT, plateauTime, rampTime, epsiAxis ); 
     //data->GetDcmHeader()->PrintDcmHeader(); 
     //data->GetDcmHeader()->GetDimensionIndexVector(); 
-cout 
-<< "DATA 3r: " << *data << endl;
-dataArraytest = data->GetCellData()->GetArray( 1680);
-for (int i = 0; i < numFreqPts; i++) {
-    cout << "DATA3r 1680 77: " << static_cast<vtkFloatArray*>(dataArraytest)->GetTuple(i)[0] << endl;
-}
 
     //  This results in a match to Matlab when comparing the k-space data output:     
     //  final_datap(:,:,:,:,t) = fftshift(fftn(kdatap));
@@ -632,12 +613,6 @@ for (int i = 0; i < numFreqPts; i++) {
 
     tmpReorderData->Delete();
     reorder->Delete(); 
-
-cout << "DATA 3: " << *data << endl;
-dataArraytest = data->GetCellData()->GetArray( 1680);
-for (int i = 0; i < numFreqPts; i++) {
-    cout << "DATA3 1680 77: " << static_cast<vtkFloatArray*>(dataArraytest)->GetTuple(i)[0] << endl;
-}
 
 }
 
@@ -980,13 +955,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                         //  epsiXData should correspond to Fn_overgrid in 
                         //  Matlab implementation
                         for( int i = 0; i < gridSize; i++ ) {
-                            //cout << "EXD 11: " << epsiXData[i].Real << endl;
                             epsiXData[i].Real = epsiXData[i].Real / apodCor[i]; 
                             epsiXData[i].Imag = epsiXData[i].Imag / apodCor[i]; 
-                            //cout << "EXD 12: " << epsiXData[i].Real << endl;
-                            //cout << "epsiXData: " << epsiXData[i].Real << " " << epsiXData[i].Imag   << endl;
                         }
-                        //cout << "IMAX: " << integralMax << " " << offset << endl;
                         for( int i = 0; i < gridSize; i++ ) {
                             epsiXData[i].Real = epsiXData[i + offset].Real; 
                             epsiXData[i].Imag = epsiXData[i + offset].Imag; 
@@ -1005,9 +976,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                         vtkImageFourierFilter* fft = vtkImageFFT::New();
                         fft->ExecuteFft( epsiXData, epsiKData, integralMax);
 
-                        //for ( int k = 0; k < integralMax; k++ ) {
-                            //cout << "TUPTUP 7: " <<  epsiKData[k].Real << endl;; 
-                        //}
                         svkMrsImageFFT::FFTShift( epsiKData, integralMax);
 
                         //  Set the Gridded k-space data back into the data set: 
@@ -1022,8 +990,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                                 slice = k;         
                             }
 
-                            //cout << "assign spectrum tuple col, row, slice, freq: " 
-                                //<< col << " " << row << " " << slice << " " << freq << endl;
                             //  set the index values for this specific loop
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::COL_INDEX, col); 
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX, row); 
@@ -1096,7 +1062,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::EPSI_ACQ_INDEX, lobe); 
 
                             vtkstd::string arrayName = svk4DImageData::GetArrayName( &loopVector ); 
-cout << "REMOVE ARRAY: " << arrayName << endl;
+                            //cout << "REMOVE ARRAY: " << arrayName << endl;
                             data->GetCellData()->RemoveArray( arrayName.c_str() );
 
                         }
@@ -1220,8 +1186,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetKaiserBesselValues( vtkstd::vector<float
             float x =   1 - pow( ( 2. * (*u)[ uz[i] ] / width ), 2);    
             x = beta * pow( static_cast<double>(x), 0.5 );
             (*kbVals)[i] =  this->GetModifiedBessel0( x ) / width ; 
-
-            //cout << "KB: " << (*kbVals)[i] << endl;
 
         }
 

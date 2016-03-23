@@ -564,7 +564,7 @@ void  svk4DImageData::GetImage(  svkImageData* image,
             int firstCellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &sourceDims, &loopVector);
             int cellIndex = firstCellIndex; 
 
-            cout << "GetImage dims: " << voxelDims[0] << " " << voxelDims[1] << " " << voxelDims[2] << endl;
+            //cout << "GetImage dims: " << voxelDims[0] << " " << voxelDims[1] << " " << voxelDims[2] << endl;
 
 			// Lets loop through the spatial indices corresponding to the inut indexVector
 			vtkDataArray* array = NULL;
@@ -581,12 +581,11 @@ void  svk4DImageData::GetImage(  svkImageData* image,
                         svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &sourceDims, &loopVector); 
 
 				        array = this->GetArray( cellIndex );
-                        cout << component << " p:" << point << " 4D GetImage ( imageindex = " << target3DCellIndex << ") = " 
-                                << array->GetComponent(point, 0 ) << endl;
+                        //cout << component << " p:" << point << " 4D GetImage ( imageindex = " << target3DCellIndex << ") = " 
+                                //<< array->GetComponent(point, 0 ) << endl;
 				        if( component > 1 ) {
 					        for( int j = 0; j < numComponents; j++) {
 						        pixelData->SetComponent(target3DCellIndex, j, array->GetComponent(point, j ));
-						        //pixelData->SetComponent(target3DCellIndex, j, target3DCellIndex); //test
 					        }
 				        } else {
                             // Second parameter should be hardcoded to 0 if only one component is required, since pixelData contains 
@@ -716,7 +715,7 @@ void  svk4DImageData::SetImage( vtkImageData* image, int point, svkDcmHeader::Di
         int firstCellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &sourceDims, &loopVector);
         int cellIndex = firstCellIndex; 
 
-        cout << "SetImage dims: " << voxelDims[0] << " " << voxelDims[1] << " " << voxelDims[2] << endl;
+        //cout << "SetImage dims: " << voxelDims[0] << " " << voxelDims[1] << " " << voxelDims[2] << endl;
 
         for ( int slice = 0; slice < voxelDims[2]; slice++ ) {
             for ( int row = 0; row < voxelDims[1]; row++ ) {
@@ -733,7 +732,7 @@ void  svk4DImageData::SetImage( vtkImageData* image, int point, svkDcmHeader::Di
 				    array = this->GetArray( cellIndex );
 
 			        for( int j = 0; j < numComponents; j++ ) {
-                        cout << "4D SetImage(sci=" << spatialCellIndex << ") = " << imageScalars->GetComponent( spatialCellIndex, j ) << endl;
+                        //cout << "4D SetImage(sci=" << spatialCellIndex << ") = " << imageScalars->GetComponent( spatialCellIndex, j ) << endl;
 				        array->SetComponent( point, j,  imageScalars->GetComponent( spatialCellIndex, j ) );
 			        }
 			    }
