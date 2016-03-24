@@ -47,6 +47,7 @@ applications/cmd_line/src/svk_quick_view
 applications/cmd_line/src/svk_reslice
 applications/cmd_line/src/svk_scale_image
 applications/cmd_line/src/svk_spec_diff
+applications/cmd_line/src/svk_variable_flip_scaler
 applications/cmd_line/src/svk_transform
 applications/cmd_line/src/svk_volume_diff
 applications/cmd_line/src/svk_zscore
