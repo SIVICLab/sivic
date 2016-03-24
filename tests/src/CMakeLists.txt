@@ -58,7 +58,6 @@ IF (CMAKE_SYSTEM_NAME MATCHES Linux)
         SET(PLATFORM Linux_x86_64)
     ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
     SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-    SET(PLATFORM_LIBS z)
 ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
     IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         SET(PLATFORM Darwin_i386)
@@ -164,7 +163,8 @@ IF(WIN32)
 	SET(PLATFORM_LIBS getopt
 	                  netapi32)
 ELSE(WIN32)
-    Set(PLATFORM_LIBS GLU
+    Set(PLATFORM_LIBS z
+                      GLU
                       GL
                       SM
                       ICE

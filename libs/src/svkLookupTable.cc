@@ -99,6 +99,7 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         this->SetHueRange(0,1);
         this->SetSaturationRange(1,1);
         this->SetAlphaRange(1.,1.);
+        this->SetRampToLinear();
 
     } else if ( this->type == svkLookupTable::REVERSE_COLOR ) {
         this->SetNumberOfColors(svkLookupTable::NUM_COLORS);
@@ -108,6 +109,7 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         this->SetSaturationRange(1,1);
         this->SetAlphaRange(1.,1.);
         this->reverseThreshold = true;
+        this->SetRampToLinear();
 
     } else if ( this->type == svkLookupTable::GREY_SCALE ) {
         this->SetNumberOfColors(svkLookupTable::NUM_COLORS);
@@ -116,6 +118,7 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         this->SetHueRange(0,0);
         this->SetSaturationRange(0,0);
         this->SetAlphaRange(1.,1.);
+        this->SetRampToLinear();
     } else if ( this->type == svkLookupTable::HURD ) {
 
         this->SetNumberOfColors(256);
@@ -911,6 +914,7 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         this->SetAlphaRange(1.,1.);
         this->TableRange[0] = -4;
         this->TableRange[1] = 4;
+        this->SetRampToLinear();
 
     } else if ( this->type == svkLookupTable::CBF_FIXED ) {
 
