@@ -497,37 +497,31 @@ int svkMrsZeroFill::RequestDataSpectral( vtkInformation* request, vtkInformation
         return 0; // is this the correct return value ?
     }
 
-    int cols          = hdr->GetIntValue( "Columns" );
-    int rows          = hdr->GetIntValue( "Rows" );
-    int slices        = hdr->GetNumberOfSlices();
-    int numChannels   = hdr->GetNumberOfCoils();
-    int numTimePts    = hdr->GetNumberOfTimePoints();
-
     float cmplxPt[2];
     cmplxPt[0] = 0.;
     cmplxPt[1] = 0.;
 	vtkDataArray* spectrum = NULL;
     double progress = 0;
-    for( int channel = 0; channel < numChannels; channel++ ) { 
-        for( int timePt = 0; timePt < numTimePts; timePt++ ) { 
-            ostringstream progressStream;
-            progressStream <<"Executing Spectral Zero Fill for Time Point " << timePt+1 << "/"
-                           << numTimePts << " and Channel: " << channel+1 << "/" << numChannels;
-            this->SetProgressText( progressStream.str().c_str() );
-            for (int z = 0; z < slices; z++) {
-                progress = (z+1)/((double)slices);
-                this->UpdateProgress( progress );
-                for (int y = 0; y < rows; y++) {
-                    for (int x = 0; x < cols; x++) {
 
-                        spectrum = svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel);
-                        //  Iterate over frequency points in spectrum and apply phase correction:
-                        for ( int freq = numSpecPts; freq < this->numSpecPoints; freq++ ) {
-                            spectrum->InsertTuple(freq, cmplxPt);
-                        }
-                    }
-                }
-            }
+    //  Get the Dimension Index and index values  
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+
+    //  GetNumber of cells in the image:
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
+
+    for (int cellID = 0; cellID < numCells; cellID++ ) {
+
+        ostringstream progressStream;
+        progressStream <<"Executing Spectral Zero Fill for Time Point " << cellID + 1 << "/" << numCells;
+        this->SetProgressText( progressStream.str().c_str() );
+
+        progress = (cellID+1)/((double)numCells);
+        this->UpdateProgress( progress );
+
+        spectrum = data->GetSpectrum( cellID ); 
+        //  Iterate over frequency points in spectrum and apply phase correction:
+        for ( int freq = numSpecPts; freq < this->numSpecPoints; freq++ ) {
+            spectrum->InsertTuple(freq, cmplxPt);
         }
     }
 

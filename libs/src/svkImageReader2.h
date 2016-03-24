@@ -81,6 +81,7 @@ class svkImageReader2 : public vtkImageReader2
             GE_SIGNA_5X,
             LC_MODEL_COORD, 
             LC_MODEL_CSV, 
+            VARIABLE_FLIP_DAT, 
             BRUKER_MRS,
             DDF,
             IDF,
@@ -93,7 +94,7 @@ class svkImageReader2 : public vtkImageReader2
         svkImageData*                        GetOutput(int);
         svkDcmHeader*                        GetDcmHeader( const char* fileName );
         static string                        StripWhite(string in);
-        static string                        RemoveSlashesFromDate(vtkstd::string* slashDate); 
+        static string                        RemoveSlashesFromDate(string* slashDate); 
         static string                        GetFileRoot(const char* fname);
         static string                        GetFileExtension(const char* fname);
         static string                        GetFilePath(const char* fname);
@@ -124,17 +125,25 @@ class svkImageReader2 : public vtkImageReader2
                                                     istringstream* iss, 
                                                     char delim
                                                  ); 
-        vtkstd::string                           ReadLineSubstr(
+        string                                   ReadLineSubstr(
                                                     ifstream* hdr, 
                                                     istringstream* iss, 
                                                     int start, 
                                                     int stop
                                                  ); 
-        vtkstd::string                           ReadLineValue( 
+        string                                   ReadLineValue( 
                                                     ifstream* hdr, 
                                                     istringstream* iss, 
                                                     char delim
                                                  ); 
+        void                                     ReadLineKeyValue( 
+                                                    ifstream* hdr, 
+                                                    istringstream* iss, 
+                                                    char delim, 
+                                                    string* key, 
+                                                    string* value
+                                                ); 
+
 
         virtual void                             SetProvenance(); 
 
@@ -145,11 +154,13 @@ class svkImageReader2 : public vtkImageReader2
         bool                                     onlyGlobFiles;
         bool                                     onlyReadHeader;
         virtual string                           GetFileSeriesDescription( string fileName ); 
+        void                                     SetReadLength(int length); 
 
 
     private:
 
         virtual void                            InitDcmHeader() = 0;
+        int                                     readLength;
 
 
 };

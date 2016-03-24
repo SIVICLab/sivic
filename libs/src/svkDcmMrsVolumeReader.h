@@ -91,7 +91,14 @@ class svkDcmMrsVolumeReader : public svkDcmVolumeReader
 
         virtual void    LoadData(svkImageData* data); 
         virtual void    InitPrivateHeader(); 
-        void            SetCellSpectrum(svkImageData* data, int x, int y, int z, int timePt, int coilNum, int numComponents, float* specData); 
+        void            SetCellSpectrum( 
+                            svkImageData* data, 
+                            svkDcmHeader::DimensionVector* loopVector, 
+                            int numComponents, 
+                            float* specData 
+                        ); 
+        void            SetCellSpectrum(svkImageData* data, int x, int y, int z, 
+                            int timePt, int coilNum, int numComponents, float* specData); 
 
         int             numFreqPts;
         int             numTimePts;

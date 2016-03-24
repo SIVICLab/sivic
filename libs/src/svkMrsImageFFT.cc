@@ -228,10 +228,8 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
 
 
 
-    int numberOfPoints = data->GetCellData()->GetArray(0)->GetNumberOfTuples();
-    int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
-    int numTimePoints  = data->GetDcmHeader()->GetNumberOfTimePoints();
     vtkImageData* currentData = NULL;
+
     svkImageLinearPhase* preKZeroShifter = svkImageLinearPhase::New();
     svkImageLinearPhase* postKZeroShifter = svkImageLinearPhase::New();
     svkImageLinearPhase* voxelShifter = svkImageLinearPhase::New();
@@ -240,88 +238,107 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     svkImageFourierCenter* postIfc = svkImageFourierCenter::New();
     double progress = 0;
 
-    
+    int numberOfPoints = data->GetCellData()->GetArray(0)->GetNumberOfTuples();
+    int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePoints  = data->GetDcmHeader()->GetNumberOfTimePoints();
+
+    //  Get the Dimension Index and index values  
+    //  GetNumber of cells in the image:
+
+    //  Only loop over non spatial voxels: 
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::COL_INDEX,   0);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::ROW_INDEX,   0);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, 0);
+    svkDcmHeader::DimensionVector loopVector = dimensionVector;
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
+
     svkMriImageData* pointImage = svkMriImageData::New();
-    for( int timePt = 0; timePt < numTimePoints; timePt++ ) {
-        for( int channel = 0; channel < numChannels; channel++ ) {
-            ostringstream progressStream;
-            progressStream <<"Executing Spatial Recon for Time Point " << timePt+1 << "/"
-                           << numTimePoints << " and Channel: " << channel+1 << "/" << numChannels;
-            this->SetProgressText( progressStream.str().c_str() );
-            for( int point = 0; point < numberOfPoints; point++ ) {
-                if( point%16==0 ) {
-                    progress = (point+1)/((double)numberOfPoints);
-                    this->UpdateProgress( progress );
-                }
-                //  ImageFourierCenter required data type VTK_DOUBLE
-                data->GetImage( pointImage, point, timePt, channel, 2, "", VTK_DOUBLE );
 
-                currentData = pointImage;
+    for (int cellID = 0; cellID < numCells; cellID++ ) {
 
-                // Lets apply a phase shift....
-                if( kZeroShiftWindow[0] != 0
-                    && kZeroShiftWindow[1] != 0
-                    && kZeroShiftWindow[2] != 0 ) {
-                    preKZeroShifter->SetShiftWindow( kZeroShiftWindow );
-                    preKZeroShifter->SetInputData( currentData );
-                    preKZeroShifter->Update( );
-                    currentData = preKZeroShifter->GetOutput();
-                }
+        //  Get the dimensionVector index for current cell -> loopVector: 
+        //  since dimensionVector is spatiall all zeros, this is initialized to the non -spatial 
+        //  volumes
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID );
 
-                // Lets apply a voxel shift....
-                if( (  this->voxelShift[0] != 0
-                    || this->voxelShift[1] != 0
-                    || this->voxelShift[2] != 0 )
-                    && this->mode == REVERSE ) {
-                    voxelShifter->SetShiftWindow( this->voxelShift );
-                    voxelShifter->SetInputData( currentData );
-                    voxelShifter->Update( );
-                    currentData = voxelShifter->GetOutput();
-                }
+        ostringstream progressStream;
+        progressStream <<"Executing Spatial Recon for cell " << cellID + 1 << "/" << "/" << numCells;
+        this->SetProgressText( progressStream.str().c_str() );
 
-                // And correct the center....
-                if( this->preCorrectCenter ) {
-                    preIfc->SetReverseCenter( true );
-                    preIfc->SetInputData(currentData);
-                    preIfc->Update();
-                    currentData = preIfc->GetOutput();
-                }
-
-                // Do the Fourier Transform
-                fourierFilter->SetInputData(currentData);
-                currentData = fourierFilter->GetOutput();
-                fourierFilter->Update();
-
-                // And correct the center....
-                if( this->postCorrectCenter ) {
-                    postIfc->SetInputData(currentData);
-                    postIfc->Update();
-                    currentData = postIfc->GetOutput();
-                }
-
-
-                if( kZeroShiftWindow[0] != 0
-                    && kZeroShiftWindow[1] != 0
-                    && kZeroShiftWindow[2] != 0 ) {
-                    postKZeroShifter->SetShiftWindow( kZeroShiftWindow );
-                    postKZeroShifter->SetInputData( currentData );
-                    postKZeroShifter->Update( );
-                    currentData = postKZeroShifter->GetOutput();
-                }
-
-                // Lets apply a voxel shift....
-                if( (  this->voxelShift[0] != 0
-                    || this->voxelShift[1] != 0
-                    || this->voxelShift[2] != 0 )
-                    && this->mode == FORWARD ) {
-                    voxelShifter->SetShiftWindow( this->voxelShift );
-                    voxelShifter->SetInputData( currentData );
-                    voxelShifter->Update( );
-                    currentData = voxelShifter->GetOutput();
-                }
-
-                data->SetImage( currentData, point, timePt, channel );
+        for( int point = 0; point < numberOfPoints; point++ ) {
+            if( point%16==0 ) {
+                progress = (point+1)/((double)numberOfPoints);
+                this->UpdateProgress( progress );
             }
+
+            //  ImageFourierCenter required data type VTK_DOUBLE
+            data->GetImage( pointImage, point, &loopVector, 2, "", VTK_DOUBLE);
+
+            currentData = pointImage;
+
+            // Lets apply a phase shift....
+            if( kZeroShiftWindow[0] != 0
+                && kZeroShiftWindow[1] != 0
+                && kZeroShiftWindow[2] != 0 ) {
+                preKZeroShifter->SetShiftWindow( kZeroShiftWindow );
+                preKZeroShifter->SetInputData( currentData );
+                preKZeroShifter->Update( );
+                currentData = preKZeroShifter->GetOutput();
+            }
+
+            // Lets apply a voxel shift....
+            if( (  this->voxelShift[0] != 0
+                || this->voxelShift[1] != 0
+                || this->voxelShift[2] != 0 )
+                && this->mode == REVERSE ) {
+                voxelShifter->SetShiftWindow( this->voxelShift );
+                voxelShifter->SetInputData( currentData );
+                voxelShifter->Update( );
+                currentData = voxelShifter->GetOutput();
+            }
+
+            // And correct the center....
+            if( this->preCorrectCenter ) {
+                preIfc->SetReverseCenter( true );
+                preIfc->SetInputData(currentData);
+                preIfc->Update();
+                currentData = preIfc->GetOutput();
+            }
+
+            // Do the Fourier Transform
+            fourierFilter->SetInputData(currentData);
+            currentData = fourierFilter->GetOutput();
+            fourierFilter->Update();
+
+            // And correct the center....
+            if( this->postCorrectCenter ) {
+                postIfc->SetInputData(currentData);
+                postIfc->Update();
+                currentData = postIfc->GetOutput();
+            }
+
+
+            if( kZeroShiftWindow[0] != 0
+                && kZeroShiftWindow[1] != 0
+                && kZeroShiftWindow[2] != 0 ) {
+                postKZeroShifter->SetShiftWindow( kZeroShiftWindow );
+                postKZeroShifter->SetInputData( currentData );
+                postKZeroShifter->Update( );
+                currentData = postKZeroShifter->GetOutput();
+            }
+
+            // Lets apply a voxel shift....
+            if( (  this->voxelShift[0] != 0
+                || this->voxelShift[1] != 0
+                || this->voxelShift[2] != 0 )
+                && this->mode == FORWARD ) {
+                voxelShifter->SetShiftWindow( this->voxelShift );
+                voxelShifter->SetInputData( currentData );
+                voxelShifter->Update( );
+                currentData = voxelShifter->GetOutput();
+            }
+
+            data->SetImage( currentData, point, &loopVector ); 
         }
     }
     if( preIfc != NULL ) {

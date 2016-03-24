@@ -88,7 +88,7 @@ class svk4DImageData: public svkImageData
                             vtkDataArray* array, 
                             svkDcmHeader::DimensionVector* dimensionVector
                        ); 
-        static vtkstd::string GetArrayName( 
+        static string GetArrayName( 
                             svkDcmHeader::DimensionVector* dimensionVector
                        ); 
         static bool    IsIndexInExtent( int* extent, svkDcmHeader::DimensionVector* indexVector );  
@@ -111,12 +111,28 @@ class svk4DImageData: public svkImageData
 
         virtual void   GetImage( svkImageData* image,
                                  int point,
-                                 vtkstd::string seriesDescription,
+                                 svkDcmHeader::DimensionVector* indexVector = NULL,
+                                 int component = 2, 
+                                 int vtkDataType = VTK_VOID );
+
+        virtual void   GetImage( svkImageData* image,
+                                 int point,
+                                 string seriesDescription,
                                  int* indexArray = NULL,
                                  int component = 2,
                                  int vtkDataType = VTK_VOID );
 
+        virtual void   GetImage( svkImageData* image,
+                                 int point,
+                                 string seriesDescription,
+                                 svkDcmHeader::DimensionVector* indexVector = NULL,
+                                 int component = 2,
+                                 int vtkDataType = VTK_VOID );
+
+
         void           SetImage( vtkImageData* image, int point,  int* indexArray = NULL );
+        void           SetImage( vtkImageData* image, int point, svkDcmHeader::DimensionVector* indexVector ); 
+
         void           SetImageComponent( vtkImageData* image, int point,  int* indexArray = NULL, int component = 0 ); //real
         virtual void   UpdateRange(int component );
         int            GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation);

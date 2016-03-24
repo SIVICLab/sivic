@@ -69,7 +69,7 @@ class svkMrsImageFlip : public svkImageInPlaceFilter
         vtkTypeMacro( svkMrsImageFlip, svkImageInPlaceFilter);
 
         void    SetFilteredAxis( int axis ); 
-        void    SetFilteredChannel( int channel); 
+        void    SetFilterDomainIndices( svkDcmHeader::DimensionVector* filterDimVector); 
 
 
     protected:
@@ -90,8 +90,8 @@ class svkMrsImageFlip : public svkImageInPlaceFilter
 
     private: 
 
-        int             filteredAxis; 
-        int             filteredChannel; 
+        int                                 filteredAxis; 
+        svkDcmHeader::DimensionVector*      filterDimVector; 
 
 
 };

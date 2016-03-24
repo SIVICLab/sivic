@@ -145,6 +145,25 @@ void svkDcmMrsVolumeReader::LoadData( svkImageData* data )
     }
 
     this->numFreqPts = this->GetOutput()->GetDcmHeader()->GetIntValue( "DataPointColumns" ); 
+
+//==============================
+    svkDcmHeader::DimensionVector dimVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
+    svkDcmHeader::DimensionVector loopVector = dimVector;
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimVector );
+
+    long unsigned int dataLength = numCells * this->numFreqPts * numComponents; 
+    float* specData = new float [ dataLength ];
+    this->GetOutput()->GetDcmHeader()->GetFloatValue( "SpectroscopyData", specData, dataLength);  
+    
+    for (int cellID = 0; cellID < numCells; cellID++ ) {
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimVector, &loopVector, cellID);
+        SetCellSpectrum( data, &loopVector, numComponents, specData );
+    }
+//==============================
+
+
+//==============================
+/*
     this->numTimePts = this->GetOutput()->GetDcmHeader()->GetNumberOfTimePoints();
     int numCoils = this->GetOutput()->GetDcmHeader()->GetNumberOfCoils();
 
@@ -156,6 +175,8 @@ void svkDcmMrsVolumeReader::LoadData( svkImageData* data )
 
     float* specData = new float [ dataLength ];
     this->GetOutput()->GetDcmHeader()->GetFloatValue( "SpectroscopyData", specData, dataLength);  
+
+    
         
     for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
         for (int timePt = 0; timePt < this->numTimePts; timePt ++) {
@@ -163,11 +184,16 @@ void svkDcmMrsVolumeReader::LoadData( svkImageData* data )
                 for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
                     for (int x = 0; x < (this->GetDataExtent())[1]; x++) {
                         SetCellSpectrum( data, x, y, z, timePt, coilNum, numComponents, specData );
+
                     }
                 }
             }
         }
     }
+*/
+//==============================
+
+
 
     svkFastCellData::SafeDownCast(data->GetCellData())->FinishFastAdd();
 
@@ -177,6 +203,55 @@ void svkDcmMrsVolumeReader::LoadData( svkImageData* data )
     this->GetOutput()->GetDcmHeader()->ClearElement( "SpectroscopyData" ); 
 }
 
+
+/*!
+ *
+ */
+void svkDcmMrsVolumeReader::SetCellSpectrum( svkImageData* data, svkDcmHeader::DimensionVector* loopVector, int numComponents, float* specData )
+{
+
+    //  Set XY points to plot - 2 components per tuble for complex data sets:
+    vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
+    dataArray->SetNumberOfComponents( numComponents );
+
+    dataArray->SetNumberOfTuples(this->numFreqPts);
+    string arrayName = svk4DImageData::GetArrayName( loopVector ); 
+    dataArray->SetName( arrayName.c_str() );
+
+    svkDcmHeader::DimensionVector dimVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
+    int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, loopVector);
+    int offset = cellID * this->numFreqPts * numComponents;
+
+
+    //  According to DICOM Part 3 C.8.14.4.1, data should be ordered from low to high frequency, 
+    //  Or as the complex conjugate:
+    string signalDomain = this->GetOutput()->GetDcmHeader()->GetStringValue( "SignalDomainColumns" );
+    bool isTimeDomain = false;
+    if ( signalDomain.compare("TIME") == 0 ) {
+        isTimeDomain = true;
+    }
+
+    for (int i = 0; i < this->numFreqPts; i++) {
+        // see previous comment about DICOM convention for time domain data. 
+        if ( isTimeDomain ) {
+            specData[ offset + (i * 2) + 1 ] *= -1;     //invert the imaginary component
+        }
+        dataArray->SetTuple( i, &(specData[ offset + (i * 2) ]) );
+    }
+
+    //  Add the spectrum's dataArray to the CellData:
+    //  vtkCellData is a subclass of vtkFieldData
+    svkFastCellData::SafeDownCast(data->GetCellData())->FastAddArray(dataArray); 
+
+    
+
+    //  Should these be a member var, deleted in destructor?
+    dataArray->Delete();
+
+    return;
+}
+
+        
 
 /*!
  *

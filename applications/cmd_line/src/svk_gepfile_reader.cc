@@ -332,10 +332,8 @@ int main (int argc, char** argv)
     cout << "file name: " << inputFileName << endl;
 
     // ===============================================  
-    //  Use a reader factory to get the correct reader  
-    //  type . 
+    //  Get a GEPFile Reader. 
     // ===============================================  
-    vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
     svkGEPFileReader* reader = svkGEPFileReader::New(); 
 
     if (reader == NULL) {
@@ -347,7 +345,6 @@ int main (int argc, char** argv)
     if ( onlyLoadSingleFile == true ) {
         reader->OnlyReadOneInputFile();
     }
-
 
     //  If printing header just print and return
     if ( printHeader || printShortHeader ) {

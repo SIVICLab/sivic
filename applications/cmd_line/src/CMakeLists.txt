@@ -484,6 +484,15 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_variable_flip_scaler
+    svk_variable_flip_scaler.cc 
+)
+TARGET_LINK_LIBRARIES(
+    svk_variable_flip_scaler
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_lcmodel_writer
     svk_lcmodel_writer.cc
 )
@@ -730,6 +739,15 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_zerofill
+    svk_zerofill.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_zerofill
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_channel2time
     svk_channel2time.cc
 )
@@ -859,6 +877,7 @@ SET(APPS
     svk_quick_view
     svk_multi_view
     svk_gepfile_reader 
+    svk_variable_flip_scaler
     svk_gepfile_anon
     svk_lcmodel_reader
     svk_lcmodel_writer
