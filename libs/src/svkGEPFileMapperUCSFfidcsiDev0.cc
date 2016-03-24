@@ -93,9 +93,9 @@ bool svkGEPFileMapperUCSFfidcsiDev0::IsChopOn()
 /*
  *  Returns the volume localization type = NONE. 
  */
-vtkstd::string  svkGEPFileMapperUCSFfidcsiDev0::GetVolumeLocalizationTechnique()
+string  svkGEPFileMapperUCSFfidcsiDev0::GetVolumeLocalizationTechnique()
 {
-    vtkstd::string localizationType("NONE");
+    string localizationType("NONE");
     return localizationType; 
 }
 
@@ -201,7 +201,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
             int totalNumArrays = svkDcmHeader::GetNumberOfCells( &dimensionVector ); 
             totalNumArrays *= numTimePts;  
 
-            vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
+            string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
             int numComponents;
             if ( dataRepresentation == "COMPLEX" ) {
                    numComponents = 2;
@@ -280,7 +280,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::AddReorderedTimePoint(svkMrsImageData* dyna
     //tmpImage->GetDcmHeader()->PrintDcmHeader(); 
 
     svkDcmHeader* hdr = tmpImage->GetDcmHeader();
-    vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
+    string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
     int numComponents;
     if ( dataRepresentation == "COMPLEX" ) {
         numComponents = 2;
@@ -406,7 +406,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
     //  Allocate arrays for spectra at each phase encode:
     svkDcmHeader* hdr = data->GetDcmHeader();
-    vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
+    string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
 
     int numComponents;
     if ( dataRepresentation == "COMPLEX" ) {
@@ -570,8 +570,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  =================================================
 
     this->ResampleRamps( data, deltaT, plateauTime, rampTime, epsiAxis ); 
-    //data->GetDcmHeader()->PrintDcmHeader(); 
-    //data->GetDcmHeader()->GetDimensionIndexVector(); 
 
     //  This results in a match to Matlab when comparing the k-space data output:     
     //  final_datap(:,:,:,:,t) = fftshift(fftn(kdatap));
@@ -602,6 +600,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  combine even/odd lobes (separate post-processing 
     //  step). 
     //  =================================================
+    //this->CombineLobes(data); 
 
     //  =================================================
     //  Account for patient entry.. need to review, not sure this
@@ -620,7 +619,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 /*  
  *  util method for debugging
  */
-void svkGEPFileMapperUCSFfidcsiDev0::PrintSpecPts( svkImageData* data, int numFreqPts, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* loopIndex, vtkstd::string comment )
+void svkGEPFileMapperUCSFfidcsiDev0::PrintSpecPts( svkImageData* data, int numFreqPts, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* loopIndex, string comment )
 {
     return; 
     //svkDcmHeader::PrintDimensionIndexVector( dimensionVector);
@@ -1061,7 +1060,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::CHANNEL_INDEX, channel); 
                             svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::EPSI_ACQ_INDEX, lobe); 
 
-                            vtkstd::string arrayName = svk4DImageData::GetArrayName( &loopVector ); 
+                            string arrayName = svk4DImageData::GetArrayName( &loopVector ); 
                             //cout << "REMOVE ARRAY: " << arrayName << endl;
                             data->GetCellData()->RemoveArray( arrayName.c_str() );
 
@@ -1482,6 +1481,84 @@ void svkGEPFileMapperUCSFfidcsiDev0::ModifyForPatientEntry( svkImageData* data )
     );
 
     data->SyncVTKImageDataToDcmHeader(); 
+
+}
+
+
+/*!
+ *  Sum of squares combination of lobes 
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::CombineLobes(svkImageData* data) 
+{
+
+    svkDcmHeader* hdr = data->GetDcmHeader();
+
+    int numFreqPts = hdr->GetIntValue( "DataPointColumns" );
+
+    svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector loopVectorLobe0 = dimVector; 
+
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimVector ); 
+    
+    //  Loop over all cellss where EPSI_ACQ_INDEX = 0 and combine with EPSI_ACQ_INDEX = 1 
+
+    float specPtLobe0[2];
+    float specPtLobe1[2];
+    float specPtSOS[2];
+
+    for (int cellIDLobe0 = 0; cellIDLobe0 < numCells; cellIDLobe0++ ) { 
+
+        //  Get the dimensionVector index for the non-dynamic image: 
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimVector, &loopVectorLobe0, cellIDLobe0 ); 
+
+        int lobe = hdr->GetDimensionVectorValue( &loopVectorLobe0, svkDcmHeader::EPSI_ACQ_INDEX); 
+
+        if ( lobe == 0 ) {
+
+            //get spectrum from both lobes 
+            svkDcmHeader::DimensionVector loopVectorLobe1 = loopVectorLobe0; 
+            svkDcmHeader::SetDimensionVectorValue( &loopVectorLobe1, svkDcmHeader::EPSI_ACQ_INDEX, 1); 
+
+            int cellIDLobe1 = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &loopVectorLobe1); 
+
+            vtkFloatArray* spectrumLobe0 = vtkFloatArray::SafeDownCast( 
+                svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellIDLobe0) 
+            );
+            vtkFloatArray* spectrumLobe1 = vtkFloatArray::SafeDownCast( 
+                svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellIDLobe1) 
+            );
+
+            for ( int freq = 0; freq < numFreqPts; freq++ ) {
+                spectrumLobe0->GetTupleValue( freq, specPtLobe0 );      
+                spectrumLobe1->GetTupleValue( freq, specPtLobe1 );     
+                specPtSOS[0]  = ( specPtLobe0[0] * specPtLobe0[0] + specPtLobe0[1] * specPtLobe0[1] ); 
+                specPtSOS[0] += ( specPtLobe1[0] * specPtLobe1[0] + specPtLobe1[1] * specPtLobe1[1] ); 
+                specPtSOS[0]  = pow( static_cast<float>(specPtSOS[0]), static_cast<float>(0.5) );
+                specPtSOS[1] = 0; 
+                spectrumLobe0->SetTupleValue( freq, specPtSOS );
+            }
+        }
+    }
+
+    //  redimension here: 
+    //  remove EPSI_ACQ_INDEX = 1 arrays
+    //  remove dimension index for EPSI_ACQ /? 
+    svkDcmHeader::DimensionVector loopVector = dimVector; 
+    for (int cellID = 0; cellID < numCells; cellID++ ) { 
+
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimVector, &loopVector, cellID); 
+
+        int lobeNum = hdr->GetDimensionVectorValue( &loopVector, svkDcmHeader::EPSI_ACQ_INDEX); 
+
+        if ( lobeNum == 1 ) {
+
+            //int cellIDLobe1 = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &loopVector); 
+
+            string arrayName = svk4DImageData::GetArrayName( &loopVector ); 
+            data->GetCellData()->RemoveArray( arrayName.c_str() );
+        }
+    }
+    data->GetDcmHeader()->RemoveDimensionIndex( svkDcmHeader::EPSI_ACQ_INDEX );
 
 }
 

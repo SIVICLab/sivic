@@ -79,6 +79,7 @@ int main (int argc, char** argv)
     usemsg += "                [ --first                 num ]                                  \n";
     usemsg += "                  --axis                  axis                                   \n";
     usemsg += "                  --type                  type                                   \n";
+    usemsg += "                [ --combine                   ]                                  \n";
     usemsg += "                                                                                 \n";  
     usemsg += "   -i        name    Name of file to convert.                                    \n"; 
     usemsg += "   -o        name    Name of outputfile.                                         \n";
@@ -96,6 +97,8 @@ int main (int argc, char** argv)
     usemsg += "                     default first is set to 1, so no initial offset.            \n"; 
     usemsg += "   --axis    axis    EPSI axis 1, 2, 3                                           \n"; 
     usemsg += "   --type    type    Specify 1 (flyback), 2(symmetric), 3(interleaved).          \n";
+    usemsg += "   --combine         Just combine lobes using sum of squares from existing EPSI  \n";
+    usemsg += "                     data set.                                                   \n";
     usemsg += "   -h                Print this help mesage.                                     \n";  
     usemsg += "\n";  
     usemsg += "Reorderes an EPSI data set into a regular array of k,t ordered data. separating out the\n"; 
@@ -114,6 +117,7 @@ int main (int argc, char** argv)
     int skip                = UNDEFINED; 
     int first               = 0; 
     int axis                = UNDEFINED; 
+    bool combineLobes       = false; 
     svkEPSIReorder::EPSIType type  = svkEPSIReorder::UNDEFINED_EPSI_TYPE; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
@@ -124,7 +128,8 @@ int main (int argc, char** argv)
         FLAG_SKIP, 
         FLAG_FIRST,  
         FLAG_AXIS, 
-        FLAG_TYPE 
+        FLAG_TYPE, 
+        FLAG_COMBINE_LOBES
     }; 
 
 
@@ -137,6 +142,7 @@ int main (int argc, char** argv)
         {"first",                   required_argument, NULL,  FLAG_FIRST},
         {"axis",                    required_argument, NULL,  FLAG_AXIS},
         {"type",                    required_argument, NULL,  FLAG_TYPE},
+        {"combine",                 no_argument,       NULL,  FLAG_COMBINE_LOBES},
         {0, 0, 0, 0}
     };
 
@@ -175,6 +181,9 @@ int main (int argc, char** argv)
             case FLAG_TYPE:
                 type = static_cast<svkEPSIReorder::EPSIType>(atoi(optarg)); 
                 break;
+            case FLAG_COMBINE_LOBES:
+                combineLobes = true; 
+                break;
             case 'h':
                 cout << usemsg << endl;
                 exit(1);  
@@ -191,19 +200,33 @@ int main (int argc, char** argv)
     // ===============================================  
     //  validate input: 
     // ===============================================  
-    if ( 
-        numLobes == UNDEFINED ||
-        skip == UNDEFINED ||
-        first < 0 ||
-        axis < 0 || axis > 2 ||
-        type == svkEPSIReorder::UNDEFINED_EPSI_TYPE ||
-        outputFileName.length() == 0 ||
-        inputFileName.length() == 0  ||
-        ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) ||
-        argc != 0 
-    ) {
-            cout << usemsg << endl;
+
+    if ( combineLobes == true ) {
+        if ( 
+            outputFileName.length() == 0 ||
+            inputFileName.length() == 0  ||
+            ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) ||
+            argc != 0 
+        ) {
+            cout << "USAGE: " << usemsg << endl;
             exit(1); 
+        }
+    } else {
+
+        if ( 
+            numLobes == UNDEFINED ||
+            skip == UNDEFINED ||
+            first < 0 ||
+            axis < 0 || axis > 2 ||
+            type == svkEPSIReorder::UNDEFINED_EPSI_TYPE ||
+            outputFileName.length() == 0 ||
+            inputFileName.length() == 0  ||
+            ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) ||
+            argc != 0 
+        ) {
+                cout << usemsg << endl;
+                exit(1); 
+        }
     }
 
     cout << "file name: " << inputFileName << endl;
@@ -223,23 +246,6 @@ int main (int argc, char** argv)
     reader->SetFileName( inputFileName.c_str() );
     reader->Update(); 
 
-    //  Reorder/sample EPSI data: 
-    svkEPSIReorder* reorder = svkEPSIReorder::New();
-    reorder->SetInputData( reader->GetOutput() ); 
-    reorder->SetEPSIType( type );
-    reorder->SetNumSamplesToSkip( skip );
-    reorder->SetNumEPSILobes( numLobes );
-    reorder->SetFirstSample( first );
-    reorder->SetEPSIAxis( static_cast<svkEPSIReorder::EPSIAxis>( axis ) );
-    //int numVoxels[3]; 
-    //reader->GetOutput()->GetNumberOfVoxels( numVoxels);
-    //reorder->SetNumVoxelsOriginal( numVoxels ); 
-    
-    if ( numSamplesPerLobe != UNDEFINED ) { 
-        reorder->SetNumSamplesPerLobe( numSamplesPerLobe ); 
-    }
-
-    reorder->Update();
 
     // ===============================================  
     //  Write the data out to the specified file type.  
@@ -252,27 +258,53 @@ int main (int argc, char** argv)
         cerr << "Can not determine writer of type: " << dataTypeOut << endl;
         exit(1);
     }
-
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInputData( reorder->GetOutput() );
 
-    // ===============================================  
-    //  Set the input command line into the data set 
-    //  provenance: 
-    // ===============================================  
-    reorder->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+    if ( combineLobes == true ) {
+        svkEPSIReorder::CombineLobes(reader->GetOutput() ); 
+        writer->SetInputData( reader->GetOutput() );
+        writer->Write();
+    } else {
 
-    // ===============================================  
-    //  Write data to file: 
-    // ===============================================  
-    writer->Write();
+        
+        //  Reorder/sample EPSI data: 
+        svkEPSIReorder* reorder = svkEPSIReorder::New();
+        reorder->SetInputData( reader->GetOutput() ); 
+        reorder->SetEPSIType( type );
+        reorder->SetNumSamplesToSkip( skip );
+        reorder->SetNumEPSILobes( numLobes );
+        reorder->SetFirstSample( first );
+        reorder->SetEPSIAxis( static_cast<svkEPSIReorder::EPSIAxis>( axis ) );
+        //int numVoxels[3]; 
+        //reader->GetOutput()->GetNumberOfVoxels( numVoxels);
+        //reorder->SetNumVoxelsOriginal( numVoxels ); 
+        
+        if ( numSamplesPerLobe != UNDEFINED ) { 
+            reorder->SetNumSamplesPerLobe( numSamplesPerLobe ); 
+        }
+
+        reorder->Update();
+
+        writer->SetInputData( reorder->GetOutput() );
+
+        // ===============================================  
+        //  Set the input command line into the data set 
+        //  provenance: 
+        // ===============================================  
+        reorder->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+
+        // ===============================================  
+        //  Write data to file: 
+        // ===============================================  
+        writer->Write();
+        reorder->Delete(); 
+    }
 
     // ===============================================  
     //  Clean up: 
     // ===============================================  
     writer->Delete();
     reader->Delete();
-    reorder->Delete(); 
 
     return 0; 
 }
