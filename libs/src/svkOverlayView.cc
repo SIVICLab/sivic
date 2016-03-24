@@ -1555,8 +1555,10 @@ void svkOverlayView::UpdateSincInterpolation()
 		this->sincInterpolation->Update();
 		if( i == 0 ) {
 			this->interpOverlay->DeepCopy( this->sincInterpolation->GetOutput() );
+            this->interpOverlay->GetPointData()->GetArray( i )->DeepCopy(sincInterpolation->GetOutput()->GetPointData()->GetScalars() );
+		} else {
+            this->interpOverlay->GetPointData()->AddArray(sincInterpolation->GetOutput()->GetPointData()->GetScalars() );
 		}
-		this->interpOverlay->GetPointData()->GetArray( i )->DeepCopy(sincInterpolation->GetOutput()->GetPointData()->GetScalars() );
 		// Array name order is not maintained so we need to rename the arrays
 		this->interpOverlay->GetPointData()->GetArray( i )->SetName(overlaySource->GetPointData()->GetArray( i )->GetName() );
     }
