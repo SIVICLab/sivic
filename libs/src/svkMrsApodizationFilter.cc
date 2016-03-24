@@ -99,31 +99,26 @@ int svkMrsApodizationFilter::RequestData( vtkInformation* request, vtkInformatio
     svkDcmHeader* hdr = data->GetDcmHeader();
     int numPoints    = hdr->GetIntValue( "DataPointColumns" );
 
-    int cols            = hdr->GetIntValue( "Columns" );
-    int rows            = hdr->GetIntValue( "Rows" );
-    int slices          = hdr->GetNumberOfSlices();
-    int numChannels     = hdr->GetNumberOfCoils();
-    int numTimePts      = hdr->GetNumberOfTimePoints();
     double* windowTuple = NULL;
     double* specTuple   = NULL;
 
-    for( int channel = 0; channel < numChannels; channel++ ) { 
-        for( int timePt = 0; timePt < numTimePts; timePt++ ) { 
-            for (int z = 0; z < slices; z++) {
-                for (int y = 0; y < rows; y++) {
-                    for (int x = 0; x < cols; x++) {
+    //  Get the Dimension Index and index values  
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
 
-                        vtkFloatArray* spectrum = 
-                            vtkFloatArray::SafeDownCast( svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel) );
-                        //  Iterate over frequency points in spectrum and apply phase the window:
-                        for ( int i = 0; i < numPoints; i++ ) {
-                            windowTuple = this->window->GetTuple( i );
-                            specTuple = spectrum->GetTuple( i );
-                            spectrum->SetTuple2( i, specTuple[0] * windowTuple[0], specTuple[1] * windowTuple[1] ); 
-                        }
-                    }
-                }
-            }
+    //  GetNumber of cells in the image:
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
+
+    for (int cellID = 0; cellID < numCells; cellID++ ) {
+
+        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
+            svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID )
+        );
+
+        //  Iterate over frequency points in spectrum and apply phase the window:
+        for ( int i = 0; i < numPoints; i++ ) {
+            windowTuple = this->window->GetTuple( i );
+            specTuple = spectrum->GetTuple( i );
+            spectrum->SetTuple2( i, specTuple[0] * windowTuple[0], specTuple[1] * windowTuple[1] ); 
         }
     }
 

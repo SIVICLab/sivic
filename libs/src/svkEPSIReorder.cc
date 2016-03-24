@@ -706,6 +706,8 @@ void svkEPSIReorder::CombineLobes(svkImageData* data)
     float specPtLobe0[2];
     float specPtLobe1[2];
     float specPtSOS[2];
+    
+    cout << "NUM CELLS TO COMBINE: " << numCells << endl;
 
     for (int cellIDLobe0 = 0; cellIDLobe0 < numCells; cellIDLobe0++ ) {
 
@@ -721,6 +723,7 @@ void svkEPSIReorder::CombineLobes(svkImageData* data)
             svkDcmHeader::SetDimensionVectorValue( &loopVectorLobe1, svkDcmHeader::EPSI_ACQ_INDEX, 1);
 
             int cellIDLobe1 = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &loopVectorLobe1);
+            cout << "COMBINE: " << cellIDLobe0 << " & " << cellIDLobe1 << endl;
 
             vtkFloatArray* spectrumLobe0 = vtkFloatArray::SafeDownCast(
                 svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellIDLobe0)

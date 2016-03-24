@@ -739,6 +739,15 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_zerofill
+    svk_zerofill.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_zerofill
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_channel2time
     svk_channel2time.cc
 )
