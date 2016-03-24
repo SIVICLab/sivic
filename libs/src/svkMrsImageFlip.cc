@@ -148,7 +148,10 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
 
     //  get number of volumes (cells in this case with spatial dims set to 0)
     int numCells = svkDcmHeader::GetNumberOfCells( &dimVector );
-    svkDcmHeader::PrintDimensionIndexVector( &dimVector ); 
+
+    if (this->GetDebug()) {
+        svkDcmHeader::PrintDimensionIndexVector( &dimVector ); 
+    }
 
     for ( int cellID = 0; cellID < numCells; cellID++ ) {
 
@@ -162,7 +165,9 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
             int loopIndexValue = svkDcmHeader::GetDimensionVectorValue(&loopVector, dimIndex); 
             int filterDimValue = svkDcmHeader::GetDimensionVectorValue(this->filterDimVector, dimIndex); 
             if ( filterDimValue >=0 && loopIndexValue != filterDimValue ) {
-                svkDcmHeader::PrintDimensionIndexVector( this->filterDimVector); 
+                if (this->GetDebug()) {
+                    svkDcmHeader::PrintDimensionIndexVector( this->filterDimVector); 
+                }
                 flipVolume = false;  
                 break; 
             }

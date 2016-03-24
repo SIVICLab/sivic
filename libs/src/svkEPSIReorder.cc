@@ -480,7 +480,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
             if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
                 currentAcq = acq; //testing
             }
-            cout << "ACQ: " << acq << " " << currentAcq << endl;
+            //cout << "ACQ: " << acq << " " << currentAcq << endl;
 
             //  If numAcqs Per FID = 1, then reset the currentEPSIPt being read
             //  to the start of the FID: 

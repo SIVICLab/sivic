@@ -189,7 +189,9 @@ void svkImageData::CopyMetaData( vtkDataObject* src, svkDcmHeader::DcmPixelDataF
     if( castToFormat != svkDcmHeader::UNDEFINED ) {
         this->CastDataFormat( castToFormat );
     } else {
-        cout << "svkImageData::DeepCopy::CoyMetaData: TYPE: " << vtkImageData::GetScalarType( src->GetInformation() ) << endl; 
+        if (this->GetDebug()) {
+            cout << "svkImageData::DeepCopy::CopyMetaData: TYPE: " << vtkImageData::GetScalarType( src->GetInformation() ) << endl; 
+        }
         vtkImageData::SetScalarType( 
             vtkImageData::GetScalarType( src->GetInformation() ), 
             this->GetInformation()

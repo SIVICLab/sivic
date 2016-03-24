@@ -279,7 +279,7 @@ void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** ep
     cout <<  "num k pts read: " << numEPSIkRead << endl;
     cout << " EPSI ORIGIN: " << kOrigin << endl;
     cout << " FREQ ORIGIN: " << fOrigin << endl;
-    cout << "DENOM " << numSpecPts * numKPts * 2 << endl;
+    //cout << "DENOM " << numSpecPts * numKPts * 2 << endl;
     for( int k = 0; k < numKPts ; k++ ) {
         for( int f = 0; f <  numSpecPts; f++ ) {
             kIncrement = ( k - kOrigin )/( numKPts * 2);
