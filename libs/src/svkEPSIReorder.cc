@@ -707,8 +707,7 @@ void svkEPSIReorder::CombineLobes(svkImageData* data)
     float specPtLobe1[2];
     float specPtSOS[2];
     
-    cout << "NUM CELLS TO COMBINE: " << numCells << endl;
-
+    int lastPrint = -1;
     for (int cellIDLobe0 = 0; cellIDLobe0 < numCells; cellIDLobe0++ ) {
 
         //  Get the dimensionVector index for the non-dynamic image: 
@@ -718,12 +717,18 @@ void svkEPSIReorder::CombineLobes(svkImageData* data)
 
         if ( lobe == 0 ) {
 
+            int completed = 100 * ( static_cast<float>(cellIDLobe0) / static_cast<float>(numCells) );
+            if( completed % 5 == 0 && completed != lastPrint ) {
+                cout << "combine lobes " << completed << " %" << endl;
+                lastPrint = completed;
+            }
+
+
             //get spectrum from both lobes 
             svkDcmHeader::DimensionVector loopVectorLobe1 = loopVectorLobe0;
             svkDcmHeader::SetDimensionVectorValue( &loopVectorLobe1, svkDcmHeader::EPSI_ACQ_INDEX, 1);
 
             int cellIDLobe1 = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &loopVectorLobe1);
-            cout << "COMBINE: " << cellIDLobe0 << " & " << cellIDLobe1 << endl;
 
             vtkFloatArray* spectrumLobe0 = vtkFloatArray::SafeDownCast(
                 svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellIDLobe0)
@@ -755,6 +760,12 @@ void svkEPSIReorder::CombineLobes(svkImageData* data)
         int lobeNum = hdr->GetDimensionVectorValue( &loopVector, svkDcmHeader::EPSI_ACQ_INDEX);
 
         if ( lobeNum == 1 ) {
+
+            int completed = 100 * ( static_cast<float>(cellID) / static_cast<float>(numCells) );
+            if( completed % 5 == 0 && completed != lastPrint ) {
+                cout << "combine redimension " << completed << " %" << endl;
+                lastPrint = completed;
+            }
 
             //int cellIDLobe1 = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &loopVector); 
 
