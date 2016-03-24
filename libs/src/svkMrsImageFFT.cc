@@ -253,7 +253,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
 
     svkMriImageData* pointImage = svkMriImageData::New();
-
+    int lastPrint = -1; 
     for (int cellID = 0; cellID < numCells; cellID++ ) {
 
         //  Get the dimensionVector index for current cell -> loopVector: 
@@ -264,6 +264,13 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
         ostringstream progressStream;
         progressStream <<"Executing Spatial Recon for cell " << cellID + 1 << "/" << "/" << numCells;
         this->SetProgressText( progressStream.str().c_str() );
+
+        int completed = 100 * ( static_cast<float>(cellID) / static_cast<float>(numCells) ); 
+        //cout << completed << " " << cellID << " " << numCells << " " << static_cast<float>(cellID) / static_cast<float>(numCells) << endl;
+        if( completed % 5 == 0 && completed != lastPrint ) {
+            cout << "spatial fft vols " << completed << " %" << endl;
+            lastPrint = completed; 
+        }
 
         for( int point = 0; point < numberOfPoints; point++ ) {
             if( point%16==0 ) {
