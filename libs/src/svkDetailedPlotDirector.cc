@@ -537,7 +537,7 @@ double svkDetailedPlotDirector::GetYValueFromIndex( int plotIndex, int pointInde
     //vtkDataObject* dataObject = collection->GetItem( plotIndex );
 
     vtkAlgorithm* collection = this->xyPlotActor->GetDataObjectInputConnectionHolder();
-    vtkDataObject* dataObject = collection->GetInputDataObject(plotIndex, 0);
+    vtkDataObject* dataObject = collection->GetInputDataObject(0, plotIndex);
 
     int component = this->xyPlotActor->GetDataObjectYComponent( plotIndex );
     int arrayComponent;
