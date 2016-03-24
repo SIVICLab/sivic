@@ -1190,7 +1190,8 @@ vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, svkD
            ostringstream acqoss;
            //  Add 1 to the file number so indexing doesn't start at 0.
            acqoss << acq;
-           fileRoot.assign( fileRoot + "_" + acqoss.str() ) ;
+            
+           //fileRoot.assign( fileRoot + "_" + acqoss.str() ) ;
 
     }
 
