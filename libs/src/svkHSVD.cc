@@ -52,8 +52,9 @@
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
-
+#ifndef WIN32
 #include <sys/time.h>
+#endif
 using namespace svk;
 
 
