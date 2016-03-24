@@ -1024,7 +1024,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         this->windowLevel->Update( );
 
 
-        svkOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetInputData(this->windowLevel->GetOutput());
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->GetMapper()->SetInputConnection(this->windowLevel->GetOutputPort());
         bool isOverlayImageOn = this->IsPropOn(svkPlotGridView::OVERLAY_IMAGE); 
         if( this->GetRenderer( svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) ) ) {
             this->GetRenderer( svkPlotGridView::PRIMARY)->RemoveActor( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) );
