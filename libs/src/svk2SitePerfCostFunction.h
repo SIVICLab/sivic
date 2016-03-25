@@ -47,6 +47,7 @@
 
 using namespace svk;
 
+#define ARRIVAL_TIME 1
 
 /*
  *  Cost function for ITK optimizer: 
@@ -88,7 +89,7 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
                     arrivalTime = t;
                 }
             }
-			arrivalTime = 0;
+			arrivalTime = ARRIVAL_TIME;
             for ( int t = arrivalTime; t < this->numTimePoints; t++ ) {
 			//for ( int t = 0; t < this->numTimePoints; t++ ) { 
                 residual += ( this->signal0[t] - this->kineticModel0[t] )  * ( this->signal0[t] - this->kineticModel0[t] ); 
@@ -128,20 +129,20 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
             //  use model params and initial signal intensity to calculate the metabolite signals vs time 
             //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
 
-            //  Find time to peak pyrvaute/urea
+            //  Find arrival time time to peak pyrvaute/urea
             int   arrivalTime = 2;
-            float maxValue0 = signal0[0];
-            float meanValue2 = 0;
-            float tmp = 0;
-            for(int t = arrivalTime;  t < numTimePoints; t++ ) {
-                if( signal0[t] > maxValue0) {
-                    maxValue0 = signal0[t];
-                    arrivalTime = t;
-                }
-                meanValue2 = signal2[t] + meanValue2;
-            }
-            arrivalTime = 0;
-            meanValue2 = meanValue2/numTimePoints;
+            //float maxValue0 = signal0[0];
+            //float meanValue2 = 0;
+            //float tmp = 0;
+            //for(int t = arrivalTime;  t < numTimePoints; t++ ) {
+                //if( signal0[t] > maxValue0) {
+                    //maxValue0 = signal0[t];
+                    //arrivalTime = t;
+                //}
+                //meanValue2 = signal2[t] + meanValue2;
+            //}
+			arrivalTime = ARRIVAL_TIME;
+            //meanValue2 = meanValue2/numTimePoints;
 
             //set up Arterial Input function
             float* convolutionMat  = new float [numTimePoints];

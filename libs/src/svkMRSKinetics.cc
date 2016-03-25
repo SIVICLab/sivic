@@ -328,16 +328,19 @@ void svkMRSKinetics::GenerateKineticParamMap()
         maskImage = svkMriImageData::SafeDownCast(this->GetImageDataInput(svkMRSKinetics::MASK) );
         mask      = static_cast<vtkUnsignedShortArray*>( 
                         maskImage->GetPointData()->GetArray(0) )->GetPointer(0) ; 
+        hasMask = true; 
     } 
 
 
     for (int i = 0; i < totalVoxels; i++ ) {
 
-        cout << "VOXEL NUMBER: " << i << endl;
+        //cout << "VOXEL NUMBER: " << i << endl;
         //cout << "MASK VALUE: " << mask[i] << endl;
 
         //  If there is a mask check it.  If no mask provided, the compute all voxels. 
         if ( (hasMask == true) && (mask[i] != 0 ) || ( hasMask == false )  ) {
+
+            cout << "Fit Voxel " << i << endl;
 
             vtkFloatArray* kineticTrace0 = vtkFloatArray::SafeDownCast(
                 svkMriImageData::SafeDownCast(
@@ -490,12 +493,13 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
     //  ===================================================
     //  Save fitted kinetics into algorithm output object cell data
     //  ===================================================
-    float TR = 5.; 
+    //float TR = 5.; 
+    float TR = 3.; //   this shoudl be read from the data
     double T1all  = TR / finalPosition[0];
     double Kpl    = finalPosition[1] / TR;
     double Ktrans = finalPosition[2] / TR;
     //cout << "T1all: " << T1all << endl;
-    //cout << "Kpl:   " << Kpl   << endl;
+    cout << "Kpl:   " << Kpl   << endl;
     mapArrayT1all->SetTuple1(voxelIndex, T1all);
     mapArrayKpl->SetTuple1(voxelIndex, Kpl);
     mapArrayKtrans->SetTuple1(voxelIndex, Ktrans);
