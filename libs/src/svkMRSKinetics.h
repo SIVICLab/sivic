@@ -95,6 +95,7 @@ class svkMRSKinetics: public svkImageAlgorithm
         void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         void                    SetZeroCopy(bool zeroCopy); 
+        void                    SetModelType( int modelType ); 
 
 
     protected:
@@ -156,6 +157,7 @@ class svkMRSKinetics: public svkImageAlgorithm
         vtkDataArray*           mapArrayKpl; 
         vtkDataArray*           mapArrayT1all; 
         vtkDataArray*           mapArrayKtrans; 
+        int                     modelType; 
 
 
 };

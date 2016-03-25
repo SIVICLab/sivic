@@ -64,6 +64,23 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
         }
 
 
+        int GetArrivalTime( float* firstSignal, int numPts ) const
+        {
+            int arrivalTime = 0;
+            float maxValue0 = firstSignal[0];
+            int t;
+            for(t = arrivalTime;  t < numPts; t++ ) {
+                if( firstSignal[t] > maxValue0) {
+                    maxValue0 = firstSignal[t];
+                    arrivalTime = t;
+                }
+            }
+            //cout << "t: " << arrivalTime << " " << firstSignal[arrivalTime] << " " << numPts << endl;
+            return arrivalTime;
+        }
+
+
+
         virtual MeasureType  GetResidual( const ParametersType& parameters) const
         {
             //cout << "GUESS: " << parameters[0] << " " << parameters[1] << endl;;
@@ -80,14 +97,8 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
             double residual = 0;
 
             // Find time to peak pyrvaute/urea
-            int arrivalTime = 2;
-            float maxValue0 = signal0[0];
-            for(int t = arrivalTime;  t < numTimePoints; t++ ) {
-                if( signal0[t] > maxValue0) {
-                    maxValue0 = signal0[t];
-                    arrivalTime = t;
-                }
-            }
+            int arrivalTime = GetArrivalTime( this->signal0, this->numTimePoints );
+
              
             for ( int t = arrivalTime; t < this->numTimePoints; t++ ) { 
                 residual += ( this->signal0[t] - this->kineticModel0[t] )  * ( this->signal0[t] - this->kineticModel0[t] ); 
@@ -128,30 +139,18 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
             //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
 
             //  Find time to peak pyrvaute/urea
-            int   arrivalTime = 2;
-            float maxValue0 = signal0[0];
-            float meanValue2 = 0;
-            float tmp = 0;
-            for(int t = arrivalTime;  t < numTimePoints; t++ ) {
-                if( signal0[t] > maxValue0) {
-                    maxValue0 = signal0[t];
-                    arrivalTime = t;
-                }
-                meanValue2 = signal2[t] + meanValue2;
-            }
-             
-            meanValue2 = meanValue2/numTimePoints;
+            //arrivalTime = ARRIVAL_TIME;
+            int arrivalTime = GetArrivalTime( signal0, numTimePoints );
 
             //set up Arterial Input function
-            float* convolutionMat  = new float [numTimePoints];
             float  Ao    = 5000;
             float  alpha = .2;
             float  beta  = 4.0;
-            int    TR    = 5; //sec
+            int    TR    = 3; //sec
     
             float* inputFunction   = new float [numTimePoints];
             for(int t = 0;  t < numTimePoints; t++ ) {
-                inputFunction [t] = Ao * powf((t-1),alpha) * exp(-(t-1)/beta);
+                inputFunction [t] = Ao * powf((t),alpha) * exp(-(t)/beta);
             }
              
             
@@ -176,18 +175,17 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
                         * exp( -((1/T1all) + Kpl) * ( t - arrivalTime) );
 
                     // LACTATE 
-                    kineticModel1[t] = signal1[arrivalTime] 
+                    kineticModel1[t] = signal1[arrivalTime]         // T1 decay of lac signal
                         * exp( -( t - arrivalTime )/T1all) 
-                        - signal0[ arrivalTime ] 
+                        - signal0[ arrivalTime ]                    
                             * exp( -( t - arrivalTime )/T1all)
                             * ( exp( -Kpl * ( t - arrivalTime )) - 1 );
 
                 }
 
-
-
                 // UREA
                 //determine convolution with arterial input function
+                float* convolutionMat  = new float [numTimePoints];
                 convolutionMat[0] = 0;
                 for (int tau = -(numTimePoints); tau < (numTimePoints); tau ++){      
                     convolutionMat[t] = inputFunction[tau] * exp(-Ktrans * (t-tau)/K2) + convolutionMat[t-1]; 

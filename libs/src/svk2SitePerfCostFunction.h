@@ -64,6 +64,21 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
         svk2SitePerfCostFunction() {
         }
 
+        int GetArrivalTime( float* firstSignal, int numPts ) const
+        {
+            int arrivalTime = 0;
+            float maxValue0 = firstSignal[0];
+            int t; 
+            for(t = arrivalTime;  t < numPts; t++ ) {
+                if( firstSignal[t] > maxValue0) {
+                    maxValue0 = firstSignal[t];
+                    arrivalTime = t;
+                }
+            }
+            //cout << "t: " << arrivalTime << " " << firstSignal[arrivalTime] << " " << numPts << endl;
+	        return arrivalTime; 
+        } 
+
 
         virtual MeasureType  GetResidual( const ParametersType& parameters) const
         {
@@ -80,18 +95,11 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
 
             double residual = 0;
 
-            // Find time to peak pyrvaute/urea
-            int arrivalTime = 2;
-            float maxValue0 = signal0[0];
-            for(int t = arrivalTime;  t < numTimePoints; t++ ) {
-                if( signal0[t] > maxValue0) {
-                    maxValue0 = signal0[t];
-                    arrivalTime = t;
-                }
-            }
-			arrivalTime = ARRIVAL_TIME;
+            int arrivalTime = GetArrivalTime( this->signal0, this->numTimePoints ); 
+
+
             for ( int t = arrivalTime; t < this->numTimePoints; t++ ) {
-			//for ( int t = 0; t < this->numTimePoints; t++ ) { 
+			    //for ( int t = 0; t < this->numTimePoints; t++ ) { 
                 residual += ( this->signal0[t] - this->kineticModel0[t] )  * ( this->signal0[t] - this->kineticModel0[t] ); 
                 residual += ( this->signal1[t] - this->kineticModel1[t] )  * ( this->signal1[t] - this->kineticModel1[t] );
             }
@@ -130,33 +138,26 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
             //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
 
             //  Find arrival time time to peak pyrvaute/urea
-            int   arrivalTime = 2;
-            //float maxValue0 = signal0[0];
-            //float meanValue2 = 0;
-            //float tmp = 0;
-            //for(int t = arrivalTime;  t < numTimePoints; t++ ) {
-                //if( signal0[t] > maxValue0) {
-                    //maxValue0 = signal0[t];
-                    //arrivalTime = t;
-                //}
-                //meanValue2 = signal2[t] + meanValue2;
-            //}
-			arrivalTime = ARRIVAL_TIME;
-            //meanValue2 = meanValue2/numTimePoints;
+			//arrivalTime = ARRIVAL_TIME;
+            int arrivalTime = GetArrivalTime( signal0, numTimePoints ); 
+
+            //set up Arterial Input function ( from 2siteex
+            //float  Ao    = 5000;
+            //float  alpha = .2;
+            //float  beta  = 4.0;
 
             //set up Arterial Input function
-            float* convolutionMat  = new float [numTimePoints];
             float  Ao    = 1e10;
             float  alpha = .3;
             float  beta  = 2.0;
-            int    TR    = 5; //sec
-    
+   
             float* inputFunction   = new float [numTimePoints];
             for(int t = 0;  t < numTimePoints; t++ ) {
                 inputFunction [t] = Ao * powf((t),alpha) * exp(-(t)/beta);
             }
              
-            convolutionMat[0] = 0;
+            //float* convolutionMat  = new float [numTimePoints];
+            //convolutionMat[0] = 0;
             //cout << "GUESSES: " << T1all << " " << Kpl  << endl;
   
             //  use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
@@ -169,43 +170,40 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
                 if (t < arrivalTime ){
                     kineticModel0[t] = signal0[t]; 
                     kineticModel1[t] = signal1[t]; 
-					 }
+                }
 
-				  if (t >= arrivalTime ) {      
+			    if (t >= arrivalTime ) {      
 
                     // PYRUVATE
-
 					//	convolutionMat[t] = inputFunction[t]+convolutionMat[t];
-					
                     kineticModel0[t] = signal0[arrivalTime] 
-					  * exp( -((T1all) + Kpl) * ( t - arrivalTime) ) +  (1-exp(-Ktrans*t))*inputFunction[t];
+					    * exp( -((T1all) + Kpl) * ( t - arrivalTime) ) +  (1-exp(-Ktrans*t))*inputFunction[t];
 
-                    // LACTATE 
+                    // LACTATE  (same in both cost functions): 
                     kineticModel1[t] = signal1[arrivalTime] 
                         * exp( -( t - arrivalTime )*T1all) 
                         - signal0[ arrivalTime ] 
-                            * exp( -( t - arrivalTime )*T1all)
-                            * ( exp( -Kpl * ( t - arrivalTime )) - 1 );
+                        * exp( -( t - arrivalTime )*T1all)
+                        * ( exp( -Kpl * ( t - arrivalTime )) - 1 );
 
                 }
 
 
 
-                // UREA
-                //determine convolution with arterial input function
-				//   convolutionMat[0] = 0;
-				//for (int tau = -(numTimePoints); tau < (numTimePoints); tau ++){      
+                //  UREA
+                //  determine convolution with arterial input function
+				//  convolutionMat[0] = 0;
+				//  for (int tau = -(numTimePoints); tau < (numTimePoints); tau ++){      
 				//     convolutionMat[t] = inputFunction[tau] * exp(-Ktrans * (t-tau)/K2) + convolutionMat[t-1]; 
-				// }
-				// kineticModel2[t] =  Ktrans * TR * convolutionMat[t]; 
+				//  }
+				//  kineticModel2[t] =  Ktrans * TR * convolutionMat[t]; 
 
-				 //convolutionMat[t] = inputFuntion[t]*(1-exp(Ktrans*t));
-										   
-				  //kineticModel2[t] = 0;
+			    //  convolutionMat[t] = inputFuntion[t]*(1-exp(Ktrans*t));
+			    //  kineticModel2[t] = 0;
 													   
-				  //for (int tau = 0; tau < t; tau ++){						
-				  kineticModel2[t] =   inputFunction[t]; //convolutionMat[t]* kineticModel2[t];
-				  // }
+                //for (int tau = 0; tau < t; tau ++){						
+				kineticModel2[t] =   inputFunction[t]; //convolutionMat[t]* kineticModel2[t];
+				// }
 				//cout << "Estimated AIF(" << t << "): " <<  kineticModel2[t] << endl;
     
             }

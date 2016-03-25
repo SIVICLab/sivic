@@ -61,6 +61,9 @@ using namespace svk;
 //vtkCxxRevisionMacro(svkMRSKinetics, "$Rev$");
 vtkStandardNewMacro(svkMRSKinetics);
 
+//#define MODEL 1     //2SiteExchange
+#define MODEL 2     //2SitePerf
+
 
 /*!
  *
@@ -84,7 +87,9 @@ svkMRSKinetics::svkMRSKinetics()
     //  Outputports:  4 for Kpl map 
     //  Outputports:  5 for Ktrans map 
     this->SetNumberOfOutputPorts(6); 
+    this->modelType = 1;     
 }
+
 
 
 /*!
@@ -103,6 +108,19 @@ void svkMRSKinetics::SetSeriesDescription( vtkstd::string newSeriesDescription )
 {
     this->newSeriesDescription = newSeriesDescription;
     this->Modified(); 
+}
+
+
+/*!
+ *  Set model 
+ */
+void svkMRSKinetics::SetModelType( int modelType )
+{
+    if ( modelType < 1 || modelType > 2 ) {
+        cout << "ERROR: invalid model type: " << modelType << endl;
+        exit(1); 
+    }
+    this->modelType = modelType;
 }
 
 
@@ -338,7 +356,7 @@ void svkMRSKinetics::GenerateKineticParamMap()
         //cout << "MASK VALUE: " << mask[i] << endl;
 
         //  If there is a mask check it.  If no mask provided, the compute all voxels. 
-        if ( (hasMask == true) && (mask[i] != 0 ) || ( hasMask == false )  ) {
+        if ( ((hasMask == true) && (mask[i] != 0 )) || ( hasMask == false )  ) {
 
             cout << "Fit Voxel " << i << endl;
 
@@ -380,8 +398,12 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     //========================================================
     //  ITK Optimization 
     //========================================================
-    //svkKineticModelCostFunction::Pointer costFunction = svk2SiteExchangeCostFunction::New();
-    svkKineticModelCostFunction::Pointer costFunction = svk2SitePerfCostFunction::New();
+    svkKineticModelCostFunction::Pointer costFunction;
+    if (this->modelType == 1 ) { 
+        costFunction = svk2SiteExchangeCostFunction::New();
+    } else if ( this->modelType == 2 ) {
+        costFunction = svk2SitePerfCostFunction::New();
+    }
     itkOptimizer->SetCostFunction( costFunction.GetPointer() );
 
     costFunction->SetSignal0( metKinetics0 );
@@ -394,30 +416,70 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     typedef svkKineticModelCostFunction::ParametersType ParametersType;
     ParametersType  initialPosition( paramSpaceDimensionality );
 
-    float TR = 5.;
-    //  Scale by temporal resolution.  At end apply inverse scaling when writing out maps
-    initialPosition[0] =  TR*1./35;     // T1all  (s)
-    initialPosition[1] =  0.01 * TR;    // Kpl    (1/s)  
-    initialPosition[2] =  1 * TR;       // ktrans (1/s)
-    initialPosition[3] =  TR*1./40;     // k2     (1/s)
-
+    float TR = 3.;
     //  Set bounds
     itk::ParticleSwarmOptimizer::ParameterBoundsType bounds;
 
     // first order range of values: 
-    float upperBound0 = TR*1./20;    //  T1all
-    float lowerBound0 = TR*1./40;    //  T1all
-    float upperBound1 = .5 * TR;     //  Kpl
-    float lowerBound1 = 0 * TR;      //  Kpl
-    float upperBound2 = 100;         // ktrans 
-    float lowerBound2 = 0;           // ktrans 
-    float upperBound3 = 1;           // k2 
-    float lowerBound3 = 0;           // k2
-    bounds.push_back( std::make_pair( lowerBound0, upperBound0 ) );    // bounds param 0
-    bounds.push_back( std::make_pair( lowerBound1, upperBound1 ) );    // bounds param 0
-    bounds.push_back( std::make_pair( lowerBound2, upperBound2 ) );    // bounds param 0
-    bounds.push_back( std::make_pair( lowerBound3, upperBound3 ) );    // bounds param 0
+    //  Set bounds in dimensionless units (each time point is a TR)
+    float upperBound[4]; 
+    float lowerBound[4]; 
+
+    upperBound[0] = 18/TR;          //  T1all
+    lowerBound[0] = 8/TR;           //  T1all
+    if ( this->modelType == 2 ) {
+        upperBound[0] = TR*1./20;     //  T1all
+        lowerBound[0] = TR*1./40;     //  T1all
+    }
+
+    upperBound[1] = .05 * TR;       //  Kpl
+    lowerBound[1] = 0.000 * TR;     //  Kpl
+    if ( this->modelType == 2 ) {
+        upperBound[1] = .5 * TR;       //  Kpl
+        lowerBound[1] = 0 * TR;     //  Kpl
+    }
+
+    upperBound[2] = 0 * TR;       //  ktrans 
+    lowerBound[2] = 0 * TR;       //  ktrans 
+    if ( this->modelType == 2 ) {
+        upperBound[2] = 100;       //  ktrans 
+        lowerBound[2] = 0;       //  ktrans 
+    }
+
+    upperBound[3] = 1;              //  k2 
+    lowerBound[3] = 0;              //  k2
+
+    bounds.push_back( std::make_pair( lowerBound[0], upperBound[0] ) );    // bounds param 0
+    bounds.push_back( std::make_pair( lowerBound[1], upperBound[1] ) );    // bounds param 1
+    bounds.push_back( std::make_pair( lowerBound[2], upperBound[2] ) );    // bounds param 2
+    bounds.push_back( std::make_pair( lowerBound[3], upperBound[3] ) );    // bounds param 3
     itkOptimizer->SetParameterBounds( bounds );
+
+    //  Set initial guesses
+    //  Scale by temporal resolution.  At end apply inverse scaling when writing out maps
+    //initialPosition[0] =  (upperBound0 - lowerBound0)/2.;    // T1all  (s)
+    //initialPosition[1] =  (upperBound1 - lowerBound1)/2.;    // Kpl    (1/s)  
+    //initialPosition[2] =  (upperBound2 - lowerBound2)/2.;    // ktrans (1/s)
+    //initialPosition[3] =  (upperBound3 - lowerBound3)/2.;    // k2     (1/s)
+    //initialPosition[0] =  TR*1./35;     // T1all  (s)
+    //initialPosition[1] =  0.01 * TR;    // Kpl    (1/s)  
+    //initialPosition[2] =  1 * TR;       // ktrans (1/s)
+    //initialPosition[3] =  TR*1./40;     // k2     (1/s)
+
+    initialPosition[0] =  12/TR;        // T1all  (s)
+    initialPosition[1] =  0.01 * TR;    // Kpl    (1/s)  
+    initialPosition[2] =  0.00 * TR;    // ktrans (1/s)
+    if ( this->modelType == 2 ) {
+        initialPosition[0] =  TR*1./35;     // T1all  (s)
+        initialPosition[1] =  0.01 * TR;    // Kpl    (1/s)  
+        initialPosition[2] =  1 * TR;       // ktrans (1/s)
+        initialPosition[3] =  TR*1./40;     // k2     (1/s)
+    }
+
+    //for (int k=0; k<4; k++) {
+        //cout << "INITIAL: " << initialPosition[k] << " : " << lowerBound[k] << " -> " << upperBound[k] << endl;
+    //}
+
 
     itk::ParticleSwarmOptimizer::ParametersType initialParameters( paramSpaceDimensionality), finalParameters;
            
@@ -494,12 +556,16 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
     //  Save fitted kinetics into algorithm output object cell data
     //  ===================================================
     //float TR = 5.; 
-    float TR = 3.; //   this shoudl be read from the data
-    double T1all  = TR / finalPosition[0];
+    float TR = 3.;          //   this shoudl be read from the data
+    double T1all  =  finalPosition[0] * TR;
+    //double T1all  = TR / finalPosition[0];
     double Kpl    = finalPosition[1] / TR;
     double Ktrans = finalPosition[2] / TR;
-    //cout << "T1all: " << T1all << endl;
-    cout << "Kpl:   " << Kpl   << endl;
+    cout << "T1all(s):      " << T1all  << endl;
+    cout << "Kpl(1/s):      " << Kpl    << endl;
+    if ( this->modelType == 2 ) {
+        cout << "Ktrans(1/s):   " << Ktrans << endl;
+    }
     mapArrayT1all->SetTuple1(voxelIndex, T1all);
     mapArrayKpl->SetTuple1(voxelIndex, Kpl);
     mapArrayKtrans->SetTuple1(voxelIndex, Ktrans);
@@ -520,8 +586,13 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
     float* kineticModel0 = new float [this->numTimePoints];
     float* kineticModel1 = new float [this->numTimePoints];
     float* kineticModel2 = new float [this->numTimePoints];
-    //svkKineticModelCostFunction::Pointer costFunction = svk2SiteExchangeCostFunction::New();
-    svkKineticModelCostFunction::Pointer costFunction = svk2SitePerfCostFunction::New();
+
+    svkKineticModelCostFunction::Pointer costFunction;
+    if (this->modelType == 1 ) { 
+        costFunction = svk2SiteExchangeCostFunction::New();
+    } else if (this->modelType == 2 ) {
+        costFunction = svk2SitePerfCostFunction::New();
+    }
 
     costFunction->GetKineticModel(  finalPosition, 
                                     kineticModel0, 

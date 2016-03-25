@@ -71,8 +71,9 @@ int main (int argc, char** argv)
     string usemsg("\n") ;
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";
     usemsg += "svk_met_kinetics   --i1 name --i2 name [ --i3 name ]                     \n";
-    usemsg += "                 [ --mask name ] -o root [ -t output_data_type ] [ -h ]  \n";
-    usemsg += "\n";
+    usemsg += "                 [ --mask name ] -o root [ -t output_data_type ]         \n";
+    usemsg += "                 [ --model type ] [ -h ]                                 \n";
+    usemsg += "                                                                         \n";
     usemsg += "   --i1               name   Name of dynamic pyr signal file             \n";
     usemsg += "   --i2               name   Name of dynamic lac signal file             \n";
     usemsg += "   --i3               name   Name of dynamic urea signal file            \n";
@@ -81,13 +82,16 @@ int main (int argc, char** argv)
     usemsg += "                                        root_pyr_fit.dcm                 \n";
     usemsg += "                                        root_lac_fit.dcm                 \n";
     usemsg += "                                        root_urea_fit.dcm                \n";
+    usemsg += "   --model            type   Model to fit data to:                       \n";
+    usemsg += "                                 1 = 2 Site Exchange(default)            \n";
+    usemsg += "                                 2 = 2 Site Exchange Perf                \n";
     usemsg += "   -t                 type   Target data type:                           \n";
     usemsg += "                                 3 = UCSF IDF                            \n";
     usemsg += "                                 5 = DICOM_MRI                           \n";
     usemsg += "                                 6 = DICOM_ENHANCED_MRI (default)        \n";
     usemsg += "   -h                       Print this help mesage.                      \n";
-    usemsg += "\n";
-    usemsg += "Fit dynamic MRSI to metabolism kinetics model                            .\n";
+    usemsg += "                                                                         \n";
+    usemsg += "Fit dynamic MRSI to metabolism kinetics model                            \n";
     usemsg += "\n";
 
 
@@ -97,6 +101,7 @@ int main (int argc, char** argv)
     string maskFileName;
     string outputFileName = "";
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_ENHANCED_MRI;
+    int modelType = 1; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -104,7 +109,8 @@ int main (int argc, char** argv)
         FLAG_IM_1 = 0, 
         FLAG_IM_2, 
         FLAG_IM_3, 
-        FLAG_MASK 
+        FLAG_MASK, 
+        FLAG_MODEL
     };
 
 
@@ -115,6 +121,7 @@ int main (int argc, char** argv)
         {"i2",      required_argument, NULL,  FLAG_IM_2},
         {"i3",      required_argument, NULL,  FLAG_IM_3},
         {"mask",    required_argument, NULL,  FLAG_MASK},
+        {"model",   required_argument, NULL,  FLAG_MODEL},
         {0, 0, 0, 0}
     };
 
@@ -138,6 +145,9 @@ int main (int argc, char** argv)
             case FLAG_MASK:
                 maskFileName.assign( optarg );
                 break;
+            case FLAG_MODEL:
+                modelType = atoi( optarg );
+                break;
             case 'o':
                 outputFileName.assign(optarg);
                 break;
@@ -156,12 +166,12 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
-//  temp kludge: 
-bool writeUrea = true; 
-if ( inputFileName3.length() == 0 ) {
-    inputFileName3 = inputFileName2; 
-    writeUrea = false; 
-}
+    //  temp kludge: 
+    bool writeUrea = true; 
+    if ( inputFileName3.length() == 0 ) {
+        inputFileName3 = inputFileName2; 
+        writeUrea = false; 
+    }
 
     if (
         argc != 0 ||  inputFileName1.length() == 0
@@ -235,6 +245,7 @@ if ( inputFileName3.length() == 0 ) {
     dynamics->SetInputConnection( 0, reader1->GetOutputPort() ); 
     dynamics->SetInputConnection( 1, reader2->GetOutputPort() ); 
     dynamics->SetInputConnection( 2, reader3->GetOutputPort() ); 
+    dynamics->SetModelType( modelType ); 
     if ( readerMask!= NULL ) { 
         dynamics->SetInputConnection( 3, readerMask->GetOutputPort() ); // input 3 is the mask
     }
@@ -294,7 +305,9 @@ if ( inputFileName3.length() == 0 ) {
     }
     t1allWriter->Write();
     kplWriter->Write();
-    ktransWriter->Write();
+    if ( modelType == 2 ) { 
+        ktransWriter->Write();
+    }
 
     // ===============================================  
 
