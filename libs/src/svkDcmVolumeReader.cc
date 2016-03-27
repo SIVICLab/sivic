@@ -154,7 +154,7 @@ void svkDcmVolumeReader::ExecuteInformation()
 
         //  SetNumberOfIncrements is supposed to call this, but only works if the data has already
         //  been allocated. but that requires the number of components to be specified.
-        this->GetOutput()->GetIncrements();
+//        this->GetOutput()->GetIncrements();
         this->SetupOutputInformation();
 
         //rewrite the DimensionIndexSequence if necessary:
