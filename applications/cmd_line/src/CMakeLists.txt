@@ -905,6 +905,8 @@ SET(APPS
     svk_peak_pick
     svk_volume_diff
     svk_psd_prescription_convert
+    svk_reorder_epsi
+    svk_zerofill
 )
 if ( BUILD_CLAPACK )
     LIST(APPEND APPS svk_hsvd)
