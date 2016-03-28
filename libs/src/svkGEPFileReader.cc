@@ -125,7 +125,7 @@ svkGEPFileReader::~svkGEPFileReader()
     map< string, void* >::iterator mapIter;
     for ( mapIter = this->inputArgs.begin(); mapIter != this->inputArgs.end(); ++mapIter ) {
          //delete this->inputArgs[ mapIter->first ];  
-        cout << " need to clean up memory" << endl; 
+        //cout << " need to clean up memory" << endl; 
     }
 }
 
@@ -330,7 +330,7 @@ void svkGEPFileReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInfo
 void svkGEPFileReader::SetProvenance()
 {
 
-    cout << "This call to SetProvenance should be implicit in the executive" << endl; 
+    //cout << "This call to SetProvenance should be implicit in the executive" << endl; 
     this->GetOutput()->GetProvenance()->AddAlgorithm( this->GetClassName() );
 
     int argIndex = -1; 
@@ -423,8 +423,8 @@ void svkGEPFileReader::InitDcmHeader()
         //  Fill in data set specific values using the appropriate mapper type:
         this->mapper = this->GetPFileMapper(); 
     
-        cout << "SWAP BYTES: " << this->GetSwapBytes() << endl;
-        cout << "MAPER FN: " << this->GetFileNames()->GetValue(0) << endl;
+        //cout << "SWAP BYTES: " << this->GetSwapBytes() << endl;
+        //cout << "MAPER FN: " << this->GetFileNames()->GetValue(0) << endl;
 
         this->mapper->SetPfileName( this->GetFileNames()->GetValue(0) ); 
 
@@ -463,7 +463,7 @@ void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type)
 
     map< string, void* >::iterator mapIter;
     for ( mapIter = this->inputArgs.begin(); mapIter != this->inputArgs.end(); ++mapIter ) {
-        cout << "input args: " << mapIter->first << " = " << *( static_cast<svkGEPFileMapper::MapperBehavior*>( this->inputArgs[ mapIter->first ] ) )<< endl;
+        //cout << "input args: " << mapIter->first << " = " << *( static_cast<svkGEPFileMapper::MapperBehavior*>( this->inputArgs[ mapIter->first ] ) )<< endl;
     }
 
 }
@@ -1282,7 +1282,7 @@ float svkGEPFileReader::GetPFileVersion()
         gepf->read( (char*)(&rdbmRev), 4);
         rdbmRevSwapped = rdbmRev;
         vtkByteSwap::SwapVoidRange((void *)&rdbmRevSwapped, 1, sizeof(float));
-        cout << "rdbm rev" << setprecision(8) << rdbmRev << " " << rdbmRevSwapped <<  endl;
+        //cout << "rdbm rev" << setprecision(8) << rdbmRev << " " << rdbmRevSwapped <<  endl;
     }
 
     version = svkGEPFileReader::LookupRawVersion(rdbmRev, rdbmRevSwapped);

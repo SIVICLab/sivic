@@ -759,7 +759,7 @@ void svkGEPFileMapper::ModifyForPatientEntry( double dcos[3][3] )
             dcosMatrix->SetElement(i, j, dcos[i][j] ); 
             //cout << dcosMatrix->GetElement(i, j) << " " ;
         }
-        cout << endl ;
+        //cout << endl ;
     }
 
     //  Apply the necessary transformations based on patient entry: 
@@ -781,7 +781,7 @@ void svkGEPFileMapper::ModifyForPatientEntry( double dcos[3][3] )
         for (int j = 0; j < 3; j++ ) {
             //cout << transformedDcos->GetElement(i, j) << " " ;
         }
-        cout << endl ;
+        //cout << endl ;
     }
     
 

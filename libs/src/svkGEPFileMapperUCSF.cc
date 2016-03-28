@@ -427,7 +427,12 @@ void svkGEPFileMapperUCSF::GetCVS(int* readSats, int* octSats)
 
     string datFileName = this->pfileName; 
     datFileName.append(".dat"); 
-    
+
+    // If there is no dat file just return
+    if( !svkUtils::FilePathExists(datFileName.c_str() ) ) {
+        cout << "No associated dat files found." << endl;
+        return;
+    }
     try { 
 
         ifstream* datFile = new ifstream();
