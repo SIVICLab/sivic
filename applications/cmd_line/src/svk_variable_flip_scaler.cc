@@ -117,7 +117,7 @@ int main (int argc, char** argv)
     static struct option long_options[] =
     {
         /* This option sets a flag. */
-        {"dat",                required_argument, NULL,  FLAG_DAT_FILE},
+        {"dad",                required_argument, NULL,  FLAG_DAT_FILE},
         {"single",             no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
@@ -183,7 +183,7 @@ int main (int argc, char** argv)
     }
 
     if( ! svkUtils::FilePathExists( datFileName.c_str() ) ) {
-        cerr << "Dat file can not be loaded (may not exist) " << datFileName << endl; 
+        cerr << "Dad file can not be loaded (may not exist) " << datFileName << endl; 
         exit(1); 
     }
 
