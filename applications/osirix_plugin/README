@@ -1,42 +1,45 @@
-create pkg for OsiriX plugin
+1. configure and build dist: 
+    make -f ../../Makefile.ctest configure_dist
+    make -j4
 
-0.  update project revision number
-
-1.  build sivic libs and sivic_app
-
-cd sivic/trunk
-ccmake ./
-
-
- BUILD_APPS                       ON                                                                                         
- BUILD_CLAPACK                    ON                                                                                         
- BUILD_CREATE_RAW                 OFF                                                                                        
- BUILD_EXAMPLES                   OFF                                                                                        
- BUILD_GE_CONSOLE                 OFF                                                                                        
- BUILD_ITK                        ON                                                                                         
- BUILD_LIBRARY                    ON                                                                                         
- BUILD_OSIRIX                     ON                                                                                         
- BUILD_PROFILER                   OFF                                                                                        
- BUILD_SIVIC                      ON                                                                                         
- BUILD_SLICER                     OFF                                                                                        
- BUILD_TESTS                      OFF                                                                                        
- BUILD_VIZ_LIBRARY                ON                                                                                         
- CLAPACK_DIR                      /Users/jasonc/freeware/clapack-3.2.1-CMAKE                                                 
- CMAKE_BACKWARDS_COMPATIBILITY    2.4                                                                                        
- CMAKE_BUILD_TYPE                 Release                                                                                    
- CMAKE_INSTALL_PREFIX             /usr/local                                                                                 
- CMAKE_OSX_ARCHITECTURES          i386; x86_64                                                                               
- CMAKE_OSX_DEPLOYMENT_TARGET                                                                                                 
- CMAKE_OSX_SYSROOT                /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX1
- DCMTK_DIR                        /usr/local/dicom                                                                           
- EXECUTABLE_OUTPUT_PATH                                                                                                      
- ITK_DIR                          /usr/local/ITK_UNIVERSAL/lib/cmake/ITK-4.4                                                 
- KWWidgets_DIR                    /usr/local/lib/KWWidgets                                                                   
- LIBRARY_OUTPUT_PATH                                                                                                         
- SVK_USE_GL2PS                    OFF                                                                                        
- UCSF_INTERNAL                    OFF                                                                                        
- VTK_DIR                          /usr/local/lib/vtk-5.6    
-
+    create pkg for OsiriX plugin
+    
+    0.  update project revision number
+    
+    1.  build sivic libs and sivic_app
+    
+    cd sivic/trunk
+    ccmake ./
+    
+    BUILD_APPS                       ON 
+    BUILD_CLAPACK                    ON
+    BUILD_CREATE_RAW                 OFF
+    BUILD_EXAMPLES                   OFF
+    BUILD_GE_CONSOLE                 OFF
+    BUILD_ITK                        ON 
+    BUILD_LIBRARY                    ON 
+    BUILD_OSIRIX                     ON 
+    BUILD_PROFILER                   OFF
+    BUILD_SIVIC                      ON 
+    BUILD_SLICER                     OFF 
+    BUILD_TESTS                      OFF 
+    BUILD_VIZ_LIBRARY                ON 
+    CLAPACK_DIR                      /Users/jasonc/freeware/clapack-3.2.1-CMAKE
+    CMAKE_BACKWARDS_COMPATIBILITY    2.4                                      
+    CMAKE_BUILD_TYPE                 Release                                 
+    CMAKE_INSTALL_PREFIX             /usr/local                             
+    CMAKE_OSX_ARCHITECTURES          i386; x86_64                          
+    CMAKE_OSX_DEPLOYMENT_TARGET                                           
+    CMAKE_OSX_SYSROOT                /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX1
+    DCMTK_DIR                        /usr/local/dicom
+    EXECUTABLE_OUTPUT_PATH                          
+    ITK_DIR                          /usr/local/ITK_UNIVERSAL/lib/cmake/ITK-4.4
+    KWWidgets_DIR                    /usr/local/lib/KWWidgets
+    LIBRARY_OUTPUT_PATH                                                       
+    SVK_USE_GL2PS                    OFF                                     
+    UCSF_INTERNAL                    OFF                                    
+    VTK_DIR                          /usr/local/lib/vtk-5.6   
+    
 2.  build plugin in XCode:
 cd sivic/trunk/applications/osirix_plugin
 build "Deployment" release from xcode
@@ -46,13 +49,13 @@ create_modified_libs_for_plugin.sh
 
 4. run make_standalone.csh (to bundle command line tools)
 
-5.  create package:
-start packagemaker, load pmdoc and "build"    
-    - change the title to reflect new version number. 
-
-note:  command line pkg installation:
-sudo installer -pkg 'SIVIC MRSI OSIRIX PLUGIN 0.4.pkg' -target /
-
+#########################
+#5.  create package:
+#start packagemaker, load pmdoc and "build"    
+#- change the title to reflect new version number. 
+#note:  command line pkg installation:
+#sudo installer -pkg 'SIVIC MRSI OSIRIX PLUGIN 0.4.pkg' -target /
+#########################
 
 ICON:  use ing2icns:  drag a png file into app and export as icns
 click on SIVIC.app and "get info", then drag the newly created .icns file onto the icon
@@ -71,8 +74,10 @@ http://www.ploem.be/blog/?page_id=26
 1.  use "disk utility" to create a new image ( + new image)  
         name: SIVIC.dmg, 
         size: 610MB
+        - click create
 
 2.  showFiles (show hidden files)
+    defaults write com.apple.finder AppleShowAllFiles YES
 
 3.  open the newly created SIVIC.dmg (in disk utility left click on "DISK IMAGE" and select "OPEN DISK IMAGE). Drag the 
     contents of SIVIC_DISTRIBUTION/ (SIVIC.app and .background) from a finder window into the image folder
@@ -94,11 +99,12 @@ http://www.ploem.be/blog/?page_id=26
         - open SIVIC.dmg" (select  and drill down to .background in finder, left click on .background and select "open in new tab") .
         - drag the icon from inside the .background folder into the upper left icon in the SIVIC info panel  
     
-        - "get info" for SIVIC.dmg"
+        - "get info" for SIVIC.dmg" (find it in finder)
         - drag the icon from inside the .background folder into the upper left icon in the SIVIC.dmg info panel  
 
 
 7.  hideFiles (hide dot files)  only Applications and SIVIC.app are visible
+    defaults write com.apple.finder AppleShowAllFiles NO
 
 8.  Also TBD.  add alias to install the OsiriX plugin:   /Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin
 

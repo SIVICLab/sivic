@@ -55,6 +55,9 @@ cp ../../working/release/applications/cmd_line/Darwin_i386/svk_image_pipeline   
 cp ../../working/release/applications/cmd_line/Darwin_i386/svk_peak_pick                SIVIC.app/Contents/sivic/local/sivic/
 cp ../../working/release/applications/cmd_line/Darwin_i386/svk_volume_diff              SIVIC.app/Contents/sivic/local/sivic/
 cp ../../working/release/applications/cmd_line/Darwin_i386/svk_psd_prescription_convert SIVIC.app/Contents/sivic/local/sivic/
+cp ../../working/release/applications/cmd_line/Darwin_i386/svk_zerofill                 SIVIC.app/Contents/sivic/local/sivic/
+cp ../../working/release/applications/cmd_line/Darwin_i386/svk_reorder_epsi             SIVIC.app/Contents/sivic/local/sivic/
+cp ../../working/release/applications/cmd_line/Darwin_i386/svk_variable_flip_scaler     SIVIC.app/Contents/sivic/local/sivic/
 
 
 cp ../../working/release/applications/cmd_line/src/svk_file_convert             SIVIC.app/Contents/sivic/local/bin/
@@ -91,6 +94,9 @@ cp ../../working/release/applications/cmd_line/src/svk_image_pipeline           
 cp ../../working/release/applications/cmd_line/src/svk_peak_pick                SIVIC.app/Contents/sivic/local/bin/
 cp ../../working/release/applications/cmd_line/src/svk_volume_diff              SIVIC.app/Contents/sivic/local/bin/
 cp ../../working/release/applications/cmd_line/src/svk_psd_prescription_convert SIVIC.app/Contents/sivic/local/bin/
+cp ../../working/release/applications/cmd_line/src/svk_zerofill                 SIVIC.app/Contents/sivic/local/bin/
+cp ../../working/release/applications/cmd_line/src/svk_reorder_epsi             SIVIC.app/Contents/sivic/local/bin/
+cp ../../working/release/applications/cmd_line/src/svk_variable_flip_scaler     SIVIC.app/Contents/sivic/local/bin/
 
 
 chmod -R 775 SIVIC.app
