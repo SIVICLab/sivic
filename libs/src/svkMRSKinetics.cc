@@ -425,7 +425,7 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     float upperBound[4]; 
     float lowerBound[4]; 
 
-    upperBound[0] = 18/TR;          //  T1all
+    upperBound[0] = 28/TR;          //  T1all
     lowerBound[0] = 8/TR;           //  T1all
     if ( this->modelType == 2 ) {
         upperBound[0] = TR*1./20;     //  T1all
