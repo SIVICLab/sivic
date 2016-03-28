@@ -185,7 +185,7 @@ svkImageReader2::ReaderType svkVariableFlipDatReader::InitDatReader()
         }
     }
 
-    cout << "svkVariabelFlipDatReader(DAT TYPE): " << this->datType << endl;
+    //cout << "svkVariabelFlipDatReader(DAT TYPE): " << this->datType << endl;
     return this->datType; 
 }    
 

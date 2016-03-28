@@ -81,11 +81,11 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_variable_flip_scaler -i input_file_name -o output_file_name [ -t output_data_type ]    \n"; 
-    usemsg += "                   [ --dat name ] [ -h ]                                             \n";
+    usemsg += "                   [ --dad name ] [ -h ]                                             \n";
     usemsg += "                   --------------------------------------------------------------    \n"; 
     usemsg += "   -i                name    Name of file to convert.                                \n"; 
     usemsg += "   -m                float   Minimum scaling factor.                                 \n";
-    usemsg += "   --dat             name    Name of dat file with scaling factors.                  \n"; 
+    usemsg += "   --dad             name    Name of dad file with scaling factors.                  \n"; 
     usemsg += "   -o                name    Name of outputfile.                                     \n";
     usemsg += "   -t                type    Target data type:                                       \n";
     usemsg += "                                 2 = UCSF DDF                                        \n";
@@ -253,8 +253,6 @@ void ApplyScaling(svkMrsImageData* data, string datFileName, float minimumScalin
     datReader->SetFileName( datFileName.c_str() );
     //datReader->CanReadFile(datName.c_str());
     datReader->Update();
-    cout << "DAT NTP: " << datReader->GetNumTimePoints() << endl;;
-    cout << "DAT NTP: " << datReader->GetProfileNumPoints() << endl;;
     vtkFloatArray* signalScale = vtkFloatArray::New();
     svkDcmHeader::DimensionVector inDimVector = data->GetDcmHeader()->GetDimensionIndexVector();
     svkDcmHeader::DimensionVector loopVector = inDimVector;
@@ -286,8 +284,5 @@ void ApplyScaling(svkMrsImageData* data, string datFileName, float minimumScalin
                 }
             }
         }
-    }
-    for ( int i = 0; i < datReader->GetProfileNumPoints(); i++ ) {
-        cout << "CHECK THE SCALE time pt 7: " << i << " " << *signalScale->GetTuple(i) << endl;
     }
 }
