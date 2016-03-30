@@ -509,14 +509,16 @@ int svkMrsZeroFill::RequestDataSpectral( vtkInformation* request, vtkInformation
     //  GetNumber of cells in the image:
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
 
+    // this adds a LOT of time to the execution if updated for every cell
+    ostringstream progressStream;
+    progressStream <<"Executing Spectral Zero Fill for " << numCells  ;
+    this->SetProgressText( progressStream.str().c_str() );
+    this->UpdateProgress( progress );
+
     for (int cellID = 0; cellID < numCells; cellID++ ) {
 
-        ostringstream progressStream;
-        progressStream <<"Executing Spectral Zero Fill for Time Point " << cellID + 1 << "/" << numCells;
-        this->SetProgressText( progressStream.str().c_str() );
 
         progress = (cellID+1)/((double)numCells);
-        this->UpdateProgress( progress );
 
         spectrum = data->GetSpectrum( cellID ); 
         //  Iterate over frequency points in spectrum and apply phase correction:
