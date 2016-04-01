@@ -191,6 +191,8 @@ ADD_LIBRARY(
     svkDcmRawDataReader.cc
     svkGEPostageStampReader.cc
     svkBrukerDCMMRSReader.cc
+    svkPhilipsSReader.cc
+    svkPhilipsSMapper.cc
     svkVarianReader.cc
     svkFdfVolumeReader.cc
     svkVarianFidReader.cc

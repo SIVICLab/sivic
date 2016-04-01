@@ -54,6 +54,7 @@
 #include <svkDdfVolumeReader.h>
 #include <svkFdfVolumeReader.h>
 #include <svkVarianFidReader.h>
+#include <svkPhilipsSReader.h>
 #include <svkSdbmVolumeReader.h>
 #include <svkSiemensRdaReader.h>
 #include <svkGEPFileReader.h>
@@ -115,6 +116,7 @@ class svkImageReaderFactory : public vtkImageReader2Factory
         svkGESignaLX2Reader*            geSignaLX2Reader;
         svkGEPostageStampReader*        gePostageStampReader;
         svkBrukerDCMMRSReader*          brukerDCMMRSReader;
+        svkPhilipsSReader*              philipsSReader;
         svkDcmRawDataReader*            dcmRawDataReader;
         svkDcmSegmentationVolumeReader* dcmSegmentationVolReader; 
 

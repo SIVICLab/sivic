@@ -83,6 +83,7 @@ class svkImageReader2 : public vtkImageReader2
             LC_MODEL_CSV, 
             VARIABLE_FLIP_DAT, 
             BRUKER_MRS,
+            PHILIPS_S,
             DDF,
             IDF,
             LAST_TYPE = IDF
