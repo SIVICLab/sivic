@@ -114,25 +114,19 @@ class svkPhilipsSMapper : public vtkObject
         virtual void    InitMRSpectroscopyDataModule();
         string          GetDcmPatientPositionString(); 
 
-        virtual void    ConvertCmToMm();
-
-        int             GetHeaderValueAsInt(
-                            string keyString, int valueIndex = 0, int procparRow = 0
-                        );
-        float           GetHeaderValueAsFloat(
-                            string keyString, int valueIndex = 0, int procparRow = 0
-                        );
-        string          GetHeaderValueAsString(
-                            string keyString, int valueIndex = 0, int procparRow = 0
-                        );
-
+        int             GetHeaderValueAsInt( string keyString ); 
+        float           GetHeaderValueAsFloat( string keyString ); 
         virtual void    SetCellSpectrum(
                             vtkImageData* data, 
                             int x, int y, int z, 
                             int timePt, 
                             int coilNum
                         );
-
+        string          GetDcmDate(); 
+        void            VaxToFloat( const void *inbuf, void *outbuf,
+                                    const int *count ); 
+        void            GetFOV(float* fov); 
+        void            GetDimPnts(int* numPixels); 
 
         map <string, string >                       sparMap; 
         svkDcmHeader*                               dcmHeader; 

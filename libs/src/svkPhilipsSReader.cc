@@ -43,6 +43,7 @@
 #include <svkPhilipsSReader.h>
 #include <svkPhilipsSMapper.h>
 #include <vtkDebugLeaks.h>
+#include <algorithm>    // std::remove
 
 #include <sys/stat.h>
 
@@ -126,7 +127,9 @@ int svkPhilipsSReader::CanReadFile(const char* fname)
 
         if (
             fileExtension.compare( "sdat" ) == 0 ||
-            fileExtension.compare( "spar" ) == 0
+            fileExtension.compare( "spar" ) == 0 || 
+            fileExtension.compare( "SDAT" ) == 0 ||
+            fileExtension.compare( "SPAR" ) == 0
         )  {
 
             FILE *fp = fopen(fname, "rb");
@@ -139,12 +142,12 @@ int svkPhilipsSReader::CanReadFile(const char* fname)
 
         } else {
             vtkDebugMacro(
-                << this->GetClassName() << "::CanReadFile(): It's NOT a Philips S File: " << fileToCheck
+                << this->GetClassName() << "::CanReadFile(): It's NOT a Philips S File: " << fname 
             );
             return 0;
         }
     } else {
-        vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): is NOT a valid Philips S file: " << fileToCheck);
+        vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): is NOT a valid Philips S file: " << fname);
         return 0;
     }
 }
@@ -236,7 +239,7 @@ void svkPhilipsSReader::InitDcmHeader()
 
     //  all the IE initialization modules would be contained within the mapper
     this->mapper->InitializeDcmHeader(
-        sparMap,
+        this->sparMap,
         this->GetOutput()->GetDcmHeader(),
         iod,
         this->GetSwapBytes()
@@ -259,15 +262,8 @@ svkPhilipsSMapper* svkPhilipsSReader::GetPhilipsSMapper()
 {
     svkPhilipsSMapper* aMapper = NULL;
 
-    string seqfil = this->sparMap["seqfil"];
-
-    //convert to lower case:
-    string::iterator it;
-    for ( it = seqfil.begin(); it < seqfil.end(); it++ ) {
-        *it = (char)tolower(*it);
-    }
-
-    if ( ( seqfil.compare("csi2d") == 0 ) || ( seqfil.compare("c13_csi2d") == 0 ) || ( seqfil.compare("c13_csi2d_nlr") == 0 ) ) {
+    string scanID = this->sparMap["scan_id"];
+    if ( scanID.find("PRESS") != string::npos) {
 
         aMapper = svkPhilipsSMapper::New();
 
@@ -301,15 +297,19 @@ void svkPhilipsSReader::ParseSDAT()
     string sdatFileName( this->GetFileName() );  
     string sdatFilePath( this->GetFilePath( this->GetFileName() ) );  
 
+    //string sparFile = sdatFilePath; 
+    //sparFile       += "/"; 
+    string sparFile = this->GetFileRoot( this->GetFileName() ) + ".SPAR";
+
     try { 
 
-        this->ParseSPAR(sdatFilePath);
+        this->ParseSPAR(sparFile);
         if (this->GetDebug()) {
             this->PrintSparKeyValuePairs();
         }
 
     } catch (const exception& e) {
-        cerr << "ERROR opening or reading Philips S files (" << sdatFileName << "): " << e.what() << endl;
+        cerr << "ERROR opening or reading Philips S files (" << sparFile << "): " << e.what() << endl;
     }
 
 }
@@ -335,17 +335,21 @@ void svkPhilipsSReader::ParseSPAR( string path )
         }
 
         this->sparFileSize = this->GetFileSize( this->sparFile );
+
+        this->sparFile->clear();
+        this->sparFile->seekg( 0, ios_base::beg );
+
         while (! this->sparFile->eof() ) {
-            if (this->GetSparKeyValuePair() != 0 ) {
-                break;
-            }
+            this->GetSparKeyValuePair(); 
         }
 
         this->sparFile->close();
 
     } catch (const exception& e) {
-            cerr << "ERROR opening or reading Varian procpar file: " << e.what() << endl;
-   }
+        cerr << "ERROR opening or reading Philips spar file( " << path << ": " << e.what() << endl;
+        exit(1); 
+    }
+    this->PrintSparKeyValuePairs(); 
 
 }
 
@@ -353,35 +357,26 @@ void svkPhilipsSReader::ParseSPAR( string path )
 /*! 
  *  Utility function to read key/values from spar file 
  *  and set the delimited key/value pair into the stl map.  
- *  Returns -1 if can't parse line. 
+ *  \return  0 if found key value pair, 1 otherwise
  */
 int svkPhilipsSReader::GetSparKeyValuePair( )
 {
 
-    int status = 0;
+    int status = 1;
 
     istringstream* iss = new istringstream();
 
     string keyString;
-    string* valueString = new string("");
+    string valueString;
 
     try {
+        if ( this->sparFile->tellg() <= this->sparFileSize ) {
 
-        this->ReadLine(this->sparFile, iss);
-
-        size_t  position;
-        string  tmp;
-
-        if ( this->sparFile->tellg() < this->sparFileSize - 1 ) {
-
-            //  find first white space position before "key" string: 
-            position = iss->str().find_first_of(' ');
-            if (position != string::npos) {
-                keyString.assign( iss->str().substr(0, position) );
+            status = this->ReadLineKeyValue( this->sparFile, iss, ':', &keyString, &valueString); 
+            if ( status == 0 ) {
+                valueString.erase( remove(valueString.begin(), valueString.end(), '\r'), valueString.end() );
+                this->sparMap[keyString] = valueString; 
             }
-
-            valueString->assign("SPAR VALUE"); 
-
 
         } else {
             this->sparFile->seekg(0, ios::end);
@@ -391,10 +386,8 @@ int svkPhilipsSReader::GetSparKeyValuePair( )
         if (this->GetDebug()) {
             cout <<  "ERROR reading line: " << e.what() << endl;
         }
-        status = -1;
     }
 
-    delete valueString;
     delete iss;
     return status;
 }

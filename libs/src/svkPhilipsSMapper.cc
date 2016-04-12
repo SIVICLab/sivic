@@ -41,7 +41,8 @@
 
 
 #include <svkPhilipsSMapper.h>
-//#include <svkPhilipsSReader.h>
+#include <svkSpecUtils.h>
+#include <svkImageReader2.h>
 
 #include <vtkDebugLeaks.h>
 #include <vtkTransform.h>
@@ -103,7 +104,7 @@ void svkPhilipsSMapper::InitializeDcmHeader(map <string, string>  sparMap,
     this->iod = iod;   
     this->swapBytes = swapBytes; 
 
-    this->ConvertCmToMm(); 
+    //this->ConvertCmToMm(); 
 
     this->InitPatientModule();
     this->InitGeneralStudyModule();
@@ -130,10 +131,10 @@ void svkPhilipsSMapper::InitPatientModule()
 {
 
     this->dcmHeader->InitPatientModule(
-        this->dcmHeader->GetDcmPatientName( this->GetHeaderValueAsString("samplename") ),
-        this->GetHeaderValueAsString("dataid"), 
-        this->GetHeaderValueAsString("birthday"), 
-        this->GetHeaderValueAsString("gender") 
+        this->dcmHeader->GetDcmPatientName( this->sparMap["patient_name"] ),
+        "", //  patientID NA in SPAR
+        this->sparMap["patient_birth_date"], 
+        ""  // gender NA in SPAR
     );
 
 }
@@ -142,19 +143,46 @@ void svkPhilipsSMapper::InitPatientModule()
 /*!
  *
  */
+string svkPhilipsSMapper::GetDcmDate()
+{
+    string timeDate = this->sparMap["scan_date"]; 
+    size_t delim = timeDate.find(" "); 
+    string date = timeDate.substr(0, delim); 
+    //  assumes order in is month, day, year 
+    //  assumes order out is year, month, day
+    //  However, philips date order is: scan_date : 2013.11.13 16:03:22
+    string reorderedDate = date;
+    reorderedDate[0] = date[5];  
+    reorderedDate[1] = date[6];  
+    reorderedDate[2] = date[7];  
+    reorderedDate[3] = date[8];  
+    reorderedDate[4] = date[9];  
+    reorderedDate[5] = date[4];  
+    reorderedDate[6] = date[0];  
+    reorderedDate[7] = date[1];  
+    reorderedDate[8] = date[2];  
+    reorderedDate[9] = date[3];  
+
+    string dcmDate = svkImageReader2::RemoveDelimFromDate(&reorderedDate, '.'); 
+        
+    return dcmDate; 
+}
+
+
+/*!
+ *
+ */
 void svkPhilipsSMapper::InitGeneralStudyModule()
 {
-    string timeDate = this->GetHeaderValueAsString( "time_svfdate" ); 
-    size_t delim = timeDate.find("T"); 
-    string date = timeDate.substr(0, delim); 
+    string dcmDate = this->GetDcmDate(); 
 
     this->dcmHeader->InitGeneralStudyModule(
-        date, 
-        "",
-        "",
-        this->GetHeaderValueAsString("studyid_"), 
-        "", 
-        ""
+        dcmDate,   // studyDate
+        "",     // study time 
+        "",     // referring phys
+        "",     // studyID  
+        "",     // accession
+        ""      // studyInstanceUID 
     );
 
 }
@@ -201,17 +229,13 @@ void svkPhilipsSMapper::InitMultiFrameFunctionalGroupsModule()
 
     this->dcmHeader->SetValue(
         "ContentDate",
-        this->GetHeaderValueAsString( "time_svfdate" )
+        this->GetDcmDate() 
     );
 
-    this->numSlices = this->GetHeaderValueAsInt("ns");
-    int numEchoes = this->GetHeaderValueAsInt("ne");
+    this->numSlices = this->GetHeaderValueAsInt("nr_of_slices_for_multislice"); 
+    int numEchoes   = this->GetHeaderValueAsInt("echo_nr");   // this will probalby only work for n=1
 
     this->numFrames = this->numSlices * numEchoes;
-    this->dcmHeader->SetValue(
-        "NumberOfFrames",
-        this->numFrames
-    );
 
     this->InitPerFrameFunctionalGroupMacros();
 
@@ -257,9 +281,7 @@ void svkPhilipsSMapper::InitPerFrameFunctionalGroupMacros()
     this->dcmHeader->GetPixelSize(pixelSpacing);
 
     int numPixels[3];
-    numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
-    numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
-    numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
+    this->GetDimPnts( numPixels ); 
 
     //  Get center coordinate float array from sdatMap and use that to generate
     //  Displace from that coordinate by 1/2 fov - 1/2voxel to get to the center of the
@@ -273,13 +295,13 @@ void svkPhilipsSMapper::InitPerFrameFunctionalGroupMacros()
         //  Get the volumetric center in acquisition frame coords:
         double volumeCenterAcqFrame[3];
         for (int i = 0; i < 3; i++) {
-            volumeCenterAcqFrame[i] = this->GetHeaderValueAsFloat("location[]", i);
+            volumeCenterAcqFrame[i] = this->GetHeaderValueAsFloat("locatio");
         }
 
         double* volumeTlcAcqFrame = new double[3];
         for (int i = 0; i < 3; i++) {
             volumeTlcAcqFrame[i] = volumeCenterAcqFrame[i]
-                                 + ( this->GetHeaderValueAsFloat("span[]", i) - pixelSpacing[i] )/2;
+                                 + ( this->GetHeaderValueAsFloat("span[]") - pixelSpacing[i] )/2;
         }
         //svkPhilipsReader::UserToMagnet(volumeTlcAcqFrame, volumeTlcLPSFrame, dcos);
         delete [] volumeTlcAcqFrame;
@@ -351,9 +373,9 @@ void svkPhilipsSMapper::InitPlaneOrientationMacro()
     );
 
     //  Get the euler angles for the acquisition coordinate system:
-    float psi = this->GetHeaderValueAsFloat("psi", 0);
-    float phi = this->GetHeaderValueAsFloat("phi", 0);
-    float theta = this->GetHeaderValueAsFloat("theta", 0);
+    float psi   = this->GetHeaderValueAsFloat("ap_angulation"); 
+    float phi   = this->GetHeaderValueAsFloat("lr_angulation"); 
+    float theta = this->GetHeaderValueAsFloat("cc_angulation"); 
 
     vtkTransform* eulerTransform = vtkTransform::New();
     eulerTransform->RotateX( theta);
@@ -365,20 +387,6 @@ void svkPhilipsSMapper::InitPlaneOrientationMacro()
     if (this->GetDebug()) {
         cout << *dcos << endl;
     }
-
-    //  and analagous to the fdf reader, convert from LAI to LPS: 
-    //dcos->SetElement(0, 0, dcos->GetElement(0, 0)  * 1 );
-    //dcos->SetElement(0, 1, dcos->GetElement(0, 1)  * -1);
-    //dcos->SetElement(0, 2, dcos->GetElement(0, 2)  * -1);
-
-    //dcos->SetElement(1, 0, dcos->GetElement(1, 0)  * 1 );
-    //dcos->SetElement(1, 1, dcos->GetElement(1, 1)  * -1);
-    //dcos->SetElement(1, 2, dcos->GetElement(1, 2)  * -1);
-
-    //dcos->SetElement(2, 0, dcos->GetElement(2, 0)  * 1 );
-    //dcos->SetElement(2, 1, dcos->GetElement(2, 1)  * -1);
-    //dcos->SetElement(2, 2, dcos->GetElement(2, 2)  * -1);
-    
 
     string orientationString;
 
@@ -429,8 +437,7 @@ void svkPhilipsSMapper::InitPlaneOrientationMacro()
 void svkPhilipsSMapper::InitMRTimingAndRelatedParametersMacro()
 {
     this->dcmHeader->InitMRTimingAndRelatedParametersMacro(
-        this->GetHeaderValueAsFloat( "tr" ),
-        this->GetHeaderValueAsFloat("fliplist", 0)
+        this->GetHeaderValueAsFloat( "repetition_time" )
     ); 
 }
 
@@ -440,6 +447,8 @@ void svkPhilipsSMapper::InitMRTimingAndRelatedParametersMacro()
  */
 void svkPhilipsSMapper::InitMRSpectroscopyFOVGeometryMacro()
 {
+    int numPixels[3];
+    this->GetDimPnts( numPixels ); 
 
     this->dcmHeader->AddSequenceItemElement(
         "SharedFunctionalGroupsSequence",
@@ -451,7 +460,7 @@ void svkPhilipsSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SpectroscopyAcquisitionDataColumns",
-        this->GetHeaderValueAsInt("np", 0)/2,
+        this->GetHeaderValueAsInt("spec_num_col"),
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -460,7 +469,7 @@ void svkPhilipsSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SpectroscopyAcquisitionPhaseColumns",
-        this->GetHeaderValueAsInt("nv", 0),
+        numPixels[0], 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -469,7 +478,7 @@ void svkPhilipsSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SpectroscopyAcquisitionPhaseRows",
-        this->GetHeaderValueAsInt("nv2", 0),
+        numPixels[1], 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -478,7 +487,7 @@ void svkPhilipsSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SpectroscopyAcquisitionOutOfPlanePhaseSteps",
-        this->GetHeaderValueAsInt("ns", 0),
+        numPixels[2], 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -492,20 +501,33 @@ void svkPhilipsSMapper::InitMRSpectroscopyFOVGeometryMacro()
         0
     );
 
+
+    double pixelSpacing[3];
+    this->dcmHeader->GetPixelSize(pixelSpacing);
+    string pixelSizeString[2];
+    for (int i = 0; i < 2; i++) {
+        ostringstream oss;
+        oss << pixelSpacing[i];
+        pixelSizeString[i].assign( oss.str() );
+    }
     this->dcmHeader->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcquisitionPixelSpacing",
-        this->GetHeaderValueAsString("vox1", 0) + '\\' + this->GetHeaderValueAsString("vox2", 0),
+        pixelSizeString[0] + '\\' + pixelSizeString[1],
         "SharedFunctionalGroupsSequence",
         0
     );
+
+    float fov[3]; 
+    this->GetFOV( fov ); 
 
     this->dcmHeader->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcquisitionSliceThickness",
-        this->GetHeaderValueAsFloat("vox3", 0),
+        //this->GetHeaderValueAsFloat("slice_thickness"),
+        fov[2], 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -527,7 +549,7 @@ void svkPhilipsSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcqReorderedPhaseColumns",
-        this->GetHeaderValueAsInt("nv", 0),
+        numPixels[0], 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -536,7 +558,7 @@ void svkPhilipsSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",   
         0,                               
         "SVK_SpectroscopyAcqReorderedPhaseRows",
-        this->GetHeaderValueAsInt("nv2", 0),
+        numPixels[1], 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -545,7 +567,7 @@ void svkPhilipsSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",   
         0,                               
         "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
-        this->GetHeaderValueAsInt("ns", 0), 
+        numPixels[2], 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -563,7 +585,7 @@ void svkPhilipsSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",   
         0,                                  
         "SVK_SpectroscopyAcqReorderedPixelSpacing",
-        this->GetHeaderValueAsString("vox1", 0) + '\\' + this->GetHeaderValueAsString("vox2", 0),
+        pixelSizeString[0] + '\\' + pixelSizeString[1],
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -572,7 +594,8 @@ void svkPhilipsSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,                                      
         "SVK_SpectroscopyAcqReorderedSliceThickness",
-        this->GetHeaderValueAsFloat("vox3", 0), 
+        //this->GetHeaderValueAsFloat("slice_thickness"),
+        fov[2], 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -620,7 +643,7 @@ void svkPhilipsSMapper::InitMRSpectroscopyPulseSequenceModule()
  */
 void svkPhilipsSMapper::InitMREchoMacro()
 {
-    this->dcmHeader->InitMREchoMacro( this->GetHeaderValueAsFloat( "te" ) * 1000. );
+    this->dcmHeader->InitMREchoMacro( this->GetHeaderValueAsFloat( "repetition_time" )  );
 }
 
 
@@ -629,8 +652,7 @@ void svkPhilipsSMapper::InitMREchoMacro()
  */
 void svkPhilipsSMapper::InitMRModifierMacro()
 {
-    float inversionTime = 0; 
-    this->dcmHeader->InitMRModifierMacro( inversionTime );
+    this->dcmHeader->InitMRModifierMacro( this->GetHeaderValueAsFloat("spectrum_inversion_time"));
 }
 
 
@@ -750,7 +772,7 @@ void svkPhilipsSMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "AcquisitionDateTime",
-        this->GetHeaderValueAsString("date")
+        this->sparMap["date"]
     );
     
     this->dcmHeader->SetValue(
@@ -759,7 +781,7 @@ void svkPhilipsSMapper::InitMRSpectroscopyModule()
     );
 
 
-    string nucleus = this->GetHeaderValueAsString("tn"); 
+    string nucleus = this->sparMap["tn"]; 
     string dicomNucleus = "1H"; 
     if ( nucleus.compare("C13") == 0 ) {
         dicomNucleus = "13C"; 
@@ -784,9 +806,14 @@ void svkPhilipsSMapper::InitMRSpectroscopyModule()
     );
 
     //  B0 in Gauss?
+    float fieldStrength = svkSpecUtils::GetFieldStrength( 
+        this->sparMap["nucleus"],
+        this->GetHeaderValueAsFloat( "synthesizer_frequency" ) / 1000000.
+    ); 
+
     this->dcmHeader->SetValue(
         "MagneticFieldStrength",
-        static_cast< int > ( this->GetHeaderValueAsFloat("B0") / 10000 )
+        fieldStrength
     );
     /*  =======================================
      *  END: MR Image and Spectroscopy Instance Macro
@@ -827,12 +854,12 @@ void svkPhilipsSMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "TransmitterFrequency",
-        this->GetHeaderValueAsFloat( "sfrq" )
+        this->GetHeaderValueAsFloat( "synthesizer_frequency" ) / 1000000
     );
 
     this->dcmHeader->SetValue(
         "SpectralWidth",
-        this->GetHeaderValueAsFloat( "sw" )
+        this->GetHeaderValueAsFloat( "sample_frequency" )
     );
 
     this->dcmHeader->SetValue(
@@ -843,8 +870,8 @@ void svkPhilipsSMapper::InitMRSpectroscopyModule()
     //  sp is the frequency in Hz at left side (downfield/High freq) 
     //  side of spectrum: 
     //
-    float ppmRef = this->GetHeaderValueAsFloat( "sp" ) + this->GetHeaderValueAsFloat( "sw" )/2.;
-    ppmRef /= this->GetHeaderValueAsFloat( "sfrq" ); 
+    float ppmRef = this->GetHeaderValueAsFloat( "sample_frequency" )/2.;
+    ppmRef /= (this->GetHeaderValueAsFloat( "synthesizer_frequency" )/1000000.); 
     this->dcmHeader->SetValue(
         "ChemicalShiftReference",
         ppmRef 
@@ -899,10 +926,13 @@ void svkPhilipsSMapper::InitMRSpectroscopyModule()
  */
 void svkPhilipsSMapper::InitMRSpectroscopyDataModule()
 {
-    this->dcmHeader->SetValue( "Columns", this->GetHeaderValueAsInt("nv", 0) );
-    this->dcmHeader->SetValue( "Rows", this->GetHeaderValueAsInt("nv2", 0) );
+    int numPixels[3];
+    this->GetDimPnts( numPixels ); 
+
+    this->dcmHeader->SetValue( "Columns", numPixels[0] );
+    this->dcmHeader->SetValue( "Rows",    numPixels[1] );
     this->dcmHeader->SetValue( "DataPointRows", 0 );
-    this->dcmHeader->SetValue( "DataPointColumns", this->GetHeaderValueAsInt("np", 0)/2 );
+    this->dcmHeader->SetValue( "DataPointColumns", this->GetHeaderValueAsInt("dim1_pnts") );
     this->dcmHeader->SetValue( "DataRepresentation", "COMPLEX" );
     this->dcmHeader->SetValue( "SignalDomainColumns", "TIME" );
     this->dcmHeader->SetValue( "SVK_ColumnsDomain", "KSPACE" );
@@ -919,8 +949,6 @@ void svkPhilipsSMapper::ReadSDATFile( string sdatFileName, svkImageData* data )
     
     vtkDebugMacro( << this->GetClassName() << "::ReadSDATFile()" );
 
-    ifstream* sdatDataIn = new ifstream();
-    sdatDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
     int pixelWordSize = 4;
     int numComponents = 2;
@@ -932,23 +960,41 @@ void svkPhilipsSMapper::ReadSDATFile( string sdatFileName, svkImageData* data )
     numVoxels[2] = this->dcmHeader->GetNumberOfSlices( ); 
 
     int numPixInVolume = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
-
     int numBytesInVol = ( numPixInVolume * pixelWordSize * numComponents * numSpecPoints );
-
-    sdatDataIn->open( sdatFileName.c_str(), ios::binary );
 
     /*
      *   Flatten the data volume into one dimension
      */
+    int numWordsInSDAT = numBytesInVol/pixelWordSize; 
+    float* specDataVax = new float[ numWordsInSDAT ];
     if (this->specData == NULL) {
-        this->specData = new float[ numBytesInVol/pixelWordSize ];
+        this->specData = new float[ numWordsInSDAT ];
     }
 
-    sdatDataIn->seekg(0, ios::beg);
-    int fileHeaderSize = 32;
-    int blockHeaderSize = 28;
-    sdatDataIn->seekg(fileHeaderSize + blockHeaderSize, ios::beg);
-    sdatDataIn->read( (char *)(this->specData), numBytesInVol);
+    string sdatFile = svkImageReader2::GetFileRoot( sdatFileName.c_str() ) + ".SDAT";
+
+    ifstream* sdatDataIn = new ifstream();
+
+    try {
+
+        sdatDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+        sdatDataIn->open( sdatFile.c_str(), ifstream::binary );
+        if ( ! sdatDataIn->is_open() ) {
+            throw runtime_error( "Could not open sdat file: " + sdatFile);
+        }
+
+        sdatDataIn->seekg(0, ios::beg);
+        cout << "TELL:" << sdatDataIn->tellg(); 
+        sdatDataIn->read( (char *)(specDataVax), numBytesInVol);
+        
+        this->VaxToFloat( (void*)(specDataVax), (void*)(this->specData), &numWordsInSDAT); 
+
+        delete [] specDataVax; 
+        
+    } catch (const exception& e) {
+        cout <<  "ERROR reading file: " << sdatFile << " : "  << e.what() << endl;
+        exit(1); 
+    }
 
 /*
 *  SDAT files are bigendian.
@@ -984,7 +1030,9 @@ void svkPhilipsSMapper::ReadSDATFile( string sdatFileName, svkImageData* data )
     progress = 1;
 	this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&progress));
 
-    sdatDataIn->close();
+    if ( ! sdatDataIn->is_open() ) {
+        sdatDataIn->close();
+    }
     delete sdatDataIn;
 
 }
@@ -1017,11 +1065,11 @@ void svkPhilipsSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z,
     numVoxels[2] = this->dcmHeader->GetNumberOfSlices();
 
     //  if cornoal, swap z and x:
-    int xTmp = x; 
-    x = y; 
-    y = xTmp; 
-    x = numVoxels[0] - x - 1; 
-    y = numVoxels[1] - y - 1; 
+    //int xTmp = x; 
+    //x = y; 
+    //y = xTmp; 
+    //x = numVoxels[0] - x - 1; 
+    //y = numVoxels[1] - y - 1; 
 
     int offset = (numPts * numComponents) *  (
                      ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * timePt
@@ -1046,67 +1094,22 @@ void svkPhilipsSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z,
 
 
 /*!
- *  Convert SDAT/SPAR spatial values from cm to mm: FOV, Center, etc. 
- */
-void svkPhilipsSMapper::ConvertCmToMm()
-{
-/*
-    float cmToMm = 10.;
-    float tmp;
-    ostringstream oss;
-
-    // FOV 
-    tmp = cmToMm * this->GetHeaderValueAsFloat("lpe", 0);
-    oss << tmp;
-    ( this->sparMap["lpe"] )[0][0] = oss.str();
-
-    oss.str("");
-    tmp = cmToMm * this->GetHeaderValueAsFloat("lpe2", 0);
-    oss << tmp;
-    ( this->sparMap["lpe2"] )[0][0] = oss.str();
-
-    oss.str("");
-    tmp = cmToMm * this->GetHeaderValueAsFloat("lro", 0);
-    oss << tmp;
-    ( this->sparMap["lro"] )[0][0] = oss.str(); 
-
-
-    //  Center 
-    oss.str("");
-    tmp = cmToMm * this->GetHeaderValueAsFloat("ppe", 0);
-    oss << tmp;
-    ( this->sparMap["ppe"] )[0][0] = oss.str();
-
-    oss.str("");
-    tmp = cmToMm * this->GetHeaderValueAsFloat("ppe2", 0);
-    oss << tmp;
-    ( this->sparMap["ppe2"] )[0][0] = oss.str();
-
-    oss.str("");
-    tmp = cmToMm * this->GetHeaderValueAsFloat("pro", 0);
-    oss << tmp;
-    ( this->sparMap["pro"] )[0][0] = oss.str();
-*/
-}
-
-
-/*!
  *  Use the Procpar patient position string to set the DCM_PatientPosition data element.
  */
 string svkPhilipsSMapper::GetDcmPatientPositionString()
 {
     string dcmPatientPosition;
 
-    string position1 = this->GetHeaderValueAsString("position1", 0);
-    if( position1.find("head first") != string::npos ) {
+    string position1 = this->sparMap["patient_position"]; 
+    if( position1.find("head_first") != string::npos ) {
         dcmPatientPosition.assign("HF");
-    } else if( position1.find("feet first") != string::npos ) {
+    } else if( position1.find("feet_first") != string::npos ) {
         dcmPatientPosition.assign("FF");
     } else {
         dcmPatientPosition.assign("UNKNOWN");
     }
 
-    string position2 = this->GetHeaderValueAsString("position2", 0);
+    string position2 = this->sparMap["patient_orientation"]; 
     if( position2.find("supine") != string::npos ) {
         dcmPatientPosition += "S";
     } else if( position2.find("prone") != string::npos ) {
@@ -1124,17 +1127,23 @@ string svkPhilipsSMapper::GetDcmPatientPositionString()
 
 
 /*!
- *
+ *  \param keystring
+ *  \return value if key is found, or INT_MIN otherwise 
  */
-int svkPhilipsSMapper::GetHeaderValueAsInt(string keyString, int valueIndex, int sparRow)
+int svkPhilipsSMapper::GetHeaderValueAsInt(string keyString)
 {
 
     istringstream* iss = new istringstream();
     int value;
 
-    iss->str( (this->sparMap[keyString]) );
-    //iss->str( (this->sparMap[keyString])[sparRow][valueIndex]);
-    *iss >> value;
+    if ( this->sparMap.count(keyString) != 0 ) {
+
+        iss->str( (this->sparMap[keyString]) );
+        *iss >> value;
+    } else {
+        cout << "WARNING:  could not find map key: " << keyString << endl;
+        value = INT_MIN; 
+    }
 
     delete iss; 
 
@@ -1145,30 +1154,18 @@ int svkPhilipsSMapper::GetHeaderValueAsInt(string keyString, int valueIndex, int
 /*!
  *
  */
-float svkPhilipsSMapper::GetHeaderValueAsFloat(string keyString, int valueIndex, int sparRow)
+float svkPhilipsSMapper::GetHeaderValueAsFloat(string keyString )
 {
 
     istringstream* iss = new istringstream();
     float value;
     iss->str( (this->sparMap[keyString]) );
-    //iss->str( (this->sparMap[keyString])[sparRow][valueIndex]);
     *iss >> value;
 
     delete iss; 
 
     return value;
 }
-
-
-/*!
- *
- */
-string svkPhilipsSMapper::GetHeaderValueAsString(string keyString, int valueIndex, int sparRow)
-{
-    return (this->sparMap[keyString]);
-    //return (this->sparMap[keyString])[sparRow][valueIndex];
-}
-
 
 
 /*!
@@ -1176,16 +1173,16 @@ string svkPhilipsSMapper::GetHeaderValueAsString(string keyString, int valueInde
  */
 void svkPhilipsSMapper::InitPixelMeasuresMacro()
 {
-    float numPixels[3];
-    numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
-    numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
-    numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
+    int numPixels[3];
+    this->GetDimPnts( numPixels ); 
 
-    //  Not sure if this is best, also see lpe (phase encode resolution in cm)
+    float fov[3];
+    this->GetFOV( fov ); 
+
     float pixelSize[3];
-    pixelSize[0] = this->GetHeaderValueAsFloat("vox1", 0);
-    pixelSize[1] = this->GetHeaderValueAsFloat("vox2", 0);
-    pixelSize[2] = this->GetHeaderValueAsFloat("vox3", 0);
+    for (int i = 0; i < 3; i++ ) {
+        pixelSize[i] = fov[i]/numPixels[i]; 
+    }
 
     string pixelSizeString[3];
 
@@ -1200,4 +1197,171 @@ void svkPhilipsSMapper::InitPixelMeasuresMacro()
         pixelSizeString[2]
     );
 }
+
+
+/*
+ *  Sets the fov in 3 dimensions.  
+ */
+void svkPhilipsSMapper::GetFOV(float* fov) 
+{
+    fov[0] = this->GetHeaderValueAsFloat("ap_size");
+    fov[1] = this->GetHeaderValueAsFloat("lr_size");
+    fov[2] = this->GetHeaderValueAsFloat("cc_size");
+}
+
+
+/*
+ *  Sets the number of spatial dimensions.  If a dimension isn't defined, 
+ *  sets the value to 1
+ */
+void svkPhilipsSMapper::GetDimPnts(int* numPixels) 
+{
+
+    //  this should look at the value of "dimX_direction" to set the 3 indices correctly
+    numPixels[0] = this->GetHeaderValueAsInt("dim2_pnts"); 
+    numPixels[1] = this->GetHeaderValueAsInt("dim3_pnts"); 
+    numPixels[2] = this->GetHeaderValueAsInt("dim4_pnts"); 
+    for (int i = 0; i < 3; i++ ) {
+        if ( numPixels[i] < 0 ) {
+            numPixels[i] = 1; 
+        }
+    }
+}
+
+
+
+
+/* 
+ * using VAX to Float conversion method implemented by Lawrence M. Baker of 
+ * USGS: 
+ * 
+ * References:  ANSI/IEEE Std 754-1985, IEEE Standard for Binary Floating-    *
+ *                 Point Arithmetic, Institute of Electrical and Electronics  *
+ *                 Engineers                                                  *
+ *              Brunner, Richard A., Ed., 1991, VAX Architecture Reference    *
+ *                 Manual, Second Edition, Digital Press                      *
+ *              Sites, Richard L., and Witek, Richard T., 1995, Alpha AXP     *
+ *                 Architecture Reference Manual, Second Edition, Digital     *
+ *                 Press                                                      *
+ *                                                                            *
+ * Author:      Lawrence M. Baker                                             *
+ *              U.S. Geological Survey                                        *
+ *              345 Middlefield Road  MS977                                   *
+ *              Menlo Park, CA  94025                                         *
+ *              baker@usgs.gov                                                *
+ *                                                                            *
+ * Citation:    Baker, L.M., 2005, libvaxdata: VAX Data Format Conversion     *
+ *                 Routines: U.S. Geological Survey Open-File Report 2005-    *
+ *                 1424 (http://pubs.usgs.gov/of/2005/1424/).                 *
+ *                                                                            *
+ *                                                                            *
+ *                                 Disclaimer                                 *
+ *                                                                            *
+ * Although this program has been used by the USGS, no warranty, expressed or *
+ * implied, is made by the USGS or the United States  Government  as  to  the *
+ * accuracy  and functioning of the program and related program material, nor *
+ * shall the fact of  distribution  constitute  any  such  warranty,  and  no *
+ * responsibility is assumed by the USGS in connection therewith.             *
+ *                                                                            *
+ */
+#define SIGN_BIT             0x80000000
+#define VAX_F_EXPONENT_MASK  0x7F800000
+#define VAX_F_MANTISSA_MASK  0x007FFFFF
+#define VAX_F_MANTISSA_SIZE  23
+#define VAX_F_EXPONENT_SIZE  8
+#define VAX_F_EXPONENT_BIAS  ( 1 << ( VAX_F_EXPONENT_SIZE - 1 ) )
+#define VAX_F_HIDDEN_BIT     ( 1 << VAX_F_MANTISSA_SIZE )
+#define IEEE_S_EXPONENT_SIZE 8
+#define IEEE_S_EXPONENT_BIAS ( ( 1 << ( IEEE_S_EXPONENT_SIZE - 1 ) ) - 1 )
+#define IEEE_S_MANTISSA_SIZE 23
+#define MANTISSA_MASK VAX_F_MANTISSA_MASK
+#define MANTISSA_SIZE VAX_F_MANTISSA_SIZE
+#define HIDDEN_BIT    VAX_F_HIDDEN_BIT
+#define EXPONENT_ADJUSTMENT ( 1 + VAX_F_EXPONENT_BIAS - IEEE_S_EXPONENT_BIAS )
+#define IN_PLACE_EXPONENT_ADJUSTMENT \
+           ( EXPONENT_ADJUSTMENT << IEEE_S_MANTISSA_SIZE )
+void svkPhilipsSMapper::VaxToFloat( const void *inbuf, void *outbuf,const int *count ) 
+{
+
+   register const unsigned short* in;   
+   union { 
+        unsigned short i[2]; 
+        unsigned int l; 
+   } vaxpart;
+   register unsigned int* out;         
+   unsigned int vaxpart1;
+   int n;
+   int e;
+
+
+   in  = (const unsigned short *) inbuf;
+   out = (unsigned int *) outbuf;
+
+   for ( n = *count; n > 0; n-- ) {
+
+      vaxpart.i[1] = *in++;
+      vaxpart.i[0] = *in++;
+      vaxpart1     = vaxpart.l;
+
+      if ( ( e = ( vaxpart1 & VAX_F_EXPONENT_MASK ) ) == 0 ) {
+                                  /* If the biased VAX exponent is zero [e=0] */
+
+         if ( ( vaxpart1 & SIGN_BIT ) == SIGN_BIT ) {    /* If negative [s=1] */
+            raise( SIGFPE );/* VAX reserved operand fault; fixup to IEEE zero */
+         }
+           /* Set VAX dirty [m<>0] or true [m=0] zero to IEEE +zero [s=e=m=0] */
+         *out++ = 0;
+
+      } else {                  /* The biased VAX exponent is non-zero [e<>0] */
+
+         e >>= MANTISSA_SIZE;               /* Obtain the biased VAX exponent */
+
+         /* The  biased  VAX  exponent  has to be adjusted to account for the */
+         /* right shift of the IEEE mantissa binary point and the  difference */
+         /* between  the biases in their "excess n" exponent representations. */
+         /* If the resulting biased IEEE exponent is less than  or  equal  to */
+         /* zero, the converted IEEE S_float must use subnormal form.         */
+
+         if ( ( e -= EXPONENT_ADJUSTMENT ) > 0 ) {
+                                            /* Use IEEE normalized form [e>0] */
+
+            /* Both mantissas are 23 bits; adjust the exponent field in place */
+            *out++ = vaxpart1 - IN_PLACE_EXPONENT_ADJUSTMENT;
+
+         } else {                       /* Use IEEE subnormal form [e=0, m>0] */
+
+            /* In IEEE subnormal form, even though the biased exponent is 0   */
+            /* [e=0], the effective biased exponent is 1.  The mantissa must  */
+            /* be shifted right by the number of bits, n, required to adjust  */
+            /* the biased exponent from its current value, e, to 1.  I.e.,    */
+            /* e + n = 1, thus n = 1 - e.  n is guaranteed to be at least 1   */
+            /* [e<=0], which guarantees that the hidden 1.m bit from the ori- */
+            /* ginal mantissa will become visible, and the resulting subnor-  */
+            /* mal mantissa will correctly be of the form 0.m.                */
+
+            *out++ = ( vaxpart1 & SIGN_BIT ) |
+                     ( ( HIDDEN_BIT | ( vaxpart1 & MANTISSA_MASK ) ) >>
+                       ( 1 - e ) );
+
+         }
+      }
+   }
+
+}
+
+#undef SIGN_BIT
+#undef VAX_F_EXPONENT_MASK
+#undef VAX_F_MANTISSA_MASK
+#undef VAX_F_MANTISSA_SIZE
+#undef VAX_F_EXPONENT_SIZE
+#undef VAX_F_EXPONENT_BIAS
+#undef VAX_F_HIDDEN_BIT
+#undef IEEE_S_EXPONENT_SIZE
+#undef IEEE_S_EXPONENT_BIAS
+#undef IEEE_S_MANTISSA_SIZE
+#undef MANTISSA_MASK
+#undef MANTISSA_SIZE
+#undef HIDDEN_BIT
+#undef EXPONENT_ADJUSTMENT
+#undef IN_PLACE_EXPONENT_ADJUSTMENT
 
