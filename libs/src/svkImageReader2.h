@@ -95,7 +95,7 @@ class svkImageReader2 : public vtkImageReader2
         svkImageData*                        GetOutput(int);
         svkDcmHeader*                        GetDcmHeader( const char* fileName );
         static string                        StripWhite(string in);
-        static string                        RemoveSlashesFromDate(string* slashDate); 
+        static string                        RemoveDelimFromDate(string* slashDate, char delimChar = '/'); 
         static string                        GetFileRoot(const char* fname);
         static string                        GetFileExtension(const char* fname);
         static string                        GetFilePath(const char* fname);
@@ -137,7 +137,7 @@ class svkImageReader2 : public vtkImageReader2
                                                     istringstream* iss, 
                                                     char delim
                                                  ); 
-        void                                     ReadLineKeyValue( 
+        int                                      ReadLineKeyValue( 
                                                     ifstream* hdr, 
                                                     istringstream* iss, 
                                                     char delim, 

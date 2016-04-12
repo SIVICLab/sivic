@@ -647,7 +647,7 @@ void svkSdbmVolumeReader::InitGeneralStudyModule()
 {
 
     this->GetOutput()->GetDcmHeader()->InitGeneralStudyModule(
-        this->RemoveSlashesFromDate( &(shfMap["date_acquired"]) ), 
+        this->RemoveDelimFromDate( &(shfMap["date_acquired"]) ), 
         "",
         "",
         shfMap["study_number"], 
@@ -721,7 +721,7 @@ void svkSdbmVolumeReader::InitMultiFrameFunctionalGroupsModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "ContentDate", 
-        this->RemoveSlashesFromDate( &(shfMap["date_acquired"]) ) 
+        this->RemoveDelimFromDate( &(shfMap["date_acquired"]) ) 
     );
 
     this->numSlices = this->GetHeaderValueAsInt(shfMap, "num_pts_3"); 
@@ -1330,7 +1330,7 @@ void svkSdbmVolumeReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "AcquisitionDateTime",
-        this->RemoveSlashesFromDate( &(shfMap["date_acquired"]) ) + "000000"
+        this->RemoveDelimFromDate( &(shfMap["date_acquired"]) ) + "000000"
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(

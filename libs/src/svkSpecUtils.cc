@@ -54,6 +54,13 @@ const float svkSpecUtils::H2O_Y_INTERCEPT = 7.83;
 const float svkSpecUtils::H2O_SLOPE = 96.9;
 const float svkSpecUtils::BODY_TEMPERATURE = 36.6; 
 
+//  Values of GAMMA in MHz / T
+const float svkSpecUtils::GAMMA_1H  = 42.576; 
+const float svkSpecUtils::GAMMA_13C = 10.705;  
+const float svkSpecUtils::GAMMA_31P = 17.235;  
+const float svkSpecUtils::GAMMA_19F = 40.053;  
+const float svkSpecUtils::GAMMA_15N = -4.316;  
+
 
 /*!
  *  Returns the magnitude of the complex spectrum at the specified point. 
@@ -163,22 +170,22 @@ string svkSpecUtils::GetNucleus( float transmitFreq, float fieldStrength )
     float gamma =  transmitFreqMhz / fieldStrengthTesla;  
 
     //  Values of GAMMA in MHz / T
-    float GAMMA_1H  = 42.576; 
-    float GAMMA_13C = 10.705;  
-    float GAMMA_31P = 17.235;  
-    float GAMMA_19F = 40.053;  
-    float GAMMA_15N = -4.316;  
+    //svkSpecUtils::GAMMA_1H  = 42.576; 
+    //svkSpecUtils::GAMMA_13C = 10.705;  
+    //svkSpecUtils::GAMMA_31P = 17.235;  
+    //svkSpecUtils::GAMMA_19F = 40.053;  
+    //svkSpecUtils::GAMMA_15N = -4.316;  
 
     string nucleus;
-    if ( fabs( gamma - GAMMA_1H ) < 0.1 ) {
+    if ( fabs( gamma - svkSpecUtils::GAMMA_1H ) < 0.1 ) {
         nucleus.assign("1H");
-    } else if ( fabs( gamma - GAMMA_13C ) < 0.1 ) {
+    } else if ( fabs( gamma - svkSpecUtils::GAMMA_13C ) < 0.1 ) {
         nucleus.assign("13C");
-    } else if ( fabs( gamma - GAMMA_31P ) < 0.1 ) {
+    } else if ( fabs( gamma - svkSpecUtils::GAMMA_31P ) < 0.1 ) {
         nucleus.assign("31P");
-    } else if ( fabs( gamma - GAMMA_19F ) < 0.1 ) {
+    } else if ( fabs( gamma - svkSpecUtils::GAMMA_19F ) < 0.1 ) {
         nucleus.assign("19F");
-    } else if ( fabs( gamma - GAMMA_15N ) < 0.1 ) {
+    } else if ( fabs( gamma - svkSpecUtils::GAMMA_15N ) < 0.1 ) {
         nucleus.assign("15N");
     }
 
@@ -186,3 +193,31 @@ string svkSpecUtils::GetNucleus( float transmitFreq, float fieldStrength )
 
 }
 
+
+/*!
+ *  GetFieldStrength
+ *  parameters:  
+ *      transmitter frequency (MHz)
+ *      nucleus        
+ */
+float svkSpecUtils::GetFieldStrength( string nucleus, float transmitFreq)
+{
+
+    float gamma; 
+    if ( nucleus.compare("1H") == 0 ) {
+        gamma = svkSpecUtils::GAMMA_1H; 
+    } else if ( nucleus.compare("13C") == 0 ) {
+        gamma = svkSpecUtils::GAMMA_13C; 
+    } else if ( nucleus.compare("31P") == 0 ) {
+        gamma = svkSpecUtils::GAMMA_31P; 
+    } else if ( nucleus.compare("19F") == 0 ) {
+        gamma = svkSpecUtils::GAMMA_19F; 
+    } else if ( nucleus.compare("15N") == 0 ) {
+        gamma = svkSpecUtils::GAMMA_15N; 
+    } else {
+        cout << "ERROR: Undefined nucleus: " << nucleus << endl;
+    }
+
+    float fieldStrengthTesla = transmitFreq/gamma;
+    return fieldStrengthTesla; 
+}

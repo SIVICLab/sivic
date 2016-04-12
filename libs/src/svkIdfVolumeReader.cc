@@ -854,7 +854,7 @@ void svkIdfVolumeReader::ParseIdfComment(string comment, string* PatientName,
     
         studyDate->assign( commentSub.substr(delim + 3) );
 
-        studyDate->assign( this->RemoveSlashesFromDate(studyDate) );
+        studyDate->assign( this->RemoveDelimFromDate(studyDate) );
     }
 }
 

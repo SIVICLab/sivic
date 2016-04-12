@@ -432,8 +432,11 @@ svkImageData* svkImageReader2::GetOutput(int port)
 /*!
  *  Remove slashes from idf date and reorder for DICOM compliance:
  *  07/25/2007 -> 20070725
+ *  assumes 
+ *      input order is month, day, year
+ *      output order is year, month, day
  */
-string svkImageReader2::RemoveSlashesFromDate(string* slashDate)
+string svkImageReader2::RemoveDelimFromDate(string* slashDate, char delimChar)
 {
 
     //  string should not be empty or "blank"
@@ -441,7 +444,7 @@ string svkImageReader2::RemoveSlashesFromDate(string* slashDate)
 
     if ( slashDate->length() > 0 && pos != string::npos ) {
         size_t delim;
-        delim = slashDate->find_first_of('/');
+        delim = slashDate->find_first_of( delimChar );
         string month = slashDate->substr(0, delim);
         month = StripWhite(month);
         if (month.size() != 2) {
@@ -450,7 +453,7 @@ string svkImageReader2::RemoveSlashesFromDate(string* slashDate)
 
         string dateSub;
         dateSub = slashDate->substr(delim + 1);
-        delim = dateSub.find_first_of('/');
+        delim = dateSub.find_first_of( delimChar );
         string day = dateSub.substr(0, delim);
         day = StripWhite(day);
         if (day.size() != 2) {
@@ -458,7 +461,7 @@ string svkImageReader2::RemoveSlashesFromDate(string* slashDate)
         }
 
         dateSub = dateSub.substr(delim + 1);
-        delim = dateSub.find_first_of('/');
+        delim = dateSub.find_first_of( delimChar );
         string year = dateSub.substr(0, delim);
         year = StripWhite(year);
 
@@ -521,9 +524,12 @@ string svkImageReader2::ReadLineSubstr(ifstream* hdr, istringstream* iss, int st
 
 /*!
  *  Read the value part of a delimited key value line in a file:
+ *  \return  0 on success, 1 if can't parse line with delimiter into key/value pair
+ *      
  */
-void svkImageReader2::ReadLineKeyValue( ifstream* hdr, istringstream* iss, char delim, string* key, string* value)
+int svkImageReader2::ReadLineKeyValue( ifstream* hdr, istringstream* iss, char delim, string* key, string* value)
 {
+    int status = 1; // failure by default
 
     this->ReadLine( hdr, iss );
     try {
@@ -536,6 +542,8 @@ void svkImageReader2::ReadLineKeyValue( ifstream* hdr, istringstream* iss, char 
         if (delimPos != string::npos) {
             delimitedLine.assign( line.substr( delimPos + 1 ) );
             key->assign( line.substr(0, delimPos) ); 
+            key->assign(this->StripWhite(*key)); 
+            status = 0;     // if delimiter was found, set status to 0
         } else {
             delimitedLine.assign( line );
             key->assign( line.substr(0, delimPos) ); 
@@ -553,7 +561,7 @@ void svkImageReader2::ReadLineKeyValue( ifstream* hdr, istringstream* iss, char 
         cout <<  e.what() << endl;
     }
 
-    return;
+    return status;
 
 }
 /*!

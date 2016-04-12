@@ -287,7 +287,7 @@ void svkGEPFileMapper::InitGeneralStudyModule()
     string dcmDate = this->ConvertGEDateToDICOM( this->GetHeaderValueAsString( "rhr.rh_scan_date" ) );
 
     this->dcmHeader->InitGeneralStudyModule(
-        svkImageReader2::RemoveSlashesFromDate( &dcmDate ),  
+        svkImageReader2::RemoveDelimFromDate( &dcmDate ),  
         this->GetHeaderValueAsString( "rhr.rh_scan_time" ), 
         this->GetHeaderValueAsString( "rhe.refphy" ), 
         this->GetHeaderValueAsString( "rhe.ex_no" ), 
@@ -409,7 +409,7 @@ void svkGEPFileMapper::InitMultiFrameFunctionalGroupsModule()
     string dcmDate = this->ConvertGEDateToDICOM( this->GetHeaderValueAsString( "rhr.rh_scan_date" ) );
     this->dcmHeader->SetValue( 
         "ContentDate", 
-        svkImageReader2::RemoveSlashesFromDate( &dcmDate ) 
+        svkImageReader2::RemoveDelimFromDate( &dcmDate ) 
     );
 
     InitPerFrameFunctionalGroupMacros();
