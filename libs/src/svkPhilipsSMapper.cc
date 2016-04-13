@@ -47,7 +47,6 @@
 #include <vtkDebugLeaks.h>
 #include <vtkTransform.h>
 #include <vtkMatrix4x4.h>
-#include <vtkByteSwap.h>
 #include <vtkCallbackCommand.h>
 
 
@@ -104,16 +103,14 @@ void svkPhilipsSMapper::InitializeDcmHeader(map <string, string>  sparMap,
     this->iod = iod;   
     this->swapBytes = swapBytes; 
 
-    //this->ConvertCmToMm(); 
-
     this->InitPatientModule();
     this->InitGeneralStudyModule();
     this->InitGeneralSeriesModule();
     this->InitGeneralEquipmentModule();
 
     this->InitMultiFrameFunctionalGroupsModule();
-//    this->InitMultiFrameDimensionModule();
-//    this->InitAcquisitionContextModule();
+    //    this->InitMultiFrameDimensionModule();
+    //    this->InitAcquisitionContextModule();
     this->InitMRSpectroscopyModule();
     this->InitMRSpectroscopyPulseSequenceModule();
 
@@ -268,7 +265,28 @@ void svkPhilipsSMapper::InitSharedFunctionalGroupMacros()
 
 
 /*!
- *  The SDAT toplc is the center of the first voxel.
+ *  The SPAR toplc is the center of the first voxel.
+ *  Best guess at field interpretation all dims in mm. Not positive about difference between two
+ *  sets of fields, e.g. ap_off_center and si_ap_off_center, etc.    
+ *      ap_size :   AP FOV
+ *      lr_size :   RL FOV
+ *      cc_size :   SI FOV
+ *      ap_off_center :  AP displacment from center (from origin)  
+ *      lr_off_center :  LR displacement from center (from origin) 
+ *      cc_off_center :  SI displacment from center (from origin) 
+ *      //  these may be euler angles. 
+ *      ap_angulation :  angulation of or about AP axis (tilt forward/backwards) 
+ *      lr_angulation :  angluation of or aboutLR axis (tilt left right) 
+ *      cc_angulation :  angulation of or aboutSI axis( 
+ *      volume_selection_method : 2
+ *      si_ap_off_center : 1.225752473
+ *      si_lr_off_center : 1.05771184
+ *      si_cc_off_center : -2.013401001e-008
+ *      si_ap_off_angulation : 0
+ *      si_lr_off_angulation : 0
+ *      si_cc_off_angulation : 0
+ *      phase_encoding_fov :     
+ *      slice_thickness : 10
  */
 void svkPhilipsSMapper::InitPerFrameFunctionalGroupMacros()
 {
@@ -283,71 +301,28 @@ void svkPhilipsSMapper::InitPerFrameFunctionalGroupMacros()
     int numPixels[3];
     this->GetDimPnts( numPixels ); 
 
+    float fov[3]; 
+    this->GetFOV( fov ); 
+
     //  Get center coordinate float array from sdatMap and use that to generate
     //  Displace from that coordinate by 1/2 fov - 1/2voxel to get to the center of the
     //  toplc from which the individual frame locations are calculated
 
-    //  If volumetric 3D (not 2D), get the center of the TLC voxel in LPS coords:
-    double* volumeTlcLPSFrame = new double[3];
-    //  if more than 1 slice:
-    if ( numPixels[2] > 1 ) {
-
-        //  Get the volumetric center in acquisition frame coords:
-        double volumeCenterAcqFrame[3];
-        for (int i = 0; i < 3; i++) {
-            volumeCenterAcqFrame[i] = this->GetHeaderValueAsFloat("locatio");
-        }
-
-        double* volumeTlcAcqFrame = new double[3];
-        for (int i = 0; i < 3; i++) {
-            volumeTlcAcqFrame[i] = volumeCenterAcqFrame[i]
-                                 + ( this->GetHeaderValueAsFloat("span[]") - pixelSpacing[i] )/2;
-        }
-        //svkPhilipsReader::UserToMagnet(volumeTlcAcqFrame, volumeTlcLPSFrame, dcos);
-        delete [] volumeTlcAcqFrame;
-
-    }
-
+    //  Get the volumetric center in acquisition frame coords:
+    double center[3];
+    center[0] = this->GetHeaderValueAsFloat("ap_off_center");
+    center[1] = this->GetHeaderValueAsFloat("lr_off_center");
+    center[2] = this->GetHeaderValueAsFloat("cc_off_center");
 
     //  Center of toplc (LPS) pixel in frame:
     double toplc[3];
-
-    //
-    //  If 3D vol, calculate slice position, otherwise use value encoded
-    //  into slice header
-    //
-
-     //  If 2D (single slice)
-     if ( numPixels[2] == 1 ) {
-
-        //  Location is the center of the image frame in user (acquisition frame).
-        double centerAcqFrame[3];
-        for ( int j = 0; j < 3; j++) {
-            centerAcqFrame[j] = 0.0;
+    for (int i = 0; i < 3; i++) {
+        toplc[i] = center[i]; 
+        for (int j = 0; j < 3; j++) {
+            toplc[i] -= dcos[j][i] * pixelSpacing[j] * (numPixels[j]/ 2.0 - 0.5 ); 
         }
-
-        //  Now get the center of the tlc voxel in the acq frame:
-        double* tlcAcqFrame = new double[3];
-        for (int j = 0; j < 2; j++) {
-            tlcAcqFrame[j] = centerAcqFrame[j]
-                - ( ( numPixels[j] * pixelSpacing[j] ) - pixelSpacing[j] )/2;
-        }
-        tlcAcqFrame[2] = centerAcqFrame[2];
-
-        //  and convert to LPS (magnet) frame:
-        //svkPhilipsReader::UserToMagnet(tlcAcqFrame, toplc, dcos);
+    }
     
-        delete [] tlcAcqFrame;
-    
-    } else {
-
-        for(int j = 0; j < 3; j++) { //L, P, S
-            toplc[j] = volumeTlcLPSFrame[j]; 
-        }
-    
-   }
-
-
     svkDcmHeader::DimensionVector dimensionVector = this->dcmHeader->GetDimensionIndexVector();
     svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numFrames-1);
 
@@ -355,7 +330,6 @@ void svkPhilipsSMapper::InitPerFrameFunctionalGroupMacros()
         toplc, pixelSpacing, dcos, &dimensionVector
     );
 
-    delete volumeTlcLPSFrame;
 }
 
 
@@ -526,7 +500,6 @@ void svkPhilipsSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcquisitionSliceThickness",
-        //this->GetHeaderValueAsFloat("slice_thickness"),
         fov[2], 
         "SharedFunctionalGroupsSequence",
         0
@@ -781,18 +754,9 @@ void svkPhilipsSMapper::InitMRSpectroscopyModule()
     );
 
 
-    string nucleus = this->sparMap["tn"]; 
-    string dicomNucleus = "1H"; 
-    if ( nucleus.compare("C13") == 0 ) {
-        dicomNucleus = "13C"; 
-    } else if ( nucleus.compare("N15") == 0 ) {
-        dicomNucleus = "15N"; 
-    }
-
-
     this->dcmHeader->SetValue(
         "ResonantNucleus",
-        dicomNucleus 
+        this->sparMap["nucleus"] 
     );
 
     this->dcmHeader->SetValue(
@@ -995,13 +959,6 @@ void svkPhilipsSMapper::ReadSDATFile( string sdatFileName, svkImageData* data )
         cout <<  "ERROR reading file: " << sdatFile << " : "  << e.what() << endl;
         exit(1); 
     }
-
-/*
-*  SDAT files are bigendian.
-*/
-//if ( this->swapBytes ) {
-//vtkByteSwap::SwapVoidRange((void *)this->specData, numBytesInVol/pixelWordSize, pixelWordSize);
-//}
 
     svkDcmHeader* hdr = this->dcmHeader;
 
