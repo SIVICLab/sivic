@@ -292,7 +292,16 @@ int main (int argc, char** argv)
     hsvd->SetInputData( reader->GetOutput() ); 
     hsvd->SetModelOrder( modelOrder ); 
     if ( limitToSelectionBox ) {
-        hsvd->OnlyFitSpectraInVolumeLocalization(); 
+        // Check whether the data is in the correct domain
+        string domainCol    = hdr->GetStringValue( "SVK_ColumnsDomain");
+        string domainRow  = hdr->GetStringValue( "SVK_RowsDomain");
+        string domainSlice = hdr->GetStringValue( "SVK_SliceDomain");
+        if ( !domainCol.compare("KSPACE") || !domainRow.compare("KSPACE") || !domainSlice.compare("KSPACE") ) {
+            cout << "Data in kspace!! Ignoring request to fit only selection box " << endl;
+        }
+        else{
+            hsvd->OnlyFitSpectraInVolumeLocalization();
+        }
     }
     if ( filterWater ) {
         cout << "Filter Water " << endl;

@@ -182,8 +182,8 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
 
     //  First check to see if the transform is required. If not just return: 
     string domainCol = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
-    string domainRow = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
-    string domainSlice = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain"); 
+    string domainRow = data->GetDcmHeader()->GetStringValue( "SVK_RowsDomain");
+    string domainSlice = data->GetDcmHeader()->GetStringValue( "SVK_SliceDomain");
     double kZeroShiftWindow[3] = {0,0,0};
     if( this->mode == REVERSE ) {
         if ( !domainCol.compare("SPACE") || !domainRow.compare("SPACE") || !domainSlice.compare("SPACE") ) {
@@ -745,8 +745,8 @@ void svkMrsImageFFT::ValidateRequest()
     if ( this->onlyUseSelectionBox == true ) {
         svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
         string domainCol = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
-        string domainRow = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
-        string domainSlice = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain"); 
+        string domainRow = data->GetDcmHeader()->GetStringValue( "SVK_RowsDomain");
+        string domainSlice = data->GetDcmHeader()->GetStringValue( "SVK_SliceDomain");
         if ( !domainCol.compare("KSPACE") || !domainRow.compare("KSPACE") || !domainSlice.compare("KSPACE") ) {
             cout << "Ignore request to only transform selection box for kspace data" << endl;
             this->onlyUseSelectionBox = false;
