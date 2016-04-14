@@ -165,6 +165,7 @@ ADD_LIBRARY(
     svkLCModelReader.cc
     svkLCModelCSVReader.cc
     svkLCModelCoordReader.cc
+    svkLCModelTableReader.cc
     svkVariableFlipDatReader.cc
     svkImageWriterFactory.cc
     svkImageReaderFactory.cc

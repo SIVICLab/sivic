@@ -88,10 +88,10 @@ class svkLCModelTableReader : public svkLCModelReader
         void                    ParseTableFiles();
 
         //  Members:
-        void*                                   pixelData; 
-        vtkAbstractArray*                       tablePixelValues; 
-        vtkIntArray*                            tableColIndex; 
-        vtkIntArray*                            tableRowIndex; 
+        void*                   pixelData; 
+        vtkAbstractArray*       tablePixelValues; 
+        vtkIntArray*            tableColIndex; 
+        vtkIntArray*            tableRowIndex; 
 
 };
 

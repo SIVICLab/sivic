@@ -81,6 +81,7 @@ class svkImageReader2 : public vtkImageReader2
             GE_SIGNA_5X,
             LC_MODEL_COORD, 
             LC_MODEL_CSV, 
+            LC_MODEL_TABLE, 
             VARIABLE_FLIP_DAT, 
             BRUKER_MRS,
             PHILIPS_S,

@@ -139,10 +139,10 @@ void svkLCModelTableReader::ExecuteDataWithInformation(vtkDataObject* output, vt
     //  Use an arbitrary point for initialization of scalars.  Actual data 
     //  will be overwritten by algorithm. 
     svkDcmHeader::DimensionVector dimVector = data->GetDcmHeader()->GetDimensionIndexVector();
-    int numDims = dimVector->size();
+    int numDims = dimVector.size();
     // start from 3, since we just want to set the non spatial indices to 0; 
     for ( int dim = 3; dim < numDims; dim++) {
-        svkDcmHeader::SetDimensionVectorValue( dimVector, dim, 0);
+        svkDcmHeader::SetDimensionVectorValue( &dimVector, dim, 0);
     }
     
     svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetImage(
@@ -205,6 +205,31 @@ void svkLCModelTableReader::ParseTableFiles()
             return;
         }
 
+        try {
+
+            ifstream* tableFile = new ifstream();
+            tableFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+
+            tableFile->open( tableFileName.c_str(), ifstream::in );
+            if ( ! tableFile->is_open() ) {
+                throw runtime_error( "Could not open file: " + tableFileName);
+            }
+
+            long tableFileSize = this->GetFileSize( tableFile );
+
+            tableFile->clear();
+            tableFile->seekg( 0, ios_base::beg );
+
+            while (! tableFile->eof() ) {
+                this->GetSparKeyValuePair(); 
+            }
+
+            tableFile->close();
+
+        } catch (const exception& e) {
+            cerr << "ERROR opening or reading LCModel file( " << tableFileName << ": " << e.what() << endl;
+            exit(1); 
+        }
         /*
         //  =============================
         //  initialize the pixel values
