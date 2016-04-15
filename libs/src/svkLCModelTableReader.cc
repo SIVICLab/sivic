@@ -255,9 +255,9 @@ void svkLCModelTableReader::ParseTableFiles() {
 
         // Set the dimension indices for this voxel and initialize the metMapArray: 
         svkDcmHeader::DimensionVector indexVector = dimVector;
-        svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::COL_INDEX, col - 1);
-        svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, row - 1);
-        svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, slice - 1);
+        svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::COL_INDEX, col );
+        svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, row );
+        svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, slice );
         int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&dimVector, &indexVector);
         metMapArray->SetTuple1(
                 cellID,

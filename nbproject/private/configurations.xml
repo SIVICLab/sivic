@@ -2589,6 +2589,12 @@
             </df>
           </df>
         </df>
+        <df name="svk_lcmodel_reader">
+          <df name="input">
+          </df>
+          <df name="output">
+          </df>
+        </df>
         <df name="svk_mrs_combine">
           <df name="input1">
           </df>
@@ -2693,6 +2699,12 @@
         </df>
         <df name="Testing">
           <df name="Temporary">
+          </df>
+        </df>
+        <df name="variable_flip_angle">
+          <df name="input">
+          </df>
+          <df name="output">
           </df>
         </df>
         <df name="varian">
