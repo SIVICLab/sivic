@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2015 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -40,52 +40,67 @@
  */
 
 
-#ifndef SVK_SPEC_UTILS_H
-#define SVK_SPEC_UTILS_H
+#ifndef SVK_LCMODEL_TABLE_READER_H
+#define SVK_LCMODEL_TABLE_READER_H
 
+#include <vtkInformation.h>
+#include <vtkStringArray.h>
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkFloatArray.h>
-#include <vtkMath.h>
-#include <vtkImageFourierFilter.h>
+#include <svkUtils.h>
+#include <svkLCModelReader.h>
+
 
 namespace svk {
 
-using namespace std;
-
 
 /*! 
- *  Static utility methods for swapping bytes. 
+ *  
  */
-class svkSpecUtils : public vtkObject
+class svkLCModelTableReader : public svkLCModelReader
 {
 
     public:
 
-        // vtk type revision macro
-        vtkTypeMacro( svkSpecUtils, vtkObject );
-        
-        static float    GetMagnigutude(vtkFloatArray* spectrum, int point); 
-        static void     PhaseSpectrum(vtkFloatArray* spectrum, float phase, int point, float phasedPoint[2]); 
-        static float    GetChemicalShiftReference(); 
-        static float    GetPPMRef(float transmitFreq, float freqOffset = 0, float temp = svkSpecUtils::BODY_TEMPERATURE ); 
-        static void     CreateLinearPhaseShiftArray(int N, vtkImageComplex* phaseArray, double shift);
-        static void     CreateLinearPhaseShiftArray(int N, vtkImageComplex* phaseArray, double shift, int origin);
-        static string   GetNucleus( float transmitFreq, float fieldStrength ); 
-        static float    GetFieldStrength( string nucleus, float transmitFreq); 
+        static svkLCModelTableReader* New();
+        vtkTypeMacro( svkLCModelTableReader, svkLCModelReader );
+
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::LC_MODEL_TABLE;
+        }
 
 
-        static const float ZERO_KELVIN;
-        static const float H2O_Y_INTERCEPT; 
-        static const float H2O_SLOPE; 
-        static const float BODY_TEMPERATURE; 
+        //  Methods:
+        virtual int             CanReadFile( const char* fname );
 
-        static const float GAMMA_1H;
-        static const float GAMMA_13C;
-        static const float GAMMA_31P;
-        static const float GAMMA_19F;
-        static const float GAMMA_15N;
+    protected:
+
+        svkLCModelTableReader();
+        ~svkLCModelTableReader();
+
+        virtual int             FillOutputPortInformation(int port, vtkInformation* info);
+        virtual void            ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo);
+
+
+    private:
+
+        //  Methods:
+        void                    ParseTableFiles();
+        int                     GetKeyValuePair(); 
+        void                    PrintKeyValuePairs(); 
+        bool                    IsMetNameValid(); 
+        void                    ParseSubFields(string keyString, string valueString); 
+
+
+        //  Members:
+        void*                   pixelData; 
+        vtkAbstractArray*       tablePixelValues; 
+        vtkIntArray*            tableColIndex; 
+        vtkIntArray*            tableRowIndex; 
+        ifstream*               tableFile;
+        long                    tableFileSize;
+        map <string, string >   tableMap;  
+        vector <string>         validFields; 
 
 
 };
@@ -94,4 +109,5 @@ class svkSpecUtils : public vtkObject
 }   //svk
 
 
-#endif //SVK_SPEC_UTILS_H
+#endif //SVK_LCMODEL_TABLE_READER_H
+

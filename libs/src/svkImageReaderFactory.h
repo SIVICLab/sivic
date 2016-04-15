@@ -54,6 +54,7 @@
 #include <svkDdfVolumeReader.h>
 #include <svkFdfVolumeReader.h>
 #include <svkVarianFidReader.h>
+#include <svkPhilipsSReader.h>
 #include <svkSdbmVolumeReader.h>
 #include <svkSiemensRdaReader.h>
 #include <svkGEPFileReader.h>
@@ -62,6 +63,9 @@
 #include <svkGEPostageStampReader.h>
 #include <svkBrukerDCMMRSReader.h>
 #include <svkDcmRawDataReader.h>
+#include <svkDcmSegmentationVolumeReader.h>
+#include <svkLCModelCSVReader.h>
+#include <svkLCModelTableReader.h>
 #include <svkDcmSegmentationVolumeReader.h>
 
 
@@ -115,8 +119,11 @@ class svkImageReaderFactory : public vtkImageReader2Factory
         svkGESignaLX2Reader*            geSignaLX2Reader;
         svkGEPostageStampReader*        gePostageStampReader;
         svkBrukerDCMMRSReader*          brukerDCMMRSReader;
+        svkPhilipsSReader*              philipsSReader;
         svkDcmRawDataReader*            dcmRawDataReader;
         svkDcmSegmentationVolumeReader* dcmSegmentationVolReader; 
+        svkLCModelCSVReader*            lcmodelCSVReader; 
+        svkLCModelTableReader*          lcmodelTableReader; 
 
         bool                        quickParse; 
 

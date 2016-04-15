@@ -165,6 +165,7 @@ ADD_LIBRARY(
     svkLCModelReader.cc
     svkLCModelCSVReader.cc
     svkLCModelCoordReader.cc
+    svkLCModelTableReader.cc
     svkVariableFlipDatReader.cc
     svkImageWriterFactory.cc
     svkImageReaderFactory.cc
@@ -191,6 +192,8 @@ ADD_LIBRARY(
     svkDcmRawDataReader.cc
     svkGEPostageStampReader.cc
     svkBrukerDCMMRSReader.cc
+    svkPhilipsSReader.cc
+    svkPhilipsSMapper.cc
     svkVarianReader.cc
     svkFdfVolumeReader.cc
     svkVarianFidReader.cc

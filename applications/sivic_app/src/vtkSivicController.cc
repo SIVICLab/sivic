@@ -1702,12 +1702,12 @@ int vtkSivicController::OpenFile( const char* openType, const char* startPath, b
 
 			this->app->GetRegistryValue( this->registryLevel, "defaults", "spectra_extension_filtering", defaultSpectraExtension );
 			if( defaultSpectraExtension != NULL && strcmp( defaultSpectraExtension, "OFF" ) == 0 ) {
-				dlg->SetFileTypes("{{All files} {.*}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid}}");
+				dlg->SetFileTypes("{{All files} {.*}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid .SDAT}}");
 			} else {
-				dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm .DCM fid}} {{All files} {.*}}");
+				dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm .DCM fid .SDAT}} {{All files} {.*}}");
 			}
         } else {
-            dlg->SetFileTypes("{{All files} {.*}} {{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid}}");
+            dlg->SetFileTypes("{{All files} {.*}} {{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid .SDAT}}");
         }
     
 

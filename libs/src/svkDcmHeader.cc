@@ -1026,19 +1026,6 @@ void svkDcmHeader::InsertDimensionIndexLabels( )
             
         }
 
-        //  Type 1c
-        //if ( this->ElementExists( "FunctionalGroupPointer", "DimensionIndexSequence") == true ) {
-            //dimensionFunctionalGroupPointer = this->GetStringSequenceItemElement(
-                //"DimensionIndexSequence",
-                //dimensionIndexNumber, 
-                //"FunctionalGroupPointer",
-                //NULL, 
-                //dimensionIndexNumber 
-            //);
-            ////cout << "dimensionFunctionalGroupPointer" << dimensionFunctionalGroupPointer << endl;
-            //string tagName = this->GetDcmNameFromTag( dimensionIndexPointer ); 
-            //cout << "TN: " << tagName << endl;
-        //}
         this->AddSequenceItemElement(
             "DimensionIndexSequence",
             dimNum,

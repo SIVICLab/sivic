@@ -81,8 +81,10 @@ class svkImageReader2 : public vtkImageReader2
             GE_SIGNA_5X,
             LC_MODEL_COORD, 
             LC_MODEL_CSV, 
+            LC_MODEL_TABLE, 
             VARIABLE_FLIP_DAT, 
             BRUKER_MRS,
+            PHILIPS_S,
             DDF,
             IDF,
             LAST_TYPE = IDF
@@ -94,7 +96,7 @@ class svkImageReader2 : public vtkImageReader2
         svkImageData*                        GetOutput(int);
         svkDcmHeader*                        GetDcmHeader( const char* fileName );
         static string                        StripWhite(string in);
-        static string                        RemoveSlashesFromDate(string* slashDate); 
+        static string                        RemoveDelimFromDate(string* slashDate, char delimChar = '/'); 
         static string                        GetFileRoot(const char* fname);
         static string                        GetFileExtension(const char* fname);
         static string                        GetFilePath(const char* fname);
@@ -136,7 +138,7 @@ class svkImageReader2 : public vtkImageReader2
                                                     istringstream* iss, 
                                                     char delim
                                                  ); 
-        void                                     ReadLineKeyValue( 
+        int                                      ReadLineKeyValue( 
                                                     ifstream* hdr, 
                                                     istringstream* iss, 
                                                     char delim, 

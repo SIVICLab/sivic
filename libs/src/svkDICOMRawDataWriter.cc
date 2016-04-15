@@ -379,7 +379,7 @@ void svkDICOMRawDataWriter::InitGeneralStudyModule()
     vtkstd::string dcmDate = svkGEPFileMapper::ConvertGEDateToDICOM( this->pfMap["rhr.rh_scan_date"][3] ); 
 
     this->dcmHeader->InitGeneralStudyModule(
-        svkImageReader2::RemoveSlashesFromDate( &dcmDate ),
+        svkImageReader2::RemoveDelimFromDate( &dcmDate ),
         this->pfMap["rhr.rh_scan_time"][3],  
         this->pfMap["rhe.refphy"][3],  
         this->pfMap["rhe.ex_no"][3],  
@@ -459,7 +459,7 @@ void svkDICOMRawDataWriter::InitGeneralSeriesModule()
 
     this->dcmHeader->SetValue(
         "SeriesDate",
-        svkImageReader2::RemoveSlashesFromDate( &dcmDate )
+        svkImageReader2::RemoveDelimFromDate( &dcmDate )
     );
 
 
@@ -534,7 +534,7 @@ void svkDICOMRawDataWriter::InitRawDataModule()
 
     this->dcmHeader->SetValue(
         "ContentDate",
-        svkImageReader2::RemoveSlashesFromDate( &dcmDate )
+        svkImageReader2::RemoveDelimFromDate( &dcmDate )
     ); 
 
 
