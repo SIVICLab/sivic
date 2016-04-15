@@ -59,130 +59,151 @@ using namespace svk;
 
 vtkStandardNewMacro(svkLCModelTableReader);
 
-
 /*!
  *  
  */
-svkLCModelTableReader::svkLCModelTableReader()
-{
+svkLCModelTableReader::svkLCModelTableReader() {
 
 #if VTK_DEBUG_ON
     this->DebugOn();
     vtkDebugLeaks::ConstructClass("svkLCModelTableReader");
 #endif
 
-    vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
+    vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()");
 
     //  3 required input ports: 
     this->SetNumberOfInputPorts(1);
 
-}
+    this->validFields.push_back("FWHM");
+    this->validFields.push_back("S/N");
+    this->validFields.push_back("Data shift");
+    this->validFields.push_back("Ph");
 
+}
 
 /*!
  *
  */
-svkLCModelTableReader::~svkLCModelTableReader()
-{
-    vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
+svkLCModelTableReader::~svkLCModelTableReader() {
+    vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()");
 }
-
-
 
 /*!
  *  Check to see if the extension indicates a UCSF IDF file.  If so, try 
  *  to open the file for reading.  If that works, then return a success code. 
  *  Return Values: 1 if can read the file, 0 otherwise.
  */
-int svkLCModelTableReader::CanReadFile(const char* fname)
-{
+int svkLCModelTableReader::CanReadFile(const char* fname) {
 
     vtkstd::string fileToCheck(fname);
 
-    if( fileToCheck.size() > 4 ) {
+    if (fileToCheck.size() > 4) {
 
         // Also see "vtkImageReader2::GetFileExtensions method" 
-        if ( 
-            fileToCheck.substr( fileToCheck.size() - 4 ) == ".table"  
-        )  {
+        if (
+                fileToCheck.substr(fileToCheck.size() - 6) == ".table"
+                ) {
             FILE* fp = fopen(fname, "rb");
             if (fp) {
                 fclose(fp);
-                vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's an LCModel Table File: " << fileToCheck);
+                vtkDebugMacro( << this->GetClassName() << "::CanReadFile(): It's an LCModel Table File: " << fileToCheck);
                 return 1;
             }
         } else {
-            vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's NOT a LCModel Table File: " << fileToCheck);
+            vtkDebugMacro( << this->GetClassName() << "::CanReadFile(): It's NOT an LCModel Table File: " << fileToCheck);
             return 0;
         }
     } else {
-        vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): s NOT a valid file: " << fileToCheck);
+        vtkDebugMacro( << this->GetClassName() << "::CanReadFile(): s NOT a valid file: " << fileToCheck);
         return 0;
     }
 }
-
 
 
 /*!
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkLCModelTableReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
-{
+void svkLCModelTableReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo) {
 
-    vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
+    vtkDebugMacro( << this->GetClassName() << "::ExecuteData()");
 
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
+    this->IsMetNameValid();
+
+    svkImageData* data = svkImageData::SafeDownCast(this->AllocateOutputData(output, outInfo));
 
     //  Create the template data object by  
     //  extractng an svkMriImageData from the input svkMrsImageData object
     //  Use an arbitrary point for initialization of scalars.  Actual data 
     //  will be overwritten by algorithm. 
-    svkDcmHeader::DimensionVector dimVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector dimVector = svkImageData::SafeDownCast(this->GetImageDataInput(0))
+            ->GetDcmHeader()->GetDimensionIndexVector();
     int numDims = dimVector.size();
     // start from 3, since we just want to set the non spatial indices to 0; 
-    for ( int dim = 3; dim < numDims; dim++) {
-        svkDcmHeader::SetDimensionVectorValue( &dimVector, dim, 0);
+    for (int dim = 3; dim < numDims; dim++) {
+        svkDcmHeader::SetDimensionVectorValue(&dimVector, dim, 0);
     }
-    
-    svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetImage(
-        svkMriImageData::SafeDownCast( this->GetOutput() ),
-        0,
-        &dimVector,
-        0,
-        this->GetSeriesDescription(),
-        VTK_DOUBLE
-    );
 
-    this->ParseTableFiles(); 
+    svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetImage(
+            svkMriImageData::SafeDownCast(this->GetOutput()),
+            0,
+            &dimVector,
+            0,
+            this->GetSeriesDescription(),
+            VTK_DOUBLE
+            );
+
+    this->ParseTableFiles();
 
 }
 
+/*!
+ *  Validate that the specified met name exists in the table file
+ */
+bool svkLCModelTableReader::IsMetNameValid() 
+{
+
+    bool isValid = false;
+    for (int i = 0; i < this->validFields.size(); i++) {
+        if (this->metName.compare(this->validFields[i]) == 0) {
+            isValid = true;
+            break;
+        }
+    }
+    if (!isValid) {
+        cout << "ERROR: the specified field can not be parsed from the .table files: " << this->metName << endl;
+        cout << "The following are valid fields: " << endl;
+        for (int i = 0; i < this->validFields.size(); i++) {
+            cout << "    " << this->validFields[i] << endl;
+        }
+        exit(1);
+    }
+    return isValid;
+}
 
 /*
- *  Read IDF header fields into a string STL map for use during initialization 
+ *  Read Table file fields into a string STL map for use during initialization 
  *  of DICOM header by Init*Module methods. 
  */
-void svkLCModelTableReader::ParseTableFiles()
-{
-   
+void svkLCModelTableReader::ParseTableFiles() {
+
     this->GlobFileNames();
 
     vtkDataArray* metMapArray = this->GetOutput()->GetPointData()->GetArray(0);
 
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
-    svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector(); 
-    int voxels[3];  
-    hdr->GetSpatialDimensions( &dimVector, voxels ); 
+    svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector();
+    int voxels[3];
+    hdr->GetSpatialDimensions(&dimVector, voxels);
 
-    int numVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVector); 
-    for (int i = 0; i < numVoxels; i++ ) {
+    int numVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVector);
+    for (int i = 0; i < numVoxels; i++) {
         metMapArray->SetTuple1(i, 0);
     }
 
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
-        string tableFileName = this->GetFileNames()->GetValue( fileIndex );
+        string tableFileName = this->GetFileNames()->GetValue(fileIndex);
         cout << "Table NAME: " << tableFileName << endl;
 
         // ==========================================
@@ -192,99 +213,161 @@ void svkLCModelTableReader::ParseTableFiles()
         //
         // test_1377_c9_r11_s4.table
         // ==========================================
-        vtkDebugMacro( << this->GetClassName() << " FileName: " << tableFileName );
+        vtkDebugMacro( << this->GetClassName() << " FileName: " << tableFileName);
 
-        int col; 
-        int row; 
-        int slice; 
-        this->GetVoxelIndexFromFileName(tableFileName, &col, &row, &slice); 
- 
+        int col;
+        int row;
+        int slice;
+        this->GetVoxelIndexFromFileName(tableFileName, &col, &row, &slice);
+
         struct stat fs;
-        if ( stat( tableFileName.c_str(), &fs) ) {
-            vtkErrorMacro("Unable to open file " << tableFileName );
+        if (stat(tableFileName.c_str(), &fs)) {
+            vtkErrorMacro("Unable to open file " << tableFileName);
             return;
         }
 
         try {
 
-            ifstream* tableFile = new ifstream();
-            tableFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+            this->tableFile = new ifstream();
+            this->tableFile->exceptions(ifstream::eofbit | ifstream::failbit | ifstream::badbit);
 
-            tableFile->open( tableFileName.c_str(), ifstream::in );
-            if ( ! tableFile->is_open() ) {
-                throw runtime_error( "Could not open file: " + tableFileName);
+            this->tableFile->open(tableFileName.c_str(), ifstream::in);
+            if (!this->tableFile->is_open()) {
+                throw runtime_error("Could not open file: " + tableFileName);
             }
 
-            long tableFileSize = this->GetFileSize( tableFile );
+            this->tableFileSize = this->GetFileSize(this->tableFile);
 
-            tableFile->clear();
-            tableFile->seekg( 0, ios_base::beg );
+            this->tableFile->clear();
+            this->tableFile->seekg(0, ios_base::beg);
 
-            while (! tableFile->eof() ) {
-                this->GetSparKeyValuePair(); 
+            while (!this->tableFile->eof()) {
+                this->GetKeyValuePair();
             }
+            this->PrintKeyValuePairs();
 
-            tableFile->close();
+            this->tableFile->close();
 
         } catch (const exception& e) {
             cerr << "ERROR opening or reading LCModel file( " << tableFileName << ": " << e.what() << endl;
-            exit(1); 
+            exit(1);
         }
-        /*
-        //  =============================
-        //  initialize the pixel values
-        //  =============================
-        string colName = this->metName; 
-        if ( !table->GetColumnByName(colName.c_str() ) ) {
-            cout << "Warning:  no column " << colName << endl;
-            //exit(1); 
-            continue; 
-        } else {
-            this->tablePixelValues = table->GetColumnByName(colName.c_str() ) ; 
-        }
-        int tablePixelDataType = this->tablePixelValues->GetDataType();  
 
-        
-
-        //  =============================
-        //  initialize a slice index from 
-        //  the table file name: 
-        //  =============================
-        int sliceIndex = slice;  
-        //  =============================
-        //  create an index dimVector and set the values of slice, row, and col from the values in teh table
-        //  once these are set, then determine the voxel index for those values and set the value of 
-        //  the metMapArray for that index.  
-
-        float voxelValue;
-        svkDcmHeader::DimensionVector indexVector = dimVector; 
-        //cout << "NUM ROWS: " << numRows << endl;
-        for (int i = 0; i < numRows; i++ ) {
-            int rowIndex     = this->tableRowIndex->GetTuple1(i) - 1;
-            int colIndex     = this->tableColIndex->GetTuple1(i) - 1;
-            if ( tablePixelDataType == VTK_DOUBLE ) {
-                voxelValue = vtkDoubleArray::SafeDownCast( this->tablePixelValues )->GetTuple1(i) ;
-            } else if ( tablePixelDataType == VTK_INT ) {
-                voxelValue = vtkIntArray::SafeDownCast( this->tablePixelValues )->GetTuple1(i) ;
-            }
-            //cout << "PV: " << voxelValue << endl;
-            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::COL_INDEX, colIndex);
-            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, rowIndex);
-            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, sliceIndex);
-            int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &indexVector);
-            metMapArray->SetTuple1(cellID, voxelValue);
-        }
-        */
-
+        // Set the dimension indices for this voxel and initialize the metMapArray: 
+        svkDcmHeader::DimensionVector indexVector = dimVector;
+        svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::COL_INDEX, col - 1);
+        svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, row - 1);
+        svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, slice - 1);
+        int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&dimVector, &indexVector);
+        metMapArray->SetTuple1(
+                cellID,
+                svkTypeUtils::StringToFloat(this->tableMap[this->metName])
+                );
     }
 }
 
+/*! 
+ *  Utility function to read key/values from spar file 
+ *  and set the delimited key/value pair into the stl map.  
+ *  \return  0 if found key value pair, 1 otherwise
+ */
+int svkLCModelTableReader::GetKeyValuePair() 
+{
+
+    int status = 1;
+
+    istringstream* iss = new istringstream();
+
+    string keyString;
+    string valueString;
+
+    try {
+        if (this->tableFile->tellg() <= this->tableFileSize) {
+
+            char delim = '='; 
+            if (this->metName.compare("Ph") == 0 ){
+                delim = ':'; 
+            }
+
+            status = this->ReadLineKeyValue(this->tableFile, iss, delim, &keyString, &valueString);
+            if (status == 0) {
+                valueString.erase(remove(valueString.begin(), valueString.end(), '\r'), valueString.end());
+                this->ParseSubFields(keyString, valueString);
+            }
+            //cout << "KEY VAL: " << keyString << " = " << valueString << endl;
+
+        } else {
+            this->tableFile->seekg(0, ios::end);
+        }
+
+    } catch (const exception& e) {
+        if (this->GetDebug()) {
+            cout << "ERROR reading line: " << e.what() << endl;
+        }
+    }
+
+    delete iss;
+    return status;
+}
+
+/*!
+ *  Parse specific sub fields fields from table file rows
+ */
+void svkLCModelTableReader::ParseSubFields(string keyString, string valueString) {
+
+    if (keyString.compare("FWHM") == 0) {
+
+        //  FWHM = 0.052 ppm    S/N =  36
+        //  remove units and parse S/N field
+        size_t delimPos = valueString.find_first_of(' ');
+        string fwhmValue = valueString.substr(0, delimPos);
+
+        string snValue = valueString.substr(delimPos + 1);
+        delimPos = snValue.find_first_of('=');
+        snValue = snValue.substr(delimPos + 1);
+        delimPos = snValue.find_first_not_of(' ');
+        snValue = snValue.substr(delimPos);
+
+        this->tableMap["FWHM"] = fwhmValue;
+        this->tableMap["S/N"] = snValue;
+
+    } else if (keyString.compare("Data shift") == 0) {
+
+        //Data shift =-0.055 ppm
+        //  remove units 
+        size_t delimPos = valueString.find_first_of(' ');
+        string shiftValue = valueString.substr(0, delimPos);
+        this->tableMap["Data shift"] = shiftValue;
+
+    } else if (keyString.compare("Ph") == 0) {
+
+        //Ph:  78 deg      34.9 deg/ppm
+        //  remove units 
+        size_t delimPos = valueString.find_first_of(' ');
+        string phValue = valueString.substr(0, delimPos);
+        this->tableMap["Ph"] = phValue;
+
+    } else {
+        this->tableMap[keyString] = valueString;
+    }
+}
+
+/*!
+ *  Prints the key value pairs parsed from the header of a single table file. 
+ */
+void svkLCModelTableReader::PrintKeyValuePairs() {
+
+    //  Print out key value pairs parsed from header:
+    map< string, string >::iterator mapIter;
+    for (mapIter = this->tableMap.begin(); mapIter != this->tableMap.end(); ++mapIter) {
+        cout << this->GetClassName() << " " << mapIter->first << " = " << mapIter->second << endl;
+    }
+}
 
 /*!
  *
  */
-int svkLCModelTableReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
-{
+int svkLCModelTableReader::FillOutputPortInformation(int vtkNotUsed(port), vtkInformation* info) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
     return 1;
 }

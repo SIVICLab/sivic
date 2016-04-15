@@ -1186,6 +1186,8 @@
           <in>svkLCModelRawWriter.h</in>
           <in>svkLCModelReader.cc</in>
           <in>svkLCModelReader.h</in>
+          <in>svkLCModelTableReader.cc</in>
+          <in>svkLCModelTableReader.h</in>
           <in>svkLabeledDataMapper.cc</in>
           <in>svkLabeledDataMapper.h</in>
           <in>svkLookupTable.cc</in>

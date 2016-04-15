@@ -86,12 +86,22 @@ class svkLCModelTableReader : public svkLCModelReader
 
         //  Methods:
         void                    ParseTableFiles();
+        int                     GetKeyValuePair(); 
+        void                    PrintKeyValuePairs(); 
+        bool                    IsMetNameValid(); 
+        void                    ParseSubFields(string keyString, string valueString); 
+
 
         //  Members:
         void*                   pixelData; 
         vtkAbstractArray*       tablePixelValues; 
         vtkIntArray*            tableColIndex; 
         vtkIntArray*            tableRowIndex; 
+        ifstream*               tableFile;
+        long                    tableFileSize;
+        map <string, string >   tableMap;  
+        vector <string>         validFields; 
+
 
 };
 

@@ -80,23 +80,28 @@ int main (int argc, char** argv)
     usemsg += "                                                                                     \n";  
     usemsg += "   -i        name        Name of template MRS file.                                  \n"; 
     usemsg += "   -o        name        Root name of outputfile.                                    \n";
-    usemsg += "   --csv     name        Name of csv file to convert.                                \n";
+    usemsg += "   --csv     name        Name of .csv or .table file to convert.                     \n";
     usemsg += "                         (specify 1 and all will be read.)                           \n";
     usemsg += "   --coord   name        Name of coord file to convert                               \n";
     usemsg += "                         (specify 1 coord file and all will be read.)                \n";
     usemsg += "                         By default background, fit and phased data will be read.    \n";
     usemsg += "                         To read a specific fitted basis component use --met as well.\n";
-    usemsg += "   --met     met_name    Name of met to convert (specify 1 and all will be read.)    \n";
-    usemsg += "   -b                    Set up for selection box analysis only.                     \n";
+    usemsg += "   --met     met_name    Name of met or miscelenaous field (.table file)  to convert.\n"; 
+    usemsg += "   -b                    Only initialize data in selection box                       \n";
     usemsg += "   -h                    Print this help mesage.                                     \n";  
     usemsg += "                                                                                     \n";  
-    usemsg += "Reads LCModel .csv output and converts to DICOM metabolite maps, and/or reads in     \n"; 
-    usemsg += "LCModel .coord files and converts the fitted spectra and phased data into MRS DCM    \n";  
+    usemsg += "Reads LCModel .csv or .table output and converts to DICOM metabolite maps,           \n"; 
+    usemsg += "and/or reads in LCModel .coord files and converts the fitted spectra and phased data \n"; 
+    usemsg += "into MRS DCM                                                                         \n";  
     usemsg += "output files.                                                                        \n";  
     usemsg += "                                                                                     \n";  
     usemsg += "Examples:                                                                            \n";  
     usemsg += "read in fitted NAA fit from coord files.                                             \n";  
-    usemsg += "svk_lcmodel_reader -i t1234.ddf --coord t1234_c1_r1_s1_sl4_10-8.coord -o t1234       \n";  
+    usemsg += "svk_lcmodel_reader -i t1234.ddf --coord t1234_c1_r1_s1_sl4_10-8.coord                \n";  
+    usemsg += "                   -o t1234 -b --met 'NAA Conc'                                      \n";  
+    usemsg += "svk_lcmodel_reader -i t1234.dcm --csv t1234_c1_r1_s1_sl4_10-8.csv -o t1234           \n";  
+    usemsg += "                   -o t1234 -b --met 'NAA Conc'                                      \n";  
+    usemsg += "svk_lcmodel_reader -i t1234.dcm --tab t1234_c1_r1_s1_sl4_10-8.table -o t1234           \n";  
     usemsg += "                   -o t1234 -b --met 'NAA Conc'                                      \n";  
 
     string  inputFileName; 
@@ -176,12 +181,22 @@ int main (int argc, char** argv)
             cerr << "Input file can not be loaded (may not exist) " << csvFileName << endl; 
             exit(1); 
         }
-        cout << "file name: " << inputFileName << endl;
-        cout << "csv file name: " << inputFileName << endl;
+        cout << "file name    : " << inputFileName << endl;
+        cout << "csv file name: " << csvFileName << endl;
 
         // ===============================================  
         // ===============================================  
-        svkLCModelCSVReader* csvReader = svkLCModelCSVReader::New(); 
+        svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+        svkLCModelReader* csvReader = svkLCModelReader::SafeDownCast( 
+            readerFactory->CreateImageReader2( csvFileName.c_str())
+        );
+        readerFactory->Delete();
+
+        if ( csvReader == NULL ) {
+            cerr << "Can not determine appropriate reader for: " << csvFileName << endl;
+            exit(1);
+        }
+
         csvReader->SetMetName( metName ); 
         csvReader->SetFileName(csvFileName.c_str() ); 
         csvReader->SetMRSFileName(inputFileName.c_str() ); 

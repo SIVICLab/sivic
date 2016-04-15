@@ -78,6 +78,8 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->philipsSReader            = svkPhilipsSReader::New();
     this->dcmRawDataReader          = svkDcmRawDataReader::New();
     this->dcmSegmentationVolReader  = svkDcmSegmentationVolumeReader::New();
+    this->lcmodelCSVReader          = svkLCModelCSVReader::New();
+    this->lcmodelTableReader        = svkLCModelTableReader::New();
 
     vtkImageReader2Factory::RegisterReader( this->dcmMriVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmMrsVolReader );
@@ -96,6 +98,8 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->philipsSReader );
     vtkImageReader2Factory::RegisterReader( this->dcmRawDataReader);
     vtkImageReader2Factory::RegisterReader( this->dcmSegmentationVolReader );
+    vtkImageReader2Factory::RegisterReader( this->lcmodelCSVReader );
+    vtkImageReader2Factory::RegisterReader( this->lcmodelTableReader );
 
     //  this can be used if only need to check file type for example.
     this->quickParse = false; 
@@ -196,6 +200,15 @@ svkImageReaderFactory::~svkImageReaderFactory()
         this->dcmSegmentationVolReader = NULL;
     }
 
+    if (this->lcmodelCSVReader != NULL) {
+        this->lcmodelCSVReader->Delete();
+        this->lcmodelCSVReader = NULL;
+    }
+
+    if (this->lcmodelTableReader != NULL) {
+        this->lcmodelTableReader->Delete();
+        this->lcmodelTableReader = NULL;
+    }
 }
 
 
@@ -265,7 +278,9 @@ svkImageReader2* svkImageReaderFactory::CreateImageReader2( svkImageReader2::Rea
     } else if ( readerType == svkImageReader2::LC_MODEL_COORD) {
         //return svkLCModelCoordReader::New(); 
     } else if ( readerType == svkImageReader2::LC_MODEL_CSV) {
-        //return svkLCModelCSVReader::New(); 
+        return svkLCModelCSVReader::New(); 
+    } else if ( readerType == svkImageReader2::LC_MODEL_TABLE ) {
+        return svkLCModelTableReader::New(); 
     } else if ( readerType == svkImageReader2::BRUKER_MRS) {
         return svkBrukerDCMMRSReader::New(); 
     } else if ( readerType == svkImageReader2::PHILIPS_S ) {

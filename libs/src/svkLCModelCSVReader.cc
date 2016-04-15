@@ -211,13 +211,8 @@ void svkLCModelCSVReader::ParseCSVFiles()
 
         vtkDelimitedTextReader* csvReader = vtkDelimitedTextReader::New();
         csvReader->SetFieldDelimiterCharacters(",");
-        //csvReader->SetStringDelimiter(', ');
-        // produces | Col|
-//csvReader->SetFieldDelimiterCharacters(",");
-//csvReader->SetStringDelimiter(',');
         csvReader->SetMergeConsecutiveDelimiters(true); 
         csvReader->SetHaveHeaders(true);
-        //csvReader->DetectNumericColumnsOn();
         csvReader->SetFileName( csvFileName.c_str() ); 
         csvReader->Update();
 
@@ -225,8 +220,6 @@ void svkLCModelCSVReader::ParseCSVFiles()
         numeric->SetInputConnection ( csvReader->GetOutputPort());
         numeric->Update();
         vtkTable* table = vtkTable::SafeDownCast(numeric->GetOutput());
-        //vtkTable* table = csvReader->GetOutput();
-        //cout << *table << endl;
         
         //cout << "==========================================" << endl;
         //table->Dump();
@@ -234,8 +227,6 @@ void svkLCModelCSVReader::ParseCSVFiles()
         int numCols = table->GetNumberOfColumns() ; 
         int numRows = table->GetNumberOfRows() ; 
 
-        //cout << "NC: " << numCols  << endl; 
-        //cout << "NR: " << numRows  << endl; 
         for ( int i = 0; i < numCols; i++ ) {
             string colName( table->GetColumn(i)->GetName() ); 
             table->GetColumn(i)->SetName( this->StripWhite( colName ).c_str() ); 
@@ -243,8 +234,6 @@ void svkLCModelCSVReader::ParseCSVFiles()
             //cout << table->GetColumn(i)->GetName() << endl; 
             //cout << *table->GetColumn(i) << endl; 
         }
-
-
 
         //  =============================
         //  initialize the row vals 
