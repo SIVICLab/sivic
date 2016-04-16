@@ -1,15 +1,30 @@
 #!/bin/csh
 
+
+#   Add Resources, e.g for tcl/tk, dicom, icons, X11 libs: 
 mkdir -p SIVIC.app/Contents/Resources
 
-cp -rp plugin_depends/tk8.5                                                     SIVIC.app/Contents/Resources
-cp -rp plugin_depends/tcl8.5                                                    SIVIC.app/Contents/Resources
-cp ../../working/release/applications/sivic_app/Darwin_i386/sivic               SIVIC.app/Contents/Resources
-cp sivic.sh                                                                     SIVIC.app/Contents/Resources
-cp SIVIC                                                                        SIVIC.app/SIVIC.sh
-cp standalone/Info.plist                                                        SIVIC.app/Contents
-cp Icons/prism_blue.icns                                                        SIVIC.app/Contents/Resources/prism.icns
-cp /usr/local/dicom/share/dcmtk/dicom.dic                                       SIVIC.app/Contents/Resources/
+cp -rp plugin_depends/tk8.5                                         SIVIC.app/Contents/Resources
+cp -rp plugin_depends/tcl8.5                                        SIVIC.app/Contents/Resources
+cp ../../working/release/applications/sivic_app/Darwin_i386/sivic   SIVIC.app/Contents/Resources
+cp sivic.sh                                                         SIVIC.app/Contents/Resources
+cp SIVIC                                                            SIVIC.app/SIVIC.sh
+cp standalone/Info.plist                                            SIVIC.app/Contents
+cp Icons/prism_blue.icns                                            SIVIC.app/Contents/Resources/prism.icns
+cp /usr/local/dicom/share/dcmtk/dicom.dic                           SIVIC.app/Contents/Resources/
+
+mkdir -p SIVIC.app/Contents/Resources/X11
+cp /opt/X11/lib/libfontconfig.1.dylib                               SIVIC.app/Contents/Resources/X11
+cp /opt/X11/lib/libGLU.1.dylib                                      SIVIC.app/Contents/Resources/X11
+cp /opt/X11/lib/libGL.1.dylib                                       SIVIC.app/Contents/Resources/X11
+cp /opt/X11/lib/libSM.6.dylib                                       SIVIC.app/Contents/Resources/X11
+cp /opt/X11/lib/libICE.6.dylib                                      SIVIC.app/Contents/Resources/X11
+cp /opt/X11/lib/libX11.6.dylib                                      SIVIC.app/Contents/Resources/X11
+cp /opt/X11/lib/libXext.6.dylib                                     SIVIC.app/Contents/Resources/X11
+cp /opt/X11/lib/libXt.6.dylib                                       SIVIC.app/Contents/Resources/X11
+cp /opt/X11/lib/libXss.1.dylib                                      SIVIC.app/Contents/Resources/X11
+cp /opt/X11/lib/libXft.2.dylib                                      SIVIC.app/Contents/Resources/X11
+cp /opt/X11/lib/libOSMesa.8.dylib                                   SIVIC.app/Contents/Resources/X11
 
 
 #   Add standalone tools: 
@@ -19,7 +34,7 @@ mkdir -p SIVIC.app/Contents/sivic/local/bin
 mkdir -p SIVIC.app/Contents/sivic/local/sivic
 mkdir -p SIVIC.app/Contents/sivic/local/sivic/dcmtk/lib
 
-cp /usr/local/dicom/share/dcmtk/dicom.dic   SIVIC.app/Contents/sivic/local/sivic/dcmtk/lib/
+cp /usr/local/dicom/share/dcmtk/dicom.dic                                               SIVIC.app/Contents/sivic/local/sivic/dcmtk/lib/
 
 cp ../../working/release/applications/cmd_line/Darwin_i386/svk_file_convert             SIVIC.app/Contents/sivic/local/sivic/
 cp ../../working/release/applications/cmd_line/Darwin_i386/svk_quick_view               SIVIC.app/Contents/sivic/local/sivic/

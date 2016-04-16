@@ -52,7 +52,8 @@ echo ${plugin_path}
 DYLD_FRAMEWORK_PATH="${plugin_path}/Frameworks"
 export DYLD_FRAMEWORK_PATH
 
-DYLD_LIBRARY_PATH="${plugin_path}:${plugin_path}/tcl8.5/lib:${plugin_path}/tk8.5/lib"
+#   add dyld path to DYLD_LIBRARY_PATH environment variable to fiind tcl/tk and X11 components: 
+DYLD_LIBRARY_PATH="${plugin_path}:${plugin_path}/tcl8.5/lib:${plugin_path}/tk8.5/lib:${plugin_path}/X11"
 export DYLD_LIBRARY_PATH
 set | grep  DYLD_FRAMEWORK_PATH
 set | grep  DYLD_LIBRARY_PATH
