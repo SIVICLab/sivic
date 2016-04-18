@@ -8,7 +8,7 @@
 OSTYPE := $(shell uname -s)
 
 VTK_DIR         = /netopt/lib/vtk-5.6
-VTK6_DIR        = /opt/src/freeware/vtk/VTK-6.3.0/Linux_x86_64_debug_install/./lib/cmake/vtk-6.3/
+VTK6_DIR        = /netopt/VTK/VTK-6.3.0/lib/cmake/vtk-6.3/
 KWW_DIR     	= /netopt/kwwidgets_2.0_56/lib/KWWidgets
 KWW6_DIR     	= /opt/src/freeware/kwwidgets/KWWidgets_VTK6_install/
 DCMTK_DIR       = /netopt/dicom
@@ -156,7 +156,7 @@ configure_dist: clean_results
 # 	configure for UCSF release (not OsiriX)
 #
 configure_dist_UCSF: clean_results 
-	(${RM_CACHE} ${CONFIG_BASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
+	(${RM_CACHE} ${CONFIG_BASE_VTK6} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 
 
