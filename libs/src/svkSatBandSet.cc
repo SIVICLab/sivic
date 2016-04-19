@@ -540,19 +540,19 @@ void svkSatBandSet::GenerateSatBandsActor( )
         clippers[0]->SetInputData( slabDataSet );
         clippers[0]->SetClipFunction(clippingPlanes[0]);
 
-        clippers[1]->SetInputData( clippers[0]->GetOutput() );
+        clippers[1]->SetInputConnection( clippers[0]->GetOutputPort() );
         clippers[1]->SetClipFunction(clippingPlanes[1]);
 
-        clippers[2]->SetInputData( clippers[1]->GetOutput() );
+        clippers[2]->SetInputConnection( clippers[1]->GetOutputPort() );
         clippers[2]->SetClipFunction(clippingPlanes[2]);
 
-        clippers[3]->SetInputData( clippers[2]->GetOutput() );
+        clippers[3]->SetInputConnection( clippers[2]->GetOutputPort() );
         clippers[3]->SetClipFunction(clippingPlanes[3]);
 
-        clippers[4]->SetInputData( clippers[3]->GetOutput() );
+        clippers[4]->SetInputConnection( clippers[3]->GetOutputPort() );
         clippers[4]->SetClipFunction(clippingPlanes[4]);
 
-        clippers[5]->SetInputData( clippers[4]->GetOutput() );
+        clippers[5]->SetInputConnection( clippers[4]->GetOutputPort() );
         clippers[5]->SetClipFunction(clippingPlanes[5]);
 
 
@@ -568,26 +568,26 @@ void svkSatBandSet::GenerateSatBandsActor( )
         cutters[0]->SetInputData( slabPolyData );
         cutters[0]->SetClipFunction(clippingPlanes[0]);
 
-        cutters[1]->SetInputData( cutters[0]->GetOutput() );
+        cutters[1]->SetInputConnection( cutters[0]->GetOutputPort() );
         cutters[1]->SetClipFunction(clippingPlanes[1]);
 
-        cutters[2]->SetInputData( cutters[1]->GetOutput() );
+        cutters[2]->SetInputConnection( cutters[1]->GetOutputPort() );
         cutters[2]->SetClipFunction(clippingPlanes[2]);
 
-        cutters[3]->SetInputData( cutters[2]->GetOutput() );
+        cutters[3]->SetInputConnection( cutters[2]->GetOutputPort() );
         cutters[3]->SetClipFunction(clippingPlanes[3]);
 
-        cutters[4]->SetInputData( cutters[3]->GetOutput() );
+        cutters[4]->SetInputConnection( cutters[3]->GetOutputPort() );
         cutters[4]->SetClipFunction(clippingPlanes[4]);
 
-        cutters[5]->SetInputData( cutters[4]->GetOutput() );
+        cutters[5]->SetInputConnection( cutters[4]->GetOutputPort() );
         cutters[5]->SetClipFunction(clippingPlanes[5]);
 
         vtkDataSetMapper* satBandMapper = vtkDataSetMapper::New();
         vtkPolyDataMapper* satBandOutlineMapper = vtkPolyDataMapper::New();
 
-        satBandMapper->SetInputData(clippers[5]->GetOutput());
-        satBandOutlineMapper->SetInputData( cutters[5]->GetOutput() );
+        satBandMapper->SetInputConnection(clippers[5]->GetOutputPort());
+        satBandOutlineMapper->SetInputConnection( cutters[5]->GetOutputPort() );
         clippers[0]->Delete();
         clippers[1]->Delete();
         clippers[2]->Delete();
