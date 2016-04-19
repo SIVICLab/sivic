@@ -112,7 +112,7 @@ class svkMRSAverageSpectra : public svkImageInPlaceFilter
         bool                useSelectionBoxMask;
         bool                useMagnitudeSpectra;
         bool                averageOverNonSpatialDims;
-        short*              maskROI;
+        vtkDataArray*       maskROI;
         svkMrsImageData*    averageData; 
 
 };
