@@ -310,8 +310,8 @@ void svkPhilipsSMapper::InitPerFrameFunctionalGroupMacros()
 
     //  Get the volumetric center in acquisition frame coords:
     double center[3];
-    center[0] = this->GetHeaderValueAsFloat("ap_off_center");
-    center[1] = this->GetHeaderValueAsFloat("lr_off_center");
+    center[0] = this->GetHeaderValueAsFloat("lr_off_center");
+    center[1] = this->GetHeaderValueAsFloat("ap_off_center");
     center[2] = this->GetHeaderValueAsFloat("cc_off_center");
 
     //  Center of toplc (LPS) pixel in frame:
@@ -347,8 +347,8 @@ void svkPhilipsSMapper::InitPlaneOrientationMacro()
     );
 
     //  Get the euler angles for the acquisition coordinate system:
-    float psi   = this->GetHeaderValueAsFloat("ap_angulation"); 
-    float phi   = this->GetHeaderValueAsFloat("lr_angulation"); 
+    float psi   = this->GetHeaderValueAsFloat("lr_angulation"); 
+    float phi   = this->GetHeaderValueAsFloat("ap_angulation"); 
     float theta = this->GetHeaderValueAsFloat("cc_angulation"); 
 
     vtkTransform* eulerTransform = vtkTransform::New();
@@ -1161,8 +1161,8 @@ void svkPhilipsSMapper::InitPixelMeasuresMacro()
  */
 void svkPhilipsSMapper::GetFOV(float* fov) 
 {
-    fov[0] = this->GetHeaderValueAsFloat("ap_size");
-    fov[1] = this->GetHeaderValueAsFloat("lr_size");
+    fov[0] = this->GetHeaderValueAsFloat("lr_size");
+    fov[1] = this->GetHeaderValueAsFloat("ap_size");
     fov[2] = this->GetHeaderValueAsFloat("cc_size");
 }
 
