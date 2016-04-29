@@ -2501,12 +2501,12 @@ int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, st
  *      0020,000D StudyInstanceUID
  *      0020,000E SeriesInstanceUID
  *      0020,0010 StudyID
- *      //0020,0052 FrameOfReferenceUID
+ *      0020,0052 FrameOfReferenceUID
  *      0028,0301 BurnedInAnnotation
  *      0040,A124 UID
  *      0088,0140 StorageMediaFileSetUID
- *      //3006,0024 ReferencedFrameOfReferenceUID
- *      //3006,00C2 RelatedFrameOfReferenceUID
+ *      3006,0024 ReferencedFrameOfReferenceUID
+ *      3006,00C2 RelatedFrameOfReferenceUID
  */
 void svkDcmHeader::Deidentify( PHIType phiType )
 {    
@@ -2536,12 +2536,12 @@ void svkDcmHeader::Deidentify( PHIType phiType )
  *      0020,000D StudyInstanceUID
  *      0020,000E SeriesInstanceUID
  *      0020,0010 StudyID
- *      //0020,0052 FrameOfReferenceUID
+ *      0020,0052 FrameOfReferenceUID
  *      0028,0301 BurnedInAnnotation
  *      0040,A124 UID
  *      0088,0140 StorageMediaFileSetUID
- *      //3006,0024 ReferencedFrameOfReferenceUID
- *      //3006,00C2 RelatedFrameOfReferenceUID
+ *      3006,0024 ReferencedFrameOfReferenceUID
+ *      3006,00C2 RelatedFrameOfReferenceUID
  */
 void svkDcmHeader::Deidentify( PHIType phiType, string id )
 {    
@@ -2571,12 +2571,12 @@ void svkDcmHeader::Deidentify( PHIType phiType, string id )
  *      0020,000D StudyInstanceUID
  *      0020,000E SeriesInstanceUID
  *      0020,0010 StudyID
- *      //0020,0052 FrameOfReferenceUID
+ *      0020,0052 FrameOfReferenceUID
  *      0028,0301 BurnedInAnnotation
  *      0040,A124 UID
  *      0088,0140 StorageMediaFileSetUID
- *      //3006,0024 ReferencedFrameOfReferenceUID
- *      //3006,00C2 RelatedFrameOfReferenceUID
+ *      3006,0024 ReferencedFrameOfReferenceUID
+ *      3006,00C2 RelatedFrameOfReferenceUID
  */
 void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId )
 {     
@@ -2613,8 +2613,8 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
 
         this->ModifyValueRecursive( "StudyID",                       studyId); 
 
-        //newUID = this->GenerateUniqueUID(); 
-        //this->ModifyValueRecursive( "FrameOfReferenceUID",           newUID); 
+        newUID = this->GenerateUniqueUID(); 
+        this->ModifyValueRecursive( "FrameOfReferenceUID",           newUID); 
 
         this->ModifyValueRecursive( "BurnedInAnnotation",            studyId); 
 
@@ -2624,11 +2624,11 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
         newUID = this->GenerateUniqueUID(); 
         this->ModifyValueRecursive( "StorageMediaFileSetUID",        newUID); 
 
-        //newUID = this->GenerateUniqueUID(); 
-        //this->ModifyValueRecursive( "ReferencedFrameOfReferenceUID", newUID); 
+        newUID = this->GenerateUniqueUID(); 
+        this->ModifyValueRecursive( "ReferencedFrameOfReferenceUID", newUID); 
 
-        //newUID = this->GenerateUniqueUID(); 
-        //this->ModifyValueRecursive( "RelatedFrameOfReferenceUID",    newUID); 
+        newUID = this->GenerateUniqueUID(); 
+        this->ModifyValueRecursive( "RelatedFrameOfReferenceUID",    newUID); 
     }   
 
     //  These fields are not removed from PHI_LIMITED data sets 
