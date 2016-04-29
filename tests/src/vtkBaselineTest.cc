@@ -46,6 +46,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkActor.h>
 #include <vtkTextActor.h>
+#include <vtkTextProperty.h>
 #include <vtkRenderer.h>
 #include <vtkTIFFWriter.h>
 #include <svkVizUtils.h>
@@ -61,7 +62,7 @@ int main ( int argc, char** argv )
     cone->SetResolution( 10 );
   
     vtkPolyDataMapper *coneMapper = vtkPolyDataMapper::New();
-    coneMapper->SetInputData( cone->GetOutput() );
+    coneMapper->SetInputConnection( cone->GetOutputPort() );
 
     vtkActor *coneActor = vtkActor::New();
     coneActor->SetMapper( coneMapper );
@@ -72,6 +73,7 @@ int main ( int argc, char** argv )
     text->SetLayerNumber(1);
 
     text->SetPosition(0.1,0.1);
+    text->GetTextProperty()->SetFontSize(1000);
     text->SetPosition2(0.9,0.9);
     text->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
     text->GetPosition2Coordinate()->SetCoordinateSystemToNormalizedViewport();

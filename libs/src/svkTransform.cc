@@ -67,7 +67,7 @@ svkTransform::svkTransform()
     this->translation[0]= 0.; 
     this->translation[1]= 0.; 
     this->translation[2]= 0.; 
-    this->isTranslationColRowSlice == false;
+    this->isTranslationColRowSlice = false;
 }
 
 
@@ -90,7 +90,7 @@ void svkTransform::SetTranslationLPS( float dL, float dP, float dS)
     this->translation[0] = dL; 
     this->translation[1] = dP; 
     this->translation[2] = dS; 
-    this->isTranslationColRowSlice == false;
+    this->isTranslationColRowSlice = false;
     if ( this->GetDebug() ) {
         cout << "Translation: " << this->translation[0] << " " << this->translation[1] << " " <<  this->translation[2] << endl;
     }
@@ -105,7 +105,7 @@ void svkTransform::SetTranslationCRS( float dC, float dR, float dS)
     this->translation[0] = dC; 
     this->translation[1] = dR; 
     this->translation[2] = dS; 
-    this->isTranslationColRowSlice == true;
+    this->isTranslationColRowSlice = true;
     if ( this->GetDebug() ) {
         cout << "Translation: " << this->translation[0] << " " << this->translation[1] << " " <<  this->translation[2] << endl;
     }
