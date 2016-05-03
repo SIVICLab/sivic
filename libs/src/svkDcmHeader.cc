@@ -2500,6 +2500,7 @@ int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, st
  *      0010,1000 OtherPatientIDs
  *      0010,1001 OtherPatientNames
  *      0010,1040 PatientAddress 
+ *      0010,1060 PatientMotherBirthName
  *      0010,2154 PatientTelephoneNumbers
  *      0020,000D StudyInstanceUID
  *      0020,000E SeriesInstanceUID
@@ -2541,6 +2542,7 @@ void svkDcmHeader::Deidentify( PHIType phiType )
  *      0010,1000 OtherPatientIDs
  *      0010,1001 OtherPatientNames
  *      0010,1040 PatientAddress 
+ *      0010,1060 PatientMotherBirthName
  *      0010,2154 PatientTelephoneNumbers
  *      0020,000D StudyInstanceUID
  *      0020,000E SeriesInstanceUID
@@ -2582,6 +2584,7 @@ void svkDcmHeader::Deidentify( PHIType phiType, string id )
  *      0010,1000 OtherPatientIDs
  *      0010,1001 OtherPatientNames
  *      0010,1040 PatientAddress 
+ *      0010,1060 PatientMotherBirthName
  *      0010,2154 PatientTelephoneNumbers
  *      0020,000D StudyInstanceUID
  *      0020,000E SeriesInstanceUID
@@ -2632,6 +2635,11 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
         if( this->ElementExists( "PatientAddress" ) ) {
             this->ModifyValueRecursive( "PatientAddress",                emptyString); 
         }
+
+        if( this->ElementExists( "PatientMotherBirthName" ) ) {
+            this->ModifyValueRecursive( "PatientMotherBirthName",       emptyString); 
+        }
+
         if( this->ElementExists( "PatientTelephoneNumbers" ) ) {
             this->ModifyValueRecursive( "PatientTelephoneNumbers",       emptyString); 
         }
