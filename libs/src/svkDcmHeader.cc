@@ -2492,10 +2492,13 @@ int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, st
  *      0008,0050 AccessionNumber
  *      0008,0080 InstitutionName
  *      0008,0090 ReferringPhysicianName
+ *      0008,1060 NameOfPhysiciansReadingStudy
  *      0008,1155 RefSOPInstanceUID
  *      0010,0010 PatientName
  *      0010,0020 PatientID
  *      0010,0030 PatientBirthDate
+ *      0010,1000 OtherPatientIDs
+ *      0010,1001 OtherPatientNames
  *      0010,1040 PatientAddress 
  *      0010,2154 PatientTelephoneNumbers
  *      0020,000D StudyInstanceUID
@@ -2503,6 +2506,9 @@ int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, st
  *      0020,0010 StudyID
  *      0020,0052 FrameOfReferenceUID
  *      0028,0301 BurnedInAnnotation
+ *      0032,1032 RequestingPhysician
+ *      0040,1001 RequestedProcedureID
+ *      0040,0009 ScheduledProcedureStepID
  *      0040,A124 UID
  *      0088,0140 StorageMediaFileSetUID
  *      3006,0024 ReferencedFrameOfReferenceUID
@@ -2527,10 +2533,13 @@ void svkDcmHeader::Deidentify( PHIType phiType )
  *      0008,0050 AccessionNumber
  *      0008,0080 InstitutionName
  *      0008,0090 ReferringPhysicianName
+ *      0008,1060 NameOfPhysiciansReadingStudy
  *      0008,1155 RefSOPInstanceUID
  *      0010,0010 PatientName
  *      0010,0020 PatientID
  *      0010,0030 PatientBirthDate
+ *      0010,1000 OtherPatientIDs
+ *      0010,1001 OtherPatientNames
  *      0010,1040 PatientAddress 
  *      0010,2154 PatientTelephoneNumbers
  *      0020,000D StudyInstanceUID
@@ -2538,6 +2547,9 @@ void svkDcmHeader::Deidentify( PHIType phiType )
  *      0020,0010 StudyID
  *      0020,0052 FrameOfReferenceUID
  *      0028,0301 BurnedInAnnotation
+ *      0032,1032 RequestingPhysician
+ *      0040,1001 RequestedProcedureID
+ *      0040,0009 ScheduledProcedureStepID
  *      0040,A124 UID
  *      0088,0140 StorageMediaFileSetUID
  *      3006,0024 ReferencedFrameOfReferenceUID
@@ -2562,10 +2574,13 @@ void svkDcmHeader::Deidentify( PHIType phiType, string id )
  *      0008,0050 AccessionNumber
  *      0008,0080 InstitutionName
  *      0008,0090 ReferringPhysicianName
+ *      0008,1060 NameOfPhysiciansReadingStudy
  *      0008,1155 RefSOPInstanceUID
  *      0010,0010 PatientName
  *      0010,0020 PatientID
  *      0010,0030 PatientBirthDate
+ *      0010,1000 OtherPatientIDs
+ *      0010,1001 OtherPatientNames
  *      0010,1040 PatientAddress 
  *      0010,2154 PatientTelephoneNumbers
  *      0020,000D StudyInstanceUID
@@ -2573,6 +2588,9 @@ void svkDcmHeader::Deidentify( PHIType phiType, string id )
  *      0020,0010 StudyID
  *      0020,0052 FrameOfReferenceUID
  *      0028,0301 BurnedInAnnotation
+ *      0032,1032 RequestingPhysician
+ *      0040,1001 RequestedProcedureID
+ *      0040,0009 ScheduledProcedureStepID
  *      0040,A124 UID
  *      0088,0140 StorageMediaFileSetUID
  *      3006,0024 ReferencedFrameOfReferenceUID
@@ -2594,10 +2612,23 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
         this->ModifyValueRecursive( "InstitutionName",               studyId); 
         this->ModifyValueRecursive( "ReferringPhysicianName",        studyId); 
 
+        if( this->ElementExists( "NameOfPhysiciansReadingStudy" ) ) {
+            this->ModifyValueRecursive( "NameOfPhysiciansReadingStudy", emptyString); 
+        }
+
         newUID = this->GenerateUniqueUID(); 
         this->ModifyValueRecursive( "ReferencedSOPInstanceUID",      newUID); 
         this->ModifyValueRecursive( "PatientName",                   patientId); 
         this->ModifyValueRecursive( "PatientID",                     patientId); 
+
+        if( this->ElementExists( "OtherPatientIDs" ) ) {
+            this->ModifyValueRecursive( "OtherPatientIDs", emptyString); 
+        }
+
+        if( this->ElementExists( "OtherPatientNames" ) ) {
+            this->ModifyValueRecursive( "OtherPatientNames", emptyString); 
+        }
+
         if( this->ElementExists( "PatientAddress" ) ) {
             this->ModifyValueRecursive( "PatientAddress",                emptyString); 
         }
@@ -2617,6 +2648,18 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
         this->ModifyValueRecursive( "FrameOfReferenceUID",           newUID); 
 
         this->ModifyValueRecursive( "BurnedInAnnotation",            studyId); 
+
+        if( this->ElementExists( "RequestingPhysician" ) ) {
+            this->ModifyValueRecursive( "RequestingPhysician",          emptyString); 
+        }
+
+        if( this->ElementExists( "RequestedProcedureID" ) ) {
+            this->ModifyValueRecursive( "RequestedProcedureID",         emptyString); 
+        }
+
+        if( this->ElementExists( "ScheduledProcedureStepID" ) ) {
+            this->ModifyValueRecursive( "ScheduledProcedureStepID",     emptyString); 
+        }
 
         newUID = this->GenerateUniqueUID(); 
         this->ModifyValueRecursive( "UID",                           newUID); 
