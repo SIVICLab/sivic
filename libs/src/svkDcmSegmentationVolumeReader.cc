@@ -219,10 +219,10 @@ void svkDcmSegmentationVolumeReader::ExecuteInformation()
     hdr->InitMRTimingAndRelatedParametersMacro( 0, 0, 0); 
 
     if ( hdr->ElementExists("SliceThickness", "PixelMeasuresSequence") == false ) { 
-        cout << "Kludge for non-standard Segmentation Objects from Brainlab. Supposed to get fixed at some point" << endl;
+        //cout << "Kludge for non-standard Segmentation Objects from Brainlab. Supposed to get fixed at some point" << endl;
         double pixelSpacing[3];
         hdr->GetPixelSpacing( pixelSpacing );
-        cout << "SliceThickness: " << pixelSpacing[2]  << endl;
+        //cout << "SliceThickness: " << pixelSpacing[2]  << endl;
         hdr->AddSequenceItemElement(
             "PixelMeasuresSequence",
             0,
