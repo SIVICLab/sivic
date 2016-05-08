@@ -323,8 +323,9 @@ TARGET_LINK_LIBRARIES(
 
 IF (NOT WIN32)
 	INSTALL_PROGRAMS( /local/sivic FILES ${EXECUTABLE_OUTPUT_PATH}/sivic )
-    INSTALL( DIRECTORY  ${VTK_DIR}/tk8.5 DESTINATION  local/sivic/vtk/lib)
-    INSTALL( DIRECTORY  ${VTK_DIR}/tcl8.5 DESTINATION  local/sivic/vtk/lib)
+    FILE(GLOB VTK_TCLTK_PATH ${VTK_DIR}/../../tcltk/vtk-*) 
+    INSTALL( DIRECTORY  ${VTK_TCLTK_PATH}/tk8.5 DESTINATION  local/sivic/vtk/lib)
+    INSTALL( DIRECTORY  ${VTK_TCLTK_PATH}/tcl8.5 DESTINATION  local/sivic/vtk/lib)
 ELSE (NOT WIN32)
 	INSTALL_TARGETS( /local/sivic sivic )
     INSTALL( DIRECTORY  ${VTK_DIR}/lib/tk8.5 DESTINATION  local/sivic/vtk/lib)
