@@ -47,68 +47,55 @@ build "Deployment" release from xcode
 3.  pre packaging dependencies:
 create_modified_libs_for_plugin.sh
 
-4. run make_standalone.csh (to bundle command line tools)
+4.  Make standalone version (to bundle command line tools): 
+    #################################
+    make the standalone version:
+    #################################
 
-#########################
-#5.  create package:
-#start packagemaker, load pmdoc and "build"    
-#- change the title to reflect new version number. 
-#note:  command line pkg installation:
-#sudo installer -pkg 'SIVIC MRSI OSIRIX PLUGIN 0.4.pkg' -target /
-#########################
+    run make_standalone.csh
 
-ICON:  use ing2icns:  drag a png file into app and export as icns
-click on SIVIC.app and "get info", then drag the newly created .icns file onto the icon
-
-#################################
-make the standalone version:
-#################################
-Build a release version, and the .app file is under build/Release folder
-run make_standalone.csh
-
-##################################
-    create dmg
-##################################
-http://www.ploem.be/blog/?page_id=26
-
-1.  use "disk utility" to create a new image ( + new image)  
+5.  Create the DMG: 
+    #   http://www.ploem.be/blog/?page_id=26
+    
+    a.  use "disk utility" to create a new image ( + new image)  
         name: SIVIC.dmg, 
         size: 610MB
         - click create
 
-2.  showFiles (show hidden files)
-    defaults write com.apple.finder AppleShowAllFiles YES
+    b.  showFiles (show hidden files)
+        defaults write com.apple.finder AppleShowAllFiles YES
 
-3.  open the newly created SIVIC.dmg (in disk utility left click on "DISK IMAGE" and select "OPEN DISK IMAGE). Drag the 
-    contents of SIVIC_DISTRIBUTION/ (SIVIC.app and .background) from a finder window into the image folder
+    c.  open the newly created SIVIC.dmg (in disk utility left click on "DISK IMAGE" and select "OPEN DISK IMAGE). 
+        Drag the contents of SIVIC_DISTRIBUTION/ (SIVIC.app and .background) from a finder window into the image folder
 
-4.  create an alias to  “Applications” and drag that into the SIVIC.dmg (requires clicking on “Applications” in finder and 
-    selecting “show in enclosing folder”, then right click again and create an alias. drag the alias "Applications alias" into 
-    the SIVIC.dmg folder.  Rename the alias in the dmg from "Applicatins alias" to "Applications"
+    d.  create an alias to  “Applications” and drag that into the SIVIC.dmg (requires clicking on “Applications” in finder and 
+        selecting “show in enclosing folder”, then right click again and create an alias. drag the alias "Applications alias" into 
+        the SIVIC.dmg folder.  Rename the alias in the dmg from "Applicatins alias" to "Applications"
 
         The contents of the .dmg should now include:  
                 .background
                 Applications 
                 SIVIC.app
 
-5.  in finder left click on the mounted "DISK IMAGE" and rename "DISK IMAGE" to SIVIC
+    e.  in finder left click on the mounted "DISK IMAGE" and rename "DISK IMAGE" to SIVIC
 
-6.  set the sivic_logo.icns from inside the original SIVIC_DISTRIBUTION/.background as the icon for this .dmg (get info and drag/drop). 
-    a.  
-        - "get info" on the mounted disk image "SIVIC" in the left panel of the finder
-        - open SIVIC.dmg" (select  and drill down to .background in finder, left click on .background and select "open in new tab") .
-        - drag the icon from inside the .background folder into the upper left icon in the SIVIC info panel  
-    
-        - "get info" for SIVIC.dmg" (find it in finder)
-        - drag the icon from inside the .background folder into the upper left icon in the SIVIC.dmg info panel  
+    f.  set the sivic_logo.icns from inside the original SIVIC_DISTRIBUTION/.background as the icon for 
+        this .dmg (get info and drag/drop). 
 
+            - "get info" on the mounted disk image "SIVIC" in the left panel of the finder
+            - open SIVIC.dmg" (select  and drill down to .background in finder, left click on .background and 
+                select "open in new tab") .
+            - drag the icon from inside the .background folder into the upper left icon in the SIVIC info panel  
+            - "get info" for SIVIC.dmg" (find it in finder)
+            - drag the icon from inside the .background folder into the upper left icon in the SIVIC.dmg info panel  
 
-7.  hideFiles (hide dot files)  only Applications and SIVIC.app are visible
+    g.  hideFiles (hide dot files)  only Applications and SIVIC.app are visible
     defaults write com.apple.finder AppleShowAllFiles NO
 
-8.  Also TBD.  add alias to install the OsiriX plugin:   /Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin
+6.  Also TBD.  add alias to install the OsiriX plugin:   /Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin
 
-9.  select SIVIC.dmg in left panel in disk utility:  left click and select "convert SIVIC.dmg"  (replace current version with compressed version)
+7.  select SIVIC.dmg in left panel in disk utility:  left click and select "convert SIVIC.dmg"  (replace current version 
+    with compressed version)
 
-make a copy and test opening it
+8. make a copy and test opening it
 
