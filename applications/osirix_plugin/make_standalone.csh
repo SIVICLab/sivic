@@ -113,10 +113,14 @@ cp ../../working/release/applications/cmd_line/src/svk_zerofill                 
 cp ../../working/release/applications/cmd_line/src/svk_reorder_epsi             SIVIC.app/Contents/sivic/local/bin/
 cp ../../working/release/applications/cmd_line/src/svk_variable_flip_scaler     SIVIC.app/Contents/sivic/local/bin/
 
-
 chmod -R 775 SIVIC.app
-rm -rf SIVIC_DISTRIBUTION
-mkdir -p SIVIC_DISTRIBUTION 
-mkdir -p SIVIC_DISTRIBUTION/.background
-mv ./SIVIC.app ./SIVIC_DISTRIBUTION/
-cp -r sivic_logo.icns                                                           SIVIC_DISTRIBUTION/.background/
+rm -rf   ./SIVIC_DISTRIBUTION
+mkdir -p ./SIVIC_DISTRIBUTION 
+mkdir -p ./SIVIC_DISTRIBUTION/.background
+mv ./SIVIC.app                                                                  ./SIVIC_DISTRIBUTION/
+cp -r sivic_logo.icns                                                           ./SIVIC_DISTRIBUTION/.background/
+cp /Applications\ alias                                                         ./SIVIC_DISTRIBUTION/Applications
+cp -r ~/xcode-build/Build/Products/Deployment/SIVIC_MRSI.bundle                 ./SIVIC_DISTRIBUTION/SIVIC_MRSI.osirixplugin
+cp /Library/Application\ Support/OsiriX/OsiriX_Plugins                          ./SIVIC_DISTRIBUTION/OsiriX_Plugins
+
+
