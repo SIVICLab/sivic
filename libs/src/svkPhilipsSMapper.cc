@@ -39,7 +39,9 @@
  *      Beck Olson
  */
 
-
+#ifdef WIN32
+#include<signal.h>
+#endif
 #include <svkPhilipsSMapper.h>
 #include <svkSpecUtils.h>
 #include <svkImageReader2.h>
