@@ -3178,10 +3178,24 @@ void vtkSivicController::EnableWidgets()
 
     if ( activeData != NULL && activeData->IsA("svkMrsImageData") ) {
         string domain = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue("SignalDomainColumns");
+        string spatialDomain0 = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
+        string spatialDomain1 = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue( "SVK_RowsDomain");
+        string spatialDomain2 = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue( "SVK_SliceDomain");
+
         int numChannels = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetDcmHeader()->GetNumberOfCoils();
         this->processingWidget->fftButton->EnabledOn(); 
+        this->processingWidget->spatialDomainLabel->EnabledOn();
+        this->processingWidget->spectralDomainLabel->EnabledOn();
         this->processingWidget->spatialButton->EnabledOn(); 
         this->processingWidget->spectralButton->EnabledOn(); 
+        if ( spatialDomain0.compare("KSPACE") == 0 && spatialDomain1.compare("KSPACE") == 0 && spatialDomain2.compare("KSPACE") == 0 )  {
+            this->processingWidget->spatialDomainLabel->SetText( string("Current Domain: KSPACE").c_str() );
+        } else if ( spatialDomain0.compare("SPACE") == 0 && spatialDomain1.compare("SPACE") == 0 && spatialDomain2.compare("SPACE") == 0 )  {
+            this->processingWidget->spatialDomainLabel->SetText( string("Current Domain: SPACE").c_str() );
+        } else {
+            this->processingWidget->spatialDomainLabel->SetText( string("Current Domain: Mixed or Undefined").c_str() );
+        }
+
         if( domain == "TIME" ) {
             this->preprocessingWidget->applyButton->EnabledOn(); 
             this->preprocessingWidget->zeroFillSelectorSpec->EnabledOn();
@@ -3197,6 +3211,7 @@ void vtkSivicController::EnableWidgets()
 			this->combineWidget->magnitudeCombinationButton->EnabledOff();
 			this->combineWidget->additionCombinationButton->EnabledOff();
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Time" );
+            this->processingWidget->spectralDomainLabel->SetText( string("Current Domain: TIME").c_str() );;
             this->spectraRangeWidget->unitSelectBox->SetValue( "PTS" );
             this->spectraRangeWidget->SetSpecUnitsCallback(svkSpecPoint::PTS);
             this->spectraRangeWidget->unitSelectBox->EnabledOff();
@@ -3208,6 +3223,7 @@ void vtkSivicController::EnableWidgets()
 				this->combineWidget->additionCombinationButton->EnabledOn();
             }
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Frequency" );
+            this->processingWidget->spectralDomainLabel->SetText( string("Current Domain: FREQUENCY").c_str() );;
             this->spectraRangeWidget->unitSelectBox->EnabledOn();
             string nucleus = activeData->GetDcmHeader()->GetStringValue("ResonantNucleus");
             if( !nucleus.empty() ) {

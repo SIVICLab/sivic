@@ -73,6 +73,8 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
         sivicProcessingWidget();
         ~sivicProcessingWidget();
 
+        vtkKWLabel*                     spatialDomainLabel;
+        vtkKWLabel*                     spectralDomainLabel;
         vtkKWCheckButton*               spatialButton;
         vtkKWCheckButton*               spectralButton;
         vtkKWPushButton*                fftButton;
