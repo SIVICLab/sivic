@@ -508,11 +508,6 @@ void svkSiemensRdaReader::InitMultiFrameFunctionalGroupsModule()
     this->numCoils = 1; 
     this->numTimePts = 1; 
 
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "NumberOfFrames",
-        this->numSlices * this->numCoils * this->numTimePts
-    );
-
     InitPerFrameFunctionalGroupMacros();
 
 }
