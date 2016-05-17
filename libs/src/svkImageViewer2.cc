@@ -558,6 +558,9 @@ void svkImageViewer2::ResetCamera()
                 x[1] = imageCenter[1] + distance * coronalNormal[1];
                 x[2] = imageCenter[2] + distance * coronalNormal[2];
                 GetRenderer()->GetActiveCamera()->SetPosition( x );
+                if( axialNormal[2] > 0 ) {
+                    inverter*=-1;
+                }
                 GetRenderer()->GetActiveCamera()->SetViewUp( inverter*axialNormal[0], 
                                                              inverter*axialNormal[1], 
                                                              inverter*axialNormal[2] );
@@ -570,7 +573,12 @@ void svkImageViewer2::ResetCamera()
                 x[1] = imageCenter[1] + distance * sagittalNormal[1];
                 x[2] = imageCenter[2] + distance * sagittalNormal[2];
                 GetRenderer()->GetActiveCamera()->SetPosition( x );
-                GetRenderer()->GetActiveCamera()->SetViewUp( -axialNormal[0], -axialNormal[1], -axialNormal[2] );
+                if( axialNormal[2] > 0 ) {
+                    inverter*=-1;
+                }
+                GetRenderer()->GetActiveCamera()->SetViewUp( inverter*axialNormal[0],
+                                                             inverter*axialNormal[1],
+                                                             inverter*axialNormal[2] );
                 break;
         }
         GetRenderer()->ResetCamera();
