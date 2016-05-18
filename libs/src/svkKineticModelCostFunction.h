@@ -48,6 +48,7 @@ using namespace svk;
 
 /*
  *  Cost function for ITK optimizer: 
+ *  Abstract base class for kinetic modeling cost functions.  
  */
 class svkKineticModelCostFunction : public itk::SingleValuedCostFunction 
 {
@@ -55,14 +56,14 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
     public:
 
         typedef svkKineticModelCostFunction             Self;
-        typedef itk::SingleValuedCostFunction   Superclass;
-        typedef itk::SmartPointer<Self>         Pointer;
-        typedef itk::SmartPointer<const Self>   ConstPointer;
+        typedef itk::SingleValuedCostFunction           Superclass;
+        typedef itk::SmartPointer<Self>                 Pointer;
+        typedef itk::SmartPointer<const Self>           ConstPointer;
         itkTypeMacro( svkKineticModelCostFunction, SingleValuedCostFunction );
 
-        typedef Superclass::ParametersType      ParametersType;
-        typedef Superclass::DerivativeType      DerivativeType;
-        typedef Superclass::MeasureType         MeasureType ;
+        typedef Superclass::ParametersType              ParametersType;
+        typedef Superclass::DerivativeType              DerivativeType;
+        typedef Superclass::MeasureType                 MeasureType;
 
 
         /*
@@ -80,6 +81,7 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         {
         }
 
+
         /*
          *
          */
@@ -96,8 +98,10 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
 
 
         /*!
+         *  For a given set of parameter values, compute the model kinetics:
+         *
          *  Function to calculate metabolite signal vs time based on parametric model.  
-         *  input: 
+         *      uses the following : 
          *      parameters    = kinetic model parameters to be fit (1/T1all, Kpl).  
          *      kineticModelN = model metabolite signal intensity vs time ( pyr, lac, urea)
          *      signalN       = input signal vs time for each of 3 measured metabolites (pyr, lac, urea) 
@@ -106,27 +110,18 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         virtual void GetKineticModel( const ParametersType& parameters,
                     float* kineticModel0,
                     float* kineticModel1,
-                    float* kineticModel2,
-                    float* signal0,
-                    float* signal1,
-                    float* signal2,
-                    int numTimePoints
+                    float* kineticModel2
         ) const = 0; 
 
 
-        /*  
+        /*!  
          *  returns the cost function for the current param values: 
          *  typedef double MeasureType
          */
         MeasureType  GetValue( const ParametersType & parameters ) const
         {
-
-            double cost;
-
-            cost = GetResidual( parameters );
-
+            double cost = GetResidual( parameters );
             MeasureType measure = cost;
-            //cout << "                          cost: " << measure << endl;
             return measure;
         }
 
@@ -138,31 +133,60 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
 
 
         /*
-         *  kinetic signal for each of 3 metabolites
+         *  Set the kinetic signal for metabolite N
          */
-        void SetSignal0( float* signal)
+        void SetNumSignals( int numSignals )
         {
-            this->signal0 = signal;
+            this->numSignals = numSignals; 
+            this->signalVector.resize(numSignals); 
+        }
+
+
+        /*
+         *  Set the kinetic signal for metabolite N
+         */
+        void SetSignal( float* signal, int signalIndex, string signalName)
+        {
+            map<string, float*>  signalMap;  
+            signalMap[signalName] = signal; 
+            if (signalIndex >  this->signalVector.size() ) {
+                cout << "ERROR, signal index is out of range" << endl; 
+                exit(1); 
+            }
+            this->signalVector[signalIndex] = signalMap;
+        }
+
+
+        /*
+         *  Get pointer to the vector of input kinetic signals
+         */
+        vector < map < string, float* > >* GetSignals( )
+        {
+            return &(this->signalVector);
+        }
+
+
+        /*
+         *  Get the specific signal at the specified time point.
+         */
+        float GetSignalAtTime(int signalIndex, int timePt) const
+        {
+            //map< string, float*>::iterator mapIter;
+            return  (this->signalVector[ signalIndex ].begin()->second)[timePt]; 
         }
 
         /*
-         *  kinetic signal for each of 3 metabolites
+         *  Get the specific signal 
          */
-        void SetSignal1( float* signal)
+        float* GetSignal(int signalIndex) const
         {
-            this->signal1 = signal;
+            return  (this->signalVector[ signalIndex ]).begin()->second; 
         }
 
-        /*
-         *  kinetic signal for each of 3 metabolites
-         */
-        void SetSignal2( float* signal)
-        {
-            this->signal2 = signal;
-        }
 
         /*
-         *
+         *  Initializes the arrays that will hold the fitted data
+         *  with the correct number of points. 
          */
         void SetNumTimePoints( int numTimePoints )
         {
@@ -175,13 +199,14 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
 
     protected:
 
-        float*      signal0;
-        float*      signal1;
-        float*      signal2;
+        //  this is the vector of float arrays representing the metabolite signals as a function of time
+        //  for different number of sites this should be flexibile
+        vector< map < string, float* > >  signalVector;
         float*      kineticModel0;
         float*      kineticModel1;
         float*      kineticModel2;
         int         numTimePoints;
+        int         numSignals;
 
 };
 

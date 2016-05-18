@@ -55,6 +55,7 @@
 #include <svkMriImageData.h>
 #include <svkImageAlgorithm.h>
 #include <svkDcmHeader.h>
+#include <svkKineticModelCostFunction.h>
 
 #include <math.h>
 #include <stdio.h>
@@ -148,6 +149,13 @@ class svkMRSKinetics: public svkImageAlgorithm
                                     float* metKinetics2, 
                                     itk::ParticleSwarmOptimizer::Pointer itkOptimizer 
                                 );
+        void                    InitCostFunction( 
+                                    svkKineticModelCostFunction::Pointer& costFunction, 
+                                    float* metSignal0, 
+                                    float* metSignal1, 
+                                    float* metSignal2, 
+                                    int numSignals 
+                                ); 
 
         float*                  metKinetics0;
         float*                  metKinetics1;

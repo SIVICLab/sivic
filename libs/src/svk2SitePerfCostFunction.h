@@ -61,15 +61,22 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
         itkNewMacro( Self );
 
 
+        /*!
+         *
+         */   
         svk2SitePerfCostFunction() {
         }
 
-        int GetArrivalTime( float* firstSignal, int numPts ) const
+
+        /*!
+         *
+         */   
+        int GetArrivalTime( float* firstSignal ) const
         {
             int arrivalTime = 0;
             float maxValue0 = firstSignal[0];
             int t; 
-            for(t = arrivalTime;  t < numPts; t++ ) {
+            for(t = arrivalTime;  t < this->numTimePoints; t++ ) {
                 if( firstSignal[t] > maxValue0) {
                     maxValue0 = firstSignal[t];
                     arrivalTime = t;
@@ -80,28 +87,25 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
         } 
 
 
+        /*!
+         *
+         */   
         virtual MeasureType  GetResidual( const ParametersType& parameters) const
         {
             //cout << "GUESS: " << parameters[0] << " " << parameters[1] << endl;;
-
             this->GetKineticModel( parameters,
                                     this->kineticModel0, 
                                     this->kineticModel1,
-                                    this->kineticModel2,
-                                    this->signal0,
-                                    this->signal1,
-                                    this->signal2,
-                                    this->numTimePoints );
+                                    this->kineticModel2); 
 
             double residual = 0;
 
-            int arrivalTime = GetArrivalTime( this->signal0, this->numTimePoints ); 
-
+            int arrivalTime = GetArrivalTime( this->GetSignal(0) ); 
 
             for ( int t = arrivalTime; t < this->numTimePoints; t++ ) {
-			    //for ( int t = 0; t < this->numTimePoints; t++ ) { 
-                residual += ( this->signal0[t] - this->kineticModel0[t] )  * ( this->signal0[t] - this->kineticModel0[t] ); 
-                residual += ( this->signal1[t] - this->kineticModel1[t] )  * ( this->signal1[t] - this->kineticModel1[t] );
+                residual += ( this->GetSignalAtTime(0, t) - this->kineticModel0[t] )  * ( this->GetSignalAtTime(0, t) - this->kineticModel0[t] );
+                residual += ( this->GetSignalAtTime(1, t) - this->kineticModel1[t] )  * ( this->GetSignalAtTime(1, t) - this->kineticModel1[t] );
+               
             }
 
             // for now ignore the urea residual 
@@ -117,15 +121,13 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
         }
 
 
-
+        /*!
+         *  For a given set of parameter values, compute the model kinetics
+         */   
         virtual void GetKineticModel( const ParametersType& parameters,
                     float* kineticModel0,
                     float* kineticModel1,
-                    float* kineticModel2,
-                    float* signal0,
-                    float* signal1,
-                    float* signal2,
-                    int numTimePoints
+                    float* kineticModel2
         ) const 
         {
 
@@ -139,7 +141,7 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
 
             //  Find arrival time time to peak pyrvaute/urea
 			//arrivalTime = ARRIVAL_TIME;
-            int arrivalTime = GetArrivalTime( signal0, numTimePoints ); 
+            int arrivalTime = GetArrivalTime( this->GetSignal(0) ); 
 
             //set up Arterial Input function ( from 2siteex
             //float  Ao    = 5000;
@@ -168,21 +170,22 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
             for ( int t = 0; t < numTimePoints; t++ ) {
 			  
                 if (t < arrivalTime ){
-                    kineticModel0[t] = signal0[t]; 
-                    kineticModel1[t] = signal1[t]; 
+                    kineticModel0[t] = this->GetSignalAtTime(0, t);
+                    kineticModel1[t] = this->GetSignalAtTime(1, t);
                 }
 
 			    if (t >= arrivalTime ) {      
 
                     // PYRUVATE
 					//	convolutionMat[t] = inputFunction[t]+convolutionMat[t];
-                    kineticModel0[t] = signal0[arrivalTime] 
+                    kineticModel0[t] = this->GetSignalAtTime(0, arrivalTime) 
 					    * exp( -((T1all) + Kpl) * ( t - arrivalTime) ) +  (1-exp(-Ktrans*t))*inputFunction[t];
 
                     // LACTATE  (same in both cost functions): 
-                    kineticModel1[t] = signal1[arrivalTime] 
+                    //kineticModel1[t] = signal1[arrivalTime] 
+                    kineticModel1[t] = this->GetSignalAtTime(1, arrivalTime) 
                         * exp( -( t - arrivalTime )*T1all) 
-                        - signal0[ arrivalTime ] 
+                        - this->GetSignalAtTime(0, arrivalTime) 
                         * exp( -( t - arrivalTime )*T1all)
                         * ( exp( -Kpl * ( t - arrivalTime )) - 1 );
 
@@ -211,6 +214,9 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
         }
 
 
+        /*!
+         *
+         */   
         virtual unsigned int GetNumberOfParameters(void) const
         {
             int numParameters = 4;

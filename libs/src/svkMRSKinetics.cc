@@ -37,7 +37,7 @@
  *  Authors:
  *      Jason C. Crane, Ph.D.
  *      Beck Olson,
- *      Nonlinear LS fit added by: Christine Leon (Jul 28, 2012)
+ *      Christine Leon 
  */
 
 
@@ -388,6 +388,25 @@ void svkMRSKinetics::GenerateKineticParamMap()
 
 
 /*!
+ *  Initial the cost function with the input signals for the given number of sites.  
+ */
+void svkMRSKinetics::InitCostFunction( svkKineticModelCostFunction::Pointer& costFunction, float* metSignal0, float* metSignal1, float* metSignal2, int numSignals )
+{
+    if (this->modelType == 1 ) { 
+        costFunction = svk2SiteExchangeCostFunction::New();
+    } else if ( this->modelType == 2 ) {
+        costFunction = svk2SitePerfCostFunction::New();
+    }
+
+    costFunction->SetNumSignals(3); 
+    costFunction->SetSignal( metSignal0, 0, "pyruvate");
+    costFunction->SetSignal( metSignal1, 1, string("lactte") );
+    costFunction->SetSignal( metSignal2, 2, string("urea") );
+    costFunction->SetNumTimePoints( this->numTimePoints );
+}
+
+
+/*!
  * 
  */
 void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, float* metKinetics2, itk::ParticleSwarmOptimizer::Pointer itkOptimizer )
@@ -399,17 +418,9 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     //  ITK Optimization 
     //========================================================
     svkKineticModelCostFunction::Pointer costFunction;
-    if (this->modelType == 1 ) { 
-        costFunction = svk2SiteExchangeCostFunction::New();
-    } else if ( this->modelType == 2 ) {
-        costFunction = svk2SitePerfCostFunction::New();
-    }
+    int numSignals = 3; 
+    this->InitCostFunction( costFunction, metKinetics0, metKinetics1, metKinetics2, numSignals ); 
     itkOptimizer->SetCostFunction( costFunction.GetPointer() );
-
-    costFunction->SetSignal0( metKinetics0 );
-    costFunction->SetSignal1( metKinetics1 );
-    costFunction->SetSignal2( metKinetics2 );
-    costFunction->SetNumTimePoints( this->numTimePoints );
 
     //  set dimensionality of parameter space: 
     const unsigned int paramSpaceDimensionality = costFunction->GetNumberOfParameters();
@@ -588,20 +599,15 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
     float* kineticModel2 = new float [this->numTimePoints];
 
     svkKineticModelCostFunction::Pointer costFunction;
-    if (this->modelType == 1 ) { 
-        costFunction = svk2SiteExchangeCostFunction::New();
-    } else if (this->modelType == 2 ) {
-        costFunction = svk2SitePerfCostFunction::New();
-    }
+    int numSignals = 3; 
+    this->InitCostFunction( costFunction, signal0, signal1, signal2, numSignals ); 
 
-    costFunction->GetKineticModel(  finalPosition, 
-                                    kineticModel0, 
-                                    kineticModel1, 
-                                    kineticModel2, 
-                                    signal0, 
-                                    signal1, 
-                                    signal2, 
-                                    this->numTimePoints ); 
+    costFunction->GetKineticModel(  finalPosition,
+                                    kineticModel0,
+                                    kineticModel1,
+                                    kineticModel2
+                                    );
+
 
     //  write out results to imageDataOutput 
     vtkFloatArray* outputDynamics0 = vtkFloatArray::SafeDownCast(
