@@ -140,6 +140,13 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
             this->modelSignalVector.resize(numSignals); 
         }
 
+        /*
+         *  Return the number of signals in the concrete model instance
+         */
+        int GetNumSignals( )
+        {
+            return this->numSignals; 
+        }
 
         /*
          *  Set the kinetic signal for metabolite N

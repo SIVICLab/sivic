@@ -91,12 +91,17 @@ class svkMRSKinetics: public svkImageAlgorithm
         } MODEL_INPUT;
 
 
+        typedef enum {
+            UNDEFINED = 0, 
+            TWO_SITE_EXCHANGE,
+            TWO_SITE_EXCHANGE_PERF
+        } MODEL_TYPE;
 
 
         void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         void                    SetZeroCopy(bool zeroCopy); 
-        void                    SetModelType( int modelType ); 
+        void                    SetModelType( svkMRSKinetics::MODEL_TYPE modelType ); 
 
 
     protected:
@@ -131,41 +136,29 @@ class svkMRSKinetics: public svkImageAlgorithm
 
     private:
         void                    GenerateKineticParamMap();
-        void                    CalculateLactateKinetics( double* fittedModelParams, 
-                                                          int numTimePts,
-														  float* metKinetics0,
-                                                          float* metKinetics1, 
-                                                          float* lacKinetics ); 
-        void                    FitVoxelKinetics( 
-                                    float* metKinetics0, 
-                                    float* metKinetics1, 
-                                    float* metKinetics2, 
-                                    int voxelIndex 
-                                );
+        void                    FitVoxelKinetics( int voxelID ); 
 
-        void                    InitOptimizer( 
-                                    float* metKinetics0, 
-                                    float* metKinetics1, 
-                                    float* metKinetics2, 
-                                    itk::ParticleSwarmOptimizer::Pointer itkOptimizer 
-                                );
+        void                    InitOptimizer(  itk::ParticleSwarmOptimizer::Pointer itkOptimizer, int voxelID ); 
         void                    InitCostFunction( 
                                     svkKineticModelCostFunction::Pointer& costFunction, 
-                                    float* metSignal0, 
-                                    float* metSignal1, 
-                                    float* metSignal2, 
-                                    int numSignals 
+                                    int voxelID 
                                 ); 
+        void                    GetCostFunction( svkKineticModelCostFunction::Pointer& costFunction); 
+        int                     GetNumSignals(); 
 
-        float*                  metKinetics0;
-        float*                  metKinetics1;
-        float*                  metKinetics2;
-        int                     currentTimePoint; 
-        int                     numTimePoints; 
-        vtkDataArray*           mapArrayKpl; 
-        vtkDataArray*           mapArrayT1all; 
-        vtkDataArray*           mapArrayKtrans; 
-        int                     modelType; 
+
+        float*                      metKinetics0;
+        float*                      metKinetics1;
+        float*                      metKinetics2;
+        int                         currentTimePoint; 
+        int                         numTimePoints; 
+        int                         num3DOutputMaps;
+        vtkDataArray*               mapArrayKpl; 
+        vtkDataArray*               mapArrayT1all; 
+        vtkDataArray*               mapArrayKtrans; 
+        svkMRSKinetics::MODEL_TYPE  modelType; 
+        vector<string>              modelOutputDescriptionVector;
+
 
 
 };

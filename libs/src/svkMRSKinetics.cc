@@ -80,6 +80,7 @@ svkMRSKinetics::svkMRSKinetics()
     //  3 required input ports: 
     this->SetNumberOfInputPorts(4); //3 input metabolites + roi mask
 
+    this->modelType = svkMRSKinetics::UNDEFINED;     
     //  Outputports:  0 for fitted pyruvate kinetics
     //  Outputports:  1 for fitted lactate kinetics
     //  Outputports:  2 for fitted urea kinetics
@@ -87,7 +88,15 @@ svkMRSKinetics::svkMRSKinetics()
     //  Outputports:  4 for Kpl map 
     //  Outputports:  5 for Ktrans map 
     this->SetNumberOfOutputPorts(6); 
-    this->modelType = 1;     
+    this->num3DOutputMaps = 3;  // T1all, Kpl, Ktrans, by convention these are the last 3 outputPorts
+
+    this->modelOutputDescriptionVector.resize( this->GetNumberOfOutputPorts() ); 
+    modelOutputDescriptionVector[0] = "pyr"; 
+    modelOutputDescriptionVector[1] = "lac"; 
+    modelOutputDescriptionVector[2] = "urea"; 
+    modelOutputDescriptionVector[3] = "T1all"; 
+    modelOutputDescriptionVector[4] = "Kpl"; 
+    modelOutputDescriptionVector[5] = "Ktrans"; 
 }
 
 
@@ -114,7 +123,7 @@ void svkMRSKinetics::SetSeriesDescription( vtkstd::string newSeriesDescription )
 /*!
  *  Set model 
  */
-void svkMRSKinetics::SetModelType( int modelType )
+void svkMRSKinetics::SetModelType( svkMRSKinetics::MODEL_TYPE modelType)
 {
     if ( modelType < 1 || modelType > 2 ) {
         cout << "ERROR: invalid model type: " << modelType << endl;
@@ -181,77 +190,40 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
     //  Use an arbitrary point for initialization of scalars.  Actual data 
     //  will be overwritten by algorithm. 
     //  GetImage initializes "GetOutput(N) with a template image. 
-    int indexArray[1];
-    indexArray[0] = 0;
-    string seriesDescription;
-    seriesDescription.assign( this->newSeriesDescription + "_pyr"); 
-    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
-        svkMriImageData::SafeDownCast( this->GetOutput(0) ), 
-        0, 
-        seriesDescription, 
-        indexArray, 
-        0 
-    ); 
 
-    seriesDescription.assign( this->newSeriesDescription + "_lac"); 
-    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
-        svkMriImageData::SafeDownCast( this->GetOutput(1) ), 
-        0, 
-        seriesDescription, 
-        indexArray, 
-        0 
-    ); 
-    seriesDescription.assign( this->newSeriesDescription + "_urea"); 
-    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
-        svkMriImageData::SafeDownCast( this->GetOutput(2) ), 
-        0, 
-        seriesDescription, 
-        indexArray, 
-        0 
-    ); 
-    seriesDescription.assign( this->newSeriesDescription + "_T1all"); 
-    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
-        svkMriImageData::SafeDownCast( this->GetOutput(3) ), 
-        0, 
-        seriesDescription, 
-        indexArray, 
-        0 
-    ); 
-    seriesDescription.assign( this->newSeriesDescription + "_Kpl"); 
-    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
-        svkMriImageData::SafeDownCast( this->GetOutput(4) ), 
-        0, 
-        seriesDescription, 
-        indexArray, 
-        0 
-    ); 
-    seriesDescription.assign( this->newSeriesDescription + "_Ktrans"); 
-    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
-        svkMriImageData::SafeDownCast( this->GetOutput(5) ), 
-        0, 
-        seriesDescription, 
-        indexArray, 
-        0 
-    ); 
+    //  Initialze the dim vector to all 0.  The non-spatial indices determine which volume is used to 
+    //  initializet the output image. 
+    svkDcmHeader::DimensionVector dimVector = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexVector();
+    for ( int i = 0; i < dimVector.size(); i++ ) {
+        svkDcmHeader::SetDimensionVectorValue(&dimVector, i, 0);
+    }
 
+    //  this should really come from the model
+    vector <string> outputSeriesDescriptionVector;
+    outputSeriesDescriptionVector.resize( this->GetNumberOfOutputPorts() ); 
+    for ( int i = 0 ; i < this->GetNumberOfOutputPorts(); i++ ) { 
+        outputSeriesDescriptionVector[i] = this->newSeriesDescription + "_" + modelOutputDescriptionVector[i]; 
+    }
+
+    for ( int i = 0 ; i < this->GetNumberOfOutputPorts(); i++ ) { 
+        string seriesDescription = outputSeriesDescriptionVector[i]; 
+        svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
+               svkMriImageData::SafeDownCast( this->GetOutput(i) ), 
+               0, 
+               seriesDescription, 
+               &dimVector, 
+               0 
+           ); 
+    }
 
     //  ===============================================
-    //  Create and initialize output data objects for fitted results: 
+    //  Create and initialize output data objects for fitted kinetics results: 
     //  ===============================================
+
     svkMriImageData* data = svkMriImageData::SafeDownCast(this->GetImageDataInput(0) );
-    svkMriImageData* fittedPyrKinetics  = svkMriImageData::SafeDownCast( this->GetOutput(0) );
-    svkMriImageData* fittedLacKinetics  = svkMriImageData::SafeDownCast( this->GetOutput(1) );
-    svkMriImageData* fittedUreaKinetics = svkMriImageData::SafeDownCast( this->GetOutput(2) );
-    fittedPyrKinetics->DeepCopy(data);
-    fittedLacKinetics->DeepCopy(data);
-    fittedUreaKinetics->DeepCopy(data);
 
+    //  create a template array for output kinetics: 
     this->numTimePoints = data->GetDcmHeader()->GetNumberOfTimePoints();
-    
-    int numVoxels[3];
-    this->GetOutput(1)->GetNumberOfVoxels(numVoxels);
-    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
-
     vtkFloatArray* templateArray = vtkFloatArray::SafeDownCast(
             svkMriImageData::SafeDownCast(this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(0)
     );
@@ -259,51 +231,36 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
         templateArray->SetTuple1(time, 0); 
     }
 
+    int numVoxels[3];
+    this->GetOutput(1)->GetNumberOfVoxels(numVoxels);
+    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
 
-    for (int i = 0; i < totalVoxels; i++ ) {
+    int numSignalsInModel = this->GetNumSignals();
+    for ( int sigNum = 0; sigNum < numSignalsInModel; sigNum++ ) {
+        svkMriImageData* fittedKineticSignal  = svkMriImageData::SafeDownCast( this->GetOutput(sigNum) );
+        fittedKineticSignal->DeepCopy(data);
 
-        vtkFloatArray* outputArray;
+        for (int i = 0; i < totalVoxels; i++ ) {
 
-        outputArray = vtkFloatArray::SafeDownCast(
-            fittedPyrKinetics->GetCellDataRepresentation()->GetArray(i)
-        );
-        outputArray->DeepCopy(templateArray); 
+            vtkFloatArray* outputArray = vtkFloatArray::SafeDownCast(
+                fittedKineticSignal->GetCellDataRepresentation()->GetArray(i)
+            );
+            outputArray->DeepCopy(templateArray); 
 
-        outputArray = vtkFloatArray::SafeDownCast(
-            fittedLacKinetics->GetCellDataRepresentation()->GetArray(i)
-        );
-        outputArray->DeepCopy(templateArray); 
-
-        outputArray = vtkFloatArray::SafeDownCast(
-            fittedUreaKinetics->GetCellDataRepresentation()->GetArray(i)
-        );
-        outputArray->DeepCopy(templateArray); 
+        }
     }
-
 
     //  ===============================================
     //  ===============================================
     this->GenerateKineticParamMap();
     //  ===============================================
 
-    for ( int i = 0 ; i < 5; i++ ) { 
+    for ( int i = 0 ; i < this->GetNumberOfOutputPorts(); i++ ) { 
         svkDcmHeader* hdr = this->GetOutput(i)->GetDcmHeader();
         hdr->InsertUniqueUID("SeriesInstanceUID");
         hdr->InsertUniqueUID("SOPInstanceUID");
+        hdr->SetValue("SeriesDescription", outputSeriesDescriptionVector[i] );
     }
-
-    svkDcmHeader* hdr;
-    hdr = this->GetOutput(0)->GetDcmHeader();
-    seriesDescription.assign( this->newSeriesDescription + "_pyr"); 
-    hdr->SetValue("SeriesDescription", seriesDescription);
-
-    hdr = this->GetOutput(1)->GetDcmHeader();
-    seriesDescription.assign( this->newSeriesDescription + "_lac"); 
-    hdr->SetValue("SeriesDescription", seriesDescription);
-
-    hdr = this->GetOutput(2)->GetDcmHeader();
-    seriesDescription.assign( this->newSeriesDescription + "_urea"); 
-    hdr->SetValue("SeriesDescription", seriesDescription);
 
     return 1; 
 };
@@ -350,34 +307,15 @@ void svkMRSKinetics::GenerateKineticParamMap()
     } 
 
 
-    for (int i = 0; i < totalVoxels; i++ ) {
+    for (int voxelID = 0; voxelID < totalVoxels; voxelID++ ) {
 
-        //cout << "VOXEL NUMBER: " << i << endl;
-        //cout << "MASK VALUE: " << mask[i] << endl;
+        //cout << "VOXEL NUMBER: " << voxelID << endl;
+        //cout << "MASK VALUE: " << mask[voxelID] << endl;
 
         //  If there is a mask check it.  If no mask provided, the compute all voxels. 
-        if ( ((hasMask == true) && (mask[i] != 0 )) || ( hasMask == false )  ) {
-
-            cout << "Fit Voxel " << i << endl;
-
-            vtkFloatArray* kineticTrace0 = vtkFloatArray::SafeDownCast(
-                svkMriImageData::SafeDownCast(
-                    this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(i)
-            );
-            vtkFloatArray* kineticTrace1 = vtkFloatArray::SafeDownCast(
-                svkMriImageData::SafeDownCast(
-                    this->GetImageDataInput(1))->GetCellDataRepresentation()->GetArray(i)
-            );
-            vtkFloatArray* kineticTrace2 = vtkFloatArray::SafeDownCast(
-                svkMriImageData::SafeDownCast(
-                    this->GetImageDataInput(2))->GetCellDataRepresentation()->GetArray(i)
-            );
-
-            float* metKinetics0 = kineticTrace0->GetPointer(0);
-            float* metKinetics1 = kineticTrace1->GetPointer(0);
-            float* metKinetics2 = kineticTrace2->GetPointer(0);
-
-            this->FitVoxelKinetics( metKinetics0, metKinetics1, metKinetics2, i );
+        if ( ((hasMask == true) && (mask[voxelID] != 0 )) || ( hasMask == false )  ) {
+            cout << "Fit Voxel " << voxelID << endl;
+            this->FitVoxelKinetics( voxelID );
         }
     }
 
@@ -390,26 +328,53 @@ void svkMRSKinetics::GenerateKineticParamMap()
 /*!
  *  Initial the cost function with the input signals for the given number of sites.  
  */
-void svkMRSKinetics::InitCostFunction( svkKineticModelCostFunction::Pointer& costFunction, float* metSignal0, float* metSignal1, float* metSignal2, int numSignals )
+void svkMRSKinetics::InitCostFunction(  svkKineticModelCostFunction::Pointer& costFunction,  int voxelID )
 {
-    if (this->modelType == 1 ) { 
+    this->GetCostFunction( costFunction ); 
+
+    int numSignalsInModel = this->GetNumSignals();
+    for (int sigNum = 0; sigNum < numSignalsInModel; sigNum++ ) {
+
+        vtkFloatArray* kineticSignal = vtkFloatArray::SafeDownCast(
+            svkMriImageData::SafeDownCast(
+                    this->GetImageDataInput(sigNum))->GetCellDataRepresentation()->GetArray(voxelID)
+        );
+
+        float* kineticSignalPointer= kineticSignal->GetPointer(0);
+        costFunction->SetSignal( kineticSignalPointer, sigNum, this->modelOutputDescriptionVector[sigNum]);
+    }
+    costFunction->SetNumTimePoints( this->numTimePoints );
+}
+
+
+/*!
+ *  Factory to get the correct the cost function. 
+ */
+void svkMRSKinetics::GetCostFunction( svkKineticModelCostFunction::Pointer& costFunction)
+{
+    if ( this->modelType == svkMRSKinetics::TWO_SITE_EXCHANGE ) { 
         costFunction = svk2SiteExchangeCostFunction::New();
-    } else if ( this->modelType == 2 ) {
+    } else if ( this->modelType == svkMRSKinetics::TWO_SITE_EXCHANGE_PERF ) {
         costFunction = svk2SitePerfCostFunction::New();
     }
+}
 
-    costFunction->SetNumSignals(3); 
-    costFunction->SetSignal( metSignal0, 0, "pyruvate");
-    costFunction->SetSignal( metSignal1, 1, "lactate" );
-    costFunction->SetSignal( metSignal2, 2, "urea" );
-    costFunction->SetNumTimePoints( this->numTimePoints );
+
+/*!
+ *  Get the number of signals required for the specified cost function
+ */
+int svkMRSKinetics::GetNumSignals()
+{
+    svkKineticModelCostFunction::Pointer costFunction;
+    this->GetCostFunction( costFunction ); 
+    return costFunction->GetNumSignals(); 
 }
 
 
 /*!
  * 
  */
-void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, float* metKinetics2, itk::ParticleSwarmOptimizer::Pointer itkOptimizer )
+void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOptimizer, int voxelID )
 {
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0) );
@@ -418,8 +383,7 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     //  ITK Optimization 
     //========================================================
     svkKineticModelCostFunction::Pointer costFunction;
-    int numSignals = 3; 
-    this->InitCostFunction( costFunction, metKinetics0, metKinetics1, metKinetics2, numSignals ); 
+    this->InitCostFunction( costFunction, voxelID); 
     itkOptimizer->SetCostFunction( costFunction.GetPointer() );
 
     //  set dimensionality of parameter space: 
@@ -438,21 +402,21 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
 
     upperBound[0] = 28/TR;          //  T1all
     lowerBound[0] = 8/TR;           //  T1all
-    if ( this->modelType == 2 ) {
+    if ( this->modelType == svkMRSKinetics::TWO_SITE_EXCHANGE_PERF ) {
         upperBound[0] = TR*1./20;     //  T1all
         lowerBound[0] = TR*1./40;     //  T1all
     }
 
     upperBound[1] = .05 * TR;       //  Kpl
     lowerBound[1] = 0.000 * TR;     //  Kpl
-    if ( this->modelType == 2 ) {
+    if ( this->modelType == svkMRSKinetics::TWO_SITE_EXCHANGE_PERF ) {
         upperBound[1] = .5 * TR;       //  Kpl
         lowerBound[1] = 0 * TR;     //  Kpl
     }
 
     upperBound[2] = 0 * TR;       //  ktrans 
     lowerBound[2] = 0 * TR;       //  ktrans 
-    if ( this->modelType == 2 ) {
+    if ( this->modelType == svkMRSKinetics::TWO_SITE_EXCHANGE_PERF ) {
         upperBound[2] = 100;       //  ktrans 
         lowerBound[2] = 0;       //  ktrans 
     }
@@ -480,7 +444,7 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     initialPosition[0] =  12/TR;        // T1all  (s)
     initialPosition[1] =  0.01 * TR;    // Kpl    (1/s)  
     initialPosition[2] =  0.00 * TR;    // ktrans (1/s)
-    if ( this->modelType == 2 ) {
+    if ( this->modelType == svkMRSKinetics::TWO_SITE_EXCHANGE_PERF ) {
         initialPosition[0] =  TR*1./35;     // T1all  (s)
         initialPosition[1] =  0.01 * TR;    // Kpl    (1/s)  
         initialPosition[2] =  1 * TR;       // ktrans (1/s)
@@ -525,12 +489,13 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
  *      metKinetics2 = signal2
  *  Returns the best fitted metKinetics arrays. 
  */
-void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, float* metKinetics2, int voxelIndex )
+void svkMRSKinetics::FitVoxelKinetics( int voxelID )
 {
+
 
     typedef itk::ParticleSwarmOptimizer OptimizerType;
     OptimizerType::Pointer itkOptimizer = OptimizerType::New();
-    this->InitOptimizer(  metKinetics0,  metKinetics1,  metKinetics2, itkOptimizer );
+    this->InitOptimizer( itkOptimizer, voxelID );
 
     try {
         itkOptimizer->StartOptimization();
@@ -574,41 +539,30 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
     double Ktrans = finalPosition[2] / TR;
     cout << "T1all(s):      " << T1all  << endl;
     cout << "Kpl(1/s):      " << Kpl    << endl;
-    if ( this->modelType == 2 ) {
+    if ( this->modelType == svkMRSKinetics::TWO_SITE_EXCHANGE_PERF ) {
         cout << "Ktrans(1/s):   " << Ktrans << endl;
     }
-    mapArrayT1all->SetTuple1(voxelIndex, T1all);
-    mapArrayKpl->SetTuple1(voxelIndex, Kpl);
-    mapArrayKtrans->SetTuple1(voxelIndex, Ktrans);
+    mapArrayT1all->SetTuple1(voxelID, T1all);
+    mapArrayKpl->SetTuple1(voxelID, Kpl);
+    mapArrayKtrans->SetTuple1(voxelID, Ktrans);
 
     // print out fitted results: 
-    vtkFloatArray* kineticTrace0 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(voxelIndex) ); 
-    vtkFloatArray* kineticTrace1 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetImageDataInput(1))->GetCellDataRepresentation()->GetArray(voxelIndex) ); 
-    vtkFloatArray* kineticTrace2 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetImageDataInput(2))->GetCellDataRepresentation()->GetArray(voxelIndex) ); 
-
-    float* signal0 = kineticTrace0->GetPointer(0);
-    float* signal1 = kineticTrace1->GetPointer(0);
-    float* signal2 = kineticTrace2->GetPointer(0);
 
     svkKineticModelCostFunction::Pointer costFunction;
-    int numSignals = 3; 
-    this->InitCostFunction( costFunction, signal0, signal1, signal2, numSignals ); 
+    this->InitCostFunction( costFunction, voxelID ); 
 
     costFunction->GetKineticModel(  finalPosition); 
 
 
     //  write out results to imageDataOutput 
     vtkFloatArray* outputDynamics0 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetOutput(0))->GetCellDataRepresentation()->GetArray(voxelIndex)
+        svkMriImageData::SafeDownCast(this->GetOutput(0))->GetCellDataRepresentation()->GetArray(voxelID)
     );
     vtkFloatArray* outputDynamics1 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetOutput(1))->GetCellDataRepresentation()->GetArray(voxelIndex)
+        svkMriImageData::SafeDownCast(this->GetOutput(1))->GetCellDataRepresentation()->GetArray(voxelID)
     );
     vtkFloatArray* outputDynamics2 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetOutput(2))->GetCellDataRepresentation()->GetArray(voxelIndex)
+        svkMriImageData::SafeDownCast(this->GetOutput(2))->GetCellDataRepresentation()->GetArray(voxelID)
     );
 
     for ( int t = 0; t < this->numTimePoints; t++ ) {
@@ -628,28 +582,24 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
  */
 void svkMRSKinetics::ZeroData()
 {
-
     int numVoxels[3];
     this->GetOutput(1)->GetNumberOfVoxels(numVoxels);
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
 
+    int numSignalsInModel = this->GetNumSignals();
+
     double zeroValue = 0.;
-    //for ( int time = 0; time < this->numTimePoints; time++ ) {
-        //for (int i = 0; i < totalVoxels; i++ ) {
-            //this->GetOutput(0)->GetPointData()->GetArray(time)->SetTuple1(i, zeroValue);
-            //this->GetOutput(1)->GetPointData()->GetArray(time)->SetTuple1(i, zeroValue);
-            //this->GetOutput(2)->GetPointData()->GetArray(time)->SetTuple1(i, zeroValue);
-        //}
-    //}
     for (int i = 0; i < totalVoxels; i++ ) {
         for ( int time = 0; time < this->numTimePoints; time++ ) {
-            this->GetOutput(0)->GetPointData()->GetArray(time)->SetTuple1(i, zeroValue);
-            this->GetOutput(1)->GetPointData()->GetArray(time)->SetTuple1(i, zeroValue);
-            this->GetOutput(2)->GetPointData()->GetArray(time)->SetTuple1(i, zeroValue);
+            //  zero each 4D dynamic output signal
+            for (int sigNum = 0; sigNum < numSignalsInModel; sigNum++ ) {
+                this->GetOutput(sigNum)->GetPointData()->GetArray(time)->SetTuple1(i, zeroValue);
+            }
         }
-        this->GetOutput(3)->GetPointData()->GetArray(0)->SetTuple1(i, zeroValue);
-        this->GetOutput(4)->GetPointData()->GetArray(0)->SetTuple1(i, zeroValue);
-        this->GetOutput(5)->GetPointData()->GetArray(0)->SetTuple1(i, zeroValue);
+        //  zero each 3D output map 
+        for (int mapNum = numSignalsInModel; mapNum < this->num3DOutputMaps + numSignalsInModel; mapNum++) {
+            this->GetOutput(mapNum)->GetPointData()->GetArray(0)->SetTuple1(i, zeroValue);
+        }
     }
 }
 
@@ -663,46 +613,30 @@ void svkMRSKinetics::SyncPointsFromCells()
     this->GetOutput(1)->GetNumberOfVoxels(numVoxels);
     int numCells = numVoxels[0] * numVoxels[1] * numVoxels[2];
 
-    svkImageData* imageData0 = this->GetOutput(0); 
-    svkImageData* imageData1 = this->GetOutput(1); 
-    svkImageData* imageData2 = this->GetOutput(2); 
-    float cellValueAtTime0[1]; 
-    float cellValueAtTime1[1]; 
-    float cellValueAtTime2[1]; 
+    int numSignalsInModel = this->GetNumSignals();
+    for (int sigNum = 0; sigNum < numSignalsInModel; sigNum++ ) {
 
-    for ( int timePoint = 0; timePoint < this->numTimePoints; timePoint++ ) { 
+        svkImageData* imageData = this->GetOutput(sigNum); 
+        float cellValueAtTime[1]; 
 
-        imageData0->GetPointData()->SetActiveScalars( 
-            imageData0->GetPointData()->GetArray( timePoint )->GetName() 
-        );
-        imageData1->GetPointData()->SetActiveScalars( 
-            imageData1->GetPointData()->GetArray( timePoint )->GetName() 
-        );
-        imageData2->GetPointData()->SetActiveScalars( 
-            imageData2->GetPointData()->GetArray( timePoint )->GetName() 
-        );
+        for ( int timePoint = 0; timePoint < this->numTimePoints; timePoint++ ) { 
 
-        //  Loop over cells at this time point: 
-        for (int cellID = 0; cellID < numCells; cellID++ ) {
-
-            //  Get the value for the cell and time
-            vtkFloatArray* outputCellData0 = vtkFloatArray::SafeDownCast(
-                svkMriImageData::SafeDownCast(imageData0)->GetCellDataRepresentation()->GetArray( cellID )
+            imageData->GetPointData()->SetActiveScalars( 
+                imageData->GetPointData()->GetArray( timePoint )->GetName() 
             );
-            vtkFloatArray* outputCellData1 = vtkFloatArray::SafeDownCast(
-                svkMriImageData::SafeDownCast(imageData1)->GetCellDataRepresentation()->GetArray( cellID )
-            );
-            vtkFloatArray* outputCellData2 = vtkFloatArray::SafeDownCast(
-                svkMriImageData::SafeDownCast(imageData2)->GetCellDataRepresentation()->GetArray( cellID )
-            );
-            outputCellData0->GetTupleValue(timePoint, cellValueAtTime0);
-            outputCellData1->GetTupleValue(timePoint, cellValueAtTime1);
-            outputCellData2->GetTupleValue(timePoint, cellValueAtTime2);
 
-            //  insert it into the correct point data array: 
-            imageData0->GetPointData()->GetScalars()->SetTuple1(cellID, cellValueAtTime0[0]);
-            imageData1->GetPointData()->GetScalars()->SetTuple1(cellID, cellValueAtTime1[0]);
-            imageData2->GetPointData()->GetScalars()->SetTuple1(cellID, cellValueAtTime2[0]);
+            //  Loop over cells at this time point: 
+            for (int cellID = 0; cellID < numCells; cellID++ ) {
+
+                //  Get the value for the cell and time
+                vtkFloatArray* outputCellData = vtkFloatArray::SafeDownCast(
+                    svkMriImageData::SafeDownCast(imageData)->GetCellDataRepresentation()->GetArray( cellID )
+                );
+                outputCellData->GetTupleValue(timePoint, cellValueAtTime);
+
+                //  insert it into the correct point data array: 
+                imageData->GetPointData()->GetScalars()->SetTuple1(cellID, cellValueAtTime[0]);
+            }
         }
     }
 }

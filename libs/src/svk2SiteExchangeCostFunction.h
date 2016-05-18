@@ -64,7 +64,10 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
         /*!
          *
          */
-        svk2SiteExchangeCostFunction() {
+        svk2SiteExchangeCostFunction() 
+        {
+            //  this model has 3 signals, Pyr, Lac,Urea
+            this->SetNumSignals(3); 
         }
 
 

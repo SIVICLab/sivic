@@ -101,7 +101,8 @@ int main (int argc, char** argv)
     string maskFileName;
     string outputFileName = "";
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_ENHANCED_MRI;
-    int modelType = 1; 
+    svkMRSKinetics::MODEL_TYPE modelType = svkMRSKinetics::TWO_SITE_EXCHANGE; 
+    int modelTypeInt = 1;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -146,7 +147,12 @@ int main (int argc, char** argv)
                 maskFileName.assign( optarg );
                 break;
             case FLAG_MODEL:
-                modelType = atoi( optarg );
+                modelTypeInt = atoi( optarg );
+                if (modelTypeInt == 1 ) { 
+                    modelType = svkMRSKinetics::TWO_SITE_EXCHANGE; 
+                } else if ( modelTypeInt == 2 ) {
+                    modelType = svkMRSKinetics::TWO_SITE_EXCHANGE_PERF; 
+                }
                 break;
             case 'o':
                 outputFileName.assign(optarg);
@@ -305,7 +311,7 @@ int main (int argc, char** argv)
     }
     t1allWriter->Write();
     kplWriter->Write();
-    if ( modelType == 2 ) { 
+    if ( modelType == svkMRSKinetics::TWO_SITE_EXCHANGE_PERF ) { 
         ktransWriter->Write();
     }
 
