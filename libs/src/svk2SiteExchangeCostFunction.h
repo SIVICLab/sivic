@@ -95,11 +95,7 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
         {
             //cout << "GUESS: " << parameters[0] << " " << parameters[1] << endl;;
 
-            this->GetKineticModel( parameters,
-                                    this->kineticModel0, 
-                                    this->kineticModel1,
-                                    this->kineticModel2
-                            );
+            this->GetKineticModel( parameters );
 
             double residual = 0;
 
@@ -108,8 +104,8 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
 
              
             for ( int t = arrivalTime; t < this->numTimePoints; t++ ) { 
-                residual += ( this->GetSignalAtTime(0, t) - this->kineticModel0[t] )  * ( this->GetSignalAtTime(0, t) - this->kineticModel0[t] ); 
-                residual += ( this->GetSignalAtTime(1, t) - this->kineticModel1[t] )  * ( this->GetSignalAtTime(1, t) - this->kineticModel1[t] );
+                residual += ( this->GetSignalAtTime(0, t) - this->GetModelSignal(0)[t] )  * ( this->GetSignalAtTime(0, t) - this->GetModelSignal(0)[t] ); 
+                residual += ( this->GetSignalAtTime(1, t) - this->GetModelSignal(1)[t] )  * ( this->GetSignalAtTime(1, t) - this->GetModelSignal(1)[t] );
             }
 
             // for now ignore the urea residual 
@@ -127,11 +123,7 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
         /*!
          *  For a given set of parameter values, compute the model kinetics
          */   
-        virtual void GetKineticModel( const ParametersType& parameters,
-                    float* kineticModel0,
-                    float* kineticModel1,
-                    float* kineticModel2
-        ) const 
+        virtual void GetKineticModel( const ParametersType& parameters ) const
         {
 
             double T1all  = parameters[0];
@@ -168,18 +160,20 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
             for ( int t = 0; t < this->numTimePoints; t++ ) {
 
                 if (t < arrivalTime ) {
-                    kineticModel0[t] = this->GetSignalAtTime(0, t); 
-                    kineticModel1[t] = this->GetSignalAtTime(1, t); 
+                    //kineticModel0[t] = this->GetSignalAtTime(0, t); 
+                    //kineticModel1[t] = this->GetSignalAtTime(1, t); 
+                    this->GetModelSignal(0)[t] = this->GetSignalAtTime(0, t); 
+                    this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, t); 
                 }
 
                 if (t >= arrivalTime ) {      
 
                     // PYRUVATE 
-                    kineticModel0[t] = this->GetSignalAtTime(0, arrivalTime) 
+                    this->GetModelSignal(0)[t] = this->GetSignalAtTime(0, arrivalTime) 
                         * exp( -((1/T1all) + Kpl) * ( t - arrivalTime) );
 
                     // LACTATE 
-                    kineticModel1[t] = this->GetSignalAtTime(1, arrivalTime)         // T1 decay of lac signal
+                    this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, arrivalTime)         // T1 decay of lac signal
                         * exp( -( t - arrivalTime )/T1all) 
                         - this->GetSignalAtTime(0, arrivalTime )                    
                             * exp( -( t - arrivalTime )/T1all)
@@ -195,7 +189,7 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
                     convolutionMat[t] = inputFunction[tau] * exp(-Ktrans * (t-tau)/K2) + convolutionMat[t-1]; 
                 }
 
-                kineticModel2[t] = Ktrans * TR * convolutionMat[t];
+                this->GetModelSignal(2)[t] = Ktrans * TR * convolutionMat[t];
                   
                 //cout << "Estimated Pyruvate(" << t << "): " <<  kineticModel0[t] << endl; 
     

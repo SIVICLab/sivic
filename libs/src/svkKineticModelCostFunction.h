@@ -71,6 +71,8 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
          */
         svkKineticModelCostFunction()
         {
+            this->numTimePoints = 0;
+            this->numSignals    = 0;
         }
 
 
@@ -107,11 +109,7 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
          *      signalN       = input signal vs time for each of 3 measured metabolites (pyr, lac, urea) 
          *      numTimePoints = number of observed time points.  
          */
-        virtual void GetKineticModel( const ParametersType& parameters,
-                    float* kineticModel0,
-                    float* kineticModel1,
-                    float* kineticModel2
-        ) const = 0; 
+        virtual void GetKineticModel( const ParametersType& parameters ) const = 0; 
 
 
         /*!  
@@ -139,6 +137,7 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         {
             this->numSignals = numSignals; 
             this->signalVector.resize(numSignals); 
+            this->modelSignalVector.resize(numSignals); 
         }
 
 
@@ -175,8 +174,18 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
             return  (this->signalVector[ signalIndex ].begin()->second)[timePt]; 
         }
 
+
         /*
-         *  Get the specific signal 
+         *  Get the specific signal at the specified time point.
+         */
+        string GetSignalName( int signalIndex ) const
+        {
+            return  this->signalVector[ signalIndex ].begin()->first; 
+        }
+
+
+        /*
+         *  Get the specific signal (pointer to the float array)
          */
         float* GetSignal(int signalIndex) const
         {
@@ -191,20 +200,62 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         void SetNumTimePoints( int numTimePoints )
         {
             this->numTimePoints = numTimePoints;
-            this->kineticModel0 = new float [this->numTimePoints];
-            this->kineticModel1 = new float [this->numTimePoints];
-            this->kineticModel2 = new float [this->numTimePoints];
+            if ( this->numSignals == 0 ) { 
+                cout << "ERROR, numSignals not yet initialized" << endl;
+                exit(1); 
+            }
+            for ( int i = 0; i < this->numSignals; i++ ) {   
+                float* model = new float [this->numTimePoints];
+                string modelSignalName = this->GetSignalName(i); 
+                cout << "NAME: " << modelSignalName << endl;
+                this->SetModelSignal( model, i, modelSignalName); 
+            }
+        }
+
+
+        /*
+         *  Set the kinetic signal for metabolite N
+         */
+        void SetModelSignal( float* modelSignal, int modelSignalIndex, string modelSignalName)
+        {
+            map<string, float*>  modelSignalMap;  
+            modelSignalMap[modelSignalName] = modelSignal; 
+            if ( modelSignalIndex >  this->modelSignalVector.size() ) {
+                cout << "ERROR, signal index is out of range" << endl; 
+                exit(1); 
+            }
+            cout << "CH1" << endl;
+            this->modelSignalVector[modelSignalIndex] = modelSignalMap;
+        }
+
+
+        /*
+         *  Get the specific model at the specified time point.
+         */
+        float GetModelSignalAtTime(int modelSignalIndex, int timePt) const
+        {
+            return  (this->modelSignalVector[ modelSignalIndex ].begin()->second)[timePt]; 
+        }
+
+
+        /*
+         *  Get the specific signal (pointer to the float array)
+         */
+        float* GetModelSignal(int modelSignalIndex) const
+        {
+            return  (this->modelSignalVector[ modelSignalIndex ]).begin()->second; 
         }
 
 
     protected:
 
-        //  this is the vector of float arrays representing the metabolite signals as a function of time
+        //  this is the vector of float arrays representing the observed metabolite signals as a function of time
         //  for different number of sites this should be flexibile
         vector< map < string, float* > >  signalVector;
-        float*      kineticModel0;
-        float*      kineticModel1;
-        float*      kineticModel2;
+
+        //  this is the vector of float arrays representing the modeled/computed metabolite signals as a function of time
+        //  for different number of sites this should be flexibile based on the model parameters. 
+        vector< map < string, float* > >  modelSignalVector;
         int         numTimePoints;
         int         numSignals;
 

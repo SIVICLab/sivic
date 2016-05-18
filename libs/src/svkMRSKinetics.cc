@@ -400,8 +400,8 @@ void svkMRSKinetics::InitCostFunction( svkKineticModelCostFunction::Pointer& cos
 
     costFunction->SetNumSignals(3); 
     costFunction->SetSignal( metSignal0, 0, "pyruvate");
-    costFunction->SetSignal( metSignal1, 1, string("lactte") );
-    costFunction->SetSignal( metSignal2, 2, string("urea") );
+    costFunction->SetSignal( metSignal1, 1, "lactate" );
+    costFunction->SetSignal( metSignal2, 2, "urea" );
     costFunction->SetNumTimePoints( this->numTimePoints );
 }
 
@@ -593,20 +593,11 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
     float* signal1 = kineticTrace1->GetPointer(0);
     float* signal2 = kineticTrace2->GetPointer(0);
 
-    // assign new data to voxelarray
-    float* kineticModel0 = new float [this->numTimePoints];
-    float* kineticModel1 = new float [this->numTimePoints];
-    float* kineticModel2 = new float [this->numTimePoints];
-
     svkKineticModelCostFunction::Pointer costFunction;
     int numSignals = 3; 
     this->InitCostFunction( costFunction, signal0, signal1, signal2, numSignals ); 
 
-    costFunction->GetKineticModel(  finalPosition,
-                                    kineticModel0,
-                                    kineticModel1,
-                                    kineticModel2
-                                    );
+    costFunction->GetKineticModel(  finalPosition); 
 
 
     //  write out results to imageDataOutput 
@@ -619,16 +610,13 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
     vtkFloatArray* outputDynamics2 = vtkFloatArray::SafeDownCast(
         svkMriImageData::SafeDownCast(this->GetOutput(2))->GetCellDataRepresentation()->GetArray(voxelIndex)
     );
+
     for ( int t = 0; t < this->numTimePoints; t++ ) {
         //cout << "Fitted Pyruvate(" << t << "): " <<  kineticModel0[t] << " " << signal0[t] << endl; 
-        outputDynamics0->SetTuple1(t, kineticModel0[t]);
-        outputDynamics1->SetTuple1(t, kineticModel1[t]);
-        outputDynamics2->SetTuple1(t, kineticModel2[t]);
+        outputDynamics0->SetTuple1(t, costFunction->GetModelSignalAtTime(0, t) ); 
+        outputDynamics1->SetTuple1(t, costFunction->GetModelSignalAtTime(1, t) ); 
+        outputDynamics2->SetTuple1(t, costFunction->GetModelSignalAtTime(2, t) ); 
     }
-
-    delete[] kineticModel0; 
-    delete[] kineticModel1; 
-    delete[] kineticModel2; 
 
     return;
 }
