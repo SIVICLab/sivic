@@ -81,21 +81,7 @@ svkMRSKinetics::svkMRSKinetics()
     this->SetNumberOfInputPorts(4); //3 input metabolites + roi mask
 
     this->modelType = svkMRSKinetics::UNDEFINED;     
-    //  Outputports:  0 for fitted pyruvate kinetics
-    //  Outputports:  1 for fitted lactate kinetics
-    //  Outputports:  2 for fitted urea kinetics
-    //  Outputports:  3 for T1all map 
-    //  Outputports:  4 for Kpl map 
-    //  Outputports:  5 for Ktrans map 
-    this->SetNumberOfOutputPorts(6); 
 
-    this->modelOutputDescriptionVector.resize( this->GetNumberOfOutputPorts() ); 
-    this->modelOutputDescriptionVector[0] = "pyr"; 
-    this->modelOutputDescriptionVector[1] = "lac"; 
-    this->modelOutputDescriptionVector[2] = "urea"; 
-    this->modelOutputDescriptionVector[3] = "T1all"; 
-    this->modelOutputDescriptionVector[4] = "Kpl"; 
-    this->modelOutputDescriptionVector[5] = "Ktrans"; 
 }
 
 
@@ -129,6 +115,22 @@ void svkMRSKinetics::SetModelType( svkMRSKinetics::MODEL_TYPE modelType)
         exit(1); 
     }
     this->modelType = modelType;
+
+    //  Outputports:  0 for fitted pyruvate kinetics
+    //  Outputports:  1 for fitted lactate kinetics
+    //  Outputports:  2 for fitted urea kinetics
+    //  Outputports:  3 for T1all map 
+    //  Outputports:  4 for Kpl map 
+    //  Outputports:  5 for Ktrans map 
+    this->SetNumberOfOutputPorts(6); 
+
+    this->modelOutputDescriptionVector.resize( this->GetNumberOfOutputPorts() ); 
+    this->modelOutputDescriptionVector[0] = "pyr"; 
+    this->modelOutputDescriptionVector[1] = "lac"; 
+    this->modelOutputDescriptionVector[2] = "urea"; 
+    this->modelOutputDescriptionVector[3] = "T1all"; 
+    this->modelOutputDescriptionVector[4] = "Kpl"; 
+    this->modelOutputDescriptionVector[5] = "Ktrans"; 
 }
 
 
