@@ -88,15 +88,14 @@ svkMRSKinetics::svkMRSKinetics()
     //  Outputports:  4 for Kpl map 
     //  Outputports:  5 for Ktrans map 
     this->SetNumberOfOutputPorts(6); 
-    this->num3DOutputMaps = 3;  // T1all, Kpl, Ktrans, by convention these are the last 3 outputPorts
 
     this->modelOutputDescriptionVector.resize( this->GetNumberOfOutputPorts() ); 
-    modelOutputDescriptionVector[0] = "pyr"; 
-    modelOutputDescriptionVector[1] = "lac"; 
-    modelOutputDescriptionVector[2] = "urea"; 
-    modelOutputDescriptionVector[3] = "T1all"; 
-    modelOutputDescriptionVector[4] = "Kpl"; 
-    modelOutputDescriptionVector[5] = "Ktrans"; 
+    this->modelOutputDescriptionVector[0] = "pyr"; 
+    this->modelOutputDescriptionVector[1] = "lac"; 
+    this->modelOutputDescriptionVector[2] = "urea"; 
+    this->modelOutputDescriptionVector[3] = "T1all"; 
+    this->modelOutputDescriptionVector[4] = "Kpl"; 
+    this->modelOutputDescriptionVector[5] = "Ktrans"; 
 }
 
 
@@ -202,7 +201,7 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
     vector <string> outputSeriesDescriptionVector;
     outputSeriesDescriptionVector.resize( this->GetNumberOfOutputPorts() ); 
     for ( int i = 0 ; i < this->GetNumberOfOutputPorts(); i++ ) { 
-        outputSeriesDescriptionVector[i] = this->newSeriesDescription + "_" + modelOutputDescriptionVector[i]; 
+        outputSeriesDescriptionVector[i] = this->newSeriesDescription + "_" + this->modelOutputDescriptionVector[i]; 
     }
 
     for ( int i = 0 ; i < this->GetNumberOfOutputPorts(); i++ ) { 
@@ -277,18 +276,10 @@ void svkMRSKinetics::GenerateKineticParamMap()
 
     this->ZeroData();
 
-    //  Get the parameter map data arrays to initialize.  
-    this->mapArrayT1all  = this->GetOutput(3)->GetPointData()->GetArray(0);
-    this->mapArrayKpl    = this->GetOutput(4)->GetPointData()->GetArray(0);
-    this->mapArrayKtrans = this->GetOutput(5)->GetPointData()->GetArray(0);
-
-    //  Add the output volume array to the correct array in the svkMriImageData object
-    string arrayNameStringT1all("T1all");
-    string arrayNameStringKpl("Kpl");
-    string arrayNameStringKtrans("Ktrans");
-    this->mapArrayT1all->SetName( arrayNameStringT1all.c_str() );
-    this->mapArrayKpl->SetName( arrayNameStringKpl.c_str() );
-    this->mapArrayKtrans->SetName( arrayNameStringKtrans.c_str() );
+    //  Set the parameter map data array names to initialize.  
+    this->GetOutput(3)->GetPointData()->GetArray(0)->SetName( this->modelOutputDescriptionVector[3].c_str() );
+    this->GetOutput(4)->GetPointData()->GetArray(0)->SetName( this->modelOutputDescriptionVector[4].c_str() );
+    this->GetOutput(5)->GetPointData()->GetArray(0)->SetName( this->modelOutputDescriptionVector[5].c_str() );
 
     double voxelValue;
     int numVoxels[3];
@@ -391,7 +382,10 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     typedef svkKineticModelCostFunction::ParametersType ParametersType;
     ParametersType  initialPosition( paramSpaceDimensionality );
 
+
+    //  THIS SHOULD PROBABLY BE MOVED TO THE MODEL
     float TR = 3.;
+
     //  Set bounds
     itk::ParticleSwarmOptimizer::ParameterBoundsType bounds;
 
@@ -441,14 +435,14 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     //initialPosition[2] =  1 * TR;       // ktrans (1/s)
     //initialPosition[3] =  TR*1./40;     // k2     (1/s)
 
-    initialPosition[0] =  12/TR;        // T1all  (s)
+    initialPosition[0] =  12   / TR;    // T1all  (s)
     initialPosition[1] =  0.01 * TR;    // Kpl    (1/s)  
     initialPosition[2] =  0.00 * TR;    // ktrans (1/s)
     if ( this->modelType == svkMRSKinetics::TWO_SITE_EXCHANGE_PERF ) {
-        initialPosition[0] =  TR*1./35;     // T1all  (s)
-        initialPosition[1] =  0.01 * TR;    // Kpl    (1/s)  
-        initialPosition[2] =  1 * TR;       // ktrans (1/s)
-        initialPosition[3] =  TR*1./40;     // k2     (1/s)
+        initialPosition[0] =  (1./35) * TR;     // T1all  (s)
+        initialPosition[1] =  0.01    * TR;     // Kpl    (1/s)  
+        initialPosition[2] =  1       * TR;     // ktrans (1/s)
+        initialPosition[3] =  (1./40) * TR;     // k2     (1/s)
     }
 
     //for (int k=0; k<4; k++) {
@@ -511,30 +505,21 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
     typedef svkKineticModelCostFunction::ParametersType ParametersType;
     ParametersType finalPosition = itkOptimizer->GetCurrentPosition();
 
-    //
     // check results to see if it is within range
-    //
     bool pass = true;
-
     // Exercise various member functions.
-    cout << endl;
-
     //itkOptimizer->Print( cout );
-
     if( !pass ) {
         cout << "Test failed." << endl;
         return;
     }
-
     //cout << "Test passed." << endl;
 
     //  ===================================================
     //  Save fitted kinetics into algorithm output object cell data
     //  ===================================================
-    //float TR = 5.; 
-    float TR = 3.;          //   this shoudl be read from the data
-    double T1all  =  finalPosition[0] * TR;
-    //double T1all  = TR / finalPosition[0];
+    float  TR     = 3.;          //   this shoudl be read from the data
+    double T1all  = finalPosition[0] * TR;
     double Kpl    = finalPosition[1] / TR;
     double Ktrans = finalPosition[2] / TR;
     cout << "T1all(s):      " << T1all  << endl;
@@ -542,11 +527,12 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
     if ( this->modelType == svkMRSKinetics::TWO_SITE_EXCHANGE_PERF ) {
         cout << "Ktrans(1/s):   " << Ktrans << endl;
     }
-    mapArrayT1all->SetTuple1(voxelID, T1all);
-    mapArrayKpl->SetTuple1(voxelID, Kpl);
-    mapArrayKtrans->SetTuple1(voxelID, Ktrans);
 
-    // print out fitted results: 
+    //  This isn't great.  I think this type of model specific initialization should be done in the
+    //  specific model, not this generic driver class: 
+    this->GetOutput(3)->GetPointData()->GetArray(0)->SetTuple1( voxelID, T1all ); 
+    this->GetOutput(4)->GetPointData()->GetArray(0)->SetTuple1( voxelID, Kpl   );  
+    this->GetOutput(5)->GetPointData()->GetArray(0)->SetTuple1( voxelID, Ktrans);  
 
     svkKineticModelCostFunction::Pointer costFunction;
     this->InitCostFunction( costFunction, voxelID ); 
@@ -555,21 +541,16 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
 
 
     //  write out results to imageDataOutput 
-    vtkFloatArray* outputDynamics0 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetOutput(0))->GetCellDataRepresentation()->GetArray(voxelID)
-    );
-    vtkFloatArray* outputDynamics1 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetOutput(1))->GetCellDataRepresentation()->GetArray(voxelID)
-    );
-    vtkFloatArray* outputDynamics2 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetOutput(2))->GetCellDataRepresentation()->GetArray(voxelID)
-    );
+    int numSignalsInModel = this->GetNumSignals();
+    for (int sigNum = 0; sigNum < numSignalsInModel; sigNum++ ) {
+        vtkFloatArray* outputDynamics = vtkFloatArray::SafeDownCast(
+            svkMriImageData::SafeDownCast(this->GetOutput(sigNum))->GetCellDataRepresentation()->GetArray(voxelID)
+        );
 
-    for ( int t = 0; t < this->numTimePoints; t++ ) {
-        //cout << "Fitted Pyruvate(" << t << "): " <<  kineticModel0[t] << " " << signal0[t] << endl; 
-        outputDynamics0->SetTuple1(t, costFunction->GetModelSignalAtTime(0, t) ); 
-        outputDynamics1->SetTuple1(t, costFunction->GetModelSignalAtTime(1, t) ); 
-        outputDynamics2->SetTuple1(t, costFunction->GetModelSignalAtTime(2, t) ); 
+        for ( int t = 0; t < this->numTimePoints; t++ ) {
+            //cout << "Fitted Pyruvate(" << t << "): " <<  kineticModel0[t] << " " << signal0[t] << endl; 
+            outputDynamics->SetTuple1(t, costFunction->GetModelSignalAtTime(sigNum, t) ); 
+        }
     }
 
     return;
@@ -588,6 +569,12 @@ void svkMRSKinetics::ZeroData()
 
     int numSignalsInModel = this->GetNumSignals();
 
+    svkKineticModelCostFunction::Pointer costFunction;
+    this->GetCostFunction( costFunction ); 
+    const unsigned int paramSpaceDimensionality = costFunction->GetNumberOfParameters();
+    int num3DOutputMaps = 3; //paramSpaceDimensionality; 
+    //int num3DOutputMaps = paramSpaceDimensionality; 
+
     double zeroValue = 0.;
     for (int i = 0; i < totalVoxels; i++ ) {
         for ( int time = 0; time < this->numTimePoints; time++ ) {
@@ -597,7 +584,8 @@ void svkMRSKinetics::ZeroData()
             }
         }
         //  zero each 3D output map 
-        for (int mapNum = numSignalsInModel; mapNum < this->num3DOutputMaps + numSignalsInModel; mapNum++) {
+        for (int mapNum = numSignalsInModel; mapNum < num3DOutputMaps + numSignalsInModel; mapNum++) {
+            cout << "MN: " << mapNum << endl;
             this->GetOutput(mapNum)->GetPointData()->GetArray(0)->SetTuple1(i, zeroValue);
         }
     }
