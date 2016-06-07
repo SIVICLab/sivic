@@ -124,29 +124,44 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         }
 
 
-        /*
-         *
+        /*!
+         *  Get the number of adjustable parameters in the model defined by cost function
          */
         virtual unsigned int GetNumberOfParameters(void) const = 0; 
 
 
-        /*
+        /*!
+         *  Get the number of outputs
+         *  This can be fitted signals as well as parameter maps
+         */
+        virtual unsigned int GetNumberOfOutputPorts(void) const = 0; 
+
+
+        /*!
+         *  Get the vector that contains the string identifier for each output port
+         */
+        virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const = 0; 
+
+
+        /*!
          *  Set the kinetic signal for metabolite N
          */
-        void SetNumSignals( int numSignals )
+        void SetNumberOfSignals( int numSignals )
         {
             this->numSignals = numSignals; 
             this->signalVector.resize(numSignals); 
             this->modelSignalVector.resize(numSignals); 
         }
 
+
         /*
          *  Return the number of signals in the concrete model instance
          */
-        int GetNumSignals( )
+        int GetNumberOfSignals( ) const
         {
             return this->numSignals; 
         }
+
 
         /*
          *  Set the kinetic signal for metabolite N
@@ -220,6 +235,33 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         }
 
 
+        /*!
+         *
+         */
+        void SetTR( float TR )
+        {
+            this->TR = TR; 
+        }
+
+
+        /*!
+         *  Initialize the parameter uppler and lower bounds for this model. 
+         */
+        virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) = 0; 
+
+
+        /*!
+         *  Initialize the parameter initial values (unitless)
+         */
+        virtual void InitParamInitialPosition( ParametersType* initialPosition ) = 0; 
+
+
+        /*!
+         *  Get the scaled (with units) values of final fitted parameter values. 
+         */
+        virtual void GetParamFinalScaledPosition( ParametersType* finalPosition ) = 0; 
+
+
         /*
          *  Set the kinetic signal for metabolite N
          */
@@ -262,9 +304,10 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
 
         //  this is the vector of float arrays representing the modeled/computed metabolite signals as a function of time
         //  for different number of sites this should be flexibile based on the model parameters. 
-        vector< map < string, float* > >  modelSignalVector;
-        int         numTimePoints;
-        int         numSignals;
+        vector< map < string, float* > >    modelSignalVector;
+        int                                 numTimePoints;
+        int                                 numSignals;
+        float                               TR;
 
 };
 

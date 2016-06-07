@@ -64,7 +64,9 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
         /*!
          *
          */   
-        svk2SitePerfCostFunction() {
+        svk2SitePerfCostFunction() 
+        {
+            this->TR = 0;
         }
 
 
@@ -120,6 +122,7 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
 
         /*!
          *  For a given set of parameter values, compute the model kinetics
+         *  The params are unitless. 
          */   
         virtual void GetKineticModel( const ParametersType& parameters ) const
         {
@@ -127,7 +130,6 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
             double T1all  = parameters[0];
             double Kpl    = parameters[1];
             double Ktrans = parameters[2];
-            double K2     = parameters[3];
 
             //  use model params and initial signal intensity to calculate the metabolite signals vs time 
             //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
@@ -208,14 +210,101 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
 
 
         /*!
-         *
+         *  T1all
+         *  Kpl
+         *  Ktrans
          */   
         virtual unsigned int GetNumberOfParameters(void) const
         {
-            int numParameters = 4;
+            int numParameters = 3;
             return numParameters;
         }
 
+
+        /*!
+         *  Get the number of outputs
+         *  This is fitted signals and parameter maps:
+         *      Outputports:  0 for fitted pyruvate kinetics
+         *      Outputports:  1 for fitted lactate kinetics
+         *      Outputports:  2 for fitted urea kinetics
+         *      Outputports:  3 for T1all map 
+         *      Outputports:  4 for Kpl map 
+         *      Outputports:  5 for Ktrans map 
+         */
+        virtual unsigned int GetNumberOfOutputPorts(void) const 
+        {
+            int numOutputPorts = 6;
+            return numOutputPorts;
+        }
+
+
+        /*!
+         *  Get the vector that contains the string identifier for each output port
+         */
+        virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const 
+        {
+            outputDescriptionVector->resize( this->GetNumberOfOutputPorts() );
+            (*outputDescriptionVector)[0] = "pyr";
+            (*outputDescriptionVector)[1] = "lac";
+            (*outputDescriptionVector)[2] = "urea";
+            (*outputDescriptionVector)[3] = "T1all";
+            (*outputDescriptionVector)[4] = "Kpl";
+            (*outputDescriptionVector)[5] = "Ktrans";
+        }
+
+
+        /*!
+         *  Initialize the parameter uppler and lower bounds for this model. 
+         */
+        void InitParamBounds( float* lowerBounds, float* upperBounds )
+        {
+            upperBounds[0] = 28/this->TR;          //  T1all
+            lowerBounds[0] = 8/this->TR;           //  T1all
+
+            upperBounds[1] = .05 * this->TR;       //  Kpl
+            lowerBounds[1] = 0.000 * this->TR;     //  Kpl
+
+            upperBounds[2] = 0 * this->TR;       //  ktrans 
+            lowerBounds[2] = 0 * this->TR;       //  ktrans 
+
+            upperBounds[3] = 1;              //  k2 
+            lowerBounds[3] = 0;              //  k2
+
+        }
+
+
+       /*!
+        *   Initialize the parameter initial values
+        */
+        virtual void InitParamInitialPosition( ParametersType* initialPosition )
+        {
+            if (this->TR == 0 )  {
+                cout << "ERROR: TR Must be set before initializing parameters" << endl;
+                exit(1); 
+            }
+
+            (*initialPosition)[0] =  (1./35) / this->TR;     // T1all  (s)
+            (*initialPosition)[1] =  0.01    * this->TR;     // Kpl    (1/s)  
+            (*initialPosition)[2] =  1       * this->TR;     // ktrans (1/s)
+            (*initialPosition)[3] =  (1./40) * this->TR;     // k2     (1/s)
+        }
+
+
+       /*!
+        *   Get the scaled (with time units) final fitted param values. 
+        */
+        virtual void GetParamFinalScaledPosition( ParametersType* finalPosition )
+        {
+            if (this->TR == 0 )  {
+                cout << "ERROR: TR Must be set before scaling final parameters" << endl;
+                exit(1); 
+            }
+
+            (*finalPosition)[0] *= this->TR;    // T1all  (s)
+            (*finalPosition)[1] /= this->TR;    // Kpl    (1/s)  
+            (*finalPosition)[2] /= this->TR;    // ktrans (1/s)
+            (*finalPosition)[2] /= this->TR;    // k2     (1/s)
+        }
 
 
 };

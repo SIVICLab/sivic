@@ -248,10 +248,11 @@ int main (int argc, char** argv)
     //  Pass data through your algorithm:
     // ===============================================  
     svkMRSKinetics* dynamics = svkMRSKinetics::New();
+    //  Model must ust be set first!
+    dynamics->SetModelType( modelType ); 
     dynamics->SetInputConnection( 0, reader1->GetOutputPort() ); 
     dynamics->SetInputConnection( 1, reader2->GetOutputPort() ); 
     dynamics->SetInputConnection( 2, reader3->GetOutputPort() ); 
-    dynamics->SetModelType( modelType ); 
     if ( readerMask!= NULL ) { 
         dynamics->SetInputConnection( 3, readerMask->GetOutputPort() ); // input 3 is the mask
     }

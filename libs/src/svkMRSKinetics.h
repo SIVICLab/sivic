@@ -102,6 +102,9 @@ class svkMRSKinetics: public svkImageAlgorithm
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         void                    SetZeroCopy(bool zeroCopy); 
         void                    SetModelType( svkMRSKinetics::MODEL_TYPE modelType ); 
+        void                    SetTR( float TR ); 
+        float                   GetTR( ); 
+
 
 
     protected:
@@ -145,6 +148,9 @@ class svkMRSKinetics: public svkImageAlgorithm
                                 ); 
         void                    GetCostFunction( svkKineticModelCostFunction::Pointer& costFunction); 
         int                     GetNumSignals(); 
+        int                     GetNumberOfModelOutputPorts(); 
+        int                     GetNumberOfModelParameters(); 
+        void                    InitModelOutputDescriptionVector(); 
 
 
         float*                      metKinetics0;
@@ -158,8 +164,7 @@ class svkMRSKinetics: public svkImageAlgorithm
         vtkDataArray*               mapArrayKtrans; 
         svkMRSKinetics::MODEL_TYPE  modelType; 
         vector<string>              modelOutputDescriptionVector;
-
-
+        float                       TR; 
 
 };
 
