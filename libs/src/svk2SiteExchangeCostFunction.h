@@ -164,8 +164,6 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
             for ( int t = 0; t < this->numTimePoints; t++ ) {
 
                 if (t < arrivalTime ) {
-                    //kineticModel0[t] = this->GetSignalAtTime(0, t); 
-                    //kineticModel1[t] = this->GetSignalAtTime(1, t); 
                     this->GetModelSignal(0)[t] = this->GetSignalAtTime(0, t); 
                     this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, t); 
                 }
@@ -212,24 +210,6 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
         {
             int numParameters = 4;
             return numParameters;
-        }
-
-
-        /*!
-         *  Get the number of outputs
-         *  This is fitted signals and parameter maps:
-         *      Outputports:  0 for fitted pyruvate kinetics
-         *      Outputports:  1 for fitted lactate kinetics
-         *      Outputports:  2 for fitted urea kinetics
-         *      Outputports:  3 for T1all map 
-         *      Outputports:  4 for Kpl map 
-         *      Outputports:  5 for Ktrans map 
-         *      Outputports:  5 for K2 map 
-         */
-        virtual unsigned int GetNumberOfOutputPorts(void) const 
-        {
-            int numOutputPorts = this->GetNumberOfSignals() + this->GetNumberOfParameters(); 
-            return numOutputPorts; 
         }
 
 

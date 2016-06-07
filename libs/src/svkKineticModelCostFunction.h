@@ -131,13 +131,6 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
 
 
         /*!
-         *  Get the number of outputs
-         *  This can be fitted signals as well as parameter maps
-         */
-        virtual unsigned int GetNumberOfOutputPorts(void) const = 0; 
-
-
-        /*!
          *  Get the vector that contains the string identifier for each output port
          */
         virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const = 0; 
@@ -295,6 +288,23 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
             return  (this->modelSignalVector[ modelSignalIndex ]).begin()->second; 
         }
 
+        /*!
+         *  Get the number of outputs
+         *  This is fitted signals (first), them parameter maps, e.g.:
+         *      Outputports:  0 for fitted pyruvate kinetics
+         *      Outputports:  1 for fitted lactate kinetics
+         *      Outputports:  2 for fitted urea kinetics
+         *      Outputports:  3 for T1all map 
+         *      Outputports:  4 for Kpl map 
+         *      Outputports:  5 for Ktrans map 
+         *      Outputports:  5 for K2 map 
+         */
+        unsigned int GetNumberOfOutputPorts(void) const 
+        {
+            int numOutputPorts = this->GetNumberOfSignals() + this->GetNumberOfParameters(); 
+            return numOutputPorts; 
+        }
+
 
     protected:
 
@@ -308,6 +318,8 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         int                                 numTimePoints;
         int                                 numSignals;
         float                               TR;
+
+
 
 };
 

@@ -222,23 +222,6 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
 
 
         /*!
-         *  Get the number of outputs
-         *  This is fitted signals and parameter maps:
-         *      Outputports:  0 for fitted pyruvate kinetics
-         *      Outputports:  1 for fitted lactate kinetics
-         *      Outputports:  2 for fitted urea kinetics
-         *      Outputports:  3 for T1all map 
-         *      Outputports:  4 for Kpl map 
-         *      Outputports:  5 for Ktrans map 
-         */
-        virtual unsigned int GetNumberOfOutputPorts(void) const 
-        {
-            int numOutputPorts = 6;
-            return numOutputPorts;
-        }
-
-
-        /*!
          *  Get the vector that contains the string identifier for each output port
          */
         virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const 

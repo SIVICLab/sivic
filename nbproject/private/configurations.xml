@@ -4,103 +4,7 @@
     <df root="." name="0">
       <df name="applications">
         <df name="cmd_line">
-          <df name="Linux_x86_64">
-          </df>
-          <df name="Linux_x86_64_debug">
-          </df>
           <df name="src">
-            <df name="CMakeFiles">
-              <df name="CMakeRelink.dir">
-              </df>
-              <df name="svk_apodize.dir">
-              </df>
-              <df name="svk_app_template.dir">
-              </df>
-              <df name="svk_auto_phase.dir">
-              </df>
-              <df name="svk_average_spec.dir">
-              </df>
-              <df name="svk_channel2time.dir">
-              </df>
-              <df name="svk_combine_spec.dir">
-              </df>
-              <df name="svk_create_dcmraw.dir">
-              </df>
-              <df name="svk_dce_quantify.dir">
-              </df>
-              <df name="svk_dcm_deid.dir">
-              </df>
-              <df name="svk_dcmdump.dir">
-              </df>
-              <df name="svk_extract_spec.dir">
-              </df>
-              <df name="svk_fft.dir">
-              </df>
-              <df name="svk_file_convert.dir">
-              </df>
-              <df name="svk_gepfile_anon.dir">
-              </df>
-              <df name="svk_gepfile_reader.dir">
-              </df>
-              <df name="svk_get_filetype.dir">
-              </df>
-              <df name="svk_hsvd.dir">
-              </df>
-              <df name="svk_image_mathematics.dir">
-              </df>
-              <df name="svk_image_pipeline.dir">
-              </df>
-              <df name="svk_image_stats.dir">
-              </df>
-              <df name="svk_image_threshold.dir">
-              </df>
-              <df name="svk_integrate_dynamic.dir">
-              </df>
-              <df name="svk_interpolate_spectra.dir">
-              </df>
-              <df name="svk_lcmodel_reader.dir">
-              </df>
-              <df name="svk_lcmodel_writer.dir">
-              </df>
-              <df name="svk_met_kinetics.dir">
-              </df>
-              <df name="svk_mrs_combine.dir">
-              </df>
-              <df name="svk_multi_view.dir">
-              </df>
-              <df name="svk_noise.dir">
-              </df>
-              <df name="svk_peak_pick.dir">
-              </df>
-              <df name="svk_phase_spec.dir">
-              </df>
-              <df name="svk_point_selector.dir">
-              </df>
-              <df name="svk_psd_prescription_convert.dir">
-              </df>
-              <df name="svk_quantify.dir">
-              </df>
-              <df name="svk_quick_view.dir">
-              </df>
-              <df name="svk_reorder_epsi.dir">
-              </df>
-              <df name="svk_reslice.dir">
-              </df>
-              <df name="svk_scale_image.dir">
-              </df>
-              <df name="svk_spec_diff.dir">
-              </df>
-              <df name="svk_surface_area.dir">
-              </df>
-              <df name="svk_svrecon.dir">
-              </df>
-              <df name="svk_transform.dir">
-              </df>
-              <df name="svk_volume_diff.dir">
-              </df>
-              <df name="svk_zscore.dir">
-              </df>
-            </df>
             <df name="ITKIOFactoryRegistration">
               <in>itkImageIOFactoryRegisterManager.h</in>
               <in>itkTransformIOFactoryRegisterManager.h</in>
@@ -214,19 +118,7 @@
           </df>
         </df>
         <df name="sivic_app">
-          <df name="Linux_x86_64">
-          </df>
-          <df name="Linux_x86_64_debug">
-          </df>
           <df name="src">
-            <df name="CMakeFiles">
-              <df name="sivic.dir">
-              </df>
-              <df name="sivicGUI.dir">
-              </df>
-              <df name="SivicKWCallbacksLib.dir">
-              </df>
-            </df>
             <df name="ITKIOFactoryRegistration">
               <in>itkImageIOFactoryRegisterManager.h</in>
               <in>itkTransformIOFactoryRegisterManager.h</in>
@@ -309,6 +201,8 @@
                 </df>
                 <df name="src">
                   <df name="CMakeFiles">
+                    <df name="CMakeRelink.dir">
+                    </df>
                     <df name="svk_apodize.dir">
                     </df>
                     <df name="svk_app_template.dir">
@@ -393,7 +287,11 @@
                     </df>
                     <df name="svk_transform.dir">
                     </df>
+                    <df name="svk_variable_flip_scaler.dir">
+                    </df>
                     <df name="svk_volume_diff.dir">
+                    </df>
+                    <df name="svk_zerofill.dir">
                     </df>
                     <df name="svk_zscore.dir">
                     </df>
@@ -462,6 +360,8 @@
                   </df>
                   <df name="svkviz.dir">
                   </df>
+                  <df name="svkXMLUtils.dir">
+                  </df>
                 </df>
                 <df name="ITKIOFactoryRegistration">
                   <in>itkImageIOFactoryRegisterManager.h</in>
@@ -525,6 +425,8 @@
                   <df name="svkTypeUtils.dir">
                   </df>
                   <df name="svkviz.dir">
+                  </df>
+                  <df name="svkXMLUtils.dir">
                   </df>
                 </df>
               </df>
@@ -756,22 +658,6 @@
           <in>getopt_long.c</in>
         </df>
         <df name="src">
-          <df name="CMakeFiles">
-            <df name="svk.dir">
-            </df>
-            <df name="svkadapt.dir">
-            </df>
-            <df name="svkNumerical.dir">
-            </df>
-            <df name="svkNumerical2.dir">
-            </df>
-            <df name="svkPSD.dir">
-            </df>
-            <df name="svkTypeUtils.dir">
-            </df>
-            <df name="svkviz.dir">
-            </df>
-          </df>
           <df name="headers">
             <in>svk2SiteExchangeCostFunction.h</in>
             <in>svk2SitePerfCostFunction.h</in>
@@ -882,6 +768,7 @@
             <in>svkLCModelCoordReader.h</in>
             <in>svkLCModelRawWriter.h</in>
             <in>svkLCModelReader.h</in>
+            <in>svkLCModelTableReader.h</in>
             <in>svkLabeledDataMapper.h</in>
             <in>svkLookupTable.h</in>
             <in>svkMRIIOD.h</in>
@@ -898,6 +785,7 @@
             <in>svkMRSPeakPick.h</in>
             <in>svkMRSZeroOrderPhase.h</in>
             <in>svkMRSZeroOrderPhaseCostFunction.h</in>
+            <in>svkMRSolnMRDReader.h</in>
             <in>svkMathUtils.h</in>
             <in>svkMetaboliteMap.h</in>
             <in>svkMetaboliteRatioZScores.h</in>
@@ -925,6 +813,8 @@
             <in>svkPACSInterface.h</in>
             <in>svkPhaseCostFunction.h</in>
             <in>svkPhaseSpec.h</in>
+            <in>svkPhilipsSMapper.h</in>
+            <in>svkPhilipsSReader.h</in>
             <in>svkPlotGridView.h</in>
             <in>svkPlotGridViewController.h</in>
             <in>svkPlotLine.h</in>
@@ -953,6 +843,7 @@
             <in>svkUCSFPACSInterface.h</in>
             <in>svkUCSFUtils.h</in>
             <in>svkUtils.h</in>
+            <in>svkVariableFlipDatReader.h</in>
             <in>svkVarianCSFidMapper.h</in>
             <in>svkVarianFidMapper.h</in>
             <in>svkVarianFidReader.h</in>
@@ -962,7 +853,9 @@
             <in>svkVizUtils.h</in>
             <in>svkVoxelTaggingUtils.h</in>
             <in>svkXML.h</in>
+            <in>svkXMLUtils.h</in>
             <in>svkXYPlotActor.h</in>
+            <in>svkXYPlotActorConnections.h</in>
           </df>
           <df name="ITKIOFactoryRegistration">
             <in>itkImageIOFactoryRegisterManager.h</in>
@@ -2379,6 +2272,18 @@
             </df>
           </df>
         </df>
+        <df name="philips_sdata">
+          <df name="input">
+            <df name="images">
+              <df name="E512851845">
+                <df name="101">
+                </df>
+              </df>
+            </df>
+          </df>
+          <df name="output">
+          </df>
+        </df>
         <df name="raw_dicom">
           <df name="input">
             <df name="compression">
@@ -2449,6 +2354,314 @@
             </df>
           </df>
         </df>
+        <df name="results_tmp">
+          <df name="COLOR_MAP_RENDER_MCHK">
+          </df>
+          <df name="COR_IMAGE_SPEC_RENDER_MCHK">
+          </df>
+          <df name="COR_SPEC_RENDER_MCHK">
+          </df>
+          <df name="MRI_4D_IMAGE_MCHK">
+          </df>
+          <df name="ORIENTATION_RENDER_MCHK">
+          </df>
+          <df name="ORIENTATION_SPEC_MET_MCHK">
+          </df>
+          <df name="OVERLAY_LOAD_ORDER_RENDER_MCHK">
+          </df>
+          <df name="OVERLAY_MEMORY_RENDER_MCHK">
+          </df>
+          <df name="OVERLAY_MET_RENDER_MCHK">
+          </df>
+          <df name="PHANTOM_IMAGE_RENDER_MCHK">
+          </df>
+          <df name="PHANTOM_IMAGE_SAT_BANDS_MCHK">
+          </df>
+          <df name="PHANTOM_SPECTRA_RENDER_MCHK">
+          </df>
+          <df name="PHANTOM_SPECTRA_SAT_BANDS_MCHK">
+          </df>
+          <df name="PHNTM_IMG_SPEC_RENDER_MCHK">
+          </df>
+          <df name="PLOT_GRID_DETAILED_VOXEL_MCHK">
+          </df>
+          <df name="PLOT_GRID_MET_RENDER_MCHK">
+          </df>
+          <df name="PLOT_GRID_MET_SHIFT_RENDER_MCHK">
+          </df>
+          <df name="SAG_IMAGE_SPEC_RENDER_MCHK">
+          </df>
+          <df name="SAG_SPEC_RENDER_MCHK">
+          </df>
+          <df name="SVK_MULTI_VIEW_TEST_1_MCHK">
+          </df>
+          <df name="SVK_MULTI_VIEW_TEST_2_MCHK">
+          </df>
+          <df name="SVK_MULTI_VIEW_TEST_3_MCHK">
+          </df>
+          <df name="SVK_MULTI_VIEW_TEST_4_MCHK">
+          </df>
+          <df name="SVK_MULTI_VIEW_TEST_5_MCHK">
+          </df>
+          <df name="SVK_MULTI_VIEW_TEST_6_MCHK">
+          </df>
+          <df name="TEST_BRUKER_2_DCM">
+          </df>
+          <df name="TEST_ERRORHANDLING_HSVD">
+          </df>
+          <df name="TEST_EXTRACT_RAW_LEGACY">
+          </df>
+          <df name="TEST_FP_PHASE">
+          </df>
+          <df name="TEST_HSVD">
+          </df>
+          <df name="TEST_MCHK_11XPF_2_DDF">
+          </df>
+          <df name="TEST_MCHK_12XPF_2_DDF">
+          </df>
+          <df name="TEST_MCHK_14XPF_2_DDF">
+          </df>
+          <df name="TEST_MCHK_15XPF_2_DDF">
+          </df>
+          <df name="TEST_MCHK_20XPF_2_DDF">
+          </df>
+          <df name="TEST_MCHK_23XPF_2_DDF">
+          </df>
+          <df name="TEST_MCHK_24XPF_2_DDF">
+          </df>
+          <df name="TEST_MCHK_9XPF_SWAP_DDF">
+          </df>
+          <df name="TEST_MCHK_ALL_SATS">
+          </df>
+          <df name="TEST_MCHK_CHANNEL_TO_TIME">
+          </df>
+          <df name="TEST_MCHK_COMBINE">
+          </df>
+          <df name="TEST_MCHK_DCE_QUANTIFY">
+          </df>
+          <df name="TEST_MCHK_DCMMRI_2_DCMMRI">
+          </df>
+          <df name="TEST_MCHK_DCMMRI_2_DCMMRI_ANON">
+          </df>
+          <df name="TEST_MCHK_DCMMRI_2_IDF">
+          </df>
+          <df name="TEST_MCHK_DCMMRS_2_DCMMRS">
+          </df>
+          <df name="TEST_MCHK_DDF_2_DDF">
+          </df>
+          <df name="TEST_MCHK_DICOM_RAW_WRITER">
+          </df>
+          <df name="TEST_MCHK_DICOM_RAW_WRITER_2">
+          </df>
+          <df name="TEST_MCHK_EVEN_IMAGE_CENTER">
+          </df>
+          <df name="TEST_MCHK_EVEN_IMAGE_LINEAR_PHASE">
+          </df>
+          <df name="TEST_MCHK_EVEN_IMAGE_PAD">
+          </df>
+          <df name="TEST_MCHK_EVEN_MRI_FFT">
+          </df>
+          <df name="TEST_MCHK_EVEN_SINC_INTERPOLATE">
+          </df>
+          <df name="TEST_MCHK_FDF_2_IDF">
+          </df>
+          <df name="TEST_MCHK_FLOAT_DCMENH_2_DCMENH">
+          </df>
+          <df name="TEST_MCHK_GE_POSTAGE_TO_DDF">
+          </df>
+          <df name="TEST_MCHK_GEPFILE_2_DDF_1">
+          </df>
+          <df name="TEST_MCHK_GEPFILE_2_DDF_2">
+          </df>
+          <df name="TEST_MCHK_GEPFILE_2_DDF_LAC">
+          </df>
+          <df name="TEST_MCHK_GEPFILE_ANON">
+          </df>
+          <df name="TEST_MCHK_IDF_2_IDF_INT2">
+          </df>
+          <df name="TEST_MCHK_IDF_2_IDF_REAL">
+          </df>
+          <df name="TEST_MCHK_INTEGRATE_MET_MAP">
+          </df>
+          <df name="TEST_MCHK_KIN_MOD">
+          </df>
+          <df name="TEST_MCHK_LINE_WIDTH_MET_MAP">
+          </df>
+          <df name="TEST_MCHK_MAG_INTEGRATE_MET_MAP">
+          </df>
+          <df name="TEST_MCHK_MAG_LINE_WIDTH_MET_MAP">
+          </df>
+          <df name="TEST_MCHK_MAG_PEAK_HT_MET_MAP">
+          </df>
+          <df name="TEST_MCHK_MRS_APODIZATION">
+          </df>
+          <df name="TEST_MCHK_MRS_FFT">
+          </df>
+          <df name="TEST_MCHK_MRS_VOXEL_SHIFT">
+          </df>
+          <df name="TEST_MCHK_MRS_ZERO_FILL">
+          </df>
+          <df name="TEST_MCHK_MULTI_VOL_DCM_2_IDF">
+          </df>
+          <df name="TEST_MCHK_MULTI_VOL_DCMENH_2_DCMENH">
+          </df>
+          <df name="TEST_MCHK_MULTI_VOL_IDF_2_DCM">
+          </df>
+          <df name="TEST_MCHK_MULTI_VOL_IDF_2_DCMENH">
+          </df>
+          <df name="TEST_MCHK_MULTI_VOL_IDF_2_IDF">
+          </df>
+          <df name="TEST_MCHK_OBLIQUE_RESLICE">
+          </df>
+          <df name="TEST_MCHK_ODD_IMAGE_CENTER">
+          </df>
+          <df name="TEST_MCHK_ODD_IMAGE_LINEAR_PHASE">
+          </df>
+          <df name="TEST_MCHK_ODD_IMAGE_PAD">
+          </df>
+          <df name="TEST_MCHK_ODD_MRI_FFT">
+          </df>
+          <df name="TEST_MCHK_ODD_SINC_INTERPOLATE">
+          </df>
+          <df name="TEST_MCHK_PEAK_HT_MET_MAP">
+          </df>
+          <df name="TEST_MCHK_PHASE_SPEC_FROM_FILE">
+            <df name="out1">
+            </df>
+          </df>
+          <df name="TEST_MCHK_PHASE_ZERO_LINEAR_SPEC">
+          </df>
+          <df name="TEST_MCHK_PHASE_ZERO_LINEAR_SPEC_2">
+          </df>
+          <df name="TEST_MCHK_PHILIPS_SFILES_TO_DDF">
+          </df>
+          <df name="TEST_MCHK_RDA_2_DDF">
+          </df>
+          <df name="TEST_MCHK_RDA_CSI_2_DDF">
+          </df>
+          <df name="TEST_MCHK_READ_GE_SHF">
+          </df>
+          <df name="TEST_MCHK_READ_LCM_COORD">
+          </df>
+          <df name="TEST_MCHK_READ_LCM_CSV">
+          </df>
+          <df name="TEST_MCHK_READ_LCM_TABLE">
+          </df>
+          <df name="TEST_MCHK_READ_PROSE_UCSF">
+          </df>
+          <df name="TEST_MCHK_READ_SYM_EPSI">
+          </df>
+          <df name="TEST_MCHK_READ_SYM_EPSI_DYNAMIC">
+          </df>
+          <df name="TEST_MCHK_REORDER_FLYBACK">
+          </df>
+          <df name="TEST_MCHK_REORDER_INTERLEAVED_EPSI">
+          </df>
+          <df name="TEST_MCHK_RESAMPLE">
+          </df>
+          <df name="TEST_MCHK_RESLICE_INTERPOLATION_CUBIC">
+          </df>
+          <df name="TEST_MCHK_RESLICE_INTERPOLATION_LINEAR">
+          </df>
+          <df name="TEST_MCHK_RESLICE_INTERPOLATION_NEAREST">
+          </df>
+          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_DOTS_ASYMMETRIC_TRANSLATED">
+          </df>
+          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_DOTS_ROTATED_TRANSLATED">
+          </df>
+          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_HIGH_TO_LOW_RES">
+          </df>
+          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_HIGH_TO_LOW_RES_AXIAL">
+          </df>
+          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_IMAGE_TO_SPEC">
+          </df>
+          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_LOW_TO_HIGH_RES">
+          </df>
+          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_RESHAPE_UPSAMPLE">
+          </df>
+          <df name="TEST_MCHK_SIG5XV2_2_IDF">
+          </df>
+          <df name="TEST_MCHK_SIGLX2_2_IDF">
+          </df>
+          <df name="TEST_MCHK_SIGNA5X_2_IDF">
+          </df>
+          <df name="TEST_MCHK_SPEC_DIFF">
+          </df>
+          <df name="TEST_MCHK_SVK_APODIZE">
+          </df>
+          <df name="TEST_MCHK_SVK_CHECK_VOL_LOAD">
+          </df>
+          <df name="TEST_MCHK_SVK_CONVERT_LEGACY_DAT_3PLANE">
+          </df>
+          <df name="TEST_MCHK_SVK_CONVERT_LEGACY_DAT_6PLANE">
+          </df>
+          <df name="TEST_MCHK_SVK_DAD_SATS_XML">
+          </df>
+          <df name="TEST_MCHK_SVK_DAD_TRAJECTORY_XML">
+          </df>
+          <df name="TEST_MCHK_SVK_FILE_INFO">
+          </df>
+          <df name="TEST_MCHK_SVK_IMAGE_MATHEMATICS_ADD">
+          </df>
+          <df name="TEST_MCHK_SVK_IMAGE_MATHEMATICS_DIV">
+          </df>
+          <df name="TEST_MCHK_SVK_IMAGE_MATHEMATICS_MUL">
+          </df>
+          <df name="TEST_MCHK_SVK_IMAGE_MATHEMATICS_SCL">
+          </df>
+          <df name="TEST_MCHK_SVK_IMAGE_MATHEMATICS_SUB">
+          </df>
+          <df name="TEST_MCHK_SVK_IMAGE_THRESHOLD_1">
+          </df>
+          <df name="TEST_MCHK_SVK_IMAGE_THRESHOLD_2">
+          </df>
+          <df name="TEST_MCHK_SVK_IMAGE_THRESHOLD_3">
+          </df>
+          <df name="TEST_MCHK_SVK_IMAGE_THRESHOLD_4">
+          </df>
+          <df name="TEST_MCHK_SVK_INTERPOLATE_SPECTRA_1">
+          </df>
+          <df name="TEST_MCHK_SVK_INTERPOLATE_SPECTRA_2">
+          </df>
+          <df name="TEST_MCHK_SVK_INTERPOLATE_SPECTRA_3">
+          </df>
+          <df name="TEST_MCHK_SVK_INTERPOLATE_SPECTRA_4">
+          </df>
+          <df name="TEST_MCHK_SVK_MRS_AVERAGE_SPEC">
+          </df>
+          <df name="TEST_MCHK_SVK_MRS_COMBINE_SUB">
+            <df name="out2">
+            </df>
+          </df>
+          <df name="TEST_MCHK_SVK_MRS_COMBINE_WTD_ADD">
+            <df name="out1">
+            </df>
+          </df>
+          <df name="TEST_MCHK_SVK_PARSE_XML_PFILE_1">
+          </df>
+          <df name="TEST_MCHK_SVK_PARSE_XML_PFILE_2">
+          </df>
+          <df name="TEST_MCHK_SVK_QUANTIFY_XML">
+          </df>
+          <df name="TEST_MCHK_SVK_SAT_BANDS_XML_1">
+          </df>
+          <df name="TEST_MCHK_SVK_SAT_BANDS_XML_2">
+          </df>
+          <df name="TEST_MCHK_SVK_VARIABLE_FLIP_SCALAR">
+          </df>
+          <df name="TEST_MCHK_SVK_ZSCORE">
+          </df>
+          <df name="TEST_MCHK_TRANSFORM">
+          </df>
+          <df name="TEST_MCHK_VARIANFID_2_DDF">
+          </df>
+          <df name="TEST_MRS_FFT_VOXEL_SHIFT">
+          </df>
+          <df name="TEST_PHASE_SPEC">
+          </df>
+          <df name="VTK_RENDER_MCHK">
+          </df>
+        </df>
         <df name="sample_epsi">
           <df name="input">
           </df>
@@ -2478,6 +2691,12 @@
           </df>
         </df>
         <df name="siemens_rda">
+          <df name="csi">
+            <df name="input">
+            </df>
+            <df name="output">
+            </df>
+          </df>
           <df name="sv">
             <df name="input">
             </df>
@@ -2593,6 +2812,14 @@
           <df name="input">
           </df>
           <df name="output">
+          </df>
+        </df>
+        <df name="svk_met_kinetics">
+          <df name="hmtrc_2016">
+            <df name="input">
+            </df>
+            <df name="output">
+            </df>
           </df>
         </df>
         <df name="svk_mrs_combine">
@@ -3603,20 +3830,74 @@
           </df>
         </df>
         <df name="GE_dist">
+        </df>
+        <df name="release">
           <df name="_CPack_Packages">
             <df name="Linux">
-              <df name="TGZ">
-                <df name="sivic_GE_console_0.9.26_Linux_x86_64">
-                  <df name="console">
-                    <df name="bin">
-                    </df>
-                    <df name="data">
-                    </df>
-                    <df name="lib">
-                    </df>
-                    <df name="packages">
+              <df name="DEB">
+                <df name="sivic_0.9.43_Linux_x86_64">
+                  <df name="usr">
+                    <df name="local">
+                      <df name="bin">
+                      </df>
+                      <df name="sivic">
+                        <df name="dcmtk">
+                          <df name="lib">
+                          </df>
+                        </df>
+                        <df name="vtk">
+                          <df name="lib">
+                            <df name="tcl8.5">
+                              <df name="encoding">
+                              </df>
+                              <df name="msgs">
+                              </df>
+                            </df>
+                            <df name="tk8.5">
+                              <df name="msgs">
+                              </df>
+                              <df name="ttk">
+                              </df>
+                            </df>
+                          </df>
+                        </df>
+                      </df>
                     </df>
                   </df>
+                </df>
+              </df>
+              <df name="STGZ">
+                <df name="sivic_0.9.43_Linux_x86_64">
+                  <df name="local">
+                    <df name="bin">
+                    </df>
+                    <df name="sivic">
+                      <df name="dcmtk">
+                        <df name="lib">
+                        </df>
+                      </df>
+                      <df name="vtk">
+                        <df name="lib">
+                          <df name="tcl8.5">
+                            <df name="encoding">
+                            </df>
+                            <df name="msgs">
+                            </df>
+                          </df>
+                          <df name="tk8.5">
+                            <df name="msgs">
+                            </df>
+                            <df name="ttk">
+                            </df>
+                          </df>
+                        </df>
+                      </df>
+                    </df>
+                  </df>
+                </df>
+              </df>
+              <df name="TGZ">
+                <df name="sivic_0.9.43_Linux_x86_64">
                   <df name="local">
                     <df name="bin">
                     </df>
@@ -3666,178 +3947,6 @@
                   <df name="svk_channel2time.dir">
                   </df>
                   <df name="svk_combine_spec.dir">
-                  </df>
-                  <df name="svk_dce_quantify.dir">
-                  </df>
-                  <df name="svk_dcm_deid.dir">
-                  </df>
-                  <df name="svk_dcmdump.dir">
-                  </df>
-                  <df name="svk_extract_spec.dir">
-                  </df>
-                  <df name="svk_fft.dir">
-                  </df>
-                  <df name="svk_file_convert.dir">
-                  </df>
-                  <df name="svk_gepfile_anon.dir">
-                  </df>
-                  <df name="svk_gepfile_reader.dir">
-                  </df>
-                  <df name="svk_get_filetype.dir">
-                  </df>
-                  <df name="svk_hsvd.dir">
-                  </df>
-                  <df name="svk_image_mathematics.dir">
-                  </df>
-                  <df name="svk_image_pipeline.dir">
-                  </df>
-                  <df name="svk_image_stats.dir">
-                  </df>
-                  <df name="svk_image_threshold.dir">
-                  </df>
-                  <df name="svk_integrate_dynamic.dir">
-                  </df>
-                  <df name="svk_interpolate_spectra.dir">
-                  </df>
-                  <df name="svk_lcmodel_reader.dir">
-                  </df>
-                  <df name="svk_lcmodel_writer.dir">
-                  </df>
-                  <df name="svk_met_kinetics.dir">
-                  </df>
-                  <df name="svk_mrs_combine.dir">
-                  </df>
-                  <df name="svk_multi_view.dir">
-                  </df>
-                  <df name="svk_noise.dir">
-                  </df>
-                  <df name="svk_peak_pick.dir">
-                  </df>
-                  <df name="svk_phase_spec.dir">
-                  </df>
-                  <df name="svk_point_selector.dir">
-                  </df>
-                  <df name="svk_psd_prescription_convert.dir">
-                  </df>
-                  <df name="svk_quantify.dir">
-                  </df>
-                  <df name="svk_quick_view.dir">
-                  </df>
-                  <df name="svk_reorder_epsi.dir">
-                  </df>
-                  <df name="svk_reslice.dir">
-                  </df>
-                  <df name="svk_scale_image.dir">
-                  </df>
-                  <df name="svk_spec_diff.dir">
-                  </df>
-                  <df name="svk_surface_area.dir">
-                  </df>
-                  <df name="svk_svrecon.dir">
-                  </df>
-                  <df name="svk_transform.dir">
-                  </df>
-                  <df name="svk_volume_diff.dir">
-                  </df>
-                  <df name="svk_zscore.dir">
-                  </df>
-                </df>
-                <df name="ITKIOFactoryRegistration">
-                  <in>itkImageIOFactoryRegisterManager.h</in>
-                  <in>itkTransformIOFactoryRegisterManager.h</in>
-                </df>
-              </df>
-            </df>
-            <df name="scanner">
-              <df name="GE_console">
-                <df name="CMakeFiles">
-                  <df name="Name.dir">
-                  </df>
-                </df>
-              </df>
-            </df>
-            <df name="sivic_app">
-              <df name="Linux_x86_64">
-              </df>
-              <df name="src">
-                <df name="CMakeFiles">
-                  <df name="sivic.dir">
-                  </df>
-                  <df name="sivicGUI.dir">
-                  </df>
-                  <df name="SivicKWCallbacksLib.dir">
-                  </df>
-                </df>
-                <df name="ITKIOFactoryRegistration">
-                  <in>itkImageIOFactoryRegisterManager.h</in>
-                  <in>itkTransformIOFactoryRegisterManager.h</in>
-                </df>
-                <in>SivicKWCallbacksLibInit.cxx</in>
-                <in>vtkSivicControllerTcl.cxx</in>
-              </df>
-            </df>
-          </df>
-          <df name="CMakeFiles">
-            <df name="2.8.11">
-              <df name="CompilerIdC">
-                <in>CMakeCCompilerId.c</in>
-              </df>
-              <df name="CompilerIdCXX">
-                <in>CMakeCXXCompilerId.cpp</in>
-              </df>
-            </df>
-            <df name="CMakeTmp">
-            </df>
-          </df>
-          <df name="libs">
-            <df name="Linux_x86_64">
-            </df>
-            <df name="src">
-              <df name="CMakeFiles">
-                <df name="svk.dir">
-                </df>
-                <df name="svkadapt.dir">
-                </df>
-                <df name="svkNumerical.dir">
-                </df>
-                <df name="svkNumerical2.dir">
-                </df>
-                <df name="svkPSD.dir">
-                </df>
-                <df name="svkTypeUtils.dir">
-                </df>
-                <df name="svkviz.dir">
-                </df>
-              </df>
-              <df name="ITKIOFactoryRegistration">
-                <in>itkImageIOFactoryRegisterManager.h</in>
-                <in>itkTransformIOFactoryRegisterManager.h</in>
-              </df>
-            </df>
-          </df>
-        </df>
-        <df name="release">
-          <df name="applications">
-            <df name="cmd_line">
-              <df name="Linux_x86_64">
-              </df>
-              <df name="src">
-                <df name="CMakeFiles">
-                  <df name="CMakeRelink.dir">
-                  </df>
-                  <df name="svk_apodize.dir">
-                  </df>
-                  <df name="svk_app_template.dir">
-                  </df>
-                  <df name="svk_auto_phase.dir">
-                  </df>
-                  <df name="svk_average_spec.dir">
-                  </df>
-                  <df name="svk_channel2time.dir">
-                  </df>
-                  <df name="svk_combine_spec.dir">
-                  </df>
-                  <df name="svk_create_dcmraw.dir">
                   </df>
                   <df name="svk_dce_quantify.dir">
                   </df>
@@ -4001,6 +4110,102 @@
           </df>
         </df>
         <df name="testing">
+          <df name="_CPack_Packages">
+            <df name="Linux">
+              <df name="DEB">
+                <df name="sivic_0.9.42_Linux_x86_64">
+                  <df name="usr">
+                    <df name="local">
+                      <df name="bin">
+                      </df>
+                      <df name="sivic">
+                        <df name="dcmtk">
+                          <df name="lib">
+                          </df>
+                        </df>
+                        <df name="vtk">
+                          <df name="lib">
+                            <df name="tcl8.5">
+                              <df name="encoding">
+                              </df>
+                              <df name="msgs">
+                              </df>
+                            </df>
+                            <df name="tk8.5">
+                              <df name="msgs">
+                              </df>
+                              <df name="ttk">
+                              </df>
+                            </df>
+                          </df>
+                        </df>
+                      </df>
+                    </df>
+                  </df>
+                </df>
+              </df>
+              <df name="STGZ">
+                <df name="sivic_0.9.42_Linux_x86_64">
+                  <df name="local">
+                    <df name="bin">
+                    </df>
+                    <df name="sivic">
+                      <df name="dcmtk">
+                        <df name="lib">
+                        </df>
+                      </df>
+                      <df name="vtk">
+                        <df name="lib">
+                          <df name="tcl8.5">
+                            <df name="encoding">
+                            </df>
+                            <df name="msgs">
+                            </df>
+                          </df>
+                          <df name="tk8.5">
+                            <df name="msgs">
+                            </df>
+                            <df name="ttk">
+                            </df>
+                          </df>
+                        </df>
+                      </df>
+                    </df>
+                  </df>
+                </df>
+              </df>
+              <df name="TGZ">
+                <df name="sivic_0.9.42_Linux_x86_64">
+                  <df name="local">
+                    <df name="bin">
+                    </df>
+                    <df name="sivic">
+                      <df name="dcmtk">
+                        <df name="lib">
+                        </df>
+                      </df>
+                      <df name="vtk">
+                        <df name="lib">
+                          <df name="tcl8.5">
+                            <df name="encoding">
+                            </df>
+                            <df name="msgs">
+                            </df>
+                          </df>
+                          <df name="tk8.5">
+                            <df name="msgs">
+                            </df>
+                            <df name="ttk">
+                            </df>
+                          </df>
+                        </df>
+                      </df>
+                    </df>
+                  </df>
+                </df>
+              </df>
+            </df>
+          </df>
           <df name="applications">
             <df name="cmd_line">
               <df name="Linux_x86_64">
@@ -4124,8 +4329,6 @@
                   <in>itkImageIOFactoryRegisterManager.h</in>
                   <in>itkTransformIOFactoryRegisterManager.h</in>
                 </df>
-                <in>SivicKWCallbacksLibInit.cxx</in>
-                <in>vtkSivicControllerTcl.cxx</in>
               </df>
             </df>
           </df>
@@ -4199,6 +4402,8 @@
           </df>
           <df name="ctest_logs">
           </df>
+          <df name="kintest">
+          </df>
           <df name="libs">
             <df name="Linux_x86_64">
             </df>
@@ -4265,6 +4470,62 @@
             <df name="20160324-1651">
             </df>
             <df name="20160324-1700">
+            </df>
+            <df name="20160415-1918">
+            </df>
+            <df name="20160415-2034">
+            </df>
+            <df name="20160415-2042">
+            </df>
+            <df name="20160415-2047">
+            </df>
+            <df name="20160415-2106">
+            </df>
+            <df name="20160419-1733">
+            </df>
+            <df name="20160419-1734">
+            </df>
+            <df name="20160419-2027">
+            </df>
+            <df name="20160429-1748">
+            </df>
+            <df name="20160429-1854">
+            </df>
+            <df name="20160429-1857">
+            </df>
+            <df name="20160429-1900">
+            </df>
+            <df name="20160429-1942">
+            </df>
+            <df name="20160429-1955">
+            </df>
+            <df name="20160503-1815">
+            </df>
+            <df name="20160503-2112">
+            </df>
+            <df name="20160507-0014">
+            </df>
+            <df name="20160513-1808">
+            </df>
+            <df name="20160513-1947">
+            </df>
+            <df name="20160513-1948">
+            </df>
+            <df name="20160517-1933">
+            </df>
+            <df name="20160517-1936">
+            </df>
+            <df name="20160517-1946">
+            </df>
+            <df name="20160517-1948">
+            </df>
+            <df name="20160517-1951">
+            </df>
+            <df name="20160518-0525">
+            </df>
+            <df name="20160518-0559">
+            </df>
+            <df name="20160518-0616">
             </df>
             <df name="CoverageInfo">
             </df>
