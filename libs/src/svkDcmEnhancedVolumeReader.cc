@@ -196,7 +196,7 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
 					                    (unsigned short*)imageData ,
 					                    intercept, slope, numPixelsInVolume * this->numVolumes);
         }
-        delete (unsigned short*)imageData;
+        free (imageData);
 		imageData = imageFloatData;
 	}
 

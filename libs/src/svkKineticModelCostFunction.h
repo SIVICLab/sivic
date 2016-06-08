@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2016 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -93,27 +93,8 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         }
 
 
-        /*!
-         *  Cost function based on minimizing the residual of fitted and observed dynamics. 
-         */
-        virtual MeasureType  GetResidual( const ParametersType& parameters) const = 0; 
-
-
-        /*!
-         *  For a given set of parameter values, compute the model kinetics:
-         *
-         *  Function to calculate metabolite signal vs time based on parametric model.  
-         *      uses the following : 
-         *      parameters    = kinetic model parameters to be fit (1/T1all, Kpl).  
-         *      kineticModelN = model metabolite signal intensity vs time ( pyr, lac, urea)
-         *      signalN       = input signal vs time for each of 3 measured metabolites (pyr, lac, urea) 
-         *      numTimePoints = number of observed time points.  
-         */
-        virtual void GetKineticModel( const ParametersType& parameters ) const = 0; 
-
-
         /*!  
-         *  returns the cost function for the current param values: 
+         *  Returns the cost function value for the current param values: 
          *  typedef double MeasureType
          */
         MeasureType  GetValue( const ParametersType & parameters ) const
@@ -122,18 +103,6 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
             MeasureType measure = cost;
             return measure;
         }
-
-
-        /*!
-         *  Get the number of adjustable parameters in the model defined by cost function
-         */
-        virtual unsigned int GetNumberOfParameters(void) const = 0; 
-
-
-        /*!
-         *  Get the vector that contains the string identifier for each output port
-         */
-        virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const = 0; 
 
 
         /*!
@@ -237,24 +206,6 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         }
 
 
-        /*!
-         *  Initialize the parameter uppler and lower bounds for this model. 
-         */
-        virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) = 0; 
-
-
-        /*!
-         *  Initialize the parameter initial values (unitless)
-         */
-        virtual void InitParamInitialPosition( ParametersType* initialPosition ) = 0; 
-
-
-        /*!
-         *  Get the scaled (with units) values of final fitted parameter values. 
-         */
-        virtual void GetParamFinalScaledPosition( ParametersType* finalPosition ) = 0; 
-
-
         /*
          *  Set the kinetic signal for metabolite N
          */
@@ -266,7 +217,6 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
                 cout << "ERROR, signal index is out of range" << endl; 
                 exit(1); 
             }
-            cout << "CH1" << endl;
             this->modelSignalVector[modelSignalIndex] = modelSignalMap;
         }
 
@@ -306,7 +256,73 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         }
 
 
+        /*!
+         *  For a given set of parameter values, compute the model kinetics:
+         *
+         *  Function to calculate metabolite signal vs time based on parametric model.  
+         *      uses the following : 
+         *      parameters    = kinetic model parameters to be fit (1/T1all, Kpl).  
+         *      kineticModelN = model metabolite signal intensity vs time ( pyr, lac, urea)
+         *      signalN       = input signal vs time for each of 3 measured metabolites (pyr, lac, urea) 
+         *      numTimePoints = number of observed time points.  
+         */
+        virtual void GetKineticModel( const ParametersType& parameters ) const = 0; 
+
+
+        /*!
+         *  Get the number of adjustable parameters in the model defined by cost function
+         */
+        virtual unsigned int GetNumberOfParameters(void) const = 0; 
+
+
+        /*!
+         *  Get the vector that contains the string identifier for each output port
+         */
+        virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const = 0; 
+
+
+        /*!
+         *  Initialize the parameter uppler and lower bounds for this model. 
+         */
+        virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) = 0; 
+
+
+        /*!
+         *  Initialize the parameter initial values (unitless)
+         */
+        virtual void InitParamInitialPosition( ParametersType* initialPosition ) = 0; 
+
+
+        /*!
+         *  Get the scaled (with units) values of final fitted parameter values. 
+         */
+        virtual void GetParamFinalScaledPosition( ParametersType* finalPosition ) = 0; 
+
+
+
     protected:
+
+
+        /*!
+         *  Cost function used to minimizing the residual of fitted and observed dynamics. 
+         *  Get the sum of square difference between the input signal and modeled signal at the current
+         *  set of parameter values. 
+         */
+        MeasureType  GetResidual( const ParametersType& parameters) const
+        {
+            //cout << "GUESS: " << parameters[0] << " " << parameters[1] << endl;;
+            this->GetKineticModel( parameters );
+            double residual = 0;
+            for ( int t = 0; t < this->numTimePoints; t++ ) {
+                for  (int sigNumber = 0; sigNumber < this->GetNumberOfSignals(); sigNumber++ ) {
+                    residual += ( this->GetSignalAtTime(sigNumber, t) - this->GetModelSignal(sigNumber)[t] )  
+                              * ( this->GetSignalAtTime(sigNumber, t) - this->GetModelSignal(sigNumber)[t] );
+                }
+            }
+            MeasureType measure = residual ;
+            return measure;
+        }
+
 
         //  this is the vector of float arrays representing the observed metabolite signals as a function of time
         //  for different number of sites this should be flexibile

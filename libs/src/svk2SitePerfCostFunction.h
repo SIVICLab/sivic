@@ -71,56 +71,6 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
 
 
         /*!
-         *
-         */   
-        int GetArrivalTime( float* firstSignal ) const
-        {
-            int arrivalTime = 0;
-            float maxValue0 = firstSignal[0];
-            int t; 
-            for(t = arrivalTime;  t < this->numTimePoints; t++ ) {
-                if( firstSignal[t] > maxValue0) {
-                    maxValue0 = firstSignal[t];
-                    arrivalTime = t;
-                }
-            }
-            //cout << "t: " << arrivalTime << " " << firstSignal[arrivalTime] << " " << numPts << endl;
-	        return arrivalTime; 
-        } 
-
-
-        /*!
-         *
-         */   
-        virtual MeasureType  GetResidual( const ParametersType& parameters) const
-        {
-            //cout << "GUESS: " << parameters[0] << " " << parameters[1] << endl;;
-            this->GetKineticModel( parameters); 
-
-            double residual = 0;
-
-            int arrivalTime = GetArrivalTime( this->GetSignal(0) ); 
-
-            for ( int t = arrivalTime; t < this->numTimePoints; t++ ) {
-                residual += ( this->GetSignalAtTime(0, t) - this->GetModelSignal(0)[t] )  * ( this->GetSignalAtTime(0, t) - this->GetModelSignal(0)[t] );
-                residual += ( this->GetSignalAtTime(1, t) - this->GetModelSignal(1)[t] )  * ( this->GetSignalAtTime(1, t) - this->GetModelSignal(1)[t] );
-               
-            }
-
-            // for now ignore the urea residual 
-			// for ( int t = 0; t < this->numTimePoints-arrivalTime; t++ ) { 
-			//     residual += ( this->signal2[t] - this->kineticModel2[t] )  * ( this->signal2[t] - this->kineticModel2[t] );
-			// }
-
-            //cout << "RESIDUAL: " << residual << endl;
-
-            MeasureType measure = residual ;
-
-            return measure;
-        }
-
-
-        /*!
          *  For a given set of parameter values, compute the model kinetics
          *  The params are unitless. 
          */   
@@ -239,7 +189,7 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
         /*!
          *  Initialize the parameter uppler and lower bounds for this model. 
          */
-        void InitParamBounds( float* lowerBounds, float* upperBounds )
+        virtual void InitParamBounds( float* lowerBounds, float* upperBounds )
         {
             upperBounds[0] = 28/this->TR;          //  T1all
             lowerBounds[0] = 8/this->TR;           //  T1all
@@ -288,6 +238,28 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
             (*finalPosition)[2] /= this->TR;    // ktrans (1/s)
             (*finalPosition)[2] /= this->TR;    // k2     (1/s)
         }
+
+
+    private: 
+
+        /*!
+         *
+         */   
+        int GetArrivalTime( float* firstSignal ) const
+        {
+            int arrivalTime = 0;
+            float maxValue0 = firstSignal[0];
+            int t; 
+            for(t = arrivalTime;  t < this->numTimePoints; t++ ) {
+                if( firstSignal[t] > maxValue0) {
+                    maxValue0 = firstSignal[t];
+                    arrivalTime = t;
+                }
+            }
+            //cout << "t: " << arrivalTime << " " << firstSignal[arrivalTime] << " " << numPts << endl;
+	        return arrivalTime; 
+        } 
+
 
 
 };
