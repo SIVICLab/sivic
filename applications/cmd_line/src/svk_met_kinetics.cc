@@ -96,9 +96,7 @@ int main (int argc, char** argv)
     usemsg += "\n";
 
 
-    string inputFileName1;
-    string inputFileName2;
-    string inputFileName3;
+    vector <string> inputFileNames(10);
     string maskFileName;
     string outputFileName = "";
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_ENHANCED_MRI;
@@ -139,13 +137,13 @@ int main (int argc, char** argv)
     while ( ( i = getopt_long(argc, argv, "o:t:usah", long_options, &option_index) ) != EOF) {
         switch (i) {
             case FLAG_IM_1:
-                inputFileName1.assign( optarg );
+                inputFileNames[0] = optarg;
                 break;
             case FLAG_IM_2:
-                inputFileName2.assign( optarg );
+                inputFileNames[1] = optarg;
                 break;
             case FLAG_IM_3:
-                inputFileName3.assign( optarg );
+                inputFileNames[2] = optarg;
                 break;
             case FLAG_MASK:
                 maskFileName.assign( optarg );
@@ -179,32 +177,20 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
-    //  temp kludge: 
-    bool writeUrea = true; 
-    if ( inputFileName3.length() == 0 ) {
-        inputFileName3 = inputFileName2; 
-        writeUrea = false; 
-    }
-
     if (
-        argc != 0 ||  inputFileName1.length() == 0
-            || inputFileName2.length() == 0
-            || inputFileName3.length() == 0
-            || outputFileName.length() == 0
-            || ( 
-                   dataTypeOut != svkImageWriterFactory::DICOM_MRI 
-                && dataTypeOut != svkImageWriterFactory::IDF 
-                && dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI 
-                )
+        argc != 0 
+        || outputFileName.length() == 0
+        || ( 
+                dataTypeOut != svkImageWriterFactory::DICOM_MRI 
+            && dataTypeOut != svkImageWriterFactory::IDF 
+            && dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI 
+           )
     ) {
             cout << usemsg << endl;
             exit(1); 
     }
 
 
-    cout << "Input1: " << inputFileName1 << endl;
-    cout << "Input2: " << inputFileName2 << endl;
-    cout << "Input3: " << inputFileName3 << endl;
     cout << "Mask: " << maskFileName << endl;
     cout << "output root: " << outputFileName << endl;
 
@@ -227,49 +213,39 @@ int main (int argc, char** argv)
     //  of the correct type for the input file format.
     // ===============================================
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-    svkImageReader2* reader1    = readerFactory->CreateImageReader2( inputFileName1.c_str() );
-    svkImageReader2* reader2    = readerFactory->CreateImageReader2( inputFileName2.c_str() );
-    svkImageReader2* reader3    = readerFactory->CreateImageReader2( inputFileName3.c_str() );
+    for (int sig = 0; sig < numberOfModelSignals; sig++) {
+        svkImageReader2* reader    = readerFactory->CreateImageReader2( inputFileNames[sig].c_str() );
+
+        if (reader == NULL ) {
+            cerr << "Can not determine appropriate reader for: " << inputFileNames[sig] << endl; 
+            exit(1);
+        }
+
+        //  Read the data to initialize an svkImageData object
+        //  If volume files are being read, interpret them as a time series
+        if ( reader->IsA("svkIdfVolumeReader") == true ) {
+            svkIdfVolumeReader::SafeDownCast( reader )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
+        }
+        reader->SetFileName( inputFileNames[sig].c_str() );
+        reader->Update();
+        dynamics->SetInputConnection( sig, reader->GetOutputPort() ); 
+        reader->Delete(); 
+    }
+
     svkImageReader2* readerMask = NULL; 
     if ( maskFileName.size() > 0 ) {
         readerMask = readerFactory->CreateImageReader2( maskFileName.c_str() );
     }
-    readerFactory->Delete();
-
-    if (reader1 == NULL || reader2 == NULL || reader3 == NULL) {
-        cerr << "Can not determine appropriate reader for: " << inputFileName1 << ", " 
-             << inputFileName2 << " or " << inputFileName3 <<  endl;
-            exit(1);
-    }
-
-    //  Read the data to initialize an svkImageData object
-    //  If volume files are being read, interpret them as a time series
-    if ( reader1->IsA("svkIdfVolumeReader") == true ) {
-        svkIdfVolumeReader::SafeDownCast( reader1 )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
-    }
-    if ( reader2->IsA("svkIdfVolumeReader") == true ) {
-        svkIdfVolumeReader::SafeDownCast( reader2 )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
-    }
-    if ( reader3->IsA("svkIdfVolumeReader") == true ) {
-        svkIdfVolumeReader::SafeDownCast( reader3 )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
-    }
-    reader1->SetFileName( inputFileName1.c_str() );
-    reader1->Update();
-    reader2->SetFileName( inputFileName2.c_str() );
-    reader2->Update();
-    reader3->SetFileName( inputFileName3.c_str() );
-    reader3->Update();
     if ( readerMask!= NULL ) { 
         readerMask->SetFileName( maskFileName.c_str() );
         readerMask->Update();
     }
+    readerFactory->Delete();
 
-    dynamics->SetInputConnection( 0, reader1->GetOutputPort() ); 
-    dynamics->SetInputConnection( 1, reader2->GetOutputPort() ); 
-    dynamics->SetInputConnection( 2, reader3->GetOutputPort() ); 
     if ( readerMask!= NULL ) { 
-        dynamics->SetInputConnection( 3, readerMask->GetOutputPort() ); // input 3 is the mask
+        dynamics->SetInputConnection( numberOfModelSignals, readerMask->GetOutputPort() ); // last input is the mask
     }
+
     dynamics->SetTR(tr); 
     dynamics->Update();
 
@@ -303,10 +279,6 @@ int main (int argc, char** argv)
     }
     writerFactory->Delete();
 
-    // ===============================================  
-    reader1->Delete();
-    reader2->Delete();
-    reader3->Delete();
 
     return 0; 
 }

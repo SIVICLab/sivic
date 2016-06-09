@@ -66,6 +66,7 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
          */   
         svk2SitePerfCostFunction() 
         {
+            this->InitNumberOfSignals(); 
             this->TR = 0;
         }
 
@@ -169,6 +170,17 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
             int numParameters = 3;
             return numParameters;
         }
+
+
+        /*!
+         *  Initialize the number of input signals for the model 
+         */
+        virtual void InitNumberOfSignals(void) 
+        {
+            //  pyruvate,lactate and urea
+            this->SetNumberOfSignals(3);
+        }
+
 
 
         /*!

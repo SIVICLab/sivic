@@ -84,14 +84,6 @@ class svkMRSKinetics: public svkImageAlgorithm
         static                  svkMRSKinetics* New();
 
         typedef enum {
-            SIG_PYR= 0,
-            SIG_LAC,
-            SIG_UREA,
-            MASK
-        } MODEL_INPUT;
-
-
-        typedef enum {
             UNDEFINED = 0, 
             TWO_SITE_EXCHANGE,
             TWO_SITE_EXCHANGE_PERF

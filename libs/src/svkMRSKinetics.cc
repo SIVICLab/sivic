@@ -297,8 +297,9 @@ void svkMRSKinetics::GenerateKineticParamMap()
     svkMriImageData* maskImage;
     unsigned short* mask;
     bool  hasMask = false;       
-    if (this->GetInput( svkMRSKinetics::MASK )) {
-        maskImage = svkMriImageData::SafeDownCast(this->GetImageDataInput(svkMRSKinetics::MASK) );
+    int maskIndex = numSignals; // input after last mask
+    if (this->GetInput( maskIndex )) {
+        maskImage = svkMriImageData::SafeDownCast(this->GetImageDataInput(maskIndex ) );
         mask      = static_cast<vtkUnsignedShortArray*>( 
                         maskImage->GetPointData()->GetArray(0) )->GetPointer(0) ; 
         hasMask = true; 
@@ -660,13 +661,15 @@ void svkMRSKinetics::UpdateProvenance()
  */
 int svkMRSKinetics::FillInputPortInformation( int port, vtkInformation* info )
 {
-    //  MOVE TO MODEL (if possible)
-    if ( port < 3 ) {
+    int numModelSignals = this->GetNumberOfModelSignals(); 
+    if ( port < numModelSignals ) {
         info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
     } 
-    if ( port == 3 ) {
+    //  the last input is an optional mask
+    int maskIndex = numModelSignals; 
+    if ( port == maskIndex ) {
         info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
-        info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 3);
+        info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), maskIndex);
     } 
     return 1;
 }

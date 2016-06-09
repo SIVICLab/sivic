@@ -276,6 +276,12 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
 
 
         /*!
+         *  Initialize the number of input signals for the model 
+         */
+        virtual void InitNumberOfSignals(void) = 0; 
+
+
+        /*!
          *  Get the vector that contains the string identifier for each output port
          */
         virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const = 0; 

@@ -66,8 +66,8 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
          */
         svk2SiteExchangeCostFunction() 
         {
-            //  this model has 3 signals, Pyr, Lac,Urea
-            this->SetNumberOfSignals(3); 
+            //  this model has 2 signals, Pyr and Lac 
+            this->InitNumberOfSignals(); 
             this->TR = 0; 
         }
 
@@ -80,8 +80,8 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
 
             double T1all  = parameters[0];
             double Kpl    = parameters[1];
-            //  cout << "GUESSES: " << T1all << " " << Kpl  << endl;
 
+            //  cout << "GUESSES: " << T1all << " " << Kpl  << endl;
             //  use model params and initial signal intensity to calculate the metabolite signals vs time 
             //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
 
@@ -91,7 +91,6 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
   
             //  Use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
             //  each time point
-            //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
 
             //  ==============================================================
             //  DEFINE COST FUNCTION 
@@ -133,14 +132,22 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
         /*!
          *  T1all
          *  Kpl
-         *  Ktrans
-         *  K2
          */   
         virtual unsigned int GetNumberOfParameters(void) const
         {
-            int numParameters = 4;
+            int numParameters = 2;
             return numParameters;
         }
+
+
+        /*!
+         *  Initialize the number of input signals for the model 
+         */
+        virtual void InitNumberOfSignals(void) 
+        {
+            //  pyruvate and lactate
+            this->SetNumberOfSignals(2);
+        } 
 
 
         /*!
@@ -151,10 +158,8 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
             outputDescriptionVector->resize( this->GetNumberOfOutputPorts() );
             (*outputDescriptionVector)[0] = "pyr";
             (*outputDescriptionVector)[1] = "lac";
-            (*outputDescriptionVector)[2] = "urea";
-            (*outputDescriptionVector)[3] = "T1all";
-            (*outputDescriptionVector)[4] = "Kpl";
-            (*outputDescriptionVector)[5] = "Ktrans";
+            (*outputDescriptionVector)[2] = "T1all";
+            (*outputDescriptionVector)[3] = "Kpl";
         }
 
 
@@ -170,11 +175,6 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
             upperBounds[1] = 0.05 * this->TR;   //  Kpl
             lowerBounds[1] = 0.00 * this->TR;   //  Kpl
             
-            upperBounds[2] = 0 * this->TR;       //  ktrans 
-            lowerBounds[2] = 0 * this->TR;       //  ktrans 
-        
-            upperBounds[3] = 1;                 //  k2 
-            lowerBounds[3] = 0;                 //  k2
         }   
 
 
@@ -189,8 +189,6 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
             }
             (*initialPosition)[0] =  12   / this->TR;    // T1all  (s)
             (*initialPosition)[1] =  0.01 * this->TR;    // Kpl    (1/s)  
-            (*initialPosition)[2] =  0.00 * this->TR;    // ktrans (1/s)
-            (*initialPosition)[3] =  0.00 ;    // k2(1/s)
         } 
 
 
@@ -205,7 +203,6 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
             }
             (*finalPosition)[0] *= this->TR;    // T1all  (s)
             (*finalPosition)[1] /= this->TR;    // Kpl    (1/s)  
-            (*finalPosition)[2] /= this->TR;    // ktrans (1/s)
         } 
 
 
