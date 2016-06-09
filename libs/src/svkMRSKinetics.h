@@ -104,7 +104,9 @@ class svkMRSKinetics: public svkImageAlgorithm
         void                    SetModelType( svkMRSKinetics::MODEL_TYPE modelType ); 
         void                    SetTR( float TR ); 
         float                   GetTR( ); 
-
+        int                     GetNumberOfModelOutputPorts(); 
+        int                     GetNumberOfModelSignals(); 
+        string                  GetModelOutputDescription( int outputIndex ); 
 
 
     protected:
@@ -147,8 +149,6 @@ class svkMRSKinetics: public svkImageAlgorithm
                                     int voxelID 
                                 ); 
         void                    GetCostFunction( svkKineticModelCostFunction::Pointer& costFunction); 
-        int                     GetNumSignals(); 
-        int                     GetNumberOfModelOutputPorts(); 
         int                     GetNumberOfModelParameters(); 
         void                    InitModelOutputDescriptionVector(); 
 

@@ -109,7 +109,7 @@ void svkMRSKinetics::SetModelType( svkMRSKinetics::MODEL_TYPE modelType)
     }
     this->modelType = modelType;
 
-    int numModelSignals = this->GetNumSignals(); 
+    int numModelSignals = this->GetNumberOfModelSignals(); 
     int numMasks = 1; 
     this->SetNumberOfInputPorts(numModelSignals + numMasks ); //3 input metabolites + roi mask
     this->SetNumberOfOutputPorts( this->GetNumberOfModelOutputPorts() ); 
@@ -240,7 +240,7 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
     this->GetOutput(1)->GetNumberOfVoxels(numVoxels);
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
 
-    int numSignalsInModel = this->GetNumSignals();
+    int numSignalsInModel = this->GetNumberOfModelSignals();
     for ( int sigNum = 0; sigNum < numSignalsInModel; sigNum++ ) {
         svkMriImageData* fittedKineticSignal  = svkMriImageData::SafeDownCast( this->GetOutput(sigNum) );
         fittedKineticSignal->DeepCopy(data);
@@ -283,7 +283,7 @@ void svkMRSKinetics::GenerateKineticParamMap()
     this->ZeroData();
 
     //  Set the parameter map data array names to initialize.  
-    int numSignals = GetNumSignals(); 
+    int numSignals = GetNumberOfModelSignals(); 
     for ( int i = numSignals; i < this->GetNumberOfModelOutputPorts();  i++ ) { 
         this->GetOutput(i)->GetPointData()->GetArray(0)->SetName( this->modelOutputDescriptionVector[i].c_str() );
     }
@@ -330,7 +330,7 @@ void svkMRSKinetics::InitCostFunction(  svkKineticModelCostFunction::Pointer& co
 {
     this->GetCostFunction( costFunction ); 
 
-    int numSignalsInModel = this->GetNumSignals();
+    int numSignalsInModel = this->GetNumberOfModelSignals();
     for (int sigNum = 0; sigNum < numSignalsInModel; sigNum++ ) {
 
         vtkFloatArray* kineticSignal = vtkFloatArray::SafeDownCast(
@@ -361,7 +361,7 @@ void svkMRSKinetics::GetCostFunction( svkKineticModelCostFunction::Pointer& cost
 /*!
  *  Get the number of signals required for the specified cost function
  */
-int svkMRSKinetics::GetNumSignals()
+int svkMRSKinetics::GetNumberOfModelSignals()
 {
     svkKineticModelCostFunction::Pointer costFunction;
     this->GetCostFunction( costFunction ); 
@@ -402,6 +402,15 @@ void svkMRSKinetics::InitModelOutputDescriptionVector()
 }
 
 
+/*
+ *  Get the description of the model's n'th output 
+ */
+string svkMRSKinetics::GetModelOutputDescription( int outputIndex )
+{
+    return this->modelOutputDescriptionVector[outputIndex]; 
+}
+
+
 /*!
  * 
  */
@@ -422,8 +431,6 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     typedef svkKineticModelCostFunction::ParametersType ParametersType;
     ParametersType  initialPosition( paramSpaceDimensionality );
 
-    //float TR = 3.;
-
     //  Set bounds
     itk::ParticleSwarmOptimizer::ParameterBoundsType bounds;
 
@@ -433,7 +440,6 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     float* lowerBounds = new float[numParams]; 
 
     this->GetCostFunction( costFunction ); 
-    float TR = 3.; 
     this->SetTR( TR ); 
     costFunction->SetTR( this->GetTR() ); 
     costFunction->InitParamBounds( lowerBounds, upperBounds); 
@@ -521,7 +527,7 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
     // cout << "Test passed." << endl;
 
 
-    int numSignalsInModel = this->GetNumSignals();
+    int numSignalsInModel = this->GetNumberOfModelSignals();
 
     svkKineticModelCostFunction::Pointer costFunction;
     this->InitCostFunction( costFunction, voxelID ); 
@@ -570,7 +576,7 @@ void svkMRSKinetics::ZeroData()
     this->GetOutput(1)->GetNumberOfVoxels(numVoxels);
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
 
-    int numSignalsInModel = this->GetNumSignals();
+    int numSignalsInModel = this->GetNumberOfModelSignals();
 
     const unsigned int paramSpaceDimensionality = this->GetNumberOfModelParameters(); 
     int num3DOutputMaps = paramSpaceDimensionality; 
@@ -606,7 +612,7 @@ void svkMRSKinetics::SyncPointsFromCells()
     this->GetOutput(1)->GetNumberOfVoxels(numVoxels);
     int numCells = numVoxels[0] * numVoxels[1] * numVoxels[2];
 
-    int numSignalsInModel = this->GetNumSignals();
+    int numSignalsInModel = this->GetNumberOfModelSignals();
     for (int sigNum = 0; sigNum < numSignalsInModel; sigNum++ ) {
 
         svkImageData* imageData = this->GetOutput(sigNum); 
