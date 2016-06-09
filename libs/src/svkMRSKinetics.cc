@@ -561,6 +561,7 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
         //  the maps are the last set of outputs after the fitted signals: 
         int mapIndex = index + numSignalsInModel;    
         this->GetOutput(mapIndex)->GetPointData()->GetArray(0)->SetTuple1( voxelID, finalPosition[index]); 
+        cout << "VOXEL FIT(" << voxelID << ")[" << index << "] = " << finalPosition[index] << endl; 
     }
 
     return;
