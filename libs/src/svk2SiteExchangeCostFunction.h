@@ -169,12 +169,11 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
          */     
         virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) 
         {
-            upperBounds[0] = 28./this->TR;      //  T1all
+            upperBounds[0] = 50./this->TR;      //  T1all
             lowerBounds[0] = 8. /this->TR;      //  T1all
         
-            upperBounds[1] = 0.05 * this->TR;   //  Kpl
+            upperBounds[1] = 0.09 * this->TR;   //  Kpl
             lowerBounds[1] = 0.00 * this->TR;   //  Kpl
-            
         }   
 
 
