@@ -139,7 +139,7 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
         virtual void InitNumberOfSignals(void) 
         {
             //  pyruvate and lactate
-            this->SetNumberOfSignals(2);
+            this->SetNumberOfSignals(1);
         } 
 
 
@@ -150,10 +150,9 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
         {
             outputDescriptionVector->resize( this->GetNumberOfOutputPorts() );
             (*outputDescriptionVector)[0] = "pyr";
-            (*outputDescriptionVector)[1] = "lac";
-            (*outputDescriptionVector)[2] = "Rinj";
-            (*outputDescriptionVector)[3] = "Kpyr";
-            (*outputDescriptionVector)[4] = "Tarrival";
+            (*outputDescriptionVector)[1] = "Rinj";
+            (*outputDescriptionVector)[2] = "Kpyr";
+            (*outputDescriptionVector)[3] = "Tarrival";
         }
 
 
@@ -166,8 +165,8 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
             upperBounds[0] =  1. * this->TR;    //  Rinj
             lowerBounds[0] =  0. * this->TR;    //  Rinj
         
-            upperBounds[1] = 0.10 * this->TR;   //  Kpyr
-            lowerBounds[1] = 0.00 * this->TR;   //  Kpyr
+            upperBounds[1] = 0.10  * this->TR;   //  Kpyr
+            lowerBounds[1] = 0.001 * this->TR;   //  Kpyr
 
             upperBounds[2] = 6.00 / this->TR;   //  Tarrival
             lowerBounds[2] = 0.00 / this->TR;   //  Tarrival
@@ -183,7 +182,7 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
                 cout << "ERROR: TR Must be set before initializing parameters" << endl;
                 exit(1); 
             }
-            (*initialPosition)[0] =  1    * this->TR;    // Rinj    (1/s)
+            (*initialPosition)[0] =  .5   * this->TR;    // Rinj    (1/s)
             (*initialPosition)[1] =  0.01 * this->TR;    // Kpyr    (1/s)  
             (*initialPosition)[2] =  0    / this->TR;    // Tarrival (s)  
         } 

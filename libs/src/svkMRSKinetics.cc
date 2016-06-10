@@ -450,7 +450,7 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     costFunction->InitParamBounds( lowerBounds, upperBounds); 
 
     for (int paramNum  = 0; paramNum < numParams; paramNum++ ) {
-        //cout << "BOUNDS: " << lowerBounds[paramNum] << " " << upperBounds[paramNum] << endl;
+        cout << "BOUNDS: " << lowerBounds[paramNum] << " " << upperBounds[paramNum] << endl;
         bounds.push_back( std::make_pair( lowerBounds[paramNum], upperBounds[paramNum] ) );    
     }
     itkOptimizer->SetParameterBounds( bounds );
