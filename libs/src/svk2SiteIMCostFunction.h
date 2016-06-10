@@ -99,15 +99,20 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
             //  ==============================================================
             for ( int t = 0; t < this->numTimePoints; t++ ) {
 
+                if ( t < Tarrival ) {
+                    this->GetModelSignal(0)[t] = this->GetSignalAtTime(0, t);
+                    //this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, t);
+                }
+
                 if ( Tarrival <= t < Tend) {
-                    this->GetModelSignal(0)[t] = (Rinj/Kpyr) * (1 - exp( -1 * (t - Tarrival)) ) ; 
+                    this->GetModelSignal(0)[t] = (Rinj/Kpyr) * (1 - exp( -1 * Kpyr * (t - Tarrival)) ) ; 
                     //this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, t); 
                 }
 
                 if (t >= Tend) {      
 
                     // PYRUVATE 
-                    this->GetModelSignal(0)[t] = this->GetSignalAtTime(0, Tend) * (exp( -1 * ( t - Tend) ) ); 
+                    this->GetModelSignal(0)[t] = this->GetSignalAtTime(0, Tend) * (exp( -1 * Kpyr * ( t - Tend) ) ); 
 
                     // LACTATE 
                     //this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, arrivalTime)         // T1 decay of lac signal
@@ -162,14 +167,14 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
          */     
         virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) 
         {
-            upperBounds[0] =  1. * this->TR;    //  Rinj
-            lowerBounds[0] =  0. * this->TR;    //  Rinj
+            upperBounds[0] =  100.      * this->TR;    //  Rinj
+            lowerBounds[0] =  0.        * this->TR;    //  Rinj
         
-            upperBounds[1] = 0.10  * this->TR;   //  Kpyr
-            lowerBounds[1] = 0.001 * this->TR;   //  Kpyr
+            upperBounds[1] = 0.10       * this->TR;   //  Kpyr
+            lowerBounds[1] = 0.0000001  * this->TR;   //  Kpyr
 
-            upperBounds[2] = 6.00 / this->TR;   //  Tarrival
-            lowerBounds[2] = 0.00 / this->TR;   //  Tarrival
+            upperBounds[2] =  15.00     / this->TR;   //  Tarrival
+            lowerBounds[2] = -15.00     / this->TR;   //  Tarrival
         }   
 
 
@@ -182,9 +187,9 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
                 cout << "ERROR: TR Must be set before initializing parameters" << endl;
                 exit(1); 
             }
-            (*initialPosition)[0] =  .5   * this->TR;    // Rinj    (1/s)
-            (*initialPosition)[1] =  0.01 * this->TR;    // Kpyr    (1/s)  
-            (*initialPosition)[2] =  0    / this->TR;    // Tarrival (s)  
+            (*initialPosition)[0] =  50.    * this->TR;    // Rinj    (1/s)
+            (*initialPosition)[1] =  0.0001 * this->TR;    // Kpyr    (1/s)  
+            (*initialPosition)[2] =  0      / this->TR;    // Tarrival (s)  
         } 
 
 
