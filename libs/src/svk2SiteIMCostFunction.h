@@ -84,6 +84,8 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             double Rinj     = parameters[0];                    //  injection rate
             double Kpyr     = parameters[1];                    //  Kpyr, signal decay from T1 and excitation
             int Tarrival    = static_cast<int>(parameters[2]);  //  arrival time    
+            double Kpl      = parameters[3];                    //  Kpl conversion rate
+            double Klac     = parameters[4];                    //  Klac, signal decay from T1 and excitation
 
             //int injectionDuration = static_cast<int>(16 / this->TR);              //  X seconds normalized by TR
 int injectionDuration = static_cast<int>(16 / 3);              //  X seconds normalized by TR
@@ -97,29 +99,38 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
             //  ==============================================================
             //  DEFINE COST FUNCTION 
             //  ==============================================================
+            int PYR = 0; 
+            int LAC = 1; 
             for ( int t = 0; t < this->numTimePoints; t++ ) {
 
                 if ( t < Tarrival ) {
-                    this->GetModelSignal(0)[t] = this->GetSignalAtTime(0, t);
-                    //this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, t);
+                    this->GetModelSignal(PYR)[t] = this->GetSignalAtTime(PYR, t);
+                    this->GetModelSignal(LAC)[t] = this->GetSignalAtTime(LAC, t);
                 }
 
                 if ( Tarrival <= t < Tend) {
-                    this->GetModelSignal(0)[t] = (Rinj/Kpyr) * (1 - exp( -1 * Kpyr * (t - Tarrival)) ) ; 
-                    //this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, t); 
+
+                    // PYRUVATE 
+                    this->GetModelSignal(PYR)[t] = (Rinj/Kpyr) * (1 - exp( -1 * Kpyr * (t - Tarrival)) ) ; 
+
+                    // LACTATE  
+                    this->GetModelSignal(LAC)[t] = ( (Kpl * Rinj)/(Kpyr - Klac) ) 
+                            * (
+                                ( ( 1 - exp( -1 * Klac * ( t - Tarrival)) )/Klac ) 
+                              - ( ( 1 - exp( -1 * Kpyr * ( t - Tarrival)) )/Kpyr )
+                              );    
                 }
 
                 if (t >= Tend) {      
 
                     // PYRUVATE 
-                    this->GetModelSignal(0)[t] = this->GetSignalAtTime(0, Tend) * (exp( -1 * Kpyr * ( t - Tend) ) ); 
+                    this->GetModelSignal(PYR)[t] = this->GetSignalAtTime(PYR, Tend) * (exp( -1 * Kpyr * ( t - Tend) ) ); 
 
                     // LACTATE 
-                    //this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, arrivalTime)         // T1 decay of lac signal
-                        //* exp( -( t - arrivalTime )/T1all) 
-                        //- this->GetSignalAtTime(0, arrivalTime )                    
-                            //* exp( -( t - arrivalTime )/T1all)
-                            //* ( exp( -Kpl * ( t - arrivalTime )) - 1 );
+                    this->GetModelSignal(LAC)[t] = ( ( this->GetSignalAtTime(LAC, Tend) * Kpl ) / ( Kpyr - Klac ) ) 
+                            * ( exp( -1 * Klac * (t-Tend)) - exp( -1 * Kpyr * (t-Tend)) ) 
+                            + this->GetSignalAtTime(LAC, Tend) *  exp ( -1 * Klac * ( t - Tend)); 
+
                 }
 
             }
@@ -133,7 +144,7 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
          */   
         virtual unsigned int GetNumberOfParameters(void) const
         {
-            int numParameters = 3;
+            int numParameters = 5;
             return numParameters;
         }
 
@@ -144,7 +155,7 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
         virtual void InitNumberOfSignals(void) 
         {
             //  pyruvate and lactate
-            this->SetNumberOfSignals(1);
+            this->SetNumberOfSignals(2);
         } 
 
 
@@ -155,9 +166,14 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
         {
             outputDescriptionVector->resize( this->GetNumberOfOutputPorts() );
             (*outputDescriptionVector)[0] = "pyr";
-            (*outputDescriptionVector)[1] = "Rinj";
-            (*outputDescriptionVector)[2] = "Kpyr";
-            (*outputDescriptionVector)[3] = "Tarrival";
+            (*outputDescriptionVector)[1] = "lac";
+            //  These are the params from equation 1 of Zierhut:
+            (*outputDescriptionVector)[2] = "Rinj";
+            (*outputDescriptionVector)[3] = "Kpyr";
+            (*outputDescriptionVector)[4] = "Tarrival";
+            //  These are the params from equation 2 of Zierhut:
+            (*outputDescriptionVector)[5] = "Kpl";
+            (*outputDescriptionVector)[6] = "Klac";
         }
 
 
@@ -167,14 +183,23 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
          */     
         virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) 
         {
-            upperBounds[0] =  100.      * this->TR;    //  Rinj
-            lowerBounds[0] =  0.        * this->TR;    //  Rinj
+
+            //  These are the params from equation 1 of Zierhut:
+            upperBounds[0] =  1000000000.      * this->TR;    //  Rinj
+            lowerBounds[0] =  1.        * this->TR;    //  Rinj
         
             upperBounds[1] = 0.10       * this->TR;   //  Kpyr
             lowerBounds[1] = 0.0000001  * this->TR;   //  Kpyr
 
             upperBounds[2] =  15.00     / this->TR;   //  Tarrival
             lowerBounds[2] = -15.00     / this->TR;   //  Tarrival
+
+            //  These are the params from equation 2 of Zierhut:
+            upperBounds[3] = 0.08       * this->TR;   //  Kpl
+            lowerBounds[3] = 0.0001     * this->TR;   //  Kpl
+
+            upperBounds[4] = 0.10       * this->TR;   //  Klac
+            lowerBounds[4] = 0.0000001  * this->TR;   //  Klac
         }   
 
 
@@ -187,9 +212,13 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
                 cout << "ERROR: TR Must be set before initializing parameters" << endl;
                 exit(1); 
             }
+            //  These are the params from equation 1 of Zierhut:
             (*initialPosition)[0] =  50.    * this->TR;    // Rinj    (1/s)
             (*initialPosition)[1] =  0.0001 * this->TR;    // Kpyr    (1/s)  
             (*initialPosition)[2] =  0      / this->TR;    // Tarrival (s)  
+            //  These are the params from equation 2 of Zierhut:
+            (*initialPosition)[3] =  0.001  * this->TR;    // Kpl     (1/s)  
+            (*initialPosition)[4] =  0.0001 * this->TR;    // Klac    (1/s)  
         } 
 
 
@@ -202,9 +231,15 @@ int injectionDuration = static_cast<int>(16 / 3);              //  X seconds nor
                 cout << "ERROR: TR Must be set before scaling final parameters" << endl;
                 exit(1); 
             }
+
+            //  These are the params from equation 1 of Zierhut:
             (*finalPosition)[0] /= this->TR;    // Rinj     (1/s)
             (*finalPosition)[1] /= this->TR;    // Kpyr     (1/s)  
             (*finalPosition)[2] *= this->TR;    // Tarrival (s)  
+
+            //  These are the params from equation 2 of Zierhut:
+            (*finalPosition)[3] /= this->TR;    // Kpl      (1/s)  
+            (*finalPosition)[4] /= this->TR;    // Klac     (1/s)  
         } 
 
 
