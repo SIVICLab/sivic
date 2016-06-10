@@ -53,6 +53,8 @@
 #include <svkKineticModelCostFunction.h>
 #include <svk2SiteExchangeCostFunction.h>
 #include <svk2SitePerfCostFunction.h>
+#include <svk2SiteIMCostFunction.h>
+
 
 
 using namespace svk;
@@ -103,7 +105,7 @@ void svkMRSKinetics::SetSeriesDescription( vtkstd::string newSeriesDescription )
  */
 void svkMRSKinetics::SetModelType( svkMRSKinetics::MODEL_TYPE modelType)
 {
-    if ( modelType < 1 || modelType > 2 ) {
+    if ( modelType < 1 || modelType > 3 ) {
         cout << "ERROR: invalid model type: " << modelType << endl;
         exit(1); 
     }
@@ -355,6 +357,8 @@ void svkMRSKinetics::GetCostFunction( svkKineticModelCostFunction::Pointer& cost
         costFunction = svk2SiteExchangeCostFunction::New();
     } else if ( this->modelType == svkMRSKinetics::TWO_SITE_EXCHANGE_PERF ) {
         costFunction = svk2SitePerfCostFunction::New();
+    } else if ( this->modelType == svkMRSKinetics::TWO_SITE_IM) {
+        costFunction = svk2SiteIMCostFunction::New();
     }
 }
 

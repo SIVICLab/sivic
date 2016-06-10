@@ -85,6 +85,7 @@ int main (int argc, char** argv)
     usemsg += "   --model            type   Model to fit data to:                       \n";
     usemsg += "                                 1 = 2 Site Exchange(default)            \n";
     usemsg += "                                 2 = 2 Site Exchange Perf                \n";
+    usemsg += "                                 3 = 2 Site IM                           \n";
     usemsg += "   -t                 type   Output data type:                           \n";
     usemsg += "                                 3 = UCSF IDF                            \n";
     usemsg += "                                 5 = DICOM_MRI                           \n";
@@ -154,6 +155,8 @@ int main (int argc, char** argv)
                     modelType = svkMRSKinetics::TWO_SITE_EXCHANGE; 
                 } else if ( modelTypeInt == 2 ) {
                     modelType = svkMRSKinetics::TWO_SITE_EXCHANGE_PERF; 
+                } else if ( modelTypeInt == 3 ) {
+                    modelType = svkMRSKinetics::TWO_SITE_IM; 
                 }
                 break;
             case FLAG_TR:
