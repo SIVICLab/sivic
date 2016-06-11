@@ -90,11 +90,12 @@ class svk2SiteIMPyrCostFunction : public svkKineticModelCostFunction
             float Kpyr     = parameters[1];         //  Kpyr, signal decay from T1 and excitation
             float Tarrival = parameters[2];         //  arrival time in dimensionless time-point units   
 
-            float injectionDuration = 16/3;         //  X seconds normalized by TR into time point space
+            float injectionDuration = 14/3;         //  X seconds normalized by TR into time point space
 
             //cout << "TR: " << this->TR << endl;
             //cout << "ID: " << injectionDuration << endl;
             int Tend = static_cast<int>( roundf(Tarrival + injectionDuration) ); 
+            Tarrival = static_cast<int>( roundf(Tarrival) ); 
 
 
             //  ==============================================================
@@ -103,11 +104,12 @@ class svk2SiteIMPyrCostFunction : public svkKineticModelCostFunction
             int PYR = 0; 
             cout << "Tarrival: " << Tarrival << endl;
             cout << "TEND:     " << Tend << endl;
-            cout << "SIGTEND:  " << this->GetModelSignal(PYR)[1] << endl; 
+            cout << "SIGTEND:  " << this->GetSignalAtTime(PYR, Tend) << endl; 
             for ( int t = 0; t < this->numTimePoints; t++ ) {
 
                 if ( t < Tarrival ) {
-                    this->GetModelSignal(PYR)[t] = this->GetSignalAtTime(PYR, t);
+                    cout << "PRE T ARRIVAL" << endl;
+                    this->GetModelSignal(PYR)[t] = 0.; //this->GetSignalAtTime(PYR, t);
                 }
 
                 if ( Tarrival <= t < Tend) {
@@ -169,17 +171,15 @@ class svk2SiteIMPyrCostFunction : public svkKineticModelCostFunction
          */     
         virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) 
         {
-
             //  These are the params from equation 1 of Zierhut:
-            upperBounds[0] =  1000000000.   * this->TR;     //  Rinj (arbitrary unit signal rise)
-            lowerBounds[0] =  1000.         * this->TR;     //  Rinj
+            upperBounds[0] =  100000000     * this->TR;     //  Rinj (arbitrary unit signal rise)
+            lowerBounds[0] =  10000         * this->TR;     //  Rinj
         
             upperBounds[1] = 0.20           * this->TR;     //  Kpyr
             lowerBounds[1] = 0.0001         * this->TR;     //  Kpyr
 
-            upperBounds[2] =  25.00         / this->TR;     //  Tarrival
-            lowerBounds[2] = -25.00         / this->TR;     //  Tarrival
-
+            upperBounds[2] =  0             / this->TR;     //  Tarrival
+            lowerBounds[2] = -4.00          / this->TR;     //  Tarrival
         }   
 
 
@@ -193,9 +193,9 @@ class svk2SiteIMPyrCostFunction : public svkKineticModelCostFunction
                 exit(1); 
             }
             //  These are the params from equation 1 of Zierhut:
-            (*initialPosition)[0] =  10000000.  * this->TR;    // Rinj    (1/s)
+            (*initialPosition)[0] =  50000      * this->TR;    // Rinj    (1/s)
             (*initialPosition)[1] =  0.05       * this->TR;    // Kpyr    (1/s)  
-            (*initialPosition)[2] =  -2         / this->TR;    // Tarrival (s)  
+            (*initialPosition)[2] =   -3        / this->TR;    // Tarrival (s)  
         } 
 
 
