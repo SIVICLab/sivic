@@ -54,6 +54,7 @@
 #include <svk2SiteExchangeCostFunction.h>
 #include <svk2SitePerfCostFunction.h>
 #include <svk2SiteIMCostFunction.h>
+#include <svk2SiteIMPyrCostFunction.h>
 
 
 
@@ -105,7 +106,7 @@ void svkMRSKinetics::SetSeriesDescription( vtkstd::string newSeriesDescription )
  */
 void svkMRSKinetics::SetModelType( svkMRSKinetics::MODEL_TYPE modelType)
 {
-    if ( modelType < 1 || modelType > 3 ) {
+    if ( modelType < svkMRSKinetics::FIRST_MODEL || modelType > svkMRSKinetics::LAST_MODEL ) {
         cout << "ERROR: invalid model type: " << modelType << endl;
         exit(1); 
     }
@@ -359,6 +360,8 @@ void svkMRSKinetics::GetCostFunction( svkKineticModelCostFunction::Pointer& cost
         costFunction = svk2SitePerfCostFunction::New();
     } else if ( this->modelType == svkMRSKinetics::TWO_SITE_IM) {
         costFunction = svk2SiteIMCostFunction::New();
+    } else if ( this->modelType == svkMRSKinetics::TWO_SITE_IM_PYR) {
+        costFunction = svk2SiteIMPyrCostFunction::New();
     }
 }
 
@@ -565,7 +568,8 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
         //  the maps are the last set of outputs after the fitted signals: 
         int mapIndex = index + numSignalsInModel;    
         this->GetOutput(mapIndex)->GetPointData()->GetArray(0)->SetTuple1( voxelID, finalPosition[index]); 
-        cout << "VOXEL FIT(" << voxelID << ")[" << index << "] = " << finalPosition[index] << endl; 
+        string paramName = this->modelOutputDescriptionVector[ numSignalsInModel + index]; 
+        cout << "VOXEL FIT(" << voxelID << ")[" << paramName << "] = " << finalPosition[index] << endl; 
     }
 
     return;

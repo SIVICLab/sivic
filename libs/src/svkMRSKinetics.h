@@ -85,9 +85,12 @@ class svkMRSKinetics: public svkImageAlgorithm
 
         typedef enum {
             UNDEFINED = 0, 
-            TWO_SITE_EXCHANGE,
+            FIRST_MODEL = 1, 
+            TWO_SITE_EXCHANGE = FIRST_MODEL,
             TWO_SITE_EXCHANGE_PERF, 
-            TWO_SITE_IM
+            TWO_SITE_IM, 
+            TWO_SITE_IM_PYR, 
+            LAST_MODEL = TWO_SITE_IM_PYR
         } MODEL_TYPE;
 
 

@@ -86,6 +86,7 @@ int main (int argc, char** argv)
     usemsg += "                                 1 = 2 Site Exchange(default)            \n";
     usemsg += "                                 2 = 2 Site Exchange Perf                \n";
     usemsg += "                                 3 = 2 Site IM                           \n";
+    usemsg += "                                 4 = 2 Site IM_PYR                       \n";
     usemsg += "   -t                 type   Output data type:                           \n";
     usemsg += "                                 3 = UCSF IDF                            \n";
     usemsg += "                                 5 = DICOM_MRI                           \n";
@@ -157,6 +158,8 @@ int main (int argc, char** argv)
                     modelType = svkMRSKinetics::TWO_SITE_EXCHANGE_PERF; 
                 } else if ( modelTypeInt == 3 ) {
                     modelType = svkMRSKinetics::TWO_SITE_IM; 
+                } else if ( modelTypeInt == 4 ) {
+                    modelType = svkMRSKinetics::TWO_SITE_IM_PYR; 
                 }
                 break;
             case FLAG_TR:
@@ -184,7 +187,7 @@ int main (int argc, char** argv)
         argc != 0 
         || outputFileName.length() == 0
         || ( 
-                dataTypeOut != svkImageWriterFactory::DICOM_MRI 
+            dataTypeOut != svkImageWriterFactory::DICOM_MRI 
             && dataTypeOut != svkImageWriterFactory::IDF 
             && dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI 
            )
