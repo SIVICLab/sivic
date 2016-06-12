@@ -463,16 +463,16 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
 
     itk::ParticleSwarmOptimizer::ParametersType initialParameters( paramSpaceDimensionality), finalParameters;
            
-    unsigned int numberOfParticles = 100;
+    unsigned int numberOfParticles = 200;
     itkOptimizer->SetNumberOfParticles( numberOfParticles );
 
-    unsigned int maxIterations = 500;
+    unsigned int maxIterations = 10000;
     itkOptimizer->SetMaximalNumberOfIterations( maxIterations );
 
-    double xTolerance = 0.0001;
+    double xTolerance = 0.000001;
     itkOptimizer->SetParametersConvergenceTolerance( xTolerance, costFunction->GetNumberOfParameters() );
                                                   
-    double fTolerance = 0.0001;
+    double fTolerance = 0.000001;
     itkOptimizer->SetFunctionConvergenceTolerance( fTolerance );
 
     itkOptimizer->SetInitializeNormalDistribution( false ); // use uniform distribution
