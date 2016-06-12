@@ -102,9 +102,9 @@ class svk2SiteIMPyrCostFunction : public svkKineticModelCostFunction
             //  DEFINE COST FUNCTION 
             //  ==============================================================
             int PYR = 0; 
-            cout << "Tarrival: " << Tarrival << endl;
-            cout << "TEND:     " << Tend << endl;
-            cout << "SIGTEND:  " << this->GetSignalAtTime(PYR, Tend) << endl; 
+            //cout << "Tarrival: " << Tarrival << endl;
+            //cout << "TEND:     " << Tend << endl;
+            //cout << "SIGTEND:  " << this->GetSignalAtTime(PYR, Tend) << endl; 
             for ( int t = 0; t < this->numTimePoints; t++ ) {
 
                 if ( t < Tarrival ) {
