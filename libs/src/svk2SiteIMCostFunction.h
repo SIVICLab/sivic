@@ -86,6 +86,7 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             float  Tarrival = parameters[2];    //  arrival time    
             float  Kpl      = parameters[3];    //  Kpl conversion rate
             float  Klac     = parameters[4];    //  Klac, signal decay from T1 and excitation
+            float  dc       = parameters[5];    //  dc baseline offset                                
 
             float injectionDuration = 14/3;         //  X seconds normalized by TR into time point space
             int Tend = static_cast<int>( roundf(Tarrival + injectionDuration) );
@@ -109,25 +110,25 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
                 if ( Tarrival <= t < Tend) {
 
                     // PYRUVATE 
-                    this->GetModelSignal(PYR)[t] = (Rinj/Kpyr) * (1 - exp( -1 * Kpyr * (t - Tarrival)) ) ; 
+                    this->GetModelSignal(PYR)[t] = (Rinj/Kpyr) * (1 - exp( -1 * Kpyr * (t - Tarrival)) ) + dc; 
 
                     // LACTATE  
                     this->GetModelSignal(LAC)[t] = ( (Kpl * Rinj)/(Kpyr - Klac) ) 
                             * (
                                 ( ( 1 - exp( -1 * Klac * ( t - Tarrival)) )/Klac ) 
                               - ( ( 1 - exp( -1 * Kpyr * ( t - Tarrival)) )/Kpyr )
-                              );    
+                              ) + dc;    
                 }
 
                 if (t >= Tend) {      
 
                     // PYRUVATE 
-                    this->GetModelSignal(PYR)[t] = this->GetSignalAtTime(PYR, Tend) * (exp( -1 * Kpyr * ( t - Tend) ) ); 
+                    this->GetModelSignal(PYR)[t] = this->GetSignalAtTime(PYR, Tend) * (exp( -1 * Kpyr * ( t - Tend) ) ) + dc; 
 
                     // LACTATE 
                     this->GetModelSignal(LAC)[t] = ( ( this->GetSignalAtTime(LAC, Tend) * Kpl ) / ( Kpyr - Klac ) ) 
                             * ( exp( -1 * Klac * (t-Tend)) - exp( -1 * Kpyr * (t-Tend)) ) 
-                            + this->GetSignalAtTime(LAC, Tend) *  exp ( -1 * Klac * ( t - Tend)); 
+                            + this->GetSignalAtTime(LAC, Tend) *  exp ( -1 * Klac * ( t - Tend)) + dc; 
 
                 }
 
@@ -142,7 +143,7 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
          */   
         virtual unsigned int GetNumberOfParameters(void) const
         {
-            int numParameters = 5;
+            int numParameters = 6;
             return numParameters;
         }
 
@@ -172,6 +173,7 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             //  These are the params from equation 2 of Zierhut:
             (*outputDescriptionVector)[5] = "Kpl";
             (*outputDescriptionVector)[6] = "Klac";
+            (*outputDescriptionVector)[7] = "dcoffset";
         }
 
 
@@ -198,6 +200,10 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
 
             upperBounds[4] = 0.20           * this->TR;     //  Klac
             lowerBounds[4] = 0.0001         * this->TR;     //  Klac
+
+            //  baseline
+            upperBounds[5] =  100000;                       //  Baseline
+            lowerBounds[5] = -100000;                       //  Baseline
         }   
 
 
@@ -218,6 +224,7 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             //  These are the params from equation 2 of Zierhut:
             (*initialPosition)[3] =  0.01       * this->TR;    // Kpl     (1/s)  
             (*initialPosition)[4] =  0.05       * this->TR;    // Klac    (1/s)  
+            (*initialPosition)[5] =  70000;                    // Baseilne (a.u.)  
         } 
 
 
