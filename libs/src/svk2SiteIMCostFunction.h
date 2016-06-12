@@ -184,7 +184,7 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
 
             //  These are the params from equation 1 of Zierhut:
             upperBounds[0] =  100000000     * this->TR;     //  Rinj (arbitrary unit signal rise)
-            lowerBounds[0] =  10000         * this->TR;     //  Rinj
+            lowerBounds[0] =  1000          * this->TR;     //  Rinj
         
             upperBounds[1] = 0.20           * this->TR;     //  Kpyr
             lowerBounds[1] = 0.0001         * this->TR;     //  Kpyr
