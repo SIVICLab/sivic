@@ -52,9 +52,9 @@ using namespace svk;
  *  Cost function for ITK optimizer: 
  *  This represents a 2 site exchange model for conversion of pyr->lactate
  *  Implementation of model from:
- *      Kinetic modeling of hyperpolarized 13C1-pyruvate metabolism in normal rats and TRAMP mice   
- *   Zierhut, Matthew L, Yen, Yi-Fen,  Chen, Albert P,  Bok, Robert,   Albers, Mark J,   Zhang, Vickie
- *  Tropp, Jim,  Park, Ilwoo, Vigneron, Daniel B,  Kurhanewicz, John,  Hurd, Ralph E,  Nelson, Sarah J
+ *      Zierhut, M. L. et al. 
+ *      Kinetic modeling of hyperpolarized 13C1-pyruvate metabolism in normal rats and TRAMP mice. 
+ *      J. Magn. Reson. 202, 85–92 (2010).
  */
 class svk2SiteIMCostFunction : public svkKineticModelCostFunction
 {
@@ -202,8 +202,8 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             lowerBounds[4] = 0.0001         * this->TR;     //  Klac
 
             //  baseline
-            upperBounds[5] =  100000;                       //  Baseline
-            lowerBounds[5] = -100000;                       //  Baseline
+            upperBounds[5] =  100000000;                    //  Baseline
+            lowerBounds[5] = -100000000;                    //  Baseline
         }   
 
 
