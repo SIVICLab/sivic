@@ -37,6 +37,11 @@
  *  Authors:
  *      Jason C. Crane, Ph.D.
  *      Beck Olson,
+ *      Christine Swisher, Ph.D.
+ *      Sarah J. Nelson, Ph.D.
+ *      Cornelius Von Morze, Ph.D. 
+ *      Ilwoo Park, Ph.D. 
+ *      Daniel B. Vigneron, Ph.D. 
  */
 
 #ifndef SVK_2_SITE_IM_COST_COST_FUNCTION_H
@@ -50,7 +55,7 @@ using namespace svk;
 
 /*
  *  Cost function for ITK optimizer: 
- *  This represents a 2 site exchange model for conversion of pyr->lactate
+ *  This represents a piecewise 2-site exchange model for conversion of pyr->lactate
  *  Implementation of model from:
  *      Zierhut, M. L. et al. 
  *      Kinetic modeling of hyperpolarized 13C1-pyruvate metabolism in normal rats and TRAMP mice. 
