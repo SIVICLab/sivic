@@ -206,7 +206,6 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
         svkDcmHeader::SetDimensionVectorValue(&dimVector, i, 0);
     }
 
-    //  this should really come from the model
     vector <string> outputSeriesDescriptionVector;
     outputSeriesDescriptionVector.resize( this->GetNumberOfOutputPorts() ); 
     for ( int i = 0 ; i < this->GetNumberOfOutputPorts(); i++ ) { 
@@ -453,7 +452,7 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     costFunction->InitParamBounds( lowerBounds, upperBounds); 
 
     for (int paramNum  = 0; paramNum < numParams; paramNum++ ) {
-        cout << "BOUNDS: " << lowerBounds[paramNum] << " " << upperBounds[paramNum] << endl;
+        //cout << "BOUNDS: " << lowerBounds[paramNum] << " " << upperBounds[paramNum] << endl;
         bounds.push_back( std::make_pair( lowerBounds[paramNum], upperBounds[paramNum] ) );    
     }
     itkOptimizer->SetParameterBounds( bounds );
@@ -590,7 +589,7 @@ void svkMRSKinetics::ZeroData()
 
     const unsigned int paramSpaceDimensionality = this->GetNumberOfModelParameters(); 
     int num3DOutputMaps = paramSpaceDimensionality; 
-    cout << "NUM3D: " << num3DOutputMaps << endl;
+    //cout << "NUM3D: " << num3DOutputMaps << endl;
 
     double zeroValue = 0.;
     for (int i = 0; i < totalVoxels; i++ ) {
@@ -604,7 +603,7 @@ void svkMRSKinetics::ZeroData()
 
         //  zero each 3D output map 
         for (int mapNum = numSignalsInModel; mapNum < num3DOutputMaps + numSignalsInModel; mapNum++) {
-            cout << "MN: " << mapNum << endl;
+            //cout << "MN: " << mapNum << endl;
             this->GetOutput(mapNum)->GetPointData()->GetArray(0)->SetTuple1(i, zeroValue);
         }
 
