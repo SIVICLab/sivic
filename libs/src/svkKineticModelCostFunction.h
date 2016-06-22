@@ -191,7 +191,7 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
             for ( int i = 0; i < this->numSignals; i++ ) {   
                 float* model = new float [this->numTimePoints];
                 string modelSignalName = this->GetSignalName(i); 
-                cout << "NAME: " << modelSignalName << endl;
+                //cout << "NAME: " << modelSignalName << endl;
                 this->SetModelSignal( model, i, modelSignalName); 
             }
         }
