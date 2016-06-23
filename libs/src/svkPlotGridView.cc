@@ -1119,16 +1119,16 @@ void svkPlotGridView::UpdateMetaboliteTextDisplacement()
 {
     if( this->dataVector[MET] != NULL ) {
         vtkTransform* optimus = vtkTransform::New();
-        double displacement[3] = {0,0,0};
-        double dSagittal = 0;
-        double dCoronal = 0;
-        double dAxial = 0;
-        double dHorizontal = 2.1;
-        double dVertical   = 3.2;
-        if( svkVoxelTaggingUtils::IsImageVoxelTagData( this->dataVector[MET])){
-        	dVertical = 2.4;
+        double lpsDisplacement[3] = {0,0,0};
+        double sagittalDisplacementMagnitude = 0;
+        double coronalDisplacementMagnitude = 0;
+        double axialDisplacementMagnitude = 0;
+        double horizontalVoxelFractionDisplacement = 1/2.1;
+        double verticalVoxelFractionDisplacement   = 1/3.2;
+        if( svkVoxelTaggingUtils::IsImageVoxelTagData( this->dataVector[MET])){ 
+        	verticalVoxelFractionDisplacement = 1/2.4;
         }
-        double dDepth      = 2.0;
+        double inScreenVoxelFractionDisplacement      = 1/2.0;
         double* spacing = this->dataVector[MET]->GetSpacing();
        
         // Let's get the index of each orientation 
@@ -1144,33 +1144,34 @@ void svkPlotGridView::UpdateMetaboliteTextDisplacement()
          * have to displace it more horizontally than vertically to account for the
          * height of the text.
          */
+        
         switch( this->orientation ) {
             /*
              *  In the axial view the sagittal plane is perpendicular to 
              *  horizontal, and coronal is perpendicular to vertical
              */
             case svkDcmHeader::AXIAL:
-                dSagittal = spacing[sagIndex]/dHorizontal;
-                dCoronal  = spacing[corIndex]/dVertical;
-                dAxial    = spacing[axiIndex]/dDepth;
+                sagittalDisplacementMagnitude = spacing[sagIndex]*horizontalVoxelFractionDisplacement;
+                coronalDisplacementMagnitude  = spacing[corIndex]*verticalVoxelFractionDisplacement;
+                axialDisplacementMagnitude    = spacing[axiIndex]*inScreenVoxelFractionDisplacement;
                 break;
             /*
              *  In the coronal view the sagittal plane is perpendicular to 
              *  horizontal, and axial is perpendicular to vertical
              */
             case svkDcmHeader::CORONAL:
-                dSagittal = spacing[sagIndex]/dHorizontal;
-                dCoronal  = spacing[corIndex]/dDepth;
-                dAxial    = spacing[axiIndex]/dVertical;
+                sagittalDisplacementMagnitude = spacing[sagIndex]*horizontalVoxelFractionDisplacement;
+                coronalDisplacementMagnitude  = spacing[corIndex]*inScreenVoxelFractionDisplacement;
+                axialDisplacementMagnitude    = spacing[axiIndex]*verticalVoxelFractionDisplacement;
                 break;
             /*
              *  In the sagittal view the coronal plane is perpendicular to 
              *  horizontal, and axial is perpendicular to vertical
              */
             case svkDcmHeader::SAGITTAL:
-                dSagittal = spacing[sagIndex]/dDepth;
-                dCoronal  = spacing[corIndex]/dHorizontal;
-                dAxial    = spacing[axiIndex]/dVertical;
+                sagittalDisplacementMagnitude = spacing[sagIndex]*inScreenVoxelFractionDisplacement;
+                coronalDisplacementMagnitude  = spacing[corIndex]*horizontalVoxelFractionDisplacement;
+                axialDisplacementMagnitude    = spacing[axiIndex]*verticalVoxelFractionDisplacement;
                 break;
         }
 
@@ -1197,16 +1198,34 @@ void svkPlotGridView::UpdateMetaboliteTextDisplacement()
          */
         double dcos[3][3];
         this->dataVector[MET]->GetDcos( dcos );
-        displacement[0] =  -fabs(dSagittal * dcos[sagIndex][0] + dCoronal * dcos[corIndex][0] + dAxial * dcos[axiIndex][0]);
-        displacement[1] =  -fabs(dSagittal * dcos[sagIndex][1] + dCoronal * dcos[corIndex][1] + dAxial * dcos[axiIndex][1]);
-        displacement[2] =   fabs(dSagittal * dcos[sagIndex][2] + dCoronal * dcos[corIndex][2] + dAxial * dcos[axiIndex][2]);
+        if ( dcos[sagIndex][0] > 0 ) {
+            sagittalDisplacementMagnitude *= -1;
+        }
+        if ( dcos[corIndex][1] > 0 ) {
+            coronalDisplacementMagnitude *= -1;
+        }
+        if ( dcos[axiIndex][2] < 0 ) {
+            axialDisplacementMagnitude *= -1;
+        }
 
+        lpsDisplacement[0] =  sagittalDisplacementMagnitude * dcos[sagIndex][0] 
+                         + coronalDisplacementMagnitude * dcos[corIndex][0] 
+                         + axialDisplacementMagnitude * dcos[axiIndex][0];
+
+        lpsDisplacement[1] =  sagittalDisplacementMagnitude * dcos[sagIndex][1] 
+                         + coronalDisplacementMagnitude * dcos[corIndex][1] 
+                         + axialDisplacementMagnitude * dcos[axiIndex][1];
+
+        lpsDisplacement[2] =  sagittalDisplacementMagnitude * dcos[sagIndex][2] 
+                         + coronalDisplacementMagnitude * dcos[corIndex][2] 
+                         + axialDisplacementMagnitude * dcos[axiIndex][2];
+        
         // Now lets apply the transform...
-        optimus->Translate( displacement );
+        optimus->Translate( lpsDisplacement );
         svkLabeledDataMapper::SafeDownCast( 
                 vtkActor2D::SafeDownCast( 
                     this->GetProp( svkPlotGridView::OVERLAY_TEXT ) )->GetMapper())->SetTransform(optimus);
-        optimus->Delete();
+        optimus->Delete();    
 
     }
 }
