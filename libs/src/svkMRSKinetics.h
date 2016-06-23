@@ -55,6 +55,7 @@
 #include <svkMriImageData.h>
 #include <svkImageAlgorithm.h>
 #include <svkDcmHeader.h>
+#include <svkKineticModelCostFunction.h>
 
 #include <math.h>
 #include <stdio.h>
@@ -83,19 +84,25 @@ class svkMRSKinetics: public svkImageAlgorithm
         static                  svkMRSKinetics* New();
 
         typedef enum {
-            SIG_PYR= 0,
-            SIG_LAC,
-            SIG_UREA,
-            MASK
-        } MODEL_INPUT;
-
-
+            UNDEFINED = 0, 
+            FIRST_MODEL = 1, 
+            TWO_SITE_EXCHANGE = FIRST_MODEL,
+            TWO_SITE_EXCHANGE_PERF, 
+            TWO_SITE_IM, 
+            TWO_SITE_IM_PYR, 
+            LAST_MODEL = TWO_SITE_IM_PYR
+        } MODEL_TYPE;
 
 
         void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         void                    SetZeroCopy(bool zeroCopy); 
-        void                    SetModelType( int modelType ); 
+        void                    SetModelType( svkMRSKinetics::MODEL_TYPE modelType ); 
+        void                    SetTR( float TR ); 
+        float                   GetTR( ); 
+        int                     GetNumberOfModelOutputPorts(); 
+        int                     GetNumberOfModelSignals(); 
+        string                  GetModelOutputDescription( int outputIndex ); 
 
 
     protected:
@@ -130,35 +137,30 @@ class svkMRSKinetics: public svkImageAlgorithm
 
     private:
         void                    GenerateKineticParamMap();
-        void                    CalculateLactateKinetics( double* fittedModelParams, 
-                                                          int numTimePts,
-														  float* metKinetics0,
-                                                          float* metKinetics1, 
-                                                          float* lacKinetics ); 
-        void                    FitVoxelKinetics( 
-                                    float* metKinetics0, 
-                                    float* metKinetics1, 
-                                    float* metKinetics2, 
-                                    int voxelIndex 
-                                );
+        void                    FitVoxelKinetics( int voxelID ); 
 
-        void                    InitOptimizer( 
-                                    float* metKinetics0, 
-                                    float* metKinetics1, 
-                                    float* metKinetics2, 
-                                    itk::ParticleSwarmOptimizer::Pointer itkOptimizer 
-                                );
+        void                    InitOptimizer(  itk::ParticleSwarmOptimizer::Pointer itkOptimizer, int voxelID ); 
+        void                    InitCostFunction( 
+                                    svkKineticModelCostFunction::Pointer& costFunction, 
+                                    int voxelID 
+                                ); 
+        void                    GetCostFunction( svkKineticModelCostFunction::Pointer& costFunction); 
+        int                     GetNumberOfModelParameters(); 
+        void                    InitModelOutputDescriptionVector(); 
 
-        float*                  metKinetics0;
-        float*                  metKinetics1;
-        float*                  metKinetics2;
-        int                     currentTimePoint; 
-        int                     numTimePoints; 
-        vtkDataArray*           mapArrayKpl; 
-        vtkDataArray*           mapArrayT1all; 
-        vtkDataArray*           mapArrayKtrans; 
-        int                     modelType; 
 
+        float*                      metKinetics0;
+        float*                      metKinetics1;
+        float*                      metKinetics2;
+        int                         currentTimePoint; 
+        int                         numTimePoints; 
+        int                         num3DOutputMaps;
+        vtkDataArray*               mapArrayKpl; 
+        vtkDataArray*               mapArrayT1all; 
+        vtkDataArray*               mapArrayKtrans; 
+        svkMRSKinetics::MODEL_TYPE  modelType; 
+        vector<string>              modelOutputDescriptionVector;
+        float                       TR; 
 
 };
 

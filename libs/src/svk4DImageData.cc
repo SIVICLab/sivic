@@ -293,6 +293,8 @@ void  svk4DImageData::GetImage(  svkImageData* image,
                                  int component,
                                  int vtkDataType  )
 {
+
+    cout << "DEPRECATED Get_Image METHOD" << endl;
     if( image != NULL ) {
 
         svkEnhancedMRIIOD* iod = svkEnhancedMRIIOD::New();
@@ -395,6 +397,7 @@ void  svk4DImageData::GetImage(  svkImageData* image,
                                  int component,
                                  int vtkDataType )
 {
+    cout << "DEPRECATED Get_Image METHOD" << endl;
     if( image != NULL ) {
 
         //  Get the origin cell data to extract the image from:

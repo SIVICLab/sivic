@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2016 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -48,6 +48,7 @@ using namespace svk;
 
 /*
  *  Cost function for ITK optimizer: 
+ *  Abstract base class for kinetic modeling cost functions.  
  */
 class svkKineticModelCostFunction : public itk::SingleValuedCostFunction 
 {
@@ -55,14 +56,14 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
     public:
 
         typedef svkKineticModelCostFunction             Self;
-        typedef itk::SingleValuedCostFunction   Superclass;
-        typedef itk::SmartPointer<Self>         Pointer;
-        typedef itk::SmartPointer<const Self>   ConstPointer;
+        typedef itk::SingleValuedCostFunction           Superclass;
+        typedef itk::SmartPointer<Self>                 Pointer;
+        typedef itk::SmartPointer<const Self>           ConstPointer;
         itkTypeMacro( svkKineticModelCostFunction, SingleValuedCostFunction );
 
-        typedef Superclass::ParametersType      ParametersType;
-        typedef Superclass::DerivativeType      DerivativeType;
-        typedef Superclass::MeasureType         MeasureType ;
+        typedef Superclass::ParametersType              ParametersType;
+        typedef Superclass::DerivativeType              DerivativeType;
+        typedef Superclass::MeasureType                 MeasureType;
 
 
         /*
@@ -70,6 +71,8 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
          */
         svkKineticModelCostFunction()
         {
+            this->numTimePoints = 0;
+            this->numSignals    = 0;
         }
 
 
@@ -80,6 +83,7 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         {
         }
 
+
         /*
          *
          */
@@ -89,99 +93,255 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         }
 
 
-        /*!
-         *  Cost function based on minimizing the residual of fitted and observed dynamics. 
+        /*!  
+         *  Returns the cost function value for the current param values: 
+         *  typedef double MeasureType
          */
-        virtual MeasureType  GetResidual( const ParametersType& parameters) const = 0; 
+        MeasureType  GetValue( const ParametersType & parameters ) const
+        {
+            double cost = GetResidual( parameters );
+            MeasureType measure = cost;
+            return measure;
+        }
 
 
         /*!
+         *  Set the kinetic signal for metabolite N
+         */
+        void SetNumberOfSignals( int numSignals )
+        {
+            this->numSignals = numSignals; 
+            this->signalVector.resize(numSignals); 
+            this->modelSignalVector.resize(numSignals); 
+        }
+
+
+        /*
+         *  Return the number of signals in the concrete model instance
+         */
+        int GetNumberOfSignals( ) const
+        {
+            return this->numSignals; 
+        }
+
+
+        /*
+         *  Set the kinetic signal for metabolite N
+         */
+        void SetSignal( float* signal, int signalIndex, string signalName)
+        {
+            map<string, float*>  signalMap;  
+            signalMap[signalName] = signal; 
+            if (signalIndex >  this->signalVector.size() ) {
+                cout << "ERROR, signal index is out of range" << endl; 
+                exit(1); 
+            }
+            this->signalVector[signalIndex] = signalMap;
+        }
+
+
+        /*
+         *  Get pointer to the vector of input kinetic signals
+         */
+        vector < map < string, float* > >* GetSignals( )
+        {
+            return &(this->signalVector);
+        }
+
+
+        /*
+         *  Get the specific signal at the specified time point.
+         */
+        float GetSignalAtTime(int signalIndex, int timePt) const
+        {
+            //map< string, float*>::iterator mapIter;
+            return  (this->signalVector[ signalIndex ].begin()->second)[timePt]; 
+        }
+
+
+        /*
+         *  Get the specific signal at the specified time point.
+         */
+        string GetSignalName( int signalIndex ) const
+        {
+            return  this->signalVector[ signalIndex ].begin()->first; 
+        }
+
+
+        /*
+         *  Get the specific signal (pointer to the float array)
+         */
+        float* GetSignal(int signalIndex) const
+        {
+            return  (this->signalVector[ signalIndex ]).begin()->second; 
+        }
+
+
+        /*
+         *  Initializes the arrays that will hold the fitted data
+         *  with the correct number of points. 
+         */
+        void SetNumTimePoints( int numTimePoints )
+        {
+            this->numTimePoints = numTimePoints;
+            if ( this->numSignals == 0 ) { 
+                cout << "ERROR, numSignals not yet initialized" << endl;
+                exit(1); 
+            }
+            for ( int i = 0; i < this->numSignals; i++ ) {   
+                float* model = new float [this->numTimePoints];
+                string modelSignalName = this->GetSignalName(i); 
+                //cout << "NAME: " << modelSignalName << endl;
+                this->SetModelSignal( model, i, modelSignalName); 
+            }
+        }
+
+
+        /*!
+         *
+         */
+        void SetTR( float TR )
+        {
+            this->TR = TR; 
+        }
+
+
+        /*
+         *  Set the kinetic signal for metabolite N
+         */
+        void SetModelSignal( float* modelSignal, int modelSignalIndex, string modelSignalName)
+        {
+            map<string, float*>  modelSignalMap;  
+            modelSignalMap[modelSignalName] = modelSignal; 
+            if ( modelSignalIndex >  this->modelSignalVector.size() ) {
+                cout << "ERROR, signal index is out of range" << endl; 
+                exit(1); 
+            }
+            this->modelSignalVector[modelSignalIndex] = modelSignalMap;
+        }
+
+
+        /*
+         *  Get the specific model at the specified time point.
+         */
+        float GetModelSignalAtTime(int modelSignalIndex, int timePt) const
+        {
+            return  (this->modelSignalVector[ modelSignalIndex ].begin()->second)[timePt]; 
+        }
+
+
+        /*
+         *  Get the specific signal (pointer to the float array)
+         */
+        float* GetModelSignal(int modelSignalIndex) const
+        {
+            return  (this->modelSignalVector[ modelSignalIndex ]).begin()->second; 
+        }
+
+        /*!
+         *  Get the number of outputs
+         *  This is fitted signals (first), them parameter maps, e.g.:
+         *      Outputports:  0 for fitted pyruvate kinetics
+         *      Outputports:  1 for fitted lactate kinetics
+         *      Outputports:  2 for fitted urea kinetics
+         *      Outputports:  3 for T1all map 
+         *      Outputports:  4 for Kpl map 
+         *      Outputports:  5 for Ktrans map 
+         *      Outputports:  5 for K2 map 
+         */
+        unsigned int GetNumberOfOutputPorts(void) const 
+        {
+            int numOutputPorts = this->GetNumberOfSignals() + this->GetNumberOfParameters(); 
+            return numOutputPorts; 
+        }
+
+
+        /*!
+         *  For a given set of parameter values, compute the model kinetics:
+         *
          *  Function to calculate metabolite signal vs time based on parametric model.  
-         *  input: 
+         *      uses the following : 
          *      parameters    = kinetic model parameters to be fit (1/T1all, Kpl).  
          *      kineticModelN = model metabolite signal intensity vs time ( pyr, lac, urea)
          *      signalN       = input signal vs time for each of 3 measured metabolites (pyr, lac, urea) 
          *      numTimePoints = number of observed time points.  
          */
-        virtual void GetKineticModel( const ParametersType& parameters,
-                    float* kineticModel0,
-                    float* kineticModel1,
-                    float* kineticModel2,
-                    float* signal0,
-                    float* signal1,
-                    float* signal2,
-                    int numTimePoints
-        ) const = 0; 
+        virtual void GetKineticModel( const ParametersType& parameters ) const = 0; 
 
 
-        /*  
-         *  returns the cost function for the current param values: 
-         *  typedef double MeasureType
-         */
-        MeasureType  GetValue( const ParametersType & parameters ) const
-        {
-
-            double cost;
-
-            cost = GetResidual( parameters );
-
-            MeasureType measure = cost;
-            //cout << "                          cost: " << measure << endl;
-            return measure;
-        }
-
-
-        /*
-         *
+        /*!
+         *  Get the number of adjustable parameters in the model defined by cost function
          */
         virtual unsigned int GetNumberOfParameters(void) const = 0; 
 
 
-        /*
-         *  kinetic signal for each of 3 metabolites
+        /*!
+         *  Initialize the number of input signals for the model 
          */
-        void SetSignal0( float* signal)
-        {
-            this->signal0 = signal;
-        }
+        virtual void InitNumberOfSignals(void) = 0; 
 
-        /*
-         *  kinetic signal for each of 3 metabolites
-         */
-        void SetSignal1( float* signal)
-        {
-            this->signal1 = signal;
-        }
 
-        /*
-         *  kinetic signal for each of 3 metabolites
+        /*!
+         *  Get the vector that contains the string identifier for each output port
          */
-        void SetSignal2( float* signal)
-        {
-            this->signal2 = signal;
-        }
+        virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const = 0; 
 
-        /*
-         *
+
+        /*!
+         *  Initialize the parameter uppler and lower bounds for this model. 
          */
-        void SetNumTimePoints( int numTimePoints )
-        {
-            this->numTimePoints = numTimePoints;
-            this->kineticModel0 = new float [this->numTimePoints];
-            this->kineticModel1 = new float [this->numTimePoints];
-            this->kineticModel2 = new float [this->numTimePoints];
-        }
+        virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) = 0; 
+
+
+        /*!
+         *  Initialize the parameter initial values (unitless)
+         */
+        virtual void InitParamInitialPosition( ParametersType* initialPosition ) = 0; 
+
+
+        /*!
+         *  Get the scaled (with units) values of final fitted parameter values. 
+         */
+        virtual void GetParamFinalScaledPosition( ParametersType* finalPosition ) = 0; 
+
 
 
     protected:
 
-        float*      signal0;
-        float*      signal1;
-        float*      signal2;
-        float*      kineticModel0;
-        float*      kineticModel1;
-        float*      kineticModel2;
-        int         numTimePoints;
+
+        /*!
+         *  Cost function used to minimizing the residual of fitted and observed dynamics. 
+         *  Get the sum of square difference between the input signal and modeled signal at the current
+         *  set of parameter values. 
+         */
+        MeasureType  GetResidual( const ParametersType& parameters) const
+        {
+            //cout << "GUESS: " << parameters[0] << " " << parameters[1] << endl;;
+            this->GetKineticModel( parameters );
+            double residual = 0;
+            for ( int t = 0; t < this->numTimePoints; t++ ) {
+                for  (int sigNumber = 0; sigNumber < this->GetNumberOfSignals(); sigNumber++ ) {
+                    residual += ( this->GetSignalAtTime(sigNumber, t) - this->GetModelSignal(sigNumber)[t] )  
+                              * ( this->GetSignalAtTime(sigNumber, t) - this->GetModelSignal(sigNumber)[t] );
+                }
+            }
+            MeasureType measure = residual ;
+            return measure;
+        }
+
+
+        //  this is the vector of float arrays representing the observed metabolite signals as a function of time
+        //  for different number of sites this should be flexibile
+        vector< map < string, float* > >  signalVector;
+
+        //  this is the vector of float arrays representing the modeled/computed metabolite signals as a function of time
+        //  for different number of sites this should be flexibile based on the model parameters. 
+        vector< map < string, float* > >    modelSignalVector;
+        int                                 numTimePoints;
+        int                                 numSignals;
+        float                               TR;
+
+
 
 };
 

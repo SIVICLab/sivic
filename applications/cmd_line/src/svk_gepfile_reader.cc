@@ -311,9 +311,10 @@ int main (int argc, char** argv)
     }
 
     //  if chop was specified, must be either On or Off
-    if ( chopString.compare("") != 0 && (chopString.compare("on")!=0 || chopString.compare("off") != 0 ))  {
-        cout << "chop value must be either on or off." << endl;
+    if ( chopString.compare("") != 0 && (chopString.compare("on")!=0 && chopString.compare("off") != 0 ))  {
+        cout << "chop value must be either on or off: " << chopString <<  endl;
         cout << usemsg << endl;
+        exit(1);
     }
         
 

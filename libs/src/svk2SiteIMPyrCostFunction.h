@@ -39,8 +39,8 @@
  *      Beck Olson,
  */
 
-#ifndef SVK_2_SITE_EXCHANGE_COST_COST_FUNCTION_H
-#define SVK_2_SITE_EXCHANGE_COST_COST_FUNCTION_H
+#ifndef SVK_2_SITE_IM_PYR_COST_COST_FUNCTION_H
+#define SVK_2_SITE_IM_PYR_COST_COST_FUNCTION_H
 
 #include <svkKineticModelCostFunction.h>
 
@@ -51,22 +51,30 @@ using namespace svk;
 /*
  *  Cost function for ITK optimizer: 
  *  This represents a 2 site exchange model for conversion of pyr->lactate
+ *  Implementation of model from:
+ *      Kinetic modeling of hyperpolarized 13C1-pyruvate metabolism in normal rats and TRAMP mice   
+ *      Zierhut, Matthew L, Yen, Yi-Fen,  Chen, Albert P,  Bok, Robert,   Albers, Mark J,   Zhang, Vickie
+ *      Tropp, Jim,  Park, Ilwoo, Vigneron, Daniel B,  Kurhanewicz, John,  Hurd, Ralph E,  Nelson, Sarah J
+ *  
+ *     Only equation 1 of the above reference is implemented for initial fitting of Pyr signal to determine
+ *          Rinj:       the injection rate 
+ *          Kpyr:       the pyruvate signal decay rate 
+ *          Tarrival:   the arrival time 
  */
-class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
+class svk2SiteIMPyrCostFunction : public svkKineticModelCostFunction
 {
 
     public:
 
-        typedef svk2SiteExchangeCostFunction            Self;
+        typedef svk2SiteIMPyrCostFunction            Self;
         itkNewMacro( Self );
 
 
         /*!
          *
          */
-        svk2SiteExchangeCostFunction() 
+        svk2SiteIMPyrCostFunction() 
         {
-            //  this model has 2 signals, Pyr and Lac 
             this->InitNumberOfSignals(); 
             this->TR = 0; 
         }
@@ -78,52 +86,40 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
         virtual void GetKineticModel( const ParametersType& parameters ) const
         {
 
-            double T1all  = parameters[0];
-            double Kpl    = parameters[1];
-            float  dc     = parameters[2];    //  dc baseline offset                                
+            float Rinj     = parameters[0];         //  injection rate
+            float Kpyr     = parameters[1];         //  Kpyr, signal decay from T1 and excitation
+            float Tarrival = parameters[2];         //  arrival time in dimensionless time-point units   
 
+            float injectionDuration = 14/3;         //  X seconds normalized by TR into time point space
 
-            //  cout << "GUESSES: " << T1all << " " << Kpl  << endl;
-            //  use model params and initial signal intensity to calculate the metabolite signals vs time 
-            //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
+            //cout << "TR: " << this->TR << endl;
+            //cout << "ID: " << injectionDuration << endl;
+            int Tend = static_cast<int>( roundf(Tarrival + injectionDuration) ); 
+            Tarrival = static_cast<int>( roundf(Tarrival) ); 
 
-            //  Find time to peak pyrvaute/urea
-            int arrivalTime = GetArrivalTime( this->GetSignal(0) );
-
-  
-            //  Use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
-            //  each time point
 
             //  ==============================================================
             //  DEFINE COST FUNCTION 
-            //  Pre arrival time and post arrival time are separate functions
-            //      - Before the arrival time the pyr and lac models are just the 
-            //        observed input signals. 
-            //      - At and after the arrival time the model is: 
-            //          pyr(t) = pyr(arrivalTime) * e^(-kt)  
-            //              where k is the sum of contributions from T1 decay and convsion to lactate at rate Kpl
-            //          lac(t) = lac(arrivalTime) * e^(-kt)      
             //  ==============================================================
+            int PYR = 0; 
+            //cout << "Tarrival: " << Tarrival << endl;
+            //cout << "TEND:     " << Tend << endl;
+            //cout << "SIGTEND:  " << this->GetSignalAtTime(PYR, Tend) << endl; 
             for ( int t = 0; t < this->numTimePoints; t++ ) {
 
-                if (t < arrivalTime ) {
-                    this->GetModelSignal(0)[t] = this->GetSignalAtTime(0, t); 
-                    this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, t); 
+                if ( t < Tarrival ) {
+                    cout << "PRE T ARRIVAL" << endl;
+                    this->GetModelSignal(PYR)[t] = 0.; //this->GetSignalAtTime(PYR, t);
                 }
 
-                if (t >= arrivalTime ) {      
-
+                if ( Tarrival <= t < Tend) {
                     // PYRUVATE 
-                    this->GetModelSignal(0)[t] = this->GetSignalAtTime(0, arrivalTime) 
-                        * exp( -((1/T1all) + Kpl) * ( t - arrivalTime) ) + dc;
+                    this->GetModelSignal(PYR)[t] = (Rinj/Kpyr) * (1 - exp( -1 * Kpyr * (t - Tarrival)) ) ; 
+                }
 
-                    // LACTATE 
-                    this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, arrivalTime)         // T1 decay of lac signal
-                        * exp( -( t - arrivalTime )/T1all) 
-                        - this->GetSignalAtTime(0, arrivalTime )                    
-                            * exp( -( t - arrivalTime )/T1all)
-                            * ( exp( -Kpl * ( t - arrivalTime )) - 1 ) + dc;
-
+                if (t >= Tend) {      
+                    // PYRUVATE 
+                    this->GetModelSignal(PYR)[t] = this->GetSignalAtTime(PYR, Tend) * (exp( -1 * Kpyr * ( t - Tend) ) ); 
                 }
 
             }
@@ -132,9 +128,9 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
 
 
         /*!
-         *  T1all
-         *  Kpl
-         *  DC offset
+         *  Rinj 
+         *  Kpyr 
+         *  Tarrival
          */   
         virtual unsigned int GetNumberOfParameters(void) const
         {
@@ -148,8 +144,8 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
          */
         virtual void InitNumberOfSignals(void) 
         {
-            //  pyruvate and lactate
-            this->SetNumberOfSignals(2);
+            //  pyruvate 
+            this->SetNumberOfSignals(1);
         } 
 
 
@@ -159,11 +155,13 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
         virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const
         {
             outputDescriptionVector->resize( this->GetNumberOfOutputPorts() );
+            //  Input Signal
             (*outputDescriptionVector)[0] = "pyr";
-            (*outputDescriptionVector)[1] = "lac";
-            (*outputDescriptionVector)[2] = "T1all";
-            (*outputDescriptionVector)[3] = "Kpl";
-            (*outputDescriptionVector)[4] = "dcoffset";
+
+            //  These are the params from equation 1 of Zierhut:
+            (*outputDescriptionVector)[1] = "Rinj";
+            (*outputDescriptionVector)[2] = "Kpyr";
+            (*outputDescriptionVector)[3] = "Tarrival";
         }
 
 
@@ -173,14 +171,15 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
          */     
         virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) 
         {
-            upperBounds[0] = 50./this->TR;      //  T1all
-            lowerBounds[0] = 1. /this->TR;      //  T1all
+            //  These are the params from equation 1 of Zierhut:
+            upperBounds[0] =  100000000     * this->TR;     //  Rinj (arbitrary unit signal rise)
+            lowerBounds[0] =  10000         * this->TR;     //  Rinj
         
-            upperBounds[1] = 0.20 * this->TR;   //  Kpl
-            lowerBounds[1] = 0.00 * this->TR;   //  Kpl
+            upperBounds[1] = 0.20           * this->TR;     //  Kpyr
+            lowerBounds[1] = 0.0001         * this->TR;     //  Kpyr
 
-            upperBounds[2] =  100000;                       //  Baseline
-            lowerBounds[2] = -100000;                       //  Baseline
+            upperBounds[2] =  0             / this->TR;     //  Tarrival
+            lowerBounds[2] = -4.00          / this->TR;     //  Tarrival
         }   
 
 
@@ -193,9 +192,10 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
                 cout << "ERROR: TR Must be set before initializing parameters" << endl;
                 exit(1); 
             }
-            (*initialPosition)[0] =  12   / this->TR;    // T1all  (s)
-            (*initialPosition)[1] =  0.01 * this->TR;    // Kpl    (1/s)  
-            (*initialPosition)[2] =  70000;              // Baseilne (a.u.)  
+            //  These are the params from equation 1 of Zierhut:
+            (*initialPosition)[0] =  50000      * this->TR;    // Rinj    (1/s)
+            (*initialPosition)[1] =  0.05       * this->TR;    // Kpyr    (1/s)  
+            (*initialPosition)[2] =   -3        / this->TR;    // Tarrival (s)  
         } 
 
 
@@ -208,35 +208,18 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
                 cout << "ERROR: TR Must be set before scaling final parameters" << endl;
                 exit(1); 
             }
-            (*finalPosition)[0] *= this->TR;    // T1all  (s)
-            (*finalPosition)[1] /= this->TR;    // Kpl    (1/s)  
+
+            //  These are the params from equation 1 of Zierhut:
+            (*finalPosition)[0] /= this->TR;    // Rinj     (1/s)
+            (*finalPosition)[1] /= this->TR;    // Kpyr     (1/s)  
+            (*finalPosition)[2] *= this->TR;    // Tarrival (s)  
+
         } 
 
 
     private: 
 
-        /*!
-         *  
-         */
-        int GetArrivalTime( float* firstSignal) const
-        {
-            int arrivalTime = 0;
-            float maxValue0 = firstSignal[0];
-            int t;
-                    
-            for(t = arrivalTime;  t < this->numTimePoints; t++ ) {
-                if( firstSignal[t] > maxValue0) {
-                    maxValue0 = firstSignal[t];
-                    arrivalTime = t;
-                }
-            }
-            //cout << "t: " << arrivalTime << " " << firstSignal[arrivalTime] << " " << this->numTimePoints<< endl;
-            return arrivalTime;
-        }
-
-
-
 };
 
 
-#endif// SVK_2_SITE_EXCHANGE_COST_COST_FUNCTION_H
+#endif// SVK_2_SITE_IM_PYR_COST_COST_FUNCTION_H
