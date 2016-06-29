@@ -53,6 +53,7 @@
 #include <svkGEPFileMapperUCSFfidcsiDev0.h>
 #include <svkGEPFileMapperUCSFfidcsiDev07t.h>
 #include <svkGEPFileMapperUCSFProseProstate.h>
+#include <svkGEPFileMapperUCSFProseBreast.h>
 #include <svkGEPFileMapperMPCSIOBL.h>
 #include <svkEPSIReorder.h>
 
