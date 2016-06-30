@@ -276,6 +276,7 @@ ADD_LIBRARY(
     svkIntegratePeak.cc
     svkApodizationWindow.cc
     svkMrsApodizationFilter.cc
+    svkMrsSimulate.cc
     svkExtractVOI.cc
     svkDICOMParser.cc
     svkImageStatistics.cc

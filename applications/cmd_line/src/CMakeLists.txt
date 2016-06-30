@@ -740,6 +740,15 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_simulate
+    svk_simulate.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_simulate
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_zerofill
     svk_zerofill.cc
 )
