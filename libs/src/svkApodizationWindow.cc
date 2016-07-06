@@ -74,20 +74,28 @@ svkApodizationWindow::~svkApodizationWindow()
  *  \param dt        Temporal resolution of the window in seconds.
  *
  */
-void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window,  float fwhh, float dt )
+void svkApodizationWindow::GetLorentzianWindow( vector < vtkFloatArray* >* window,  float fwhh, float dt )
 {
     if( window != NULL ) {
 
-        int numPoints = window->GetNumberOfTuples();
-        int numComponents = window->GetNumberOfComponents();
+        int numPoints = (*window)[0]->GetNumberOfTuples();
+        int numComponents = (*window)[0]->GetNumberOfComponents();
 
         for( int i = 0; i < numPoints; i++ ) {
             // NOTE: fabs is used here in case we want to alter the center of the window in the future.
             float value = exp( -fwhh * vtkMath::Pi()* fabsf( dt * i ) );
             for( int j = 0; j < numComponents; j++ ) {
-				window->SetComponent( i, j, value );
+				(*window)[0]->SetComponent( i, j, value );
             }
         }
+    } else {
+
+        cout << "NULL NULL " << endl;
+        cout << "NULL NULL " << endl;
+        cout << "NULL NULL " << endl;
+        cout << "NULL NULL " << endl;
+        cout << "NULL NULL " << endl;
+        cout << "NULL NULL " << endl;
     }
 }
 
@@ -107,16 +115,21 @@ void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window,  float fw
  *                   Value in Hz.
  *
  */
-void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window, svkImageData* data, float fwhh )
+void svkApodizationWindow::GetLorentzianWindow( vector < vtkFloatArray*>* window, svkImageData* data, float fwhh )
 {
 	float dt = 0;
 	if( data != NULL ) {
 		dt = svkApodizationWindow::GetWindowResolution(data);
 	}
     if( data->IsA("svkMrsImageData") && window != NULL && dt != 0 ) {
-    	svkApodizationWindow::InitializeWindow( window, data );
+        if ( window->size() == 0 ) { 
+            vtkFloatArray* window1D = vtkFloatArray::New(); 
+            window->push_back( window1D ); 
+        }    
+    	svkApodizationWindow::InitializeWindow( (*window)[0], data );
         svkApodizationWindow::GetLorentzianWindow( window, fwhh, svkApodizationWindow::GetWindowResolution( data ) );
     } else {
+        cout << "WINDOW: " << window << endl;
          vtkErrorWithObjectMacro(data, "Could not generate Lorentzian window for give data type!");
     }
 }
@@ -140,15 +153,15 @@ void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window, svkImageD
  *  \param center    The center point for the window in ms.
  *
  */
-void svkApodizationWindow::GetGaussianWindow( vtkFloatArray* window, float fwhh, float dt, float center )
+void svkApodizationWindow::GetGaussianWindow( vector < vtkFloatArray* >* window, float fwhh, float dt, float center )
 {
     if( window != NULL ) {
-        int numPoints = window->GetNumberOfTuples();
-        int numComponents = window->GetNumberOfComponents();
+        int numPoints = (*window)[0]->GetNumberOfTuples();
+        int numComponents = (*window)[0]->GetNumberOfComponents();
         for( int i = 0; i < numPoints; i++ ) {
             float value = exp( -0.5 * pow((fwhh * vtkMath::Pi()* ( dt * i - center/1000 ))/pow(2*log(2.),0.5),2) );
             for( int j = 0; j < numComponents; j++ ) {
-				window->SetComponent( i, j, value );
+				(*window)[0]->SetComponent( i, j, value );
             }
         }
     }
@@ -170,19 +183,39 @@ void svkApodizationWindow::GetGaussianWindow( vtkFloatArray* window, float fwhh,
  *  \param center    The center point for the peak of the Gaussian.
  *
  */
-void svkApodizationWindow::GetGaussianWindow( vtkFloatArray* window, svkImageData* data, float fwhh, float center )
+void svkApodizationWindow::GetGaussianWindow( vector < vtkFloatArray* >* window, svkImageData* data, float fwhh, float center )
 {
 	float dt = 0;
 	if( data != NULL ) {
 		dt = svkApodizationWindow::GetWindowResolution(data);
 	}
     if( data->IsA("svkMrsImageData") && window != NULL && dt != 0 ) {
-    	svkApodizationWindow::InitializeWindow( window, data );
+        if ( window->size() == 0 ) { 
+            vtkFloatArray* window1D = vtkFloatArray::New(); 
+            window->push_back( window1D ); 
+        }    
+    	svkApodizationWindow::InitializeWindow( (*window)[0], data );
         svkApodizationWindow::GetGaussianWindow( window, fwhh, svkApodizationWindow::GetWindowResolution( data ), center );
     } else {
          vtkErrorWithObjectMacro(data, "Could not generate Gaussian window for give data type!");
     }
 }
+
+/*!
+ *  Creates a vecotor of 3 Hamming windows using the equation:
+ *  H(k) = .54 - .46 * cos( 2*PI(k/K-1), where the maximum is at k=0 and K is the number of 
+ *          kspace points in a dimension. 
+ *
+ *  \param window    Pre-allocated array that will be populated with the window.
+ *                   The number of tuples allocated determines the number of points in the window.
+ *
+ *  \param center    The center point for the window in ms.
+ *
+ */
+void  GetHammingWindow(    vector < vtkFloatArray* >* window, svkImageData* data, float center = 0 )
+{
+}
+
 
 
 /*!

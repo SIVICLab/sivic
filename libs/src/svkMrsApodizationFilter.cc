@@ -74,9 +74,14 @@ svkMrsApodizationFilter::~svkMrsApodizationFilter()
 /*!
  * Sets the window to be used for the apodization.
  */
-void svkMrsApodizationFilter::SetWindow( vtkFloatArray* window )
+void svkMrsApodizationFilter::SetWindow( vector < vtkFloatArray* >* window )
 {
     this->window = window;
+    if ( this->window->size() == 1 ) {
+        this->filterDomain = svkMrsApodizationFilter::SPECTRAL_WINDOW; 
+    } else if ( this->window->size() == 3 ) {
+        this->filterDomain = svkMrsApodizationFilter::SPATIAL_WINDOW; 
+    } 
 }
 
 
@@ -90,9 +95,25 @@ int svkMrsApodizationFilter::RequestInformation( vtkInformation* request, vtkInf
 
 
 /*! 
- *  Each data array in the input will be multiplied by the window.
+ *  Call the spectral or spatial filtering subroutine.
  */
 int svkMrsApodizationFilter::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+{
+
+    int status = 0; 
+    if ( this->filterDomain == svkMrsApodizationFilter::SPECTRAL_WINDOW ) { 
+        status = this->RequestDataSpectral(); 
+    } else if ( this->filterDomain == svkMrsApodizationFilter::SPATIAL_WINDOW ) { 
+        status = this->RequestDataSpatial(); 
+    } 
+    return status; 
+}
+
+
+/*!
+ *  Call the spectral or spatial filtering subroutine: Each data array in the input will be multiplied by the window.
+ */
+int svkMrsApodizationFilter::RequestDataSpectral()
 {
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
@@ -108,6 +129,8 @@ int svkMrsApodizationFilter::RequestData( vtkInformation* request, vtkInformatio
     //  GetNumber of cells in the image:
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
 
+    vtkFloatArray* spectralWindow = (*this->window)[0]; 
+
     for (int cellID = 0; cellID < numCells; cellID++ ) {
 
         vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
@@ -116,12 +139,22 @@ int svkMrsApodizationFilter::RequestData( vtkInformation* request, vtkInformatio
 
         //  Iterate over frequency points in spectrum and apply phase the window:
         for ( int i = 0; i < numPoints; i++ ) {
-            windowTuple = this->window->GetTuple( i );
+            windowTuple = spectralWindow->GetTuple( i );
             specTuple = spectrum->GetTuple( i );
             spectrum->SetTuple2( i, specTuple[0] * windowTuple[0], specTuple[1] * windowTuple[1] ); 
         }
     }
 
+    return 1; 
+} 
+
+
+/*!
+ *  Call the spatial filtering subroutine apply filter to 3D image at each frequency point. 
+ */
+int svkMrsApodizationFilter::RequestDataSpatial()
+{
+    //  TB Implemented. 
     return 1; 
 } 
 
