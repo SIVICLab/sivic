@@ -79,7 +79,8 @@ class svkMrsApodizationFilter : public svkImageInPlaceFilter
             LAST
         }FilterDomain;
 
-        void SetWindow( vector< vtkFloatArray* >* window );
+        void                SetWindow( vector< vtkFloatArray* >* window );
+        svkMriImageData*    GetSpatialFilter(); 
 
 
     protected:
@@ -111,6 +112,9 @@ class svkMrsApodizationFilter : public svkImageInPlaceFilter
         
         vector< vtkFloatArray* >*               window;
         svkMrsApodizationFilter::FilterDomain   filterDomain;  
+        svkMriImageData*                        spatialFilter;
+        svkMriImageData*                        spatialFilterReal;
+ 
 
 };
 

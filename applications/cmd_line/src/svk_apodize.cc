@@ -228,10 +228,27 @@ int main (int argc, char** argv)
         exit(1);
     }
 
-    writerFactory->Delete();
+
     writer->SetFileName( outputFileName.c_str() );
     writer->SetInputData( apodizeFilter->GetOutput() );
     writer->Write();
+
+    if ( filterType == svkApodizationWindow::HAMMING ) {
+        svkImageWriter* spatialFilterWriter = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_ENHANCED_MRI ) );
+        if ( spatialFilterWriter == NULL ) {
+            cerr << "Can not create writer for spatial filter " << endl;
+            exit(1);
+        }
+        string spatialFilterFileName = outputFileName; 
+        spatialFilterFileName.append("_hamming"); 
+        spatialFilterWriter->SetFileName( spatialFilterFileName.c_str() );
+        spatialFilterWriter->SetInputData( apodizeFilter->GetSpatialFilter() );
+        spatialFilterWriter->Write();
+        spatialFilterWriter->Delete();
+    }
+
+
+    writerFactory->Delete();
     writer->Delete();
 
     apodizeFilter->Delete();

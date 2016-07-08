@@ -69,6 +69,14 @@ svkMrsApodizationFilter::svkMrsApodizationFilter()
  */
 svkMrsApodizationFilter::~svkMrsApodizationFilter()
 {
+    if ( this->spatialFilter != NULL ) {
+        this->spatialFilter->Delete(); 
+        this->spatialFilter = NULL; 
+    }
+    if ( this->spatialFilterReal != NULL ) {
+        this->spatialFilterReal->Delete(); 
+        this->spatialFilterReal = NULL; 
+    }
 }
 
 
@@ -168,8 +176,12 @@ int svkMrsApodizationFilter::RequestDataSpatial()
     }
 
     // create a new blank image and initialize it to be a single 3D vol from the 4D input data. 
-    svkMriImageData* spatialFilter = svkMriImageData::New();
-    data->GetImage( spatialFilter, frequencyPt, &dimVector, 2, "", VTK_FLOAT);
+    this->spatialFilter = svkMriImageData::New();
+    this->spatialFilterReal = svkMriImageData::New();
+    //  component 2 = complex data: 
+    data->GetImage( this->spatialFilter,     frequencyPt, &dimVector, 2, "", VTK_FLOAT);
+    //  component 0 = real only data: 
+    data->GetImage( this->spatialFilterReal, frequencyPt, &dimVector, 0, "", VTK_FLOAT);
         
     // loop over the spatial indices (xyz) and assign the filter valuesi at each 3D location: 
     int numVoxels[3];
@@ -187,8 +199,12 @@ int svkMrsApodizationFilter::RequestDataSpatial()
                 (*this->window)[2]->GetTuple(z, filterTupleZ);     
                 filterTuple3D[0] = filterTupleX[0] * filterTupleY[0] * filterTupleZ[0]; // real 
                 filterTuple3D[1] = filterTupleX[1] * filterTupleY[1] * filterTupleZ[1]; // imaginary
-                cout << "FILTER( " << x << ", " << y << ", " << z << ") = " << filterTuple3D[0] << endl;
-                spatialFilter->SetImagePixelTuple(x, y, z, filterTuple3D ); 
+                cout << "FILTER( " << x << ", " << y << ", " << z << ") = " 
+                    << filterTupleX[0] << " " << filterTupleY[0] << " " << filterTupleZ[0] << endl;
+                cout << "FILTERVAL( " << x << ", " << y << ", " << z << ") = " << filterTuple3D[0] << endl;
+                cout << "FILTERVAL( " << x << ", " << y << ", " << z << ") = " << filterTuple3D[0] << endl;
+                this->spatialFilter->SetImagePixelTuple(x, y, z, filterTuple3D ); 
+                this->spatialFilterReal->SetImagePixel( x, y, z, filterTuple3D[0] ); 
             }
         }
     }
@@ -206,7 +222,7 @@ int svkMrsApodizationFilter::RequestDataSpatial()
     svkMriImageData* tmp3DImage = svkMriImageData::New();
     svkImageMathematics* math = svkImageMathematics::New(); 
     math->SetOperationToMultiply();
-    math->SetInput1Data( spatialFilter );  
+    math->SetInput1Data( this->spatialFilter );  
     for (int freq = 0; freq < numSpectralPoints; freq++ ) {
         data->GetImage( tmp3DImage, freq, &dimVector, 2, "", VTK_FLOAT);
         math->SetInput2Data( tmp3DImage ); 
@@ -217,10 +233,19 @@ int svkMrsApodizationFilter::RequestDataSpatial()
 
     math->Delete(); 
     tmp3DImage->Delete(); 
-    spatialFilter->Delete(); 
 
     return 1; 
 } 
+
+
+/*!
+ *  Gets the spatial filter as a 3D image: 
+ */
+svkMriImageData* svkMrsApodizationFilter::GetSpatialFilter()
+{
+    return this->spatialFilterReal; 
+}
+
 
 
 /*!
