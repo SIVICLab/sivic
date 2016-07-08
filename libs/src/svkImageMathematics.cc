@@ -354,6 +354,7 @@ void svkImageMathematics::Update()
             in2Array = this->GetImageDataInput(1)->GetPointData()->GetScalars();    // returns a vtkDataArray
         }
         vtkDataArray* outArray = this->GetOutput()->GetPointData()->GetArray(arrayName0.c_str() );    // returns a vtkDataArray
+        int numComponents = outArray->GetNumberOfComponents(); 
         for ( int i = 0; i < totalVoxels; i++ ) {
             if ( this->Operation == VTK_ADD ) {
                 outArray->SetTuple1( 
@@ -378,10 +379,14 @@ void svkImageMathematics::Update()
                     ); 
                 }
             } else if ( this->Operation == VTK_MULTIPLY ) {
-                outArray->SetTuple1( 
-                    i,  
-                    in1Array->GetTuple1(i) * in2Array->GetTuple1(i) 
-                ); 
+                //  rewrote this to support complex valued image tuples
+                for ( int c = 0; c < numComponents; c++ ) {
+                    outArray->SetComponent(
+                        i, 
+                        c, 
+                        in1Array->GetComponent(i, c) * in2Array->GetComponent(i, c)
+                    ); 
+                }
             } else if ( this->Operation == VTK_MULTIPLYBYK ) {
                 outArray->SetTuple1( 
                     i,  

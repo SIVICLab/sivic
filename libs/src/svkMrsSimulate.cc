@@ -113,8 +113,12 @@ int svkMrsSimulate::RequestData( vtkInformation* request, vtkInformationVector**
             svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID )
         );
 
+        //  square image: 
         //if (( colIndex > 4 && colIndex <= 7 ) &&  (rowIndex > 4 && rowIndex <= 7 )) { 
+        //  DC: 
         if (1) { 
+        // kludge to create "k=0 DC k-space for FORTRAN . symmetric sampling 10x10
+        //if (( colIndex > 3 && colIndex < 6 ) &&  (rowIndex > 3 && rowIndex < 6 )) { 
             //  simulate complex frequency spectrum
             for ( int w = 0; w < numPoints; w++ ) {
                 float wmwres1 = (w - wres1); 

@@ -353,7 +353,7 @@ double* svkMriImageData::GetImagePixel( int id )
 
 
 /*!
- *  Returns a pointer to the data at the specified voxel index. 
+ *  Set the image pixel value at the specified ID (single component (real/magnitude) value). 
  */
 void svkMriImageData::SetImagePixel( int x, int y, int z, double value )
 {
@@ -363,11 +363,30 @@ void svkMriImageData::SetImagePixel( int x, int y, int z, double value )
 
 
 /*!
- *  Returns a pointer to the data at the specified voxel ID. 
+ *  Set the image pixel value at the specified ID (single component (real/magnitude) value). 
  */
 void svkMriImageData::SetImagePixel( int id , double value )
 {
     this->GetPointData()->GetScalars()->SetTuple1( id, value );
+}
+
+
+/*!
+ *  Set the image pixel value at the specified ID (complex or multi-component pixel value) 
+ */
+void svkMriImageData::SetImagePixelTuple( int x, int y, int z, double* value )
+{
+    int voxelID = this->GetIDFromIndex(x, y, z);
+    this->SetImagePixelTuple(voxelID, value);  
+}
+
+
+/*!
+ *  Set the image pixel value at the specified ID (complex or multi-component pixel value) 
+ */
+void svkMriImageData::SetImagePixelTuple( int id , double* value )
+{
+    this->GetPointData()->GetScalars()->SetTuple( id, value);
 }
 
 

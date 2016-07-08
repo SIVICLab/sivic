@@ -42,6 +42,7 @@
 
 
 #include <svkMrsApodizationFilter.h>
+#include <svkImageMathematics.h>
 
 
 using namespace svk;
@@ -154,7 +155,70 @@ int svkMrsApodizationFilter::RequestDataSpectral()
  */
 int svkMrsApodizationFilter::RequestDataSpatial()
 {
-    //  TB Implemented. 
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+    svkDcmHeader* hdr = data->GetDcmHeader();
+    
+    //  Create a 3D spatial filter from the 3 arrays in the window vector: 
+    //  Initialze the dim vector to all 0.  The non-spatial indices determine which volume is used to 
+    //  initializet the output image. 
+    svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector();
+    int frequencyPt = 0; 
+    for ( int i = 0; i < dimVector.size(); i++ ) {
+        svkDcmHeader::SetDimensionVectorValue(&dimVector, i, 0);
+    }
+
+    // create a new blank image and initialize it to be a single 3D vol from the 4D input data. 
+    svkMriImageData* spatialFilter = svkMriImageData::New();
+    data->GetImage( spatialFilter, frequencyPt, &dimVector, 2, "", VTK_FLOAT);
+        
+    // loop over the spatial indices (xyz) and assign the filter valuesi at each 3D location: 
+    int numVoxels[3];
+    data->GetNumberOfVoxels( numVoxels );
+    double filterTupleX[2]; 
+    double filterTupleY[2]; 
+    double filterTupleZ[2]; 
+    double filterTuple3D[2]; 
+    for ( int z = 0; z < numVoxels[2]; z++ ) {
+        for ( int y = 0; y < numVoxels[1]; y++ ) {
+            for ( int x = 0; x < numVoxels[0]; x++ ) {
+
+                (*this->window)[0]->GetTuple(x, filterTupleX);     
+                (*this->window)[1]->GetTuple(y, filterTupleY);     
+                (*this->window)[2]->GetTuple(z, filterTupleZ);     
+                filterTuple3D[0] = filterTupleX[0] * filterTupleY[0] * filterTupleZ[0]; // real 
+                filterTuple3D[1] = filterTupleX[1] * filterTupleY[1] * filterTupleZ[1]; // imaginary
+                cout << "FILTER( " << x << ", " << y << ", " << z << ") = " << filterTuple3D[0] << endl;
+                spatialFilter->SetImagePixelTuple(x, y, z, filterTuple3D ); 
+            }
+        }
+    }
+    
+
+    //  Finally, multiply the input k-space image by the 3D filter.  This needs to be applied at each 
+    //  frequency and also to other non-spatial indices, e.g. channels, time pionts, etc. 
+    //  Loop over each frequency point apply the 3D spatial filter: 
+    cout << "===============================================" << endl;
+    cout << "TODO:  implement loop to apply filter to all non-spatial dimensions." << endl;
+    cout << "===============================================" << endl;
+
+    //  should have outter loop over other non-spatial cell dimensions (channel, etc)
+    int numSpectralPoints = hdr->GetIntValue( "DataPointColumns" );
+    svkMriImageData* tmp3DImage = svkMriImageData::New();
+    svkImageMathematics* math = svkImageMathematics::New(); 
+    math->SetOperationToMultiply();
+    math->SetInput1Data( spatialFilter );  
+    for (int freq = 0; freq < numSpectralPoints; freq++ ) {
+        data->GetImage( tmp3DImage, freq, &dimVector, 2, "", VTK_FLOAT);
+        math->SetInput2Data( tmp3DImage ); 
+        math->Update(); 
+        //  Set the filter 3D image back into the input data set: 
+        data->SetImage(math->GetOutput(), freq, &dimVector); 
+    }
+
+    math->Delete(); 
+    tmp3DImage->Delete(); 
+    spatialFilter->Delete(); 
+
     return 1; 
 } 
 

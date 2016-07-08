@@ -208,7 +208,7 @@ int main (int argc, char** argv)
         svkApodizationWindow::GetLorentzianWindow( window, reader->GetOutput(), width);
     } else if ( filterType == svkApodizationWindow::GAUSSIAN ) {
     } else if ( filterType == svkApodizationWindow::HAMMING ) {
-        //svkApodizationWindow::GetHammingWindow( window, reader->GetOutput(), width);
+        svkApodizationWindow::GetHammingWindow( window, reader->GetOutput() );
     }
 
     svkMrsApodizationFilter* apodizeFilter = svkMrsApodizationFilter::New();
@@ -235,7 +235,7 @@ int main (int argc, char** argv)
     writer->Delete();
 
     apodizeFilter->Delete();
-    //window->Delete();
+    delete window; 
     reader->Delete();
 
 
