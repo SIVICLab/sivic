@@ -91,10 +91,11 @@ class svkApodizationWindow : public vtkObject
     private:
         static void  GetLorentzianWindow( vector < vtkFloatArray* >* window, float fwhh, float dt );
         static void  GetGaussianWindow(   vector < vtkFloatArray* >* window, float fwhh, float dt, float center = 0 );
-        static void  GetHammingWindow(    vector < vtkFloatArray* >* window );
+        static void  GetHammingWindowData(    vector < vtkFloatArray* >* window, svkImageData* data );
         static void  InitializeWindowSpectral( vector < vtkFloatArray* >*  window, svkImageData* data );
         static void  InitializeWindowSpatial(  vector < vtkFloatArray* >*  window, svkImageData* data );
         static float GetWindowResolution( svkImageData* data );
+        static float GetWindowExpansion( svkImageData* data, int numVoxels );
         
 };
 
