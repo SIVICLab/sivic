@@ -315,13 +315,17 @@ string svkIdfVolumeWriter::GetHeaderString( int vol )
         out << "UNKNOWN, ";
     }
 
-    if ( positionString.substr(2) == string( "S" ) ) {
+    string orientationSubstring = ""; 
+    if ( positionString.length() >= 3 ) {
+        orientationSubstring = positionString.substr(2); 
+    }
+    if ( orientationSubstring == string( "S" ) ) {
         out << "Supine" << endl;
-    } else if ( positionString.substr(2) == string( "P" ) ) {
+    } else if ( orientationSubstring == string( "P" ) ) {
         out << "Prone" << endl;
-    } else if ( positionString.substr(2) == string( "DL" ) ) {
+    } else if ( orientationSubstring == string( "DL" ) ) {
         out << "Decubitus Left" << endl;
-    } else if ( positionString.substr(2) == string( "DR" ) ) {
+    } else if ( orientationSubstring == string( "DR" ) ) {
         out << "Decubitus Right" << endl;
     } else {
         out << "UNKNOWN" << endl;;
