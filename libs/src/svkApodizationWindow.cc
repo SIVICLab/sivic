@@ -221,7 +221,7 @@ void  svkApodizationWindow::GetHammingWindow( vector < vtkFloatArray* >* window,
             }
         }
         svkApodizationWindow::InitializeWindowSpatial( window, data );
-        svkApodizationWindow::GetHammingWindow( window  );
+        svkApodizationWindow::GetHammingWindowData( window, data );
     } else {
         cout << "WINDOW: " << window << endl;
          vtkErrorWithObjectMacro(data, "Could not generate Hamming window for give data type!");
@@ -232,14 +232,14 @@ void  svkApodizationWindow::GetHammingWindow( vector < vtkFloatArray* >* window,
 /*!
  *  Creates a vector of 3 Hamming windows using the equation, 1 for each of the 3 spatial dimensions:
  *
- *  H(k) = .54 - .46 * cos( 2*PI(k/K-1), where the maximum is at k=0 and K is the number of 
+ *  H(k) = .54 - .46 * cos(( 2*PI)/(k/K-1)), where the maximum is at k=0 and K is the number of 
  *          kspace points in a dimension. 
  *
  *  \param window    Pre-allocated array that will be populated with the window.
  *                   The number of tuples allocated determines the number of points in the window.
- *
  */
-void svkApodizationWindow::GetHammingWindow( vector < vtkFloatArray* >* window )
+ 
+void svkApodizationWindow::GetHammingWindowData( vector < vtkFloatArray* >* window, svkImageData* data )
 {
 
     if( window != NULL ) {
@@ -249,17 +249,49 @@ void svkApodizationWindow::GetHammingWindow( vector < vtkFloatArray* >* window )
 
             int numVoxels = (*window)[dim]->GetNumberOfTuples();
             int numComponents = (*window)[dim]->GetNumberOfComponents();
-    
+	    float N = svkApodizationWindow::GetWindowExpansion( data, numVoxels);
             for( int i = 0; i < numVoxels; i++ ) {
-                // TODO, implement Hamming filter for this dimension.  Hardcoded to dim num for now
-                float value = 1; 
+
+                float hamming = 0.54 - 0.46 * (cos (((2 * vtkMath::Pi())/(N - 1))*(i)));
+                
+                float value = hamming; 
+
                 for( int j = 0; j < numComponents; j++ ) {
-				    (*window)[dim]->SetComponent( i, j, value );
+                    (*window)[dim]->SetComponent( i, j, value );
                 }
             }
-        } 
+        }
     }
 }
+
+
+/*!
+ * Below is a truth table that determines the size of the window under different conditions.
+ */
+
+float svkApodizationWindow::GetWindowExpansion( svkImageData* data, int numVoxels )
+{
+    string k0Sampled = data->GetDcmHeader()->GetStringValue( "SVK_K0Sampled" );
+
+    float N;
+
+    if ( k0Sampled.compare("YES") == 0 ) {
+        if (numVoxels%2 == 0) {
+	    N = numVoxels + 1;
+        } else {
+	    N = numVoxels;
+        }
+    } else {
+        if (numVoxels%2 == 0) {
+	    N = numVoxels;
+        } else {
+            cout << "Window Error" << endl;
+            exit(1);
+        }
+    }
+    return N;
+}
+
 
 
 
@@ -344,3 +376,7 @@ float svkApodizationWindow::GetWindowResolution( svkImageData* data )
     }
     return windowResolution;
 }
+
+
+
+
