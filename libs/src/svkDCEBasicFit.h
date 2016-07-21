@@ -86,7 +86,7 @@ class svkDCEBasicFit: public svkDynamicImageMap
         } svkDCEBasicFitOutput;
 
         static svkDCEBasicFit *New();
-        vtkTypeRevisionMacro(svkDCEBasicFit, svkDynamicImageMap);
+        vtkTypeMacro(svkDCEBasicFit, svkDynamicImageMap);
 
         void     SetTimepointStart(int startPt);
         svkInt*  GetTimepointStart();

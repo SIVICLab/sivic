@@ -67,7 +67,7 @@ int main (int argc, char** argv)
     origOut.append("/orig");
     svkIdfVolumeWriter* writer = svkIdfVolumeWriter::New();
     writer->SetFileName( origOut.c_str() );    
-    writer->SetInput( data );
+    writer->SetInputData( data );
     writer->Write();
     writer->Delete();
 
@@ -90,12 +90,12 @@ void TestSinc( string name, int newDims[3], svkImageData* data )
 {
     svkSincInterpolationFilter* sinc = svkSincInterpolationFilter::New();
     sinc->SetOutputWholeExtent(0, newDims[0]-1, 0, newDims[1]-1, 0, newDims[2]-1);
-    sinc->SetInput( data );
+    sinc->SetInputData( data );
     sinc->Update();
 
     vtkImageExtractComponents* real = vtkImageExtractComponents::New();
     real->SetComponents( 0 );
-    real->SetInput( sinc->GetOutput() );
+    real->SetInputData( sinc->GetOutput() );
     real->Update();
 
     svkMriImageData* realSinc = svkMriImageData::New();
@@ -107,7 +107,7 @@ void TestSinc( string name, int newDims[3], svkImageData* data )
     realSincName.append("Real");
     
     writer->SetFileName( realSincName.c_str() );    
-    writer->SetInput( realSinc );
+    writer->SetInputData( realSinc );
     writer->Write();
     writer->Delete();
     
@@ -123,7 +123,7 @@ void TestSinc( string name, int newDims[3], svkImageData* data )
     if( representation.compare("MAGNITUDE") != 0 ) {
         vtkImageExtractComponents* imag = vtkImageExtractComponents::New();
         imag->SetComponents( 1 );
-        imag->SetInput( sinc->GetOutput() );
+        imag->SetInputData( sinc->GetOutput() );
         imag->Update();
 
         svkMriImageData* imagSinc = svkMriImageData::New();
@@ -135,7 +135,7 @@ void TestSinc( string name, int newDims[3], svkImageData* data )
         imagSincName.append("Imag");
     
         writer->SetFileName( imagSincName.c_str() );    
-        writer->SetInput( imagSinc );
+        writer->SetInputData( imagSinc );
         writer->Write();
         writer->Delete();
     }

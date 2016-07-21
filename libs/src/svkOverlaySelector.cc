@@ -49,7 +49,7 @@
 using namespace svk;
 
 
-//vtkCxxRevisionMacro(svkOverlaySelector, "$Rev$");
+////vtkCxxRevisionMacro(svkOverlaySelector, "$Rev$");
 vtkStandardNewMacro(svkOverlaySelector);
 
 /*!

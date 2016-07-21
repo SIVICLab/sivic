@@ -62,7 +62,7 @@ class svkBool : public vtkDataObject
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkBool, vtkDataObject );
+        vtkTypeMacro( svkBool, vtkDataObject );
   
         // vtk initialization 
         static svkBool* New();  

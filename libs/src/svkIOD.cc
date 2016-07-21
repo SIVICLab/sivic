@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkIOD, "$Rev$");
+//vtkCxxRevisionMacro(svkIOD, "$Rev$");
 
 //  
 const string svkIOD::NA_STRING = "NA";

@@ -74,7 +74,7 @@ class svkMriImageData: public svkImageData
 
     public:
 
-        vtkTypeRevisionMacro( svkMriImageData, svkImageData);
+        vtkTypeMacro( svkMriImageData, svkImageData);
         static svkMriImageData* New();
         static vtkObject*       NewObject();
 
@@ -84,8 +84,10 @@ class svkMriImageData: public svkImageData
         double*                 GetImagePixel( int id );
         double*                 GetImagePixel( int x, int y, int z );
         void                    SetImagePixels( double* pixels, int slice);
-        void                    SetImagePixel( int id, double value );
         void                    SetImagePixel( int x, int y, int z, double value );
+        void                    SetImagePixel( int id, double value );
+        void                    SetImagePixelTuple( int x, int y, int z, double* value ); 
+        void                    SetImagePixelTuple( int id , double* value ); 
         virtual void            GetNumberOfVoxels(int numVoxels[3]);
         void                    GetAutoWindowLevel( double& window, double& level, int numBins = START_NUM_BINS
                                                                          , double excludeFactor = EXCLUDE_FACTOR );

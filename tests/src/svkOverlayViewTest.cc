@@ -220,12 +220,12 @@ void MemoryTest()
     svkImageData* secondOverlay = model->LoadFile( globalArgs.secondOverlayName );
     secondOverlay->Register(NULL);
 
-    firstImage->Update();
-    secondImage->Update();
-    firstSpectra->Update();
-    secondSpectra->Update();
-    firstOverlay->Update();
-    secondOverlay->Update();
+    //firstImage->Update();
+    //secondImage->Update();
+    //firstSpectra->Update();
+    //secondSpectra->Update();
+    //firstOverlay->Update();
+    //secondOverlay->Update();
 
     vtkRenderWindow* window = vtkRenderWindow::New(); 
     vtkRenderWindowInteractor* rwi = window->MakeRenderWindowInteractor();
@@ -302,20 +302,20 @@ void OrientationTest()
     if( globalArgs.firstSpectraName != NULL ) {
         spectra = model->LoadFile( globalArgs.firstSpectraName );
         spectra->Register(NULL);
-        spectra->Update();
+        //spectra->Update();
     }
 
     svkImageData* image = NULL; 
     if( globalArgs.firstImageName != NULL ) {
         image = model->LoadFile( globalArgs.firstImageName );
         image->Register(NULL);
-        image->Update();
+        //image->Update();
     }
     svkImageData* overlay = NULL; 
     if( globalArgs.firstOverlayName != NULL ) {
         overlay = model->LoadFile( globalArgs.firstOverlayName );
         overlay->Register(NULL);
-        overlay->Update();
+        //overlay->Update();
     }
 
     
@@ -425,27 +425,27 @@ void ColorMapTest()
     if( globalArgs.firstSpectraName != NULL ) {
         spectra = model->LoadFile( globalArgs.firstSpectraName );
         spectra->Register(NULL);
-        spectra->Update();
+        //spectra->Update();
     }
 
     svkImageData* image = NULL; 
     if( globalArgs.firstImageName != NULL ) {
         image = model->LoadFile( globalArgs.firstImageName );
         image->Register(NULL);
-        image->Update();
+        //image->Update();
     }
     svkImageData* overlay = NULL; 
     if( globalArgs.firstOverlayName != NULL ) {
         overlay = model->LoadFile( globalArgs.firstOverlayName );
         overlay->Register(NULL);
-        overlay->Update();
+        //overlay->Update();
     }
 
     svkImageData* cniOverlay = NULL; 
     if( globalArgs.cniOverlayName != NULL ) {
         cniOverlay = model->LoadFile( globalArgs.cniOverlayName );
         cniOverlay->Register(NULL);
-        cniOverlay->Update();
+        //cniOverlay->Update();
     } 
 
     
@@ -564,20 +564,20 @@ void RenderingTest()
     if( globalArgs.firstSpectraName != NULL ) {
         spectra = model->LoadFile( globalArgs.firstSpectraName );
         spectra->Register(NULL);
-        spectra->Update();
+        //spectra->Update();
     }
 
     svkImageData* image = NULL; 
     if( globalArgs.firstImageName != NULL ) {
         image = model->LoadFile( globalArgs.firstImageName );
         image->Register(NULL);
-        image->Update();
+        //image->Update();
     }
     svkImageData* overlay = NULL; 
     if( globalArgs.firstOverlayName != NULL ) {
         overlay = model->LoadFile( globalArgs.firstOverlayName );
         overlay->Register(NULL);
-        overlay->Update();
+        //overlay->Update();
     }
 
     
@@ -654,32 +654,32 @@ void LoadOrderTest()
     svkImageData* firstSpectra = NULL;
     firstSpectra = model->LoadFile( globalArgs.firstSpectraName );
     firstSpectra->Register(NULL);
-    firstSpectra->Update();
+    //firstSpectra->Update();
 
     svkImageData* secondSpectra = NULL;
     secondSpectra = model->LoadFile( globalArgs.secondSpectraName );
     secondSpectra->Register(NULL);
-    secondSpectra->Update();
+    //secondSpectra->Update();
 
     svkImageData* firstImage = NULL;
     firstImage = model->LoadFile( globalArgs.firstImageName );
     firstImage->Register(NULL);
-    firstImage->Update();
+    //firstImage->Update();
 
     svkImageData* secondImage = NULL;
     secondImage = model->LoadFile( globalArgs.secondImageName );
     secondImage->Register(NULL);
-    secondImage->Update();
+    //secondImage->Update();
 
     svkImageData* firstOverlay = NULL;
     firstOverlay = model->LoadFile( globalArgs.firstOverlayName );
     firstOverlay->Register(NULL);
-    firstOverlay->Update();
+    //firstOverlay->Update();
 
     svkImageData* secondOverlay = NULL;
     secondOverlay = model->LoadFile( globalArgs.secondOverlayName );
     secondOverlay->Register(NULL);
-    secondOverlay->Update();
+    //secondOverlay->Update();
 
 
     // Load

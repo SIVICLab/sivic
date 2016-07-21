@@ -79,7 +79,7 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
 
     public:
 
-        vtkTypeRevisionMacro( svkMRSAutoPhase, svkThreadedImageAlgorithm);
+        vtkTypeMacro( svkMRSAutoPhase, svkThreadedImageAlgorithm);
         //static          svkMRSAutoPhase* New();
         
 
@@ -121,6 +121,17 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
                         );
 
         virtual int     RequestData( 
+                            vtkInformation* request, 
+                            vtkInformationVector** inputVector, 
+                            vtkInformationVector* outputVector 
+                        );
+
+        int             SVKRequestDataPreExec( 
+                            vtkInformation* request, 
+                            vtkInformationVector** inputVector, 
+                            vtkInformationVector* outputVector 
+                        );
+        int             SVKRequestDataPostExec( 
                             vtkInformation* request, 
                             vtkInformationVector** inputVector, 
                             vtkInformationVector* outputVector 

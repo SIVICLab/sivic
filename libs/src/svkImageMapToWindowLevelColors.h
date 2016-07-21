@@ -67,7 +67,7 @@ class svkImageMapToWindowLevelColors : public vtkImageMapToWindowLevelColors
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageMapToWindowLevelColors, vtkImageMapToWindowLevelColors );
+        vtkTypeMacro( svkImageMapToWindowLevelColors, vtkImageMapToWindowLevelColors );
    
         static svkImageMapToWindowLevelColors*  New();  
         

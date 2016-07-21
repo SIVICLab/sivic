@@ -48,7 +48,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMriImageData, "$Rev$");
+//vtkCxxRevisionMacro(svkMriImageData, "$Rev$");
 vtkStandardNewMacro(svkMriImageData);
 
 
@@ -110,7 +110,7 @@ void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int num
     double fullWindow = range[1]-range[0];
     double binSize = fullWindow/numBins; 
     vtkImageAccumulate* accumulator = vtkImageAccumulate::New();
-    accumulator->SetInput( this );
+    accumulator->SetInputData( this );
 
     // Component origin is the position of the first bins. 3 Dimension correspond to up to 3 components
     accumulator->SetComponentOrigin(range[0],0,0);
@@ -127,7 +127,6 @@ void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int num
 
     // The output of image accumulate is an image.
     vtkImageData* histogramImage = accumulator->GetOutput();
-    histogramImage->Update();
     int usedBins = 0;
     double binHeight = 0;
 
@@ -156,7 +155,6 @@ void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int num
 		accumulator->SetComponentExtent(0, numBins-1,0,0,0,0);
 		accumulator->SetComponentSpacing(binSize,0,0);
 		accumulator->Update();
-		histogramImage->Update();
     }
 
     // The "pixels" of the output are the values in the histogram
@@ -355,7 +353,7 @@ double* svkMriImageData::GetImagePixel( int id )
 
 
 /*!
- *  Returns a pointer to the data at the specified voxel index. 
+ *  Set the image pixel value at the specified ID (single component (real/magnitude) value). 
  */
 void svkMriImageData::SetImagePixel( int x, int y, int z, double value )
 {
@@ -365,11 +363,30 @@ void svkMriImageData::SetImagePixel( int x, int y, int z, double value )
 
 
 /*!
- *  Returns a pointer to the data at the specified voxel ID. 
+ *  Set the image pixel value at the specified ID (single component (real/magnitude) value). 
  */
 void svkMriImageData::SetImagePixel( int id , double value )
 {
     this->GetPointData()->GetScalars()->SetTuple1( id, value );
+}
+
+
+/*!
+ *  Set the image pixel value at the specified ID (complex or multi-component pixel value) 
+ */
+void svkMriImageData::SetImagePixelTuple( int x, int y, int z, double* value )
+{
+    int voxelID = this->GetIDFromIndex(x, y, z);
+    this->SetImagePixelTuple(voxelID, value);  
+}
+
+
+/*!
+ *  Set the image pixel value at the specified ID (complex or multi-component pixel value) 
+ */
+void svkMriImageData::SetImagePixelTuple( int id , double* value )
+{
+    this->GetPointData()->GetScalars()->SetTuple( id, value);
 }
 
 

@@ -115,17 +115,15 @@ endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.li
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK REQUIRED)
-IF(VTK_FOUND)
-  INCLUDE(${VTK_USE_FILE})
-ENDIF(VTK_FOUND)
+#FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE)
+#INCLUDE(${VTK_USE_FILE})
 
 
 ###################################
 #   KWWidgets
 ###################################
-INCLUDE(${KWWidgets_USE_FILE})
-include("${KWWidgets_CMAKE_DIR}/KWWidgetsTclTkMacros.cmake")
+#INCLUDE(${KWWidgets_USE_FILE})
+#include("${KWWidgets_CMAKE_DIR}/KWWidgetsTclTkMacros.cmake")
 
 #
 #  This section creates a resource file that will be linked in to make static applications possible.
@@ -199,9 +197,22 @@ endif( BUILD_CLAPACK )
 
 IF(WIN32)
 	SET(PLATFORM_LIBS getopt)
-	SET(PLATFORM_INCLUDE ../../../libs/getopt)
+	SET(PLATFORM_INCLUDE ../../../libs/getopt
+                         ${TK_INCLUDE}
+                         ${TK_INCLUDE}/../../win/rc
+    )
 ELSE(WIN32)
-    SET(PLATFORM_LIBS fontconfig)
+    SET(PLATFORM_LIBS fontconfig
+                      GLU
+                      GL
+                      SM
+                      ICE
+                      X11
+                      Xext
+                      Xt
+                      Xss 
+                      Xft
+    )
 ENDIF(WIN32)
 
 INCLUDE_DIRECTORIES(
@@ -298,39 +309,34 @@ TARGET_LINK_LIBRARIES(
     svkPSD
     svkTypeUtils
     svkadapt
-    vtkRendering
-    vtkGraphics
-    vtkHybrid
-    vtkImaging
-    vtkIO
-    vtkFiltering
-    vtkCommon
+    ${KWWidgets_LIBRARIES}
+    ${VTK_LIBRARIES} 
     dcmdata
     ${DCMTK_OFLOG}
     ofstd 
-    ${KWWidgets_LIBRARIES}
-    #KWCallbacksExampleLib
     SivicKWCallbacksLib
 	${ZLIB}
     ${NETAPI}
     ${PLATFORM_LIBS}
     ${ITK_LIBS_PRE}
-
 )
 
 IF (NOT WIN32)
 	INSTALL_PROGRAMS( /local/sivic FILES ${EXECUTABLE_OUTPUT_PATH}/sivic )
-    INSTALL( DIRECTORY  ${VTK_DIR}/tk8.5 DESTINATION  local/sivic/vtk/lib)
-    INSTALL( DIRECTORY  ${VTK_DIR}/tcl8.5 DESTINATION  local/sivic/vtk/lib)
+    FILE(GLOB VTK_TCLTK_PATH ${VTK_DIR}/../../tcltk/vtk-*) 
+    INSTALL( DIRECTORY  ${VTK_TCLTK_PATH}/tk8.5 DESTINATION  local/sivic/vtk/lib)
+    INSTALL( DIRECTORY  ${VTK_TCLTK_PATH}/tcl8.5 DESTINATION  local/sivic/vtk/lib)
 ELSE (NOT WIN32)
 	INSTALL_TARGETS( /local/sivic sivic )
-    INSTALL( DIRECTORY  ${VTK_DIR}/lib/tk8.5 DESTINATION  local/sivic/vtk/lib)
-    INSTALL( DIRECTORY  ${VTK_DIR}/lib/tcl8.5 DESTINATION  local/sivic/vtk/lib)
+    FILE(GLOB VTK_TCLTK_PATH ${VTK_DIR}/../../tcltk/vtk-*)
+    INSTALL( DIRECTORY  ${VTK_TCLTK_PATH}/tk8.5 DESTINATION  local/sivic/vtk/lib)
+    INSTALL( DIRECTORY  ${VTK_TCLTK_PATH}/tcl8.5 DESTINATION  local/sivic/vtk/lib)
 ENDIF (NOT WIN32)
 
 INSTALL_FILES( /local/sivic/dcmtk/lib FILES ${DCMTK_DIR}/share/dcmtk/dicom.dic )
 IF(WIN32)
-	INSTALL_PROGRAMS( /local/bin FILES sivic.bat )
+    INSTALL_PROGRAMS( /local/bin FILES sivic.bat )
+    INSTALL_PROGRAMS( /local/bin FILES svk_prompt.bat )
 ELSE (WIN32)
 	INSTALL_PROGRAMS( /local/bin FILES sivic )
 ENDIF (WIN32)

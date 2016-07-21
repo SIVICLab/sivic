@@ -66,7 +66,7 @@ class svkOpenGLOrientedImageActor : public vtkOpenGLImageActor
 
     public:
 
-        vtkTypeRevisionMacro(svkOpenGLOrientedImageActor,vtkOpenGLImageActor);
+        vtkTypeMacro(svkOpenGLOrientedImageActor,vtkOpenGLImageActor);
 
         // Description:
         // Instantiate the image actor.

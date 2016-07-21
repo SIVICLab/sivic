@@ -1,3 +1,4 @@
+.idea
 .cproject
 .project
 CMakeFiles
@@ -47,8 +48,18 @@ applications/cmd_line/src/svk_quick_view
 applications/cmd_line/src/svk_reslice
 applications/cmd_line/src/svk_scale_image
 applications/cmd_line/src/svk_spec_diff
+applications/cmd_line/src/svk_variable_flip_scaler
 applications/cmd_line/src/svk_transform
 applications/cmd_line/src/svk_volume_diff
 applications/cmd_line/src/svk_zscore
+applications/cmd_line/src/svk_reorder_epsi
+applications/cmd_line/src/svk_zerofill
 applications/sivic_app/src/SivicKWCallbacksLibInit.cxx
 applications/sivic_app/src/vtkSivicControllerTcl.cxx
+Build
+LocalMake/
+applications/scanner/GE_console/svk/
+nbproject/private/launcher.properties
+stash/
+working/
+

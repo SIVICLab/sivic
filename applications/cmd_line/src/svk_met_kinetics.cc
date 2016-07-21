@@ -70,9 +70,10 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ;
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";
-    usemsg += "svk_met_kinetics   --i1 name --i2 name --i3 name                         \n";
-    usemsg += "                 [ --mask name ] -o root [ -t output_data_type ] [ -h ]  \n";
-    usemsg += "\n";
+    usemsg += "svk_met_kinetics   --i1 name --i2 name [ --i3 name ]                     \n";
+    usemsg += "                 [ --mask name ] -o root [ -t output_data_type ]         \n";
+    usemsg += "                 [ --model type ] [ -h ]                                 \n";
+    usemsg += "                                                                         \n";
     usemsg += "   --i1               name   Name of dynamic pyr signal file             \n";
     usemsg += "   --i2               name   Name of dynamic lac signal file             \n";
     usemsg += "   --i3               name   Name of dynamic urea signal file            \n";
@@ -81,22 +82,29 @@ int main (int argc, char** argv)
     usemsg += "                                        root_pyr_fit.dcm                 \n";
     usemsg += "                                        root_lac_fit.dcm                 \n";
     usemsg += "                                        root_urea_fit.dcm                \n";
-    usemsg += "   -t                 type   Target data type:                           \n";
+    usemsg += "   --model            type   Model to fit data to:                       \n";
+    usemsg += "                                 1 = 2 Site Exchange(default)            \n";
+    usemsg += "                                 2 = 2 Site Exchange Perf                \n";
+    usemsg += "                                 3 = 2 Site IM                           \n";
+    usemsg += "                                 4 = 2 Site IM_PYR                       \n";
+    usemsg += "   -t                 type   Output data type:                           \n";
     usemsg += "                                 3 = UCSF IDF                            \n";
     usemsg += "                                 5 = DICOM_MRI                           \n";
     usemsg += "                                 6 = DICOM_ENHANCED_MRI (default)        \n";
+    usemsg += "   --tr               tr    TR,  time in seconds between kinetic samples \n";
     usemsg += "   -h                       Print this help mesage.                      \n";
-    usemsg += "\n";
-    usemsg += "Fit dynamic MRSI to metabolism kinetics model                            .\n";
+    usemsg += "                                                                         \n";
+    usemsg += "Fit dynamic MRSI to metabolism kinetics model                            \n";
     usemsg += "\n";
 
 
-    string inputFileName1;
-    string inputFileName2;
-    string inputFileName3;
+    vector <string> inputFileNames(10);
     string maskFileName;
     string outputFileName = "";
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_ENHANCED_MRI;
+    svkMRSKinetics::MODEL_TYPE modelType = svkMRSKinetics::TWO_SITE_EXCHANGE; 
+    int    modelTypeInt = 1;
+    float  tr = 0.; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -104,7 +112,9 @@ int main (int argc, char** argv)
         FLAG_IM_1 = 0, 
         FLAG_IM_2, 
         FLAG_IM_3, 
-        FLAG_MASK 
+        FLAG_MASK, 
+        FLAG_MODEL, 
+        FLAG_TR   
     };
 
 
@@ -115,6 +125,8 @@ int main (int argc, char** argv)
         {"i2",      required_argument, NULL,  FLAG_IM_2},
         {"i3",      required_argument, NULL,  FLAG_IM_3},
         {"mask",    required_argument, NULL,  FLAG_MASK},
+        {"model",   required_argument, NULL,  FLAG_MODEL},
+        {"tr",      required_argument, NULL,  FLAG_TR},
         {0, 0, 0, 0}
     };
 
@@ -127,16 +139,31 @@ int main (int argc, char** argv)
     while ( ( i = getopt_long(argc, argv, "o:t:usah", long_options, &option_index) ) != EOF) {
         switch (i) {
             case FLAG_IM_1:
-                inputFileName1.assign( optarg );
+                inputFileNames[0] = optarg;
                 break;
             case FLAG_IM_2:
-                inputFileName2.assign( optarg );
+                inputFileNames[1] = optarg;
                 break;
             case FLAG_IM_3:
-                inputFileName3.assign( optarg );
+                inputFileNames[2] = optarg;
                 break;
             case FLAG_MASK:
                 maskFileName.assign( optarg );
+                break;
+            case FLAG_MODEL:
+                modelTypeInt = atoi( optarg );
+                if (modelTypeInt == 1 ) { 
+                    modelType = svkMRSKinetics::TWO_SITE_EXCHANGE; 
+                } else if ( modelTypeInt == 2 ) {
+                    modelType = svkMRSKinetics::TWO_SITE_EXCHANGE_PERF; 
+                } else if ( modelTypeInt == 3 ) {
+                    modelType = svkMRSKinetics::TWO_SITE_IM; 
+                } else if ( modelTypeInt == 4 ) {
+                    modelType = svkMRSKinetics::TWO_SITE_IM_PYR; 
+                }
+                break;
+            case FLAG_TR:
+                tr = atof( optarg );
                 break;
             case 'o':
                 outputFileName.assign(optarg);
@@ -156,88 +183,76 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
-//  temp kludge: 
-bool writeUrea = true; 
-if ( inputFileName3.length() == 0 ) {
-    inputFileName3 = inputFileName2; 
-    writeUrea = false; 
-}
-
     if (
-        argc != 0 ||  inputFileName1.length() == 0
-            || inputFileName2.length() == 0
-            || inputFileName3.length() == 0
-            || outputFileName.length() == 0
-            || ( 
-                   dataTypeOut != svkImageWriterFactory::DICOM_MRI 
-                && dataTypeOut != svkImageWriterFactory::IDF 
-                && dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI 
-                )
+        argc != 0 
+        || outputFileName.length() == 0
+        || ( 
+            dataTypeOut != svkImageWriterFactory::DICOM_MRI 
+            && dataTypeOut != svkImageWriterFactory::IDF 
+            && dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI 
+           )
     ) {
             cout << usemsg << endl;
             exit(1); 
     }
 
 
-    cout << "Input1: " << inputFileName1 << endl;
-    cout << "Input2: " << inputFileName2 << endl;
-    cout << "Input3: " << inputFileName3 << endl;
     cout << "Mask: " << maskFileName << endl;
     cout << "output root: " << outputFileName << endl;
 
+    // ===============================================  
+    //  Create the kinetic modeling instance and initialize the
+    //  specific model which defines the number of inputs
+    // ===============================================  
+    svkMRSKinetics* dynamics = svkMRSKinetics::New();
+    dynamics->SetModelType( modelType ); 
+    int numberOfModelSignals = dynamics->GetNumberOfModelSignals(); 
+    cout << "================" << endl;
+    cout << "MODEL INPUTS: " << endl;
+    cout << "================" << endl;
+    for (int sig = 0; sig < numberOfModelSignals; sig++) {
+        cout << "SIGNAL(" << sig << ") = " << dynamics->GetModelOutputDescription(sig) << endl; 
+    }
 
     // ===============================================
     //  Use a reader factory to create a data reader 
     //  of the correct type for the input file format.
     // ===============================================
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-    svkImageReader2* reader1    = readerFactory->CreateImageReader2( inputFileName1.c_str() );
-    svkImageReader2* reader2    = readerFactory->CreateImageReader2( inputFileName2.c_str() );
-    svkImageReader2* reader3    = readerFactory->CreateImageReader2( inputFileName3.c_str() );
+    for (int sig = 0; sig < numberOfModelSignals; sig++) {
+        svkImageReader2* reader    = readerFactory->CreateImageReader2( inputFileNames[sig].c_str() );
+
+        if (reader == NULL ) {
+            cerr << "Can not determine appropriate reader for: " << inputFileNames[sig] << endl; 
+            exit(1);
+        }
+
+        //  Read the data to initialize an svkImageData object
+        //  If volume files are being read, interpret them as a time series
+        if ( reader->IsA("svkIdfVolumeReader") == true ) {
+            svkIdfVolumeReader::SafeDownCast( reader )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
+        }
+        reader->SetFileName( inputFileNames[sig].c_str() );
+        reader->Update();
+        dynamics->SetInputConnection( sig, reader->GetOutputPort() ); 
+        reader->Delete(); 
+    }
+
     svkImageReader2* readerMask = NULL; 
     if ( maskFileName.size() > 0 ) {
         readerMask = readerFactory->CreateImageReader2( maskFileName.c_str() );
     }
-    readerFactory->Delete();
-
-    if (reader1 == NULL || reader2 == NULL || reader3 == NULL) {
-        cerr << "Can not determine appropriate reader for: " << inputFileName1 << ", " 
-             << inputFileName2 << " or " << inputFileName3 <<  endl;
-            exit(1);
-    }
-
-    //  Read the data to initialize an svkImageData object
-    //  If volume files are being read, interpret them as a time series
-    if ( reader1->IsA("svkIdfVolumeReader") == true ) {
-        svkIdfVolumeReader::SafeDownCast( reader1 )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
-    }
-    if ( reader2->IsA("svkIdfVolumeReader") == true ) {
-        svkIdfVolumeReader::SafeDownCast( reader2 )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
-    }
-    if ( reader3->IsA("svkIdfVolumeReader") == true ) {
-        svkIdfVolumeReader::SafeDownCast( reader3 )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
-    }
-    reader1->SetFileName( inputFileName1.c_str() );
-    reader1->Update();
-    reader2->SetFileName( inputFileName2.c_str() );
-    reader2->Update();
-    reader3->SetFileName( inputFileName3.c_str() );
-    reader3->Update();
     if ( readerMask!= NULL ) { 
         readerMask->SetFileName( maskFileName.c_str() );
         readerMask->Update();
     }
+    readerFactory->Delete();
 
-    // ===============================================  
-    //  Pass data through your algorithm:
-    // ===============================================  
-    svkMRSKinetics* dynamics = svkMRSKinetics::New();
-    dynamics->SetInputConnection( 0, reader1->GetOutputPort() ); 
-    dynamics->SetInputConnection( 1, reader2->GetOutputPort() ); 
-    dynamics->SetInputConnection( 2, reader3->GetOutputPort() ); 
     if ( readerMask!= NULL ) { 
-        dynamics->SetInputConnection( 3, readerMask->GetOutputPort() ); // input 3 is the mask
+        dynamics->SetInputConnection( numberOfModelSignals, readerMask->GetOutputPort() ); // last input is the mask
     }
+
+    dynamics->SetTR(tr); 
     dynamics->Update();
 
 
@@ -246,71 +261,30 @@ if ( inputFileName3.length() == 0 ) {
     //  output file format. 
     // ===============================================  
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    svkImageWriter* pyrWriter    = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* lacWriter    = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* ureaWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* t1allWriter  = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* kplWriter    = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* ktransWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    writerFactory->Delete();
+
+    int numOutputs = dynamics->GetNumberOfModelOutputPorts(); 
+    for ( int outIndex = 0; outIndex < numOutputs; outIndex++ ) {
+        svkImageWriter* outWriter    = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+        
+        if ( outWriter == NULL ) {
+            cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_ENHANCED_MRI << endl;
+            exit(1);
+        }
     
-    if ( pyrWriter == NULL || lacWriter == NULL || ureaWriter == NULL || kplWriter == NULL || t1allWriter == NULL || ktransWriter == NULL ) {
-        cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_ENHANCED_MRI << endl;
-        exit(1);
+        string outFile = outputFileName; 
+        outFile.append("_"); 
+        outFile.append( dynamics->GetModelOutputDescription(outIndex) ); 
+        if ( outIndex < numberOfModelSignals ) {
+            outFile.append("_fit"); 
+        }
+    
+        outWriter->SetFileName (outFile.c_str() ); 
+        outWriter->SetInputData(dynamics->GetOutput( outIndex ) ); 
+        outWriter->Write(); 
+        outWriter->Delete(); 
     }
-  
-    string pyrFile    = outputFileName;  
-    string lacFile    = outputFileName;  
-    string ureaFile   = outputFileName;  
-    string t1allFile  = outputFileName;  
-    string kplFile    = outputFileName;  
-    string ktransFile = outputFileName;  
+    writerFactory->Delete();
 
-    pyrFile.append("_pyr_fit");  
-    lacFile.append("_lac_fit");  
-    ureaFile.append("_urea_fit");  
-    t1allFile.append("_T1all");  
-    kplFile.append("_Kpl");  
-    ktransFile.append("_Ktrans");  
-
-    pyrWriter->SetFileName( pyrFile.c_str() );
-    lacWriter->SetFileName( lacFile.c_str() );
-    ureaWriter->SetFileName( ureaFile.c_str() );
-    t1allWriter->SetFileName( t1allFile.c_str() );
-    kplWriter->SetFileName( kplFile.c_str() );
-    ktransWriter->SetFileName( ktransFile.c_str() );
-
-    pyrWriter->SetInput( dynamics->GetOutput(0) );      // port 0 is pyr  fitted values
-    lacWriter->SetInput( dynamics->GetOutput(1) );      // port 1 is lac  fitted values
-    ureaWriter->SetInput( dynamics->GetOutput(2) );     // port 2 is urea fitted values
-    t1allWriter->SetInput( dynamics->GetOutput(3) );    // port 3 is T1all map 
-    kplWriter->SetInput( dynamics->GetOutput(4) );      // port 4 is Kpl map 
-    ktransWriter->SetInput( dynamics->GetOutput(5) );   // port 5 is Ktrans map 
-
-    pyrWriter->Write();
-    lacWriter->Write();
-    if ( writeUrea ) {
-        ureaWriter->Write();
-    }
-    t1allWriter->Write();
-    kplWriter->Write();
-    ktransWriter->Write();
-
-    // ===============================================  
-
-
-    //  clean up:
-    dynamics->Delete(); 
-    pyrWriter->Delete();
-    lacWriter->Delete();
-    ureaWriter->Delete();
-    t1allWriter->Delete();
-    kplWriter->Delete();
-    ktransWriter->Delete();
-
-    reader1->Delete();
-    reader2->Delete();
-    reader3->Delete();
 
     return 0; 
 }

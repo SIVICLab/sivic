@@ -56,7 +56,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDynamicMRIAlgoTemplate, "$Rev$");
+//vtkCxxRevisionMacro(svkDynamicMRIAlgoTemplate, "$Rev$");
 vtkStandardNewMacro(svkDynamicMRIAlgoTemplate);
 
 /* Use for user provided Jacobian*/

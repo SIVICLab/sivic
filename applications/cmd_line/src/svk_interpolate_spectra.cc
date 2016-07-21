@@ -204,11 +204,11 @@ int main (int argc, char** argv)
         writerFactory->Delete();
         writer->SetFileName( outputFileName.c_str() );
         svkMrsSingleVoxelSincExtraction* interpolator = svkMrsSingleVoxelSincExtraction::New();
-        interpolator->SetInput(currentImage);
+        interpolator->SetInputData(currentImage);
         interpolator->SetVoxelCenter(newVoxelCenter[0], newVoxelCenter[1], newVoxelCenter[2]);
         interpolator->SetRetainInputExtent(retainInputExtent);
         interpolator->Update();
-        writer->SetInput( interpolator->GetOutput() );
+        writer->SetInputData( interpolator->GetOutput() );
         writer->Write();
         writer->Delete();
         interpolator->Delete();

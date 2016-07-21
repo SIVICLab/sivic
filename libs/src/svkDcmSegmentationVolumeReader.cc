@@ -50,7 +50,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDcmSegmentationVolumeReader, "$Rev$");
+//vtkCxxRevisionMacro(svkDcmSegmentationVolumeReader, "$Rev$");
 vtkStandardNewMacro(svkDcmSegmentationVolumeReader);
 
 
@@ -129,7 +129,6 @@ void svkDcmSegmentationVolumeReader::LoadData( svkImageData* data )
 {
 
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
-            
     
     svkDcmHeader::DimensionVector dimensionVector = hdr->GetDimensionIndexVector();
     int rows = svkDcmHeader::GetDimensionVectorValue( &dimensionVector, svkDcmHeader::ROW_INDEX) + 1;
@@ -208,11 +207,35 @@ void svkDcmSegmentationVolumeReader::ExecuteInformation()
 {
     Superclass::ExecuteInformation();
 
-    // Now set fields require for MRI: 
+    //  Now set fields require for MRI: 
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
     hdr->SetSOPClassUID( svkDcmHeader::ENHANCED_MR_IMAGE );   
     hdr->SetValue( "PatientPosition", "UNKNOWN" );
-    
+
+    //  kludgy, but since we are converting to MRI internal representation some of these are required: 
+    string repTime = "0"; 
+    string echoTime = "0"; 
+    hdr->InitMREchoMacro( 0 ); 
+    hdr->InitMRTimingAndRelatedParametersMacro( 0, 0, 0); 
+
+    if ( hdr->ElementExists("SliceThickness", "PixelMeasuresSequence") == false ) { 
+        //cout << "Kludge for non-standard Segmentation Objects from Brainlab. Supposed to get fixed at some point" << endl;
+        double pixelSpacing[3];
+        hdr->GetPixelSpacing( pixelSpacing );
+        //cout << "SliceThickness: " << pixelSpacing[2]  << endl;
+        hdr->AddSequenceItemElement(
+            "PixelMeasuresSequence",
+            0,
+            "SliceThickness",
+            pixelSpacing[2],
+            "SharedFunctionalGroupsSequence",
+            0
+        );
+
+    }
+
+
+    hdr->PrintDcmHeader();   
 }
 
 

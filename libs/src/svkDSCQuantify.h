@@ -73,7 +73,7 @@ class svkDSCQuantify: public svkImageAlgorithm
     public:
 
         static svkDSCQuantify* New();
-        vtkTypeRevisionMacro( svkDSCQuantify, svkImageAlgorithm);
+        vtkTypeMacro( svkDSCQuantify, svkImageAlgorithm);
 
         vtkstd::vector< svkMriImageData* >*                 GetDSCMaps();
         vtkstd::vector< vtkstd::vector< vtkstd::string > >  GetRegionNameVector();

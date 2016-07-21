@@ -100,7 +100,7 @@ class svkOverlayView : public svkDataView
     
     public:
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkOverlayView, svkDataView );
+        vtkTypeMacro( svkOverlayView, svkDataView );
 
         static svkOverlayView*       New();
     

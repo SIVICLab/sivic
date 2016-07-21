@@ -52,8 +52,8 @@
 #include <vtkMatrix4x4.h>
 
 #include <sys/stat.h>
-#include <vtkstd/string>
-#include <vtkstd/vector>
+#include <string>
+#include <vector>
 #include <sstream>
 #include <time.h>
 #include <math.h>
@@ -63,7 +63,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGESigna5XReader, "$Rev$");
+//vtkCxxRevisionMacro(svkGESigna5XReader, "$Rev$");
 vtkStandardNewMacro(svkGESigna5XReader);
 
 
@@ -442,7 +442,7 @@ GESignaHeader* svkGESigna5XReader::ReadHeader(const char *FileNameToRead)
     buffer = NULL;
     
     // Check if this is a MR file.  If not exit!
-    vtkstd::string examType(signaHeader->Exam_Type);
+    string examType(signaHeader->Exam_Type);
     if ( examType != "MR" ) {
         fclose(fp);
         delete signaHeader;
@@ -1313,14 +1313,14 @@ bool svkGESigna5XReader::LoadData(const char *filename, unsigned short *outPtr,
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkGESigna5XReader::ExecuteData(vtkDataObject* output)
+void svkGESigna5XReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
     vtkIdType outIncr[3];
     int outExtent[6];
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-    vtkImageData *data = this->AllocateOutputData(output);
+    vtkImageData *data = this->AllocateOutputData(output, outInfo);
 
     if ( this->GetFileNames()->GetNumberOfValues() < 1 ) {
         vtkErrorMacro("No files are available to read");
@@ -1518,8 +1518,8 @@ bool svkGESigna5XReader::CalculateTopLeftHandCornerAndRowColumnAndNormalVectors(
 
 struct svkGESigna5XReaderSort_lt_pair_double_string
 {
-    bool operator()(const vtkstd::pair<double, vtkstd::string> s1, 
-                  const vtkstd::pair<double, vtkstd::string> s2) const
+    bool operator()(const pair<double, string> s1, 
+                  const pair<double, string> s2) const
     {
         return s1.first < s2.first;
     }
@@ -1528,8 +1528,8 @@ struct svkGESigna5XReaderSort_lt_pair_double_string
 
 struct svkGESigna5XReaderSort_gt_pair_double_string
 {
-    bool operator()(const vtkstd::pair<double, vtkstd::string> s1, 
-                  const vtkstd::pair<double, vtkstd::string> s2) const
+    bool operator()(const pair<double, string> s1, 
+                  const pair<double, string> s2) const
     {
         return s1.first > s2.first;
     }
@@ -1545,7 +1545,7 @@ bool svkGESigna5XReader::SortFilesByImagePositionPatient(GESignaHeader* selected
     vtkStringArray* fileNames, bool ascending)
 {
     bool multiVolumeSeries = false;
-    vtkstd::vector<vtkstd::pair<double, vtkstd::string> > positionFilePairVector;
+    vector<pair<double, string> > positionFilePairVector;
     double imagePosition = VTK_DOUBLE_MAX; // initialize to an "infinite" value
     
     for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
@@ -1559,7 +1559,7 @@ bool svkGESigna5XReader::SortFilesByImagePositionPatient(GESignaHeader* selected
         // If input series matches this series, add to list for sorting later.
         if ( (selectedFile->Exam_Number == tmp->Exam_Number) &&
              (selectedFile->Series_Number == tmp->Series_Number) ) {
-            vtkstd::pair<double, vtkstd::string> positionFilePair;
+            pair<double, string> positionFilePair;
             tmpImagePosition = (normal[0]*position[0]) + (normal[1]*position[1]) 
                 + (normal[2]*position[2]);
             // If the image position is the same for any given slice, then we have a multi-volume series.
@@ -1578,10 +1578,10 @@ bool svkGESigna5XReader::SortFilesByImagePositionPatient(GESignaHeader* selected
     }
     // Sort according to ascending/descending order.
     if (ascending) {
-        vtkstd::sort(positionFilePairVector.begin(), 
+        sort(positionFilePairVector.begin(), 
             positionFilePairVector.end(), svkGESigna5XReaderSort_lt_pair_double_string());
     } else {
-        vtkstd::sort(positionFilePairVector.begin(), 
+        sort(positionFilePairVector.begin(), 
             positionFilePairVector.end(), svkGESigna5XReaderSort_gt_pair_double_string());
     }
     // Finally, repopulate the file list.
@@ -1601,11 +1601,11 @@ bool svkGESigna5XReader::SortFilesByImagePositionPatient(GESignaHeader* selected
  */
 void svkGESigna5XReader::InitDcmHeader()
 {
-    vtkstd::string mrFileName( this->GetFileName() );
-    vtkstd::string mrFilePath( this->GetFilePath( this->GetFileName() ) );  
+    string mrFileName( this->GetFileName() );
+    string mrFilePath( this->GetFilePath( this->GetFileName() ) );  
     
     vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
-    globFileNames->AddFileNames( vtkstd::string( mrFilePath + "/*.MR").c_str() );  // Should only find MR files, not CT.
+    globFileNames->AddFileNames( string( mrFilePath + "/*.MR").c_str() );  // Should only find MR files, not CT.
 
     vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
     sortFileNames->SetInputFileNames( globFileNames->GetFileNames() );
@@ -1742,20 +1742,20 @@ void svkGESigna5XReader::InitPatientModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "PatientID", 
-        vtkstd::string(this->imageHeader->Exam_Patient_ID) 
+        string(this->imageHeader->Exam_Patient_ID) 
     );
 
     // It appears like the patient's last and first name is 
     // separated by a comma.  Need to replace it with ^
-    vtkstd::string name(this->imageHeader->Exam_Patient_Name);
+    string name(this->imageHeader->Exam_Patient_Name);
     size_t found = name.find_first_of(',');
-    if ( found != vtkstd::string::npos ) {
+    if ( found != string::npos ) {
         name[found] = '^';
     }
 
     this->GetOutput()->GetDcmHeader()->SetDcmPatientName(name);
 
-    vtkstd::string str;
+    string str;
     switch (this->imageHeader->Exam_Patient_Sex) {
         case 1:         str="M"; break;
         case 2:         str="F"; break;
@@ -1787,7 +1787,7 @@ void svkGESigna5XReader::InitPatientModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "AdditionalPatientHistory", 
-        vtkstd::string(this->imageHeader->Exam_Patient_History) 
+        string(this->imageHeader->Exam_Patient_History) 
     );
 }
 
@@ -1803,12 +1803,12 @@ void svkGESigna5XReader::InitGeneralStudyModule()
     
     this->GetOutput()->GetDcmHeader()->SetValue(
         "StudyDescription",
-        vtkstd::string(this->imageHeader->Exam_Description) 
+        string(this->imageHeader->Exam_Description) 
     );
 
-    vtkstd::string name(this->imageHeader->Exam_Referring_Physician);
+    string name(this->imageHeader->Exam_Referring_Physician);
     size_t found = name.find_first_of(',');
-    if ( found != vtkstd::string::npos ) {
+    if ( found != string::npos ) {
         name[found] = '^';
     }
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -1818,7 +1818,7 @@ void svkGESigna5XReader::InitGeneralStudyModule()
 
     name = this->imageHeader->Exam_Radiologist;
     found = name.find_first_of(',');
-    if ( found != vtkstd::string::npos ) {
+    if ( found != string::npos ) {
         name[found] = '^';
     }
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -1829,17 +1829,17 @@ void svkGESigna5XReader::InitGeneralStudyModule()
     // Just the initials.
     this->GetOutput()->GetDcmHeader()->SetValue(
         "OperatorsName",
-        vtkstd::string(this->imageHeader->Exam_Operator) 
+        string(this->imageHeader->Exam_Operator) 
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "StudyDate",
-        vtkstd::string(this->imageHeader->Exam_Time_Stamp_Date) 
+        string(this->imageHeader->Exam_Time_Stamp_Date) 
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "StudyTime",
-        vtkstd::string(this->imageHeader->Exam_Time_Stamp_Time) 
+        string(this->imageHeader->Exam_Time_Stamp_Time) 
     );
 
     ostringstream ost;
@@ -1850,7 +1850,7 @@ void svkGESigna5XReader::InitGeneralStudyModule()
         ost.str() 
     );
 
-    vtkstd::string uid = "1.2.276.0.7230010.3"; //OFFIS_UID_ROOT
+    string uid = "1.2.276.0.7230010.3"; //OFFIS_UID_ROOT
     uid += ".1.2.";
     uid += ost.str();
 
@@ -1862,7 +1862,7 @@ void svkGESigna5XReader::InitGeneralStudyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "AccessionNumber",
-        vtkstd::string(this->imageHeader->Exam_Requisition_Number) 
+        string(this->imageHeader->Exam_Requisition_Number) 
     );
 }
 
@@ -1878,7 +1878,7 @@ void svkGESigna5XReader::InitGeneralSeriesModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ProtocolName",
-        vtkstd::string(this->imageHeader->Series_Scan_Potocol_Name) 
+        string(this->imageHeader->Series_Scan_Potocol_Name) 
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -1888,20 +1888,20 @@ void svkGESigna5XReader::InitGeneralSeriesModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SeriesDescription",
-        vtkstd::string(this->imageHeader->Series_Description) 
+        string(this->imageHeader->Series_Description) 
     );
     
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SeriesDate",
-        vtkstd::string(this->imageHeader->Series_Time_Stamp_Date) 
+        string(this->imageHeader->Series_Time_Stamp_Date) 
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SeriesTime",
-        vtkstd::string(this->imageHeader->Series_Time_Stamp_Time) 
+        string(this->imageHeader->Series_Time_Stamp_Time) 
     );
 
-    vtkstd::string hfff,ap,patientPosition;
+    string hfff,ap,patientPosition;
 
     switch (this->imageHeader->Series_Patient_Entry) {
         case 1:
@@ -1956,12 +1956,12 @@ void svkGESigna5XReader::InitGeneralEquipmentModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "InstitutionName", 
-        vtkstd::string(this->imageHeader->Exam_Hospital_Name)
+        string(this->imageHeader->Exam_Hospital_Name)
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "StationName", 
-        vtkstd::string(this->imageHeader->Exam_System_ID)
+        string(this->imageHeader->Exam_System_ID)
     );
 
 }
@@ -1978,17 +1978,17 @@ void svkGESigna5XReader::InitEnhancedGeneralEquipmentModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "DeviceSerialNumber", 
-        vtkstd::string(this->imageHeader->Exam_Unique_System_ID)
+        string(this->imageHeader->Exam_Unique_System_ID)
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ManufacturerModelName",
-        vtkstd::string(this->imageHeader->Suite_Product_ID) 
+        string(this->imageHeader->Suite_Product_ID) 
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "SoftwareVersions",
-        vtkstd::string(this->imageHeader->Exam_Software_Version) 
+        string(this->imageHeader->Exam_Software_Version) 
     );
 }
 
@@ -2018,12 +2018,12 @@ void svkGESigna5XReader::InitMultiFrameFunctionalGroupsModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "ContentDate", 
-        vtkstd::string(this->imageHeader->MR_Timestamp_Of_Last_Change_Date) 
+        string(this->imageHeader->MR_Timestamp_Of_Last_Change_Date) 
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "ContentTime", 
-        vtkstd::string(this->imageHeader->MR_Timestamp_Of_Last_Change_Time) 
+        string(this->imageHeader->MR_Timestamp_Of_Last_Change_Time) 
     );
 
     this->InitSharedFunctionalGroupMacros();
@@ -2164,7 +2164,7 @@ void svkGESigna5XReader::InitPixelValueTransformationMacro()
         "PixelValueTransformationSequence",       
         0,                             
         "RescaleType",              
-        vtkstd::string("US"),                     
+        string("US"),                     
         "SharedFunctionalGroupsSequence", 
         0                                  
     );
@@ -2281,7 +2281,7 @@ void svkGESigna5XReader::InitMRImageFrameTypeMacro()
            break;
     }
 
-    vtkstd::string frameType = value1;
+    string frameType = value1;
     frameType += "\\";
     frameType += value2;
     frameType += "\\";
@@ -2303,8 +2303,8 @@ void svkGESigna5XReader::InitMRImageFrameTypeMacro()
         0                                 
     );
 
-    vtkstd::string VolumetricProperties = "VOLUME";
-    vtkstd::string VolumeBasedCalculationTechnique = "NONE";
+    string VolumetricProperties = "VOLUME";
+    string VolumeBasedCalculationTechnique = "NONE";
     switch (this->imageHeader->MR_Projection_Algorithm) {             
         case 2:                 // Minimum Pixel:Min
             VolumetricProperties = "SAMPLED";
@@ -2347,7 +2347,7 @@ void svkGESigna5XReader::InitMRImageFrameTypeMacro()
         0                              
     );
 
-    vtkstd::string ComplexImageComponent;
+    string ComplexImageComponent;
 
     switch(this->imageHeader->MR_Image_Type) {
         case 0: // MAGNITUDE
@@ -2529,7 +2529,7 @@ void svkGESigna5XReader::InitMRFOVGeometryMacro()
         "MRFOVGeometrySequence"
     );
 
-    vtkstd::string str;
+    string str;
     if (this->imageHeader->MR_Frequency_Direction == 1) {
         str="COLUMN";
     } else if (this->imageHeader->MR_Frequency_Direction == 2
@@ -2599,7 +2599,7 @@ void svkGESigna5XReader::InitMRFOVGeometryMacro()
              this->imageHeader->MR_Image_Matrix_Size_Y ) ) {
             this->GetOutput()->GetDcmHeader()->SetValue( 
                 "OversamplingPhase", 
-                vtkstd::string ("3D") 
+                string ("3D") 
             );
         } else if ( ((unsigned short)SliceEncodingSteps >
              this->imageHeader->MR_Number_Of_Slices) && 
@@ -2607,14 +2607,14 @@ void svkGESigna5XReader::InitMRFOVGeometryMacro()
              this->imageHeader->MR_Image_Matrix_Size_Y) ) {
              this->GetOutput()->GetDcmHeader()->SetValue( 
                 "OversamplingPhase", 
-                vtkstd::string ("2D_3D") 
+                string ("2D_3D") 
             );
         }
     } else if ( (unsigned short)this->imageHeader->MR_Image_Dimension_Y > 
              this->imageHeader->MR_Image_Matrix_Size_Y ) {
         this->GetOutput()->GetDcmHeader()->SetValue( 
             "OversamplingPhase", 
-            vtkstd::string ("2D") 
+            string ("2D") 
         );
     }
 
@@ -2665,7 +2665,7 @@ void svkGESigna5XReader::InitMRModifierMacro()
         (float)((double)this->imageHeader->MR_Pulse_Inversion_Time/1000.0)
     ); 
 
-    vtkstd::string str = "NONE";
+    string str = "NONE";
     if (this->imageHeader->MR_Imaging_Options & (1<<3)) {       // FC - Flow Compensated
         str = "OTHER"; // no way of knowing correct value
     }
@@ -2690,7 +2690,7 @@ void svkGESigna5XReader::InitMRModifierMacro()
     }
 
     // These are educated guesses (http://www.mr-tip.com/serv1.php?type=cam).
-    vtkstd::string Spoiling = "NONE";
+    string Spoiling = "NONE";
     switch (this->imageHeader->MR_Pulse_Sequence) {
         case 10:                // SPGR
         case 14:                // CINSPGR:Cine/SPGR
@@ -2717,7 +2717,7 @@ void svkGESigna5XReader::InitMRModifierMacro()
         "MRModifierSequence",
         0,                        
         "T2Preparation",       
-        vtkstd::string("NO"),
+        string("NO"),
         "SharedFunctionalGroupsSequence",    
         0                      
     );
@@ -2726,7 +2726,7 @@ void svkGESigna5XReader::InitMRModifierMacro()
         "MRModifierSequence",
         0,                        
         "SpectrallySelectedExcitation",       
-        vtkstd::string("NONE"),
+        string("NONE"),
         "SharedFunctionalGroupsSequence",    
         0                      
     );
@@ -2783,7 +2783,7 @@ void svkGESigna5XReader::InitMRModifierMacro()
         "MRModifierSequence",
         0,                        
         "ParallelAcquisition",       
-        vtkstd::string("NO"),
+        string("NO"),
         "SharedFunctionalGroupsSequence",    
         0                      
     );
@@ -2832,7 +2832,7 @@ void svkGESigna5XReader::InitMRReceiveCoilMacro()
         "MRReceiveCoilSequence",
         0,                        
         "ReceiveCoilName",       
-        vtkstd::string(this->imageHeader->MR_Receive_Coil_Name), 
+        string(this->imageHeader->MR_Receive_Coil_Name), 
         "SharedFunctionalGroupsSequence",    
         0                      
     );
@@ -2841,13 +2841,13 @@ void svkGESigna5XReader::InitMRReceiveCoilMacro()
         "MRReceiveCoilSequence",
         0,                        
         "ReceiveCoilManufacturerName",       
-        vtkstd::string(""),
+        string(""),
         "SharedFunctionalGroupsSequence",    
         0                      
     );
 
-    vtkstd::string coilType( "VOLUME" ); 
-    vtkstd::string quadCoil("YES"); 
+    string coilType( "VOLUME" ); 
+    string quadCoil("YES"); 
 
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "MRReceiveCoilSequence",
@@ -2880,7 +2880,7 @@ void svkGESigna5XReader::InitMRTransmitCoilMacro()
 
     this->GetOutput()->GetDcmHeader()->InitMRTransmitCoilMacro(
         "GE",
-        vtkstd::string(this->imageHeader->MR_Receive_Coil_Name),
+        string(this->imageHeader->MR_Receive_Coil_Name),
         "VOLME"
     );
 
@@ -2983,7 +2983,7 @@ void svkGESigna5XReader::InitMRImageAndSpectroscopyInstanceMacro()
      *  MR Image and Spectroscopy Instance Macro
      *  ======================================= */
 
-    vtkstd::string AcquisitionDateTime = this->imageHeader->MR_Time_Stamp_Date;
+    string AcquisitionDateTime = this->imageHeader->MR_Time_Stamp_Date;
     AcquisitionDateTime += this->imageHeader->MR_Time_Stamp_Time;
     this->GetOutput()->GetDcmHeader()->SetValue(
         "AcquisitionDateTime",
@@ -3001,7 +3001,7 @@ void svkGESigna5XReader::InitMRImageAndSpectroscopyInstanceMacro()
     float MR_Center_Frequency = (float)this->imageHeader->MR_Center_Frequency/10000000.0;
     float gamma = MR_Center_Frequency  / Exam_Magnet_Strength;
    
-    vtkstd::string nucleus;  
+    string nucleus;  
     if ( fabs( gamma - 42.57 ) < 0.1 ) {
         nucleus.assign("1H");
     } else if ( fabs( gamma - 10.7 ) <0.1 ) {
@@ -3052,10 +3052,10 @@ void svkGESigna5XReader::InitMRPulseSequenceModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "PulseSequenceName", 
-        vtkstd::string(this->imageHeader->MR_Pulse_Sequence_Name) 
+        string(this->imageHeader->MR_Pulse_Sequence_Name) 
     );
 
-    vtkstd::string str;
+    string str;
     switch(this->imageHeader->MR_Imaging_Mode) {
         case 1:                 // Two D:2D
             str="2D";
@@ -3079,7 +3079,7 @@ void svkGESigna5XReader::InitMRPulseSequenceModule()
     );
 
     // These are all educated guesses!
-    vtkstd::string EchoPulseSequence = "",
+    string EchoPulseSequence = "",
         PhaseContrast = "NO", 
         TimeofFlightContrast = "NO",
         SteadyStatePulseSequence = "NONE",
@@ -3156,7 +3156,7 @@ void svkGESigna5XReader::InitMRPulseSequenceModule()
     );
 
     // MP - Multiplanar
-    vtkstd::string MultiPlanarExcitation = "NO";
+    string MultiPlanarExcitation = "NO";
     if (this->imageHeader->MR_Imaging_Options & (1<<15)) {
         MultiPlanarExcitation = "YES";      
     }
@@ -3184,24 +3184,24 @@ void svkGESigna5XReader::InitMRPulseSequenceModule()
     // for GE Signa 5X?
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "EchoPlanarPulseSequence", 
-        vtkstd::string ("NO") 
+        string ("NO") 
     );
 
     // May have to figure this out later, but 
     // assume NO for now.
     //this->GetOutput()->GetDcmHeader()->SetValue( 
     //    "MultipleSpinEcho", 
-    //    vtkstd::string ("NO") 
+    //    string ("NO") 
     //);
 
     // Saturation Recovery doesn't appear to in
     // GE Signa 5X header.
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "SaturationRecovery", 
-        vtkstd::string ("NO") 
+        string ("NO") 
     );
 
-    vtkstd::string SpectrallySelectedSuppression; 
+    string SpectrallySelectedSuppression; 
     switch (this->imageHeader->MR_Fat_Water_SAT) {
         case 1:
             SpectrallySelectedSuppression = "FAT";            // fat saturation
@@ -3218,7 +3218,7 @@ void svkGESigna5XReader::InitMRPulseSequenceModule()
     );
 
     // Oversampling phase already handled in InitMRFOVGeometryMacro()
-    /*vtkstd::string OversamplingPhase = "NONE";
+    /*string OversamplingPhase = "NONE";
     if ( (unsigned short)this->imageHeader->MR_Image_Dimension_Y > 
              this->imageHeader->MR_Image_Matrix_Size_Y ) {
         OversamplingPhase = "2D";
@@ -3231,7 +3231,7 @@ void svkGESigna5XReader::InitMRPulseSequenceModule()
     // Don't know! Always assume RECTILINEAR.
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "GeometryOfKSpaceTraversal", 
-        vtkstd::string ("RECTILINEAR") 
+        string ("RECTILINEAR") 
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
@@ -3247,7 +3247,7 @@ void svkGESigna5XReader::InitMRPulseSequenceModule()
     if (str == "3D") {
         this->GetOutput()->GetDcmHeader()->SetValue( 
             "CoverageOfKSpace", 
-            vtkstd::string ("FULL") 
+            string ("FULL") 
         );
     }
 

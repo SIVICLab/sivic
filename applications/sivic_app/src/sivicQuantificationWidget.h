@@ -66,7 +66,7 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
     public:
 
         static sivicQuantificationWidget *New();
-        vtkTypeRevisionMacro(sivicQuantificationWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicQuantificationWidget,sivicKWCompositeWidget);
 
         void                                EnableWidgets(); 
         void                                RefreshQuantFile();

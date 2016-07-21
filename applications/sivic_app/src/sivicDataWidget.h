@@ -58,7 +58,7 @@ class sivicDataWidget : public sivicKWCompositeWidget
     public:
 
         static sivicDataWidget *New();
-        vtkTypeRevisionMacro(sivicDataWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicDataWidget,sivicKWCompositeWidget);
         void UpdateReferenceSpectraList();
         void SetFilename( int row, string filename );
         void Reset( );

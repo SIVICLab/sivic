@@ -181,10 +181,10 @@ int main (int argc, char** argv)
 
     //  Scale image by constant factor: 
     svkImageMathematics* mathScaling = svkImageMathematics::New();
-    mathScaling->SetInput1( reader->GetOutput() );
+    mathScaling->SetInput1Data( reader->GetOutput() );
     //  for some reason the binary operations do not work unless a
     //  second input is defined.     
-    mathScaling->SetInput2( reader->GetOutput() ); 
+    mathScaling->SetInput2Data( reader->GetOutput() ); 
     mathScaling->SetConstantK( scalingFactor );
     mathScaling->SetOperationToMultiplyByK();   
     if ( readerMask!= NULL ) {
@@ -196,7 +196,7 @@ int main (int argc, char** argv)
 
     if ( readerMask!= NULL ) {
         svkImageMathematics* mathMasking = svkImageMathematics::New();
-        mathMasking->SetInput1( mathScaling->GetOutput() );
+        mathMasking->SetInput1Data( mathScaling->GetOutput() );
         mathMasking->SetInputConnection( 1, readerMask->GetOutputPort() ); // input 1 is the mask
         //mathScaling->SetInput2( reader->GetOutput() ); 
         mathMasking->SetOperationToMultiply();   
@@ -216,7 +216,7 @@ int main (int argc, char** argv)
 
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( output );
+    writer->SetInputData( output );
     //writer->SetInput( mathScaling->GetOutput() );
     writer->Write();
     writer->Delete();

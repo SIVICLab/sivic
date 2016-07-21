@@ -328,7 +328,7 @@ int main (int argc, char** argv)
     svkBurnResearchPixels* burn = svkBurnResearchPixels::New(); 
     if ( burnResearchHeader ) {
 
-        burn->SetInput( currentImage );  
+        burn->SetInputData( currentImage );  
         burn->Update(); 
 
         //  if this step is included, then reset the current algo to be
@@ -353,7 +353,7 @@ int main (int argc, char** argv)
 
 		writerFactory->Delete();
 		writer->SetFileName( outputFileName.c_str() );
-		writer->SetInput( currentImage );
+		writer->SetInputData( currentImage );
         if ( useCompression ) {
            svkDICOMImageWriter::SafeDownCast( writer )->UseLosslessCompression();  
         }
@@ -362,7 +362,7 @@ int main (int argc, char** argv)
     } else if (dataTypeOut == 9 ) {
         vtkXMLImageDataWriter* writer = vtkXMLImageDataWriter::New();
         writer->SetFileName( outputFileName.c_str() );
-        writer->SetInput( currentImage );
+        writer->SetInputData( currentImage );
 
         writer->Write();
         writer->Delete();

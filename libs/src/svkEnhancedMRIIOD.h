@@ -64,7 +64,7 @@ class svkEnhancedMRIIOD : public svkIOD
     public:
 
         static svkEnhancedMRIIOD* New();
-        vtkTypeRevisionMacro( svkEnhancedMRIIOD, svkIOD);
+        vtkTypeMacro( svkEnhancedMRIIOD, svkIOD);
 
         //  Methods:
         virtual void  InitDcmHeader();

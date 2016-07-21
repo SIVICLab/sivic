@@ -102,7 +102,7 @@ class sivicWindowLevelWidget : public sivicKWCompositeWidget
     public:
 
         static sivicWindowLevelWidget *New();
-        vtkTypeRevisionMacro(sivicWindowLevelWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicWindowLevelWidget,sivicKWCompositeWidget);
 
         void   SetWindow( double window );
         void   SetLevel(  double level );

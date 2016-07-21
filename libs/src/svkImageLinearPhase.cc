@@ -54,7 +54,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkImageLinearPhase, "$Revision$");
+//vtkCxxRevisionMacro(svkImageLinearPhase, "$Revision$");
 vtkStandardNewMacro(svkImageLinearPhase);
 
 
@@ -234,13 +234,14 @@ void svkImageLinearPhase::ThreadedExecute(vtkImageData *inData, vtkImageData *ou
   void *inPtr, *outPtr;
   int inExt[6];
 
-  int *wExt = inData->GetWholeExtent();
+  int* wExt = this->GetOutputInformation(0)->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
+
   vtkImageLinearPhaseInternalRequestUpdateExtent(inExt,outExt,wExt,this->Iteration);
   inPtr = inData->GetScalarPointerForExtent(inExt);
   outPtr = outData->GetScalarPointerForExtent(outExt);
   
   // this filter expects that the output be doubles.
-  if (outData->GetScalarType() != VTK_DOUBLE)
+  if (vtkImageData::GetScalarType( outData->GetInformation() ) != VTK_DOUBLE)
     {
     vtkErrorMacro(<< "Execute: Output must be be type double.");
     return;
@@ -255,7 +256,7 @@ void svkImageLinearPhase::ThreadedExecute(vtkImageData *inData, vtkImageData *ou
     }
 
   // choose which templated function to call.
-  switch (inData->GetScalarType())
+  switch ( vtkImageData::GetScalarType( inData->GetInformation() ) )
     {
     vtkTemplateMacro(
       vtkImageLinearPhaseExecute(this, inData, inExt, 

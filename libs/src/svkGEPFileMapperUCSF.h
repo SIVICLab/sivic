@@ -58,7 +58,7 @@ class svkGEPFileMapperUCSF : public svkGEPFileMapper
 
     public:
 
-        vtkTypeRevisionMacro( svkGEPFileMapperUCSF, svkGEPFileMapper );
+        vtkTypeMacro( svkGEPFileMapperUCSF, svkGEPFileMapper );
         static          svkGEPFileMapperUCSF* New();
 
     protected:

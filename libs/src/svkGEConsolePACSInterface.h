@@ -70,7 +70,7 @@ class svkGEConsolePACSInterface : public svkPACSInterface
 
     public:
 
-        vtkTypeRevisionMacro( svkGEConsolePACSInterface, svkPACSInterface);
+        vtkTypeMacro( svkGEConsolePACSInterface, svkPACSInterface);
     
         static svkGEConsolePACSInterface* New();
 

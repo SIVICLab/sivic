@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMriImageFFT, "$Rev$");
+//vtkCxxRevisionMacro(svkMriImageFFT, "$Rev$");
 vtkStandardNewMacro(svkMriImageFFT);
 
 
@@ -130,7 +130,7 @@ int svkMriImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
     }
 
     // Do the Fourier Transform
-    fourierFilter->SetInput(data);
+    fourierFilter->SetInputData(data);
     fourierFilter->Update();
     if( this->operateInPlace ) {
         data->ShallowCopy(fourierFilter->GetOutput());
@@ -143,7 +143,6 @@ int svkMriImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
         this->UpdateHeader( data->GetDcmHeader() );
         data->SyncVTKImageDataToDcmHeader();
         data->Modified();
-        data->Update();
     } else {
         this->UpdateHeader( this->GetOutput()->GetDcmHeader() );
         this->GetOutput()->SyncVTKImageDataToDcmHeader();

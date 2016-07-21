@@ -101,7 +101,7 @@ class sivicSpectraRangeWidget : public sivicKWCompositeWidget
     public:
 
         static sivicSpectraRangeWidget *New();
-        vtkTypeRevisionMacro(sivicSpectraRangeWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicSpectraRangeWidget,sivicKWCompositeWidget);
 
         void    SetSyncOverlayWL( bool syncOverlayWL );
         void    SetSpecUnitsCallback(svkSpecPoint::UnitType targetUnits);

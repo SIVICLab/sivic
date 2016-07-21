@@ -46,7 +46,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkGenericAlgorithmWithPortMapper, "$Rev$");
+//vtkCxxRevisionMacro(svkGenericAlgorithmWithPortMapper, "$Rev$");
 
 
 /*!

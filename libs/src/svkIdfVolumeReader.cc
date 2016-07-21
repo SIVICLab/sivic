@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkIdfVolumeReader, "$Rev$");
+//vtkCxxRevisionMacro(svkIdfVolumeReader, "$Rev$");
 vtkStandardNewMacro(svkIdfVolumeReader);
 
 
@@ -110,7 +110,7 @@ svkIdfVolumeReader::~svkIdfVolumeReader()
 int svkIdfVolumeReader::CanReadFile(const char* fname)
 {
 
-    vtkstd::string fileToCheck(fname);
+    string fileToCheck(fname);
 
     if( fileToCheck.size() > 4 ) {
 
@@ -175,7 +175,7 @@ void svkIdfVolumeReader::ReadVolumeFile()
 
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
-        vtkstd::string volFileName = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) );
+        string volFileName = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) );
         int dataUnitSize; 
         vtkDataArray* array;
         if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
@@ -221,19 +221,27 @@ void svkIdfVolumeReader::ReadVolumeFile()
 
         array->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
 
+        int vtkDataType; 
         if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
-            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_CHAR);
+            vtkDataType = VTK_UNSIGNED_CHAR; 
         } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
-            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_SHORT);
+            vtkDataType = VTK_UNSIGNED_SHORT; 
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
-            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_SHORT);
+            vtkDataType = VTK_SHORT; 
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
-            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_FLOAT);
+            vtkDataType = VTK_FLOAT; 
         }
+
+        vtkDataObject::SetPointDataActiveScalarInfo(
+            this->GetOutput()->GetInformation(),
+            vtkDataType,
+            this->GetOutput()->GetNumberOfScalarComponents()
+        );
+
 
         ostringstream number;
         number << fileIndex ; 
-        vtkstd::string arrayNameString("pixels"); 
+        string arrayNameString("pixels"); 
         arrayNameString.append(number.str());
 
         array->SetName( arrayNameString.c_str() ); 
@@ -280,7 +288,7 @@ int svkIdfVolumeReader::GetNumSlices()
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkIdfVolumeReader::ExecuteData(vtkDataObject* output)
+void svkIdfVolumeReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     this->FileNames = vtkStringArray::New();
@@ -290,14 +298,14 @@ void svkIdfVolumeReader::ExecuteData(vtkDataObject* output)
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
     if ( this->GetFileNames()->GetNumberOfValues() ) {
 
         vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
         struct stat fs;
         if ( stat(this->GetFileNames()->GetValue(0), &fs) ) {
-            vtkErrorMacro("Unable to open file " << vtkstd::string(this->GetFileNames()->GetValue(0)) );
+            vtkErrorMacro("Unable to open file " << string(this->GetFileNames()->GetValue(0)) );
             return;
         }
 
@@ -435,7 +443,7 @@ svkDcmHeader::DcmPixelDataFormat svkIdfVolumeReader::GetFileType()
 void svkIdfVolumeReader::InitPatientModule()
 {
 
-    vtkstd::string patientID;
+    string patientID;
     if ( this->IsIdfStudyIdAccessionNumber() ) {
         patientID = "";  
     } else {
@@ -457,7 +465,7 @@ void svkIdfVolumeReader::InitPatientModule()
  */
 void svkIdfVolumeReader::InitGeneralStudyModule()
 {
-    vtkstd::string accessionNumber;
+    string accessionNumber;
     if ( this->IsIdfStudyIdAccessionNumber() ) {
         accessionNumber = idfMap[ "studyId" ];  
     } else {
@@ -581,11 +589,11 @@ void svkIdfVolumeReader::InitPerFrameFunctionalGroupMacros()
     for (int i = 0; i < 3; i++) {
         ostringstream ossIndex;
         ossIndex << i;     
-        vtkstd::string indexString(ossIndex.str());
+        string indexString(ossIndex.str());
         istringstream* iss = new istringstream();
         iss->setf(ios::fixed, ios::floatfield); 
         iss->precision(3);
-        iss->str( idfMap[ vtkstd::string("toplc_" + indexString) ] );  
+        iss->str( idfMap[ string("toplc_" + indexString) ] );  
         *iss >> setiosflags(std::ios::fixed) >> setprecision(3) >>  toplc[i]; 
         delete iss; 
     }
@@ -596,19 +604,19 @@ void svkIdfVolumeReader::InitPerFrameFunctionalGroupMacros()
 
         ostringstream ossIndexI;
         ossIndexI << i;
-        vtkstd::string indexStringI(ossIndexI.str());
+        string indexStringI(ossIndexI.str());
 
         istringstream* issSize = new istringstream();
-        issSize->str( idfMap[ vtkstd::string( "pixelSize_" + indexStringI ) ] );
+        issSize->str( idfMap[ string( "pixelSize_" + indexStringI ) ] );
         *issSize >> pixelSize[i];
 
         for (int j = 0; j < 3; j++) {
             ostringstream ossIndexJ;
             ossIndexJ << j;
-            vtkstd::string indexStringJ(ossIndexJ.str());
+            string indexStringJ(ossIndexJ.str());
 
             istringstream* iss = new istringstream();
-            iss->str( idfMap[ vtkstd::string("dcos_" + indexStringI + "_" + indexStringJ)] ); 
+            iss->str( idfMap[ string("dcos_" + indexStringI + "_" + indexStringJ)] ); 
             *iss >> dcos[i][j];
             delete iss; 
         }
@@ -644,17 +652,17 @@ void svkIdfVolumeReader::InitPixelMeasuresMacro()
     for (int i = 0; i < 3; i++) {
         ostringstream ossIndex;
         ossIndex << i;
-        vtkstd::string indexString(ossIndex.str());
+        string indexString(ossIndex.str());
 
         istringstream* issSize = new istringstream();
-        issSize->str( idfMap[ vtkstd::string( "pixelSize_" + indexString ) ] );
+        issSize->str( idfMap[ string( "pixelSize_" + indexString ) ] );
         *issSize >> pixelSize[i];
         delete issSize; 
     }
 
     this->GetOutput()->GetDcmHeader()->InitPixelMeasuresMacro(
-        idfMap[ vtkstd::string( "pixelSize_0" ) ] + "\\" + idfMap[ vtkstd::string( "pixelSize_1" ) ],
-        idfMap[ vtkstd::string( "sliceThickness" ) ]
+        idfMap[ string( "pixelSize_0" ) ] + "\\" + idfMap[ string( "pixelSize_1" ) ],
+        idfMap[ string( "sliceThickness" ) ]
     );
 }
 
@@ -671,15 +679,15 @@ void svkIdfVolumeReader::InitPlaneOrientationMacro()
         "PlaneOrientationSequence"
     );
 
-    vtkstd::string orientationString;
+    string orientationString;
     for (int i = 0; i < 2; i++) {
         ostringstream ossIndexI;
         ossIndexI << i;
-        vtkstd::string indexStringI(ossIndexI.str());
+        string indexStringI(ossIndexI.str());
         for (int j = 0; j < 3; j++) {
             ostringstream ossIndexJ;
             ossIndexJ << j;
-            vtkstd::string indexStringJ(ossIndexJ.str());
+            string indexStringJ(ossIndexJ.str());
             orientationString.append( idfMap["dcos_" + indexStringI + "_" + indexStringJ ]) ;
             if (i + j < 3) {
                 orientationString.append( "\\") ;
@@ -702,15 +710,15 @@ void svkIdfVolumeReader::InitPlaneOrientationMacro()
     this->GetOutput()->GetDcmHeader()->GetNormalVector(normal);
 
     double dcosSliceOrder[3];
-    vtkstd::string indexStringI("2");
+    string indexStringI("2");
     for (int j = 0; j < 3; j++) {
        
         ostringstream ossIndexJ;
         ossIndexJ << j;
-        vtkstd::string indexStringJ(ossIndexJ.str());
+        string indexStringJ(ossIndexJ.str());
 
         istringstream* iss = new istringstream();
-        vtkstd::string newone ("dcos_" + indexStringI + "_" + indexStringJ  );
+        string newone ("dcos_" + indexStringI + "_" + indexStringJ  );
         iss->str( idfMap["dcos_" + indexStringI + "_" + indexStringJ ] );
         *iss >> dcosSliceOrder[j];
         delete iss;
@@ -768,7 +776,7 @@ void svkIdfVolumeReader::InitMRReceiveCoilMacro()
         "MRReceiveCoilSequence",
         0,
         "ReceiveCoilName",
-        idfMap[ vtkstd::string( "coilName" ) ],
+        idfMap[ string( "coilName" ) ],
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -779,37 +787,37 @@ void svkIdfVolumeReader::InitMRReceiveCoilMacro()
 /*! 
  *  Use the IDF patient position string to set the DCM_PatientPosition data element.
  */
-vtkstd::string svkIdfVolumeReader::GetDcmPatientPositionString(vtkstd::string patientPosition)
+string svkIdfVolumeReader::GetDcmPatientPositionString(string patientPosition)
 {
     size_t delim = patientPosition.find_first_of(',');
-    vtkstd::string headFeetFirst( patientPosition.substr(0, delim) );
+    string headFeetFirst( patientPosition.substr(0, delim) );
 
     for(int i = 0; i < headFeetFirst.size(); i++){
         headFeetFirst[i] = tolower( headFeetFirst[i] );
     }
 
-    vtkstd::string dcmPatientPosition;
-    if( headFeetFirst.find("head first") != vtkstd::string::npos ) {
+    string dcmPatientPosition;
+    if( headFeetFirst.find("head first") != string::npos ) {
         dcmPatientPosition.assign("HF");
-    } else if( headFeetFirst.find("feet first") != vtkstd::string::npos ) {
+    } else if( headFeetFirst.find("feet first") != string::npos ) {
         dcmPatientPosition.assign("FF");
     } else {
         dcmPatientPosition.assign("UNKNOWN");
     }
 
     //  skip ", ":
-    vtkstd::string spd( patientPosition.substr(delim + 2) );
+    string spd( patientPosition.substr(delim + 2) );
     for(int i = 0; i < spd.size(); i++){
         spd[i] = tolower( spd[i] );
     }
 
-    if( spd.find("supine") != vtkstd::string::npos ) {
+    if( spd.find("supine") != string::npos ) {
         dcmPatientPosition += "S";
-    } else if( spd.find("prone") != vtkstd::string::npos ) {
+    } else if( spd.find("prone") != string::npos ) {
         dcmPatientPosition += "P";
-    } else if( spd.find("decubitus left") != vtkstd::string::npos ) {
+    } else if( spd.find("decubitus left") != string::npos ) {
         dcmPatientPosition += "DL";
-    } else if( spd.find("decubitus right") != vtkstd::string::npos ) {
+    } else if( spd.find("decubitus right") != string::npos ) {
         dcmPatientPosition += "DR";
     } else {
         dcmPatientPosition += "UNKNOWN";
@@ -825,8 +833,8 @@ vtkstd::string svkIdfVolumeReader::GetDcmPatientPositionString(vtkstd::string pa
  *      seriesDescription
  *      studyDate
  */
-void svkIdfVolumeReader::ParseIdfComment(vtkstd::string comment, vtkstd::string* PatientName, 
-    vtkstd::string* seriesDescription, vtkstd::string* studyDate)
+void svkIdfVolumeReader::ParseIdfComment(string comment, string* PatientName, 
+    string* seriesDescription, string* studyDate)
 {
 
     PatientName->assign(""); 
@@ -834,19 +842,19 @@ void svkIdfVolumeReader::ParseIdfComment(vtkstd::string comment, vtkstd::string*
     seriesDescription->assign(""); 
 
     size_t delim;
-    if ( (delim = comment.find_first_of('-')) != vtkstd::string::npos)
+    if ( (delim = comment.find_first_of('-')) != string::npos)
     { 
         delim = delim -1;
         PatientName->assign( svkImageReader2::StripWhite( comment.substr(0, delim) ) );
 
-        vtkstd::string commentSub;
+        string commentSub;
         commentSub = comment.substr(delim + 3);
         delim = commentSub.find_last_of('-') - 1;
         seriesDescription->assign( commentSub.substr(0, delim) );
     
         studyDate->assign( commentSub.substr(delim + 3) );
 
-        studyDate->assign( this->RemoveSlashesFromDate(studyDate) );
+        studyDate->assign( this->RemoveDelimFromDate(studyDate) );
     }
 }
 
@@ -868,7 +876,7 @@ void svkIdfVolumeReader::ParseIdf()
         this->volumeHdr->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
         int fileIndex = 0;
-        vtkstd::string currentIdfFileName = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) ) + ".idf";
+        string currentIdfFileName = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) ) + ".idf";
 
         this->volumeHdr->open( currentIdfFileName.c_str(), ifstream::in );
 
@@ -908,13 +916,13 @@ void svkIdfVolumeReader::ParseIdf()
         idfMap["echoTimeMetIndex"] = this->ReadLineValue( this->volumeHdr, iss, ':');
 
         // ROOTNAME
-        vtkstd::string rootname = this->ReadLineValue( this->volumeHdr, iss, ':');
+        string rootname = this->ReadLineValue( this->volumeHdr, iss, ':');
 
         // COMMENT 
-        vtkstd::string* patientName = new vtkstd::string(); 
-        vtkstd::string* seriesDescription = new vtkstd::string(); 
-        vtkstd::string* studyDate = new vtkstd::string(); 
-        vtkstd::string  comment = this->ReadLineValue( this->volumeHdr, iss, ':');
+        string* patientName = new string(); 
+        string* seriesDescription = new string(); 
+        string* studyDate = new string(); 
+        string  comment = this->ReadLineValue( this->volumeHdr, iss, ':');
         ParseIdfComment(comment, patientName, seriesDescription, studyDate);
         idfMap["patientName"] = *patientName; 
         idfMap["seriesDescription"] = *seriesDescription; 
@@ -925,20 +933,20 @@ void svkIdfVolumeReader::ParseIdf()
 
         // DIMENSIONS AND SPACING 
         const int numDimensions = 3;    
-        vtkstd::string    dimensionString[numDimensions];
+        string    dimensionString[numDimensions];
         float     fov[numDimensions];
         for (int i = 0; i < numDimensions; i++) {
             ostringstream ossIndex;
             ossIndex << i;     
-            vtkstd::string indexString(ossIndex.str());
+            string indexString(ossIndex.str());
             dimensionString[i] = this->ReadLineSubstr(this->volumeHdr, iss, 10, 256);
             this->ReadLineIgnore(this->volumeHdr, iss, ':');
-            *iss >> idfMap[ vtkstd::string( "numPixels_" + indexString ) ];
+            *iss >> idfMap[ string( "numPixels_" + indexString ) ];
             iss->ignore(256, ':');
             *iss >> fov[i];
             iss->ignore(256, ':');
             iss->ignore(256, ':');
-            *iss >> idfMap[ vtkstd::string( "pixelSize_" + indexString ) ];
+            *iss >> idfMap[ string( "pixelSize_" + indexString ) ];
         } 
 
         // Set DICOM Column and Row info:    
@@ -998,9 +1006,9 @@ void svkIdfVolumeReader::ParseIdf()
         for (int i = 0; i < numDimensions; i++) {
             ostringstream ossIndex;
             ossIndex << i;     
-            vtkstd::string indexString(ossIndex.str());
+            string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> idfMap[vtkstd::string("center_" + indexString)];
+            *iss >> idfMap[string("center_" + indexString)];
         }
 
         //  TOPLC(LPS): 
@@ -1010,23 +1018,23 @@ void svkIdfVolumeReader::ParseIdf()
         for (int i = 0; i < numDimensions; i++) {
             ostringstream ossIndex;
             ossIndex << i;     
-            vtkstd::string indexString(ossIndex.str());
+            string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> idfMap[vtkstd::string("toplc_" + indexString)]; 
+            *iss >> idfMap[string("toplc_" + indexString)]; 
         }
 
         //  DCOS: 
         for (int i = 0; i < numDimensions; i++) {
             ostringstream ossIndexI;
             ossIndexI << i;     
-            vtkstd::string indexStringI(ossIndexI.str());
+            string indexStringI(ossIndexI.str());
             this->ReadLine(this->volumeHdr, iss);
             for (int j = 0; j < numDimensions; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;     
-                vtkstd::string indexStringJ(ossIndexJ.str());
+                string indexStringJ(ossIndexJ.str());
                 iss->ignore(256, ' ');
-                *iss >> idfMap[vtkstd::string("dcos_" + indexStringI + "_" + indexStringJ)]; 
+                *iss >> idfMap[string("dcos_" + indexStringI + "_" + indexStringJ)]; 
             }
         }
 
@@ -1051,7 +1059,7 @@ void svkIdfVolumeReader::ParseIdf()
 void svkIdfVolumeReader::PrintKeyValuePairs()
 {
     if (this->GetDebug()) {
-        vtkstd::map< vtkstd::string, vtkstd::string >::iterator mapIter;
+        map< string, string >::iterator mapIter;
         for ( mapIter = idfMap.begin(); mapIter != idfMap.end(); ++mapIter ) {
             cout << this->GetClassName() << " " << mapIter->first << " = ";
             cout << idfMap[mapIter->first] << endl;
@@ -1067,7 +1075,7 @@ void svkIdfVolumeReader::PrintKeyValuePairs()
 bool svkIdfVolumeReader::IsIdfStudyIdAccessionNumber()
 {
     bool isAccession = false; 
-    vtkstd::string idfStudyId = idfMap[ "studyId" ]; 
+    string idfStudyId = idfMap[ "studyId" ]; 
 
     size_t pos = idfStudyId.find( "t" ); 
     if ( pos == 0 ) {

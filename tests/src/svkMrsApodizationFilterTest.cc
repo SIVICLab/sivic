@@ -70,19 +70,20 @@ int main (int argc, char** argv)
 
     //  Apodizes the data 
     svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
-    vtkFloatArray* window = vtkFloatArray::New();
+    vector< vtkFloatArray* >* window = new vector< vtkFloatArray* >();
+
 
     float fwhh = 4.0;
 
     svkApodizationWindow::GetLorentzianWindow( window, data, fwhh );
-    af->SetInput( data );
+    af->SetInputData( data );
     af->SetWindow( window );
     af->Update();
 
 
     svkDdfVolumeWriter* writer = svkDdfVolumeWriter::New();
     writer->SetFileName( fnameOut.c_str() );    
-    writer->SetInput( af->GetOutput() );
+    writer->SetInputData( af->GetOutput() );
     writer->Write();
     writer->Delete();
 
@@ -90,7 +91,7 @@ int main (int argc, char** argv)
 
     model->Delete();
     data->Delete();
-    window->Delete();
+    delete window;
 
     return 0; 
 }

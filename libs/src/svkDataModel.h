@@ -86,7 +86,7 @@ class svkDataModel : public vtkObject
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkDataModel,vtkObject );
+        vtkTypeMacro( svkDataModel,vtkObject );
    
         static svkDataModel*       New();  
         

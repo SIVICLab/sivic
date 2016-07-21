@@ -157,7 +157,7 @@ int main (int argc, char** argv)
     //  Return noise value from data 
     // ===============================================  
     svkMRSNoise* noise = svkMRSNoise::New();
-    noise->SetInput( reader->GetOutput() ); 
+    noise->SetInputData( reader->GetOutput() ); 
     if ( limitToSelectionBox ) {
         noise->OnlyUseSelectionBox(); 
     }

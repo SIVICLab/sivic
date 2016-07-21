@@ -55,7 +55,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageReader2, "$Rev$");
+//vtkCxxRevisionMacro(svkImageReader2, "$Rev$");
 
 
 /*!
@@ -77,6 +77,7 @@ svkImageReader2::svkImageReader2()
     this->readOneInputFile = false;
     this->onlyGlobFiles = false;
     this->onlyReadHeader = false;
+    this->readLength = 256;     
 
 }
 
@@ -124,9 +125,9 @@ void svkImageReader2::OnlyGlobFiles()
 /*!
  *  Returns the file root without extension (will include any path elements)
  */
-vtkstd::string svkImageReader2::GetFileRoot(const char* fname)
+string svkImageReader2::GetFileRoot(const char* fname)
 {
-    vtkstd::string volumeFileName(fname);
+    string volumeFileName(fname);
 
     size_t dotPosition;
     dotPosition = volumeFileName.find_last_of( "." );
@@ -139,7 +140,7 @@ vtkstd::string svkImageReader2::GetFileRoot(const char* fname)
         lastPath = 0; 
     }
 
-    vtkstd::string fileRoot( fname );
+    string fileRoot( fname );
 
     // If there is an extension remove it
     if( dotPosition > lastPath ) {
@@ -154,19 +155,19 @@ vtkstd::string svkImageReader2::GetFileRoot(const char* fname)
  *  Returns the file root without extension
  *  or NULL if no extension found. 
  */
-vtkstd::string svkImageReader2::GetFileExtension(const char* fname)
+string svkImageReader2::GetFileExtension(const char* fname)
 {
-    vtkstd::string volumeFileName(fname);
+    string volumeFileName(fname);
 
     //  should disregard leading dots in path, so first get 
     //  substring following last "/", if it exists. 
     size_t pathPosition = volumeFileName.find_last_of( "/" );
-    if ( pathPosition != vtkstd::string::npos ) {
+    if ( pathPosition != string::npos ) {
         volumeFileName.assign( volumeFileName.substr(pathPosition + 1) );
     }
 
     size_t position = volumeFileName.find_last_of( "." );
-    vtkstd::string fileExtension(""); 
+    string fileExtension(""); 
     if ( position != string::npos && position != 0) {
         fileExtension.assign( volumeFileName.substr(position + 1) );
     } 
@@ -178,13 +179,13 @@ vtkstd::string svkImageReader2::GetFileExtension(const char* fname)
 /*!
  *  Returns the file path:  everything before the last "/".   
  */
-vtkstd::string svkImageReader2::GetFilePath(const char* fname)
+string svkImageReader2::GetFilePath(const char* fname)
 {
-    vtkstd::string volumeFileName(fname);
+    string volumeFileName(fname);
     size_t position;
     position = volumeFileName.find_last_of( "/" );
-    vtkstd::string filePath; 
-    if ( position != vtkstd::string::npos ) {
+    string filePath; 
+    if ( position != string::npos ) {
         filePath.assign( volumeFileName.substr(0, position) );
     } else {
         filePath.assign( "." );
@@ -196,13 +197,13 @@ vtkstd::string svkImageReader2::GetFilePath(const char* fname)
 /*!
  *  Returns the file name without path:  everything after the last "/".   
  */
-vtkstd::string svkImageReader2::GetFileNameWithoutPath(const char* fname)
+string svkImageReader2::GetFileNameWithoutPath(const char* fname)
 {
-    vtkstd::string volumeFileName(fname);
+    string volumeFileName(fname);
     size_t position;
     position = volumeFileName.find_last_of( "/" );
-    vtkstd::string fileNameNoPath; 
-    if ( position != vtkstd::string::npos ) {
+    string fileNameNoPath; 
+    if ( position != string::npos ) {
         fileNameNoPath.assign( volumeFileName.substr(position + 1) );
     } else {
         fileNameNoPath.assign( fname );
@@ -230,22 +231,22 @@ long svkImageReader2::GetFileSize(ifstream* fs)
 /*
  *  Strips leading and trailing white space from string
  */
-vtkstd::string svkImageReader2::StripWhite(vtkstd::string in)
+string svkImageReader2::StripWhite(string in)
 {
-    vtkstd::string stripped;
-    vtkstd::string stripped_leading(in);
+    string stripped;
+    string stripped_leading(in);
     size_t firstNonWhite;
     size_t lastWhite;
 
     //  Remove leading spaces:
     firstNonWhite = in.find_first_not_of(" \t");
-    if (firstNonWhite != vtkstd::string::npos) {
+    if (firstNonWhite != string::npos) {
         stripped_leading.assign( in.substr(firstNonWhite) );
     }
 
     //  Remove trailing spaces:
     lastWhite = stripped_leading.find_last_of(" \t");
-    while ( (lastWhite != vtkstd::string::npos) && (lastWhite  == stripped_leading.length() - 1) ) {
+    while ( (lastWhite != string::npos) && (lastWhite  == stripped_leading.length() - 1) ) {
         stripped_leading.assign( stripped_leading.substr(0, lastWhite) );
         lastWhite = stripped_leading.find_last_of(" \t");
     }
@@ -360,32 +361,40 @@ void svkImageReader2::SetupOutputScalarData()
         //  ============================
         //  Set data type:
         //  ============================
+        vtkInformation* outInfo = this->GetOutput()->GetInformation(); 
+            
         if (  this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
             this->SetDataScalarTypeToUnsignedChar();
             this->dataArray = vtkUnsignedCharArray::New();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::UNSIGNED_INT_1 );
+            vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_UNSIGNED_CHAR, 1);
         } else if (  this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
             this->SetDataScalarTypeToUnsignedShort();
             this->dataArray = vtkUnsignedShortArray::New();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::UNSIGNED_INT_2 );
+            vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_UNSIGNED_SHORT, 1);
         } else if (  this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
             this->SetDataScalarTypeToShort();
             this->dataArray = vtkShortArray::New();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::SIGNED_INT_2 );
+            vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_SHORT, 1);
         } else if (  this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
             this->SetDataScalarTypeToFloat();
             this->dataArray = vtkFloatArray::New();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::SIGNED_FLOAT_4 );
+            vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_FLOAT, 1);
         } else if (  this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_8 ) {
             this->SetDataScalarTypeToDouble();
             this->dataArray = vtkDoubleArray::New();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::SIGNED_FLOAT_8 );
+            vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_DOUBLE, 1);
         } else {
             vtkErrorWithObjectMacro( this, "Unsupported data type: " << this->GetFileType() );
         }
 
         this->dataArray->SetName("pixels");
         this->SetNumberOfScalarComponents(1);
+
     } 
 }
 
@@ -423,8 +432,11 @@ svkImageData* svkImageReader2::GetOutput(int port)
 /*!
  *  Remove slashes from idf date and reorder for DICOM compliance:
  *  07/25/2007 -> 20070725
+ *  assumes 
+ *      input order is month, day, year
+ *      output order is year, month, day
  */
-vtkstd::string svkImageReader2::RemoveSlashesFromDate(vtkstd::string* slashDate)
+string svkImageReader2::RemoveDelimFromDate(string* slashDate, char delimChar)
 {
 
     //  string should not be empty or "blank"
@@ -432,25 +444,25 @@ vtkstd::string svkImageReader2::RemoveSlashesFromDate(vtkstd::string* slashDate)
 
     if ( slashDate->length() > 0 && pos != string::npos ) {
         size_t delim;
-        delim = slashDate->find_first_of('/');
-        vtkstd::string month = slashDate->substr(0, delim);
+        delim = slashDate->find_first_of( delimChar );
+        string month = slashDate->substr(0, delim);
         month = StripWhite(month);
         if (month.size() != 2) {
             month = "0" + month;
         }
 
-        vtkstd::string dateSub;
+        string dateSub;
         dateSub = slashDate->substr(delim + 1);
-        delim = dateSub.find_first_of('/');
-        vtkstd::string day = dateSub.substr(0, delim);
+        delim = dateSub.find_first_of( delimChar );
+        string day = dateSub.substr(0, delim);
         day = StripWhite(day);
         if (day.size() != 2) {
             day = "0" + day;
         }
 
         dateSub = dateSub.substr(delim + 1);
-        delim = dateSub.find_first_of('/');
-        vtkstd::string year = dateSub.substr(0, delim);
+        delim = dateSub.find_first_of( delimChar );
+        string year = dateSub.substr(0, delim);
         year = StripWhite(year);
 
         return year+month+day;
@@ -460,16 +472,21 @@ vtkstd::string svkImageReader2::RemoveSlashesFromDate(vtkstd::string* slashDate)
 
 }
 
+void svkImageReader2::SetReadLength(int length) 
+{
+    this->readLength = length;     
+}
 
 /*!
  *  Utility function to read a single line from the volume file.
  */
 void svkImageReader2::ReadLine(ifstream* hdr, istringstream* iss)
 {
-    char line[256];
+    char* line = new char[this->readLength];
     iss->clear();
-    hdr->getline(line, 256);
-    iss->str(vtkstd::string(line));
+    hdr->getline(line, this->readLength);
+    iss->str(string(line));
+    delete [] line; 
 }
 
 
@@ -487,16 +504,16 @@ void svkImageReader2::ReadLineIgnore(ifstream* hdr, istringstream* iss, char del
 /*!
  *  Utility function for extracting a substring with white space removed from LHS.
  */
-vtkstd::string svkImageReader2::ReadLineSubstr(ifstream* hdr, istringstream* iss, int start, int stop)
+string svkImageReader2::ReadLineSubstr(ifstream* hdr, istringstream* iss, int start, int stop)
 {
-    vtkstd::string temp;
-    vtkstd::string lineSubStr;
+    string temp;
+    string lineSubStr;
     size_t firstNonSpace;
     this->ReadLine(hdr, iss);
     try {
         temp.assign(iss->str().substr(start,stop));
         firstNonSpace = temp.find_first_not_of(' ');
-        if (firstNonSpace != vtkstd::string::npos) {
+        if (firstNonSpace != string::npos) {
             lineSubStr.assign( temp.substr(firstNonSpace) );
         }
     } catch (const exception& e) {
@@ -505,23 +522,64 @@ vtkstd::string svkImageReader2::ReadLineSubstr(ifstream* hdr, istringstream* iss
     return lineSubStr;
 }
 
-
 /*!
  *  Read the value part of a delimited key value line in a file:
+ *  \return  0 on success, 1 if can't parse line with delimiter into key/value pair
+ *      
  */
-vtkstd::string svkImageReader2::ReadLineValue( ifstream* hdr, istringstream* iss, char delim)
+int svkImageReader2::ReadLineKeyValue( ifstream* hdr, istringstream* iss, char delim, string* key, string* value)
 {
+    int status = 1; // failure by default
 
-    vtkstd::string value;
     this->ReadLine( hdr, iss );
     try {
 
-        vtkstd::string line;
+        string line;
         line.assign( iss->str() );
 
         size_t delimPos = line.find_first_of(delim);
-        vtkstd::string delimitedLine;
-        if (delimPos != vtkstd::string::npos) {
+        string delimitedLine;
+        if (delimPos != string::npos) {
+            delimitedLine.assign( line.substr( delimPos + 1 ) );
+            key->assign( line.substr(0, delimPos) ); 
+            key->assign(this->StripWhite(*key)); 
+            status = 0;     // if delimiter was found, set status to 0
+        } else {
+            delimitedLine.assign( line );
+            key->assign( line.substr(0, delimPos) ); 
+        }
+
+        // remove leading white space:
+        size_t firstNonSpace = delimitedLine.find_first_not_of( ' ' );
+        if ( firstNonSpace != string::npos) {
+            value->assign( delimitedLine.substr( firstNonSpace ) );
+        } else {
+            value->assign( delimitedLine );
+        }
+
+    } catch (const exception& e) {
+        cout <<  e.what() << endl;
+    }
+
+    return status;
+
+}
+/*!
+ *  Read the value part of a delimited key value line in a file:
+ */
+string svkImageReader2::ReadLineValue( ifstream* hdr, istringstream* iss, char delim)
+{
+
+    string value;
+    this->ReadLine( hdr, iss );
+    try {
+
+        string line;
+        line.assign( iss->str() );
+
+        size_t delimPos = line.find_first_of(delim);
+        string delimitedLine;
+        if (delimPos != string::npos) {
             delimitedLine.assign( line.substr( delimPos + 1 ) );
         } else {
             delimitedLine.assign( line );
@@ -529,7 +587,7 @@ vtkstd::string svkImageReader2::ReadLineValue( ifstream* hdr, istringstream* iss
 
         // remove leading white space:
         size_t firstNonSpace = delimitedLine.find_first_not_of( ' ' );
-        if ( firstNonSpace != vtkstd::string::npos) {
+        if ( firstNonSpace != string::npos) {
             value.assign( delimitedLine.substr( firstNonSpace ) );
         } else {
             value.assign( delimitedLine );
@@ -609,7 +667,6 @@ void svkImageReader2::GlobFileNames()
     
     //  by default do not use a group, but rather just the single input file name (groupToUse = -1).  
     int groupToUse = -1;    
-
     if ( this->readOneInputFile == false ) {
         if (sortFileNames->GetNumberOfGroups() > 1 ) {
 
@@ -623,12 +680,15 @@ void svkImageReader2::GlobFileNames()
                     //  returned file names without path:
                     string groupFile ( this->GetFileNameWithoutPath( group->GetValue(i) ) ); 
                     if( this->GetDebug() ) {
-                        cout << "Group: " << groupFile << endl;
+                        cout << "Group check: " << fileName << " vs " << groupFile << endl;
                     }
                     if ( this->GetFileNameWithoutPath(fileName.c_str()).compare( groupFile ) == 0 ) {
                         groupToUse = k; 
                         break; 
                     }
+                }
+                if( groupToUse != -1 ) {
+                    break; 
                 }
             }
         } else {
@@ -648,22 +708,20 @@ void svkImageReader2::GlobFileNames()
         if ( numFilesInGroup > 1 ) {   
             
             string referenceSeriesDescription = this->GetFileSeriesDescription( fileName ); 
-            //cout << "REF SERIES DESCRIPTION: " << referenceSeriesDescription << endl; 
       
             vtkStringArray* seriesGroup = vtkStringArray::New();  
             for (int i = 0; i < numFilesInGroup; i++) {
                 string groupFileName = sortFileNames->GetNthGroup( groupToUse )->GetValue(i); 
                 string seriesDescription = this->GetFileSeriesDescription( groupFileName ); 
-                //cout << "SERIES DESCRIPTION: " << seriesDescription << endl;
                 if ( seriesDescription.compare( referenceSeriesDescription ) == 0 ) {
                     seriesGroup->InsertNextValue( groupFileName ); 
                 }
             }
             this->SetFileNames( seriesGroup ); 
             seriesGroup->Delete(); 
-    } else {
-        this->SetFileNames( sortFileNames->GetNthGroup( groupToUse ) );
-    }
+        } else {
+            this->SetFileNames( sortFileNames->GetNthGroup( groupToUse ) );
+        }
 
     } else {
         vtkStringArray* inputFile = vtkStringArray::New();
@@ -695,13 +753,13 @@ string svkImageReader2::GetFileSeriesDescription( string fileName )
 {
 
     svkImageReader2::ReaderType readerType = this->GetReaderType(); 
-    svkImageReader2* reader = svkImageReaderFactory::CreateImageReader2( readerType );
-    reader->SetFileName( fileName.c_str() );
-    reader->OnlyReadOneInputFile();
-    reader->OnlyReadHeader( true ); 
-    reader->Update();
-    string seriesDescription =  reader->GetOutput()->GetDcmHeader()->GetStringValue( "SeriesDescription" ); 
-    reader->Delete(); 
+    svkImageReader2* readerLocal = svkImageReaderFactory::CreateImageReader2( readerType );
+    readerLocal->SetFileName( fileName.c_str() );
+    readerLocal->OnlyReadOneInputFile();
+    readerLocal->OnlyReadHeader( true ); 
+    readerLocal->Update();
+    string seriesDescription =  readerLocal->GetOutput()->GetDcmHeader()->GetStringValue( "SeriesDescription" ); 
+    readerLocal->Delete(); 
     return seriesDescription; 
 }
       

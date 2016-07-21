@@ -45,7 +45,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkImageStatistics, "$Rev$");
+//vtkCxxRevisionMacro(svkImageStatistics, "$Rev$");
 vtkStandardNewMacro(svkImageStatistics);
 
 //! Constructor
@@ -249,13 +249,13 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
         double* spacing = image->GetSpacing();
         double pixelVolume = spacing[0] * spacing[1] * spacing[2];
         vtkImageAccumulate* accumulator = vtkImageAccumulate::New();
-        accumulator->SetInput( image );
+        accumulator->SetInputData( image );
         if( roi != NULL ) {
             vtkImageToImageStencil* stencil = vtkImageToImageStencil::New();
-            stencil->SetInput( roi );
+            stencil->SetInputData( roi );
             stencil->ThresholdByUpper(1);
             stencil->Update();
-            accumulator->SetStencil( stencil->GetOutput() );
+            accumulator->SetStencilData( stencil->GetOutput() );
             stencil->Delete();
         }
         accumulator->Update( );
@@ -391,7 +391,7 @@ void svkImageStatistics::ComputeOrderStatistics(svkMriImageData* image, svkMriIm
 
         // Compute Quartiles
         vtkOrderStatistics* quartileStatsCalculator = vtkOrderStatistics::New();
-        quartileStatsCalculator->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, table );
+        quartileStatsCalculator->SetInputData( vtkStatisticsAlgorithm::INPUT_DATA, table );
         quartileStatsCalculator->AddColumn(pixelsInROI->GetName());
         quartileStatsCalculator->SetLearnOption(true);
         quartileStatsCalculator->SetAssessOption(false);
@@ -409,7 +409,7 @@ void svkImageStatistics::ComputeOrderStatistics(svkMriImageData* image, svkMriIm
 
         // Compute deciles
         vtkOrderStatistics* decileStatsCalculator = vtkOrderStatistics::New();
-        decileStatsCalculator->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, table );
+        decileStatsCalculator->SetInputData( vtkStatisticsAlgorithm::INPUT_DATA, table );
         decileStatsCalculator->AddColumn(pixelsInROI->GetName());
         decileStatsCalculator->SetLearnOption(true);
         decileStatsCalculator->SetAssessOption(false);
@@ -477,7 +477,7 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
         vtkTable* table = vtkTable::New();
         table->AddColumn( pixelsInROI );
         vtkDescriptiveStatistics* descriptiveStats = vtkDescriptiveStatistics::New();
-        descriptiveStats->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, table );
+        descriptiveStats->SetInputData( vtkStatisticsAlgorithm::INPUT_DATA, table );
         descriptiveStats->AddColumn(pixelsInROI->GetName());
         descriptiveStats->SetLearnOption(true);
         descriptiveStats->SetAssessOption(false);

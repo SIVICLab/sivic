@@ -62,7 +62,7 @@ int main (int argc, char** argv)
     string fname(argv[1]);
     string fnameOut(argv[2]);
 
-    //  Combine coils using straight addition 
+    //  Double spectral point count and change spatial resolution
     svkMrsZeroFill* zf = svkMrsZeroFill::New();
     zf->SetNumberOfSpecPointsToDouble( ); 
     zf->SetOutputWholeExtent(0, 12, 0, 10, 0, 11 );
@@ -73,7 +73,7 @@ int main (int argc, char** argv)
     zf->Delete();
     zf = NULL;
 
-    //  Combine coils using straight addition 
+    //  Spec Points to next power of 2, no change in spatial
     zf = svkMrsZeroFill::New();
     zf->SetNumberOfSpecPointsToNextPower2( ); 
 
@@ -84,7 +84,7 @@ int main (int argc, char** argv)
     zf->Delete();
     zf = NULL;
 
-    //  Combine coils using straight addition 
+    //  change spatial only
     zf = svkMrsZeroFill::New();
     zf->SetOutputWholeExtent(0, 20, 0, 20, 0, 20 );
 
@@ -110,7 +110,7 @@ void ExecuteZeroFill( svkMrsZeroFill* zf, string infname, string outfname )
 
     //  FFT spectral data: time to frequency domain
     svkMrsImageFFT* spatialFFT = svkMrsImageFFT::New();
-    spatialFFT->SetInput( data );
+    spatialFFT->SetInputData( data );
     spatialFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
     spatialFFT->SetFFTMode( svkMrsImageFFT::FORWARD );
     spatialFFT->SetPostCorrectCenter( true );
@@ -118,12 +118,12 @@ void ExecuteZeroFill( svkMrsZeroFill* zf, string infname, string outfname )
     svkMrsImageData* targetData = svkMrsImageData::New();
     targetData->DeepCopy( spatialFFT->GetOutput() );
     //  Combine coils using straight addition
-    zf->SetInput( targetData );
+    zf->SetInputData( targetData );
     zf->Update();
 
     //  Reverse FFT spatial data: kspace to spatial domain
     svkMrsImageFFT* spatialRFFT= svkMrsImageFFT::New();
-    spatialRFFT->SetInput( targetData );
+    spatialRFFT->SetInputData( targetData );
     spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
     spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
     spatialRFFT->SetPreCorrectCenter( true );
@@ -131,7 +131,7 @@ void ExecuteZeroFill( svkMrsZeroFill* zf, string infname, string outfname )
 
     svkDdfVolumeWriter* writer = svkDdfVolumeWriter::New();
     writer->SetFileName( outfname.c_str() );
-    writer->SetInput( spatialRFFT->GetOutput() );
+    writer->SetInputData( spatialRFFT->GetOutput() );
     writer->Write();
 
     // Clean up

@@ -85,7 +85,7 @@ class svkDSCDeltaR2: public svkImageInPlaceFilter
     public:
 
         static svkDSCDeltaR2* New();
-        vtkTypeRevisionMacro( svkDSCDeltaR2, svkImageInPlaceFilter);
+        vtkTypeMacro( svkDSCDeltaR2, svkImageInPlaceFilter);
 
         typedef enum {
             T2 = 0, 

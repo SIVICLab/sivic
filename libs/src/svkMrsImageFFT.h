@@ -80,7 +80,7 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
     public:
 
         static svkMrsImageFFT* New();
-        vtkTypeRevisionMacro( svkMrsImageFFT, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMrsImageFFT, svkImageInPlaceFilter);
 
         typedef enum {
             SPECTRAL = 0, 

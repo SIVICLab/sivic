@@ -242,7 +242,7 @@ cout << "IMAGE SOURCE: " << *source1->GetOutput() << endl;
         vtkSmartPointer<vtkXMLPolyDataWriter>::New();
 
     vtkMassProperties* mass = vtkMassProperties::New();
-    mass->SetInput( tf->GetOutput() ); 
+    mass->SetInputConnection( tf->GetOutputPort() ); 
     double vol = mass->GetVolume(); 
     //  vol = ( 4./3.) * vtkMath::Pi() * r3
     

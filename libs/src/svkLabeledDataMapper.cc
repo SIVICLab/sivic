@@ -71,15 +71,16 @@
 #include "vtkTextMapper.h"
 #include "vtkTextProperty.h"
 #include "vtkTypeTraits.h"
+#include "vtkType.h"
 #include "vtkTransform.h"
 #include "vtkUnicodeStringArray.h"
 
-#include <vtkstd/map>
+#include <map>
 
 class svkLabeledDataMapper::Internals
 {
-public:
-  vtkstd::map<int, vtkSmartPointer<vtkTextProperty> > TextProperties;
+    public:
+        map<int, vtkSmartPointer<vtkTextProperty> > TextProperties;
 };
 
 vtkStandardNewMacro(svkLabeledDataMapper);
@@ -103,7 +104,7 @@ void svkLabeledDataMapper_PrintComponent(char *output, const char *format, int i
 // ----------------------------------------------------------------------
 
 template<typename T>
-void svkLabeledDataMapper_PrintComponent(char *output, const char *format, int index, const T *array, bool useTags, vtkstd::map<int, vtkstd::string> voxelTagDefinitions)
+void svkLabeledDataMapper_PrintComponent(char *output, const char *format, int index, const T *array, bool useTags, map<int, string> voxelTagDefinitions)
 {
 	int length = 0;
     if( useTags ) {
@@ -232,7 +233,7 @@ void svkLabeledDataMapper::SetInput(vtkDataObject* input)
 {
   if (input)
     {
-    this->SetInputConnection(0, input->GetProducerPort());
+    this->SetInputDataObject(0, input);
     }
   else
     {
@@ -317,7 +318,7 @@ void svkLabeledDataMapper::RenderOpaqueGeometry(vtkViewport *viewport,
 
   // Check for property updates.
   unsigned long propMTime = 0;
-  vtkstd::map<int, vtkSmartPointer<vtkTextProperty> >::iterator it, itEnd;
+  map<int, vtkSmartPointer<vtkTextProperty> >::iterator it, itEnd;
   it = this->Implementation->TextProperties.begin();
   itEnd = this->Implementation->TextProperties.end();
   for (; it != itEnd; ++it)
@@ -620,7 +621,7 @@ void svkLabeledDataMapper::BuildLabelsInternal(vtkDataSet* input)
   vtkIntArray *typeArr = vtkIntArray::SafeDownCast(
     this->GetInputAbstractArrayToProcess(0, input));
 
-  vtkstd::map<int, vtkstd::string> voxelTagDefinitions;
+  map<int, string> voxelTagDefinitions;
   if( input->IsA("svkMriImageData")) {
 	  voxelTagDefinitions = svk::svkVoxelTaggingUtils::GetTagValueToNameMap( svk::svkMriImageData::SafeDownCast(input) );
   }
@@ -769,7 +770,7 @@ void svkLabeledDataMapper::PrintSelf(ostream& os, vtkIndent indent)
     os << indent << "Input: (none)\n";
     }
 
-  vtkstd::map<int, vtkSmartPointer<vtkTextProperty> >::iterator it, itEnd;
+  map<int, vtkSmartPointer<vtkTextProperty> >::iterator it, itEnd;
   it = this->Implementation->TextProperties.begin();
   itEnd = this->Implementation->TextProperties.end();
   for (; it != itEnd; ++it)
@@ -853,10 +854,10 @@ svkLabeledDataMapper::SetFieldDataArray(int arrayIndex)
   vtkDebugMacro(<< this->GetClassName() << " (" << this << "): setting FieldDataArray to " << arrayIndex ); 
 
   if (this->FieldDataArray != (arrayIndex < 0 ? 0 : 
-                               (arrayIndex > VTK_LARGE_INTEGER ? VTK_LARGE_INTEGER : arrayIndex)))
+                               (arrayIndex > VTK_INT_MAX ? VTK_INT_MAX : arrayIndex)))
     {
     this->FieldDataArray = ( arrayIndex < 0 ? 0 : 
-                             (arrayIndex > VTK_LARGE_INTEGER ? VTK_LARGE_INTEGER : arrayIndex ));
+                             (arrayIndex > VTK_INT_MAX ? VTK_INT_MAX : arrayIndex ));
     this->Modified();
     }
 }
@@ -866,7 +867,7 @@ unsigned long
 svkLabeledDataMapper::GetMTime()
 {
   unsigned long mtime = this->Superclass::GetMTime();
-  vtkstd::map<int, vtkSmartPointer<vtkTextProperty> >::iterator it, itEnd;
+  map<int, vtkSmartPointer<vtkTextProperty> >::iterator it, itEnd;
   it = this->Implementation->TextProperties.begin();
   itEnd = this->Implementation->TextProperties.end();
   for (; it != itEnd; ++it)

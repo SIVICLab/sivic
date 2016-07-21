@@ -58,7 +58,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGEPFileReader, "$Rev$");
+//vtkCxxRevisionMacro(svkGEPFileReader, "$Rev$");
 vtkStandardNewMacro(svkGEPFileReader);
 
 
@@ -77,6 +77,7 @@ svkGEPFileReader::svkGEPFileReader()
 
     this->gepf = NULL; 
     this->mapper = NULL; 
+    this->tmpFileNames = NULL;
 
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgressCallback );
@@ -124,7 +125,7 @@ svkGEPFileReader::~svkGEPFileReader()
     map< string, void* >::iterator mapIter;
     for ( mapIter = this->inputArgs.begin(); mapIter != this->inputArgs.end(); ++mapIter ) {
          //delete this->inputArgs[ mapIter->first ];  
-        cout << " need to clean up memory" << endl; 
+        //cout << " need to clean up memory" << endl; 
     }
 }
 
@@ -139,6 +140,7 @@ int svkGEPFileReader::CanReadFile(const char* fname)
 
     bool    isGEPFile = false; 
     bool    isKnownPSD = false; 
+
 
     try {
 
@@ -248,7 +250,6 @@ void svkGEPFileReader::ExecuteInformation()
             exit(1);
         }
 
-
         this->InitDcmHeader(); 
 
         //  Only need to call this if we are using the data, not printing header
@@ -263,13 +264,18 @@ void svkGEPFileReader::ExecuteInformation()
     //  which is not correct for 3D multislice volume files. So store
     //  the files in a temporary array until after ExecuteData has been
     //  called, then reset the array.
-    this->tmpFileNames = vtkStringArray::New();
-    this->tmpFileNames->DeepCopy(this->FileNames);
-    //for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
-        //cout << "INIT TMP: " << this->GetFileNames()->GetValue(fileNumber) << endl;
-    //}  	 	 
-    this->FileNames->Delete();
-    this->FileNames = NULL;
+    if ( this->onlyReadHeader == false ) {
+        if (this->tmpFileNames != NULL ) {
+            this->tmpFileNames->Delete(); 
+        }
+        this->tmpFileNames = vtkStringArray::New();
+        this->tmpFileNames->DeepCopy(this->FileNames);
+        //for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
+            //cout << "INIT TMP: " << this->GetFileNames()->GetValue(fileNumber) << endl;
+        //}  	 	 
+        this->FileNames->Delete();
+        this->FileNames = NULL;
+    }
 
 }
 
@@ -278,22 +284,20 @@ void svkGEPFileReader::ExecuteInformation()
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkGEPFileReader::ExecuteData(vtkDataObject* output)
+void svkGEPFileReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
-    this->FileNames = vtkStringArray::New();
-    this->FileNames->DeepCopy(this->tmpFileNames);
-    //for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
-        //cout << "FNCHECK: " << this->GetFileNames()->GetValue(fileNumber) << endl;
-    //}  	 	 
-    this->tmpFileNames->Delete();
-    this->tmpFileNames = NULL;
+    if ( this->onlyReadHeader == false ) {
+        this->FileNames = vtkStringArray::New();
+        this->FileNames->DeepCopy(this->tmpFileNames);
+        this->tmpFileNames->Delete();
+        this->tmpFileNames = NULL;
 
-
-    if ( ! this->onlyReadHeader ) {
         vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-        svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+        vtkImageData::SetScalarType(VTK_FLOAT, outInfo);     
+        svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
+        vtkImageData::SetScalarType(VTK_FLOAT, data->GetInformation());     
 
         vtkDebugMacro( << this->GetClassName() << " FileName: " << this->FileName );
         this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);
@@ -303,8 +307,6 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
         this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
         this->GetOutput()->SetDcos(dcos);
 
-        string pfileName = this->GetFileNames()->GetValue(0); 
-        //this->mapper->ReadData(pfileName, data);
         this->mapper->ReadData(this->GetFileNames(), data);
 
         //  resync any header changes with the svkImageData object's member variables
@@ -328,7 +330,7 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
 void svkGEPFileReader::SetProvenance()
 {
 
-    cout << "This call to SetProvenance should be implicit in the executive" << endl; 
+    //cout << "This call to SetProvenance should be implicit in the executive" << endl; 
     this->GetOutput()->GetProvenance()->AddAlgorithm( this->GetClassName() );
 
     int argIndex = -1; 
@@ -421,8 +423,8 @@ void svkGEPFileReader::InitDcmHeader()
         //  Fill in data set specific values using the appropriate mapper type:
         this->mapper = this->GetPFileMapper(); 
     
-        cout << "SWAP BYTES: " << this->GetSwapBytes() << endl;
-        cout << "MAPER FN: " << this->GetFileNames()->GetValue(0) << endl;
+        //cout << "SWAP BYTES: " << this->GetSwapBytes() << endl;
+        //cout << "MAPER FN: " << this->GetFileNames()->GetValue(0) << endl;
 
         this->mapper->SetPfileName( this->GetFileNames()->GetValue(0) ); 
 
@@ -461,7 +463,7 @@ void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type)
 
     map< string, void* >::iterator mapIter;
     for ( mapIter = this->inputArgs.begin(); mapIter != this->inputArgs.end(); ++mapIter ) {
-        cout << "input args: " << mapIter->first << " = " << *( static_cast<svkGEPFileMapper::MapperBehavior*>( this->inputArgs[ mapIter->first ] ) )<< endl;
+        //cout << "input args: " << mapIter->first << " = " << *( static_cast<svkGEPFileMapper::MapperBehavior*>( this->inputArgs[ mapIter->first ] ) )<< endl;
     }
 
 }
@@ -638,7 +640,7 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
     }
 
   
-    if ( psd.compare("probe-p") == 0 || psd.find("presscsi") != string::npos ) { 
+    if ( ( psd.compare("probe-p") == 0 ) || ( psd.find("presscsi") != string::npos ) ) { 
 
         // product GE sequence:  
         aMapper = svkGEPFileMapper::New();
@@ -648,12 +650,17 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
         //  UCSF Prostate MRSI sequence 
         aMapper = svkGEPFileMapperUCSFProseProstate::New();
 
-    } else if ( psd.find("probe") != string::npos || psd.find("prose") != string::npos ) {
+    } else if ( psd.find("prose_breast_ucsf") != string::npos ) {
+
+        //  UCSF prototype Breast MRSI sequence 
+        aMapper = svkGEPFileMapperUCSFProseBreast::New();
+
+    } else if ( ( psd.find("probe") != string::npos ) || ( psd.find("prose") != string::npos ) ) {
 
         //  Assume that if it's not an exact match that it is a UCSF research sequence. 
         aMapper = svkGEPFileMapperUCSF::New();
 
-    } else if ( psd.find("fidcsi_ucsf_dev0") != string::npos ) {
+    } else if ( ( psd.find("fidcsi_ucsf_dev0") != string::npos ) || ( psd.find("fidcsi_ucsf_multipulse") != string::npos ) ) {
 
         //  fidcsi ucsf sequence 
         aMapper = svkGEPFileMapperUCSFfidcsiDev0::New();
@@ -668,7 +675,7 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
         //  fidcsi ucsf sequence 
         aMapper = svkGEPFileMapperUCSFfidcsi::New();
 
-    } else if ( psd.compare("jpress") == 0 ||  psd.compare("mbrease_dev") == 0 ) {
+    } else if ( ( psd.compare("jpress") == 0 ) || ( psd.compare("mbrease_dev") == 0 ) ) {
 
         aMapper = svkGEPFileMapperMBrease::New();
 
@@ -708,11 +715,14 @@ void svkGEPFileReader::ReadGEPFile()
         cout << "FN: " << this->GetFileName() << endl;
     }
         
+    // temporary workaround becaues pfiles from dynamic series don't share a series UID
+    this->checkSeriesUID = false;  
     string refSUID = this->GetSeriesUID( this->GetFileName());
-    
+   
     this->GlobFileNames();  	 	 
 
     vtkStringArray* validatedFileNames = vtkStringArray::New();
+
     //  Verify that all the pfiles belong to the same series (same 
     //  series instance uid as specified input file): 
     for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
@@ -725,10 +735,10 @@ void svkGEPFileReader::ReadGEPFile()
     validatedFileNames->Delete();
 
     if (this->GetDebug()) { 
+        cout << "NUMBER FILES: " <<  this->GetFileNames()->GetNumberOfValues() << endl;
         for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
-               cout << "VALIDATEDFN: " << this->GetFileNames()->GetValue(fileNumber) << endl;
+               cout << "VALIDATEDFN: " << this << " " << this->GetFileNames()->GetValue(fileNumber) << endl;
         }  	 	 
-        cout << "LOAD: " << this->GetFileNames()->GetValue(0) << endl; 
     }
 
 
@@ -784,7 +794,7 @@ string svkGEPFileReader::GetSeriesUID(const char* fname)
             tmpReader->Delete();    
 
         } catch (const exception& e) {
-            cerr << "ERROR opening or reading GE P-File (" << this->GetFileName() << "): " << e.what() << endl;
+            cerr << "ERROR opening or reading GE P-File (" << fname << "): " << e.what() << endl;
         }
     } else {
         seriesInstanceUID = "0"; 
@@ -1277,7 +1287,7 @@ float svkGEPFileReader::GetPFileVersion()
         gepf->read( (char*)(&rdbmRev), 4);
         rdbmRevSwapped = rdbmRev;
         vtkByteSwap::SwapVoidRange((void *)&rdbmRevSwapped, 1, sizeof(float));
-        cout << "rdbm rev" << setprecision(8) << rdbmRev << " " << rdbmRevSwapped <<  endl;
+        //cout << "rdbm rev" << setprecision(8) << rdbmRev << " " << rdbmRevSwapped <<  endl;
     }
 
     version = svkGEPFileReader::LookupRawVersion(rdbmRev, rdbmRevSwapped);
@@ -3621,3 +3631,21 @@ void svkGEPFileReader::UpdateProgressCallback(vtkObject* subject, unsigned long,
     static_cast<svkGEPFileReader*>(thisObject)->UpdateProgress(*(double*)(callData));
 
 }
+
+
+/*!
+ *  get the series description for this file for globbing purposes: 
+ */
+string svkGEPFileReader::GetFileSeriesDescription( string fileName )
+{
+    svkGEPFileReader* readerLocal = svkGEPFileReader::New( );
+    readerLocal->SetFileName( fileName.c_str() );
+    readerLocal->OnlyReadHeader( true );
+    readerLocal->checkSeriesUID = false; 
+    readerLocal->OnlyReadOneInputFile();
+    readerLocal->Update();
+    string seriesDescription = readerLocal->GetPFMap()["rhs.se_desc"][3]; 
+    readerLocal->Delete();
+    return seriesDescription;
+}
+

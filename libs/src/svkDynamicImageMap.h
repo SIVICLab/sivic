@@ -69,7 +69,7 @@ class svkDynamicImageMap: public svkImageAlgorithm
 
     public:
 
-        vtkTypeRevisionMacro( svkDynamicImageMap, svkImageAlgorithm);
+        vtkTypeMacro( svkDynamicImageMap, svkImageAlgorithm);
 
         void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);

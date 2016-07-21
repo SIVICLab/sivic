@@ -70,7 +70,7 @@ class svkMathUtils: public vtkObject
     public:
 
         static svkMathUtils *New();
-        vtkTypeRevisionMacro( svkMathUtils, vtkObject);
+        vtkTypeMacro( svkMathUtils, vtkObject);
 
         static void         MedianFilter1D( float* dynamicVoxelPtr, int arrayLength, int windowSize );
 

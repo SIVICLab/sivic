@@ -63,7 +63,7 @@ class svkIOD : public vtkObject
 
     public:
 
-        vtkTypeRevisionMacro( svkIOD, vtkObject);
+        vtkTypeMacro( svkIOD, vtkObject);
 
         //  Methods:
         virtual void  InitDcmHeader() = 0;

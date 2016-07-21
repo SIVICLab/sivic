@@ -76,7 +76,7 @@ class svkPlotGridViewController : public svkDataViewController
 
     public:
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkPlotGridViewController, svkDataViewController );
+        vtkTypeMacro( svkPlotGridViewController, svkDataViewController );
 
         static svkPlotGridViewController*       New();
 

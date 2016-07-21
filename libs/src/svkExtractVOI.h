@@ -95,7 +95,7 @@ class svkExtractVOI : public vtkExtractVOI
 public:
 
     static svkExtractVOI* New();
-    vtkTypeRevisionMacro(svkExtractVOI,vtkExtractVOI);
+    vtkTypeMacro(svkExtractVOI,vtkExtractVOI);
 
 
 protected:

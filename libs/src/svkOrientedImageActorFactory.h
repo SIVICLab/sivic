@@ -55,7 +55,7 @@ class svkOrientedImageActorFactory : public vtkObjectFactory
 { 
     public: 
 
-        vtkTypeRevisionMacro(svkOrientedImageActorFactory, vtkObjectFactory);
+        vtkTypeMacro(svkOrientedImageActorFactory, vtkObjectFactory);
         static svkOrientedImageActorFactory *New(); 
         virtual const char* GetVTKSourceVersion(); 
         virtual const char* GetDescription(); 

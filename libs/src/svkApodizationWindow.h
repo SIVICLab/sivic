@@ -63,24 +63,39 @@ class svkApodizationWindow : public vtkObject
 
     public:
 
+        typedef enum {
+            UNDEFINED = 0,
+            LORENTZIAN,
+            GAUSSIAN, 
+            HAMMING, 
+            LAST 
+        }WindowType;
+
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkApodizationWindow, vtkObject );
+        vtkTypeMacro( svkApodizationWindow, vtkObject );
   
         // vtk initialization 
         static svkApodizationWindow* New();  
 
-        static void  GetLorentzianWindow( vtkFloatArray* window, float fwhh, float dt );
-        static void  GetLorentzianWindow( vtkFloatArray* window, svkImageData* data, float fwhh );
-        static void  GetGaussianWindow( vtkFloatArray* window, float fwhh, float dt, float center = 0 );
-        static void  GetGaussianWindow( vtkFloatArray* window, svkImageData* data, float fwhh, float center = 0 );
-        static void  InitializeWindow( vtkFloatArray* window, svkImageData* data );
-        static float GetWindowResolution( svkImageData* data );
+        static void  GetLorentzianWindow( vector < vtkFloatArray* >* window, svkImageData* data, float fwhh );
+        static void  GetGaussianWindow(   vector < vtkFloatArray* >* window, svkImageData* data, float fwhh, float center = 0 );
+        static void  GetHammingWindow(    vector < vtkFloatArray* >* window, svkImageData* data );
 
 	protected:
 
        svkApodizationWindow();
        ~svkApodizationWindow();
+
+
+    private:
+        static void  GetLorentzianWindow( vector < vtkFloatArray* >* window, float fwhh, float dt );
+        static void  GetGaussianWindow(   vector < vtkFloatArray* >* window, float fwhh, float dt, float center = 0 );
+        static void  GetHammingWindowData(    vector < vtkFloatArray* >* window, svkImageData* data );
+        static void  InitializeWindowSpectral( vector < vtkFloatArray* >*  window, svkImageData* data );
+        static void  InitializeWindowSpatial(  vector < vtkFloatArray* >*  window, svkImageData* data );
+        static float GetWindowResolution( svkImageData* data );
+        static float GetWindowExpansion( svkImageData* data, int numVoxels );
         
 };
 

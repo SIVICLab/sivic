@@ -182,7 +182,7 @@ int main (int argc, char** argv)
         mrsData->GetImage(tmpImage, pnt, 0, 0, 0, ""); 
 
         writer->SetFileName( currentOutputFile.c_str() );
-        writer->SetInput( svkMriImageData::SafeDownCast( tmpImage ) );
+        writer->SetInputData( svkMriImageData::SafeDownCast( tmpImage ) );
         writer->Write();
         if ( handleComplex ){
             currentOutputFile.assign(outputFileName.c_str());
@@ -193,7 +193,7 @@ int main (int argc, char** argv)
             mrsData->GetImage(tmpImage, pnt, 0, 0, 1, ""); 
 
             writer->SetFileName( currentOutputFile.c_str() );
-            writer->SetInput( svkMriImageData::SafeDownCast( tmpImage ) );
+            writer->SetInputData( svkMriImageData::SafeDownCast( tmpImage ) );
             writer->Write();
         }
 

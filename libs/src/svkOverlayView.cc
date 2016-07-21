@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkOverlayView, "$Rev$");
+//vtkCxxRevisionMacro(svkOverlayView, "$Rev$");
 vtkStandardNewMacro(svkOverlayView);
 
 
@@ -234,11 +234,11 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
     vtkPolyData* grid = vtkPolyData::New();
     svk4DImageData::SafeDownCast( this->dataVector[MR4D] )->GetPolyDataGrid( grid );
     vtkCleanPolyData* cleaner = vtkCleanPolyData::New();
-    cleaner->SetInput( grid );
+    cleaner->SetInputData( grid );
     grid->Delete();
     
     // Pipe the edges into the mapper 
-    entireGridMapper->SetInput( cleaner->GetOutput() );
+    entireGridMapper->SetInputConnection( cleaner->GetOutputPort() );
     cleaner->Delete();
     vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID))->SetMapper( entireGridMapper );
     entireGridMapper->Delete();
@@ -341,7 +341,7 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
     }
     
     // We need to execute these before resolving the state
-    imageViewer->SetInput( dataVector[MRI] );
+    imageViewer->SetInputData( dataVector[MRI] );
     imageViewer->SetSlice( slice );
     
     if( resetViewState ) {
@@ -1337,28 +1337,43 @@ void svkOverlayView::SetupOverlay()
 
     this->SetLUT( lutType );
    
-    this->windowLevelerAxial->SetInput( dataVector[OVERLAY] );
+    this->windowLevelerAxial->SetInputData( dataVector[OVERLAY] );
     this->windowLevelerAxial->SetOutputFormatToRGBA();
     this->windowLevelerAxial->Update();
-    this->windowLevelerCoronal->SetInput( dataVector[OVERLAY] );
+    this->windowLevelerCoronal->SetInputData( dataVector[OVERLAY] );
     this->windowLevelerCoronal->SetOutputFormatToRGBA();
     this->windowLevelerCoronal->Update();
-    this->windowLevelerSagittal->SetInput( dataVector[OVERLAY] );
+    this->windowLevelerSagittal->SetInputData( dataVector[OVERLAY] );
     this->windowLevelerSagittal->SetOutputFormatToRGBA();
     this->windowLevelerSagittal->Update();
 
+    //this->axialImageActor->GetMapper()->SetInputConnection(this->axialWinLevel->GetOutputPort());
+
+    //svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
+                                   //)->SetInputData( this->windowLevelerAxial->GetOutput() );
+    //svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
+                                   //)->SetInputData( this->windowLevelerAxial->GetOutput() );
+    //svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
+                                   //)->SetInputData( this->windowLevelerCoronal->GetOutput() );
+    //svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
+                                   //)->SetInputData( this->windowLevelerCoronal->GetOutput() );
+    //svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
+                                   //)->SetInputData( this->windowLevelerSagittal->GetOutput() );
+    //svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
+                                   //)->SetInputData( this->windowLevelerSagittal->GetOutput() );
+
     svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
-                                   )->SetInput( this->windowLevelerAxial->GetOutput() );
+                                   )->GetMapper()->SetInputConnection( this->windowLevelerAxial->GetOutputPort() );
     svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
-                                   )->SetInput( this->windowLevelerAxial->GetOutput() );
+                                   )->GetMapper()->SetInputConnection( this->windowLevelerAxial->GetOutputPort() );
     svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
-                                   )->SetInput( this->windowLevelerCoronal->GetOutput() );
+                                   )->GetMapper()->SetInputConnection( this->windowLevelerCoronal->GetOutputPort() );
     svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
-                                   )->SetInput( this->windowLevelerCoronal->GetOutput() );
+                                   )->GetMapper()->SetInputConnection( this->windowLevelerCoronal->GetOutputPort() );
     svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
-                                   )->SetInput( this->windowLevelerSagittal->GetOutput() );
+                                   )->GetMapper()->SetInputConnection( this->windowLevelerSagittal->GetOutputPort() );
     svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
-                                   )->SetInput( this->windowLevelerSagittal->GetOutput() );
+                                   )->GetMapper()->SetInputConnection( this->windowLevelerSagittal->GetOutputPort() );
 
     this->SetInterpolationType( this->interpolationType );
     this->SetOverlayOpacity( this->overlayOpacity );
@@ -1428,9 +1443,9 @@ void svkOverlayView::SetupOverlay()
                                     )->GetLabelTextProperty()->ItalicOff();
 
     vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
-                                    )->SetPosition(0.02,0.27);
+                                    )->SetPosition(0.03,0.23725);
     vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
-                                    )->SetPosition2(0.15,0.8);
+                                    )->SetPosition2(0.145,0.73);
 
     if( !this->GetRenderer( svkOverlayView::PRIMARY
                            )->HasViewProp( this->GetProp( svkOverlayView::COLOR_BAR) ) ) {
@@ -1536,19 +1551,20 @@ void svkOverlayView::UpdateSincInterpolation()
 		this->sincInterpolation->Delete();
 		this->sincInterpolation = svkSincInterpolationFilter::New();
 		this->sincInterpolation->SetOutputWholeExtent( 0, xSize-1, 0, ySize-1, 0, zSize-1 );
-		this->sincInterpolation->SetInput( overlaySource );
+		this->sincInterpolation->SetInputData( overlaySource );
 		this->sincInterpolation->Update();
 		if( i == 0 ) {
 			this->interpOverlay->DeepCopy( this->sincInterpolation->GetOutput() );
+            this->interpOverlay->GetPointData()->GetArray( i )->DeepCopy(sincInterpolation->GetOutput()->GetPointData()->GetScalars() );
+		} else {
+            this->interpOverlay->GetPointData()->AddArray(sincInterpolation->GetOutput()->GetPointData()->GetScalars() );
 		}
-		this->interpOverlay->GetPointData()->GetArray( i )->DeepCopy(sincInterpolation->GetOutput()->GetPointData()->GetScalars() );
 		// Array name order is not maintained so we need to rename the arrays
 		this->interpOverlay->GetPointData()->GetArray( i )->SetName(overlaySource->GetPointData()->GetArray( i )->GetName() );
     }
 
     this->interpOverlay->GetPointData()->SetActiveScalars( oldScalars->GetName() );
 
-	this->interpOverlay->Update();
 	this->interpOverlay->SyncVTKImageDataToDcmHeader();
 	this->SetInput( this->interpOverlay, OVERLAY );
 }
@@ -1698,13 +1714,14 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
         if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
             cout << "Reslice image to MRS orientation  " << endl;
             svkObliqueReslice* reslicer = svkObliqueReslice::New();
-            reslicer->SetInput( input );
+            reslicer->SetInputData( input );
             reslicer->SetTarget( target );
             reslicer->Update();
 
             string resultInfo = this->GetDataCompatibility( reslicer->GetOutput(), targetIndex );
             if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
                 this->SetInputPostReslice( reslicer->GetOutput(), targetIndex );
+                input = reslicer->GetOutput();
                 didReslice = true;
             }
             reslicer->Delete();
@@ -1712,7 +1729,7 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
 
         //================================================================================
        
-        if( target->IsA("svk4DImageData") ) {
+        if( input != NULL && input->IsA("svkMriImageData") && target->IsA("svk4DImageData") ) {
             double targetOrigin[3]; 
             float imageToSpecSliceThickness;
             if ( this->OriginShiftRequired(input, target, targetOrigin) == true ) {
@@ -1738,7 +1755,7 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
                 float magZ = 1.01; //this decreases the imag slice spacing.  
                 cout << "reduce image slice spacing by factor of: " << magZ << endl;
                 svkObliqueReslice* reslicer3 = svkObliqueReslice::New();
-                reslicer3->SetInput( input );
+                reslicer3->SetInputData( input );
                 reslicer3->SetInterpolationMode( VTK_RESLICE_NEAREST );
                 reslicer3->SetTarget( target );
                 reslicer3->SetMagnificationFactors( magX, magY, 1./magZ);
@@ -1754,7 +1771,7 @@ bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int
                 cout << "MRS slice thicknes < MRI slice thickness.  Upsample MRI slice thickness " << endl;
                 cout << "upsample factor: = " << magZ << endl;
                 svkObliqueReslice* reslicer2 = svkObliqueReslice::New();
-                reslicer2->SetInput( input );
+                reslicer2->SetInputData( input );
                 reslicer2->SetInterpolationMode( VTK_RESLICE_NEAREST );
                 reslicer2->SetTarget( target );
                 reslicer2->SetMagnificationFactors( magX, magY, 1./magZ);
@@ -1878,10 +1895,13 @@ bool svkOverlayView::CheckDataOrientations()
 void svkOverlayView::ResetWindowLevel()
 {
     if( dataVector[MRI] != NULL ) {
-        this->imageViewer->GetInput()->UpdateInformation();
-        this->imageViewer->GetInput()->SetUpdateExtent
-           (this->imageViewer->GetInput()->GetWholeExtent());
-        this->imageViewer->GetInput()->Update();
+
+        //this->imageViewer->GetInput()->UpdateInformation();
+        //this->imageViewer->GetInput()->SetUpdateExtent
+            //(this->imageViewer->GetInput()->GetWholeExtent());
+        //this->imageViewer->GetInput()->Update();
+        this->imageViewer->UpdateInputInformation(); 
+
         double window;
         double level;
         svkMriImageData::SafeDownCast(dataVector[MRI])->GetAutoWindowLevel(window, level);

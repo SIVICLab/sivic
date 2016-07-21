@@ -43,7 +43,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkInt, "$Rev$");
+//vtkCxxRevisionMacro(svkInt, "$Rev$");
 vtkStandardNewMacro(svkInt);
 
 //! Constructor

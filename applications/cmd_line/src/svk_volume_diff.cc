@@ -182,8 +182,8 @@ int main (int argc, char** argv)
 
     //  Scale image by constant factor: 
     svkImageMathematics* math = svkImageMathematics::New();
-    math->SetInput1( reader1->GetOutput() );
-    math->SetInput2( reader2->GetOutput() ); 
+    math->SetInput1Data( reader1->GetOutput() );
+    math->SetInput2Data( reader2->GetOutput() ); 
     math->SetOperationToSubtract();   
     math->Update();
 
@@ -195,26 +195,26 @@ int main (int argc, char** argv)
 
         //  find the intersection of the 2 volumes 
         svkImageMathematics* intersect = svkImageMathematics::New();
-        intersect->SetInput1( reader1->GetOutput() );
-        intersect->SetInput2( reader2->GetOutput() ); 
+        intersect->SetInput1Data( reader1->GetOutput() );
+        intersect->SetInput2Data( reader2->GetOutput() ); 
         intersect->SetOperationToMultiply();   
         intersect->Update();
 
         vtkImageAccumulate* intersectHist = vtkImageAccumulate::New();
-        intersectHist->SetInput( intersect->GetOutput() ); 
+        intersectHist->SetInputData( intersect->GetOutput() ); 
         intersectHist->IgnoreZeroOn();
         intersectHist->Update();
         int numVoxelsIntersect = intersectHist->GetVoxelCount();
        
         //  Find the num voxels in each of the 2 volumes: 
         vtkImageAccumulate* vol1Hist = vtkImageAccumulate::New();
-        vol1Hist->SetInput( reader1->GetOutput() ); 
+        vol1Hist->SetInputData( reader1->GetOutput() ); 
         vol1Hist->IgnoreZeroOn();
         vol1Hist->Update();
         int numVoxels1 = vol1Hist->GetVoxelCount();
 
         vtkImageAccumulate* vol2Hist = vtkImageAccumulate::New();
-        vol2Hist->SetInput( reader2->GetOutput() ); 
+        vol2Hist->SetInputData( reader2->GetOutput() ); 
         vol2Hist->IgnoreZeroOn();
         vol2Hist->Update();
         int numVoxels2 = vol2Hist->GetVoxelCount();
@@ -240,7 +240,7 @@ int main (int argc, char** argv)
 
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( math->GetOutput() );
+    writer->SetInputData( math->GetOutput() );
     writer->Write();
     writer->Delete();
 

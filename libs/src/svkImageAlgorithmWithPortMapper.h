@@ -76,7 +76,7 @@ class svkImageAlgorithmWithPortMapper : public svkImageAlgorithm
     public:
 
         static svkImageAlgorithmWithPortMapper* New();
-        vtkTypeRevisionMacro( svkImageAlgorithmWithPortMapper, svkImageAlgorithm);
+        vtkTypeMacro( svkImageAlgorithmWithPortMapper, svkImageAlgorithm);
 
 
         //! Parses an XML element and converts it into input port parameters. Converts image filename strings to svkImageData objects.

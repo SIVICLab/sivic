@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDICOMWriter, "$Rev$");
+//vtkCxxRevisionMacro(svkDICOMWriter, "$Rev$");
 
 
 /*!
@@ -88,7 +88,7 @@ void svkDICOMWriter::SetInput( vtkDataObject* input )
 void svkDICOMWriter::SetInput(int index, vtkDataObject* input)
 {
     if(input) {
-        this->SetInputConnection(index, input->GetProducerPort());
+        this->SetInputData(index, input);
     } else {
         // Setting a NULL input removes the connection.
         this->SetInputConnection(index, 0);

@@ -63,7 +63,7 @@ class svkLCModelRawWriter : public svkImageWriter
     public:
 
         static svkLCModelRawWriter* New();
-        vtkTypeRevisionMacro( svkLCModelRawWriter, svkImageWriter);
+        vtkTypeMacro( svkLCModelRawWriter, svkImageWriter);
 
         //  Methods:
         vtkDataObject*  GetInput(int port);

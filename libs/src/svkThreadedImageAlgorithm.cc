@@ -50,7 +50,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkThreadedImageAlgorithm, "$Rev$");
+//vtkCxxRevisionMacro(svkThreadedImageAlgorithm, "$Rev$");
 
 
 /*!

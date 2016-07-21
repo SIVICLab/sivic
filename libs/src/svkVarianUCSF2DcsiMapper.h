@@ -49,9 +49,9 @@
 #include <svkMRSIOD.h>
 #include <svkVarianFidMapper.h>
 
-#include <vtkstd/map>
-#include <vtkstd/string>
-#include <vtkstd/vector>
+#include <map>
+#include <string>
+#include <vector>
 
 
 namespace svk {
@@ -75,7 +75,7 @@ class svkVarianUCSF2DcsiMapper : public svkVarianFidMapper
 
     public:
 
-        vtkTypeRevisionMacro( svkVarianUCSF2DcsiMapper, svkVarianFidMapper);
+        vtkTypeMacro( svkVarianUCSF2DcsiMapper, svkVarianFidMapper);
         static          svkVarianUCSF2DcsiMapper* New();
 
         

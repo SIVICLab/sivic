@@ -55,7 +55,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGEPostageStampReader, "$Rev$");
+//vtkCxxRevisionMacro(svkGEPostageStampReader, "$Rev$");
 vtkStandardNewMacro(svkGEPostageStampReader);
 
 

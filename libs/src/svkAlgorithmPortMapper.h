@@ -126,7 +126,7 @@ class svkAlgorithmPortMapper : public vtkObject
         };
 
         static svkAlgorithmPortMapper* New();
-        vtkTypeRevisionMacro( svkAlgorithmPortMapper, vtkObject);
+        vtkTypeMacro( svkAlgorithmPortMapper, vtkObject);
 
         //! Set the internal algorithm whos input ports are to be set.
         void                     SetAlgorithm( vtkAlgorithm* algo );

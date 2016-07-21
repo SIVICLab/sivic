@@ -63,7 +63,7 @@ class svkLCModelCoordReader : public svkLCModelReader
     public:
 
         static svkLCModelCoordReader* New();
-        vtkTypeRevisionMacro( svkLCModelCoordReader, svkLCModelReader );
+        vtkTypeMacro( svkLCModelCoordReader, svkLCModelReader );
 
         //  Enum reader type
         virtual svkImageReader2::ReaderType GetReaderType()
@@ -82,7 +82,7 @@ class svkLCModelCoordReader : public svkLCModelReader
         ~svkLCModelCoordReader();
 
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
-        virtual void                             ExecuteData(vtkDataObject *output);
+        virtual void                             ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo);
 
 
     private:

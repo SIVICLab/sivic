@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMriZeroFill, "$Rev$");
+//vtkCxxRevisionMacro(svkMriZeroFill, "$Rev$");
 vtkStandardNewMacro(svkMriZeroFill);
 
 
@@ -226,15 +226,24 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
         }
     }
     translateExtent->SetExtentTranslation( extentTranslation ); 
-    translateExtent->SetInput( inputData );
+    translateExtent->SetInputData( inputData );
+    translateExtent->Update(); 
+    vtkImageData::SetScalarType( 
+        vtkImageData::GetScalarType( inputData->GetInformation() ), 
+        translateExtent->GetOutput()->GetInformation() 
+    ); 
    
     // Now we can use the vtk pad algorithm 
     vtkImageConstantPad* pad = NULL;
     pad = vtkImageConstantPad::New();
     pad->SetOutputWholeExtent(this->outputWholeExtent);
     pad->SetConstant(0.0);
-    pad->SetInput(translateExtent->GetOutput());
+    pad->SetInputData(translateExtent->GetOutput());
     pad->Update();
+    vtkImageData::SetScalarType( 
+        vtkImageData::GetScalarType( inputData->GetInformation() ), 
+        pad->GetOutput()->GetInformation() 
+    ); 
 
     // Now let's move the origin to the appropriate location
     double* spacing = inputData->GetSpacing();
@@ -296,9 +305,8 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     // Apply a half voxel phase shift. This is because the sampled points of the data has changed.
     svkImageLinearPhase* linearShift = svkImageLinearPhase::New();
     linearShift->SetShiftWindow( shiftWindow );
-    linearShift->SetInput( targetData );
+    linearShift->SetInputData( targetData );
     linearShift->Update();
-
 
     // We need to scale the image by the updated size
     // This is because the FFT scalse up by the number of points
@@ -310,9 +318,13 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     vtkImageMathematics* multiply = vtkImageMathematics::New();
     multiply->SetConstantK( scale );
     multiply->SetOperationToMultiplyByK();
-    multiply->SetInput( linearShift->GetOutput() );
+    multiply->SetInputData( linearShift->GetOutput() );
     multiply->Update();
-   
+    vtkImageData::SetScalarType( 
+        vtkImageData::GetScalarType( linearShift->GetOutput()->GetInformation() ), 
+        multiply->GetOutput()->GetInformation() 
+    ); 
+
     targetData->DeepCopy(multiply->GetOutput());
 
     // After the Linear Phase the BitsAllocated and PixelRepresentation must be reset
@@ -334,7 +346,6 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
         inputData->DeepCopy( targetData );
         inputData->SyncVTKImageDataToDcmHeader();
         inputData->Modified();
-        inputData->Update();
     } else {
         this->GetOutput()->DeepCopy( targetData );
         this->GetOutput()->SyncVTKImageDataToDcmHeader();

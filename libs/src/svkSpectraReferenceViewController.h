@@ -104,7 +104,7 @@ class svkSpectraReferenceViewController: public svkDataViewController
     public:
 
  
-        vtkTypeRevisionMacro( svkSpectraReferenceViewController, svkDataViewController );
+        vtkTypeMacro( svkSpectraReferenceViewController, svkDataViewController );
 
         static svkSpectraReferenceViewController*       New();
 

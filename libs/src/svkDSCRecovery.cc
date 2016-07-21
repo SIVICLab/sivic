@@ -50,7 +50,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDSCRecovery, "$Rev$");
+//vtkCxxRevisionMacro(svkDSCRecovery, "$Rev$");
 vtkStandardNewMacro(svkDSCRecovery);
 
 

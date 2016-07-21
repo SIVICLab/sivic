@@ -85,15 +85,15 @@ class svkMetaboliteRatioZScores: public svkImageAlgorithm
     public:
 
         static svkMetaboliteRatioZScores* New();
-        vtkTypeRevisionMacro( svkMetaboliteRatioZScores, svkImageAlgorithm);
+        vtkTypeMacro( svkMetaboliteRatioZScores, svkImageAlgorithm);
 
         void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
         void                    SetVerbose( bool isVerbose );     
         void                    LimitToSelectedVolume(float fraction = 0.5001);
         void                    LimitToSelectedVolume( short* selectedVolumeMask);
-        void                    SetInputNumerator(vtkDataObject *in) { this->SetInput(0, in); }
-        void                    SetInputDenominator(vtkDataObject *in) { this->SetInput(1, in); }
-        void                    SetInputMrsData(vtkDataObject *in) { this->SetInput(2, in); }
+        void                    SetInputNumerator(vtkDataObject *in) { this->SetInputDataObject(0, in); }
+        void                    SetInputDenominator(vtkDataObject *in) { this->SetInputDataObject(1, in); }
+        void                    SetInputMrsData(vtkDataObject *in) { this->SetInputDataObject(2, in); }
         void                    SetZScoreThresholds( double lowerThreshold, double upperThreshold ); 
 
 

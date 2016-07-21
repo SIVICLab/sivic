@@ -86,7 +86,7 @@ class svkMRSCombine : public svkImageInPlaceFilter
     public:
 
         static svkMRSCombine* New();
-        vtkTypeRevisionMacro( svkMRSCombine, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMRSCombine, svkImageInPlaceFilter);
 
 
         typedef enum {

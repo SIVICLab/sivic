@@ -59,7 +59,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkIdfVolumeWriter, "$Rev$");
+//vtkCxxRevisionMacro(svkIdfVolumeWriter, "$Rev$");
 vtkStandardNewMacro(svkIdfVolumeWriter);
 
 
@@ -159,7 +159,8 @@ void svkIdfVolumeWriter::WriteData()
     int numSlices = hdr->GetNumberOfSlices();
     int numVolumes = this->GetImageDataInput(0)->GetPointData()->GetNumberOfArrays();
 
-    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
+    int vtkDataType = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() ); 
+    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( vtkDataType ); 
     if ( dataType == svkDcmHeader::SIGNED_FLOAT_8 ) {
         this->InitDoublePixelRange(); 
     }
@@ -167,7 +168,7 @@ void svkIdfVolumeWriter::WriteData()
     //  Write out each volume:
     for ( int vol = 0; vol < numVolumes; vol++ ) {
 
-        vtkstd::string extension; 
+        string extension; 
         int numBytesPerPixel; 
         void* pixels; 
         float* floatPixels = NULL;
@@ -213,7 +214,7 @@ void svkIdfVolumeWriter::WriteData()
         }
 
 
-        vtkstd::string volName = this->InternalFileName;
+        string volName = this->InternalFileName;
         if (numVolumes > 1 ) {
             volName += "_" + svkTypeUtils::IntToString(vol + 1);
         }
@@ -267,11 +268,11 @@ void svkIdfVolumeWriter::WriteHeader()
     for ( int vol = 0; vol < numVolumes; vol++ ) {
         string header = this->GetHeaderString(vol);
 
-        vtkstd::string volName = this->InternalFileName;
+        string volName = this->InternalFileName;
         if (numVolumes > 1 ) {
             volName += "_" +  svkTypeUtils::IntToString(vol + 1);
         }
-        volName += vtkstd::string(".idf");
+        volName += string(".idf");
 
         ofstream out( volName.c_str() );
         if(!out) {
@@ -305,28 +306,28 @@ string svkIdfVolumeWriter::GetHeaderString( int vol )
     out << "study #: " << setw(7) << hdr->GetStringValue( "StudyID" ) << endl;
     out << "series #: " << setw(7) << hdr->GetIntValue( "SeriesNumber" ) << endl;
     out << "position: ";
-    vtkstd::string positionString = hdr->GetStringValue( "PatientPosition" );
-    if ( positionString.substr(0,2) == vtkstd::string( "HF" ) ){
+    string positionString = hdr->GetStringValue( "PatientPosition" );
+    if ( positionString.substr(0,2) == string( "HF" ) ){
         out << "Head First, ";
-    } else if ( positionString.substr(0,2) == vtkstd::string( "FF" ) ) {
+    } else if ( positionString.substr(0,2) == string( "FF" ) ) {
         out << "Feet First, ";
     } else {
         out << "UNKNOWN, ";
     }
 
-    if ( positionString.substr(2) == vtkstd::string( "S" ) ) {
+    if ( positionString.substr(2) == string( "S" ) ) {
         out << "Supine" << endl;
-    } else if ( positionString.substr(2) == vtkstd::string( "P" ) ) {
+    } else if ( positionString.substr(2) == string( "P" ) ) {
         out << "Prone" << endl;
-    } else if ( positionString.substr(2) == vtkstd::string( "DL" ) ) {
+    } else if ( positionString.substr(2) == string( "DL" ) ) {
         out << "Decubitus Left" << endl;
-    } else if ( positionString.substr(2) == vtkstd::string( "DR" ) ) {
+    } else if ( positionString.substr(2) == string( "DR" ) ) {
         out << "Decubitus Right" << endl;
     } else {
         out << "UNKNOWN" << endl;;
     }
 
-    vtkstd::string coilName;
+    string coilName;
     if ( hdr->ElementExists( "ReceiveCoilName" ) ) {
         coilName = hdr->GetStringSequenceItemElement(
             "MRReceiveCoilSequence",
@@ -382,15 +383,15 @@ string svkIdfVolumeWriter::GetHeaderString( int vol )
 
     //  if there are multiple volumes append _volNum to rootname
     if ( numVolumes > 1 ) {
-        out << "rootname: " << vtkstd::string(FileName).substr( vtkstd::string(FileName).rfind("/") + 1 )
+        out << "rootname: " << string(FileName).substr( string(FileName).rfind("/") + 1 )
         << "_" << svkTypeUtils::IntToString(vol+1) << endl;
     } else {
-        out << "rootname: " << vtkstd::string(FileName).substr( vtkstd::string(FileName).rfind("/") + 1 ) << endl;
+        out << "rootname: " << string(FileName).substr( string(FileName).rfind("/") + 1 ) << endl;
     }
 
 
 
-    vtkstd::string date = hdr->GetStringValue( "StudyDate" );
+    string date = hdr->GetStringValue( "StudyDate" );
     if ( date.length() == 0 ) {
         date.assign("        ");
     } else if ( date.length() < 8 ) {
@@ -406,7 +407,8 @@ string svkIdfVolumeWriter::GetHeaderString( int vol )
         << date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3]
         << endl;
 
-    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
+    int vtkDataType = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() ); 
+    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( vtkDataType ); 
     if (dataType == svkDcmHeader::UNSIGNED_INT_1) {
         out << "filetype:   2     entry/pixel:  1     DICOM format images" << endl;
     } else if (dataType == svkDcmHeader::UNSIGNED_INT_2) {
@@ -418,8 +420,10 @@ string svkIdfVolumeWriter::GetHeaderString( int vol )
         out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
     } else if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
         out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
+    } else {
+        cout << "ERROR: Can not determine IDF filetype." << endl;
+        exit(1);
     }
-
 
     double center[3];
     this->GetIDFCenter(center);
@@ -462,7 +466,7 @@ string svkIdfVolumeWriter::GetHeaderString( int vol )
         inputRangeMax = this->globalRangeMax;
     } else {
         vtkImageAccumulate* histo = vtkImageAccumulate::New();
-        histo->SetInput( this->GetImageDataInput(0) );
+        histo->SetInputData( this->GetImageDataInput(0) );
         histo->Update();
         inputRangeMin = (histo->GetMin())[0];
         inputRangeMax = (histo->GetMax())[0];
@@ -544,7 +548,7 @@ void svkIdfVolumeWriter::GetIDFCenter(double center[3])
 /*!
  *   
  */
-vtkstd::string svkIdfVolumeWriter::GetIDFPatientName(vtkstd::string PatientName)
+string svkIdfVolumeWriter::GetIDFPatientName(string PatientName)
 {
 
     //  Remove DICOM delimiters:
@@ -556,7 +560,7 @@ vtkstd::string svkIdfVolumeWriter::GetIDFPatientName(vtkstd::string PatientName)
 
     //  Remove multiple spaces:
     size_t pos; 
-    while ( (pos = PatientName.find("  ")) != vtkstd::string::npos) {
+    while ( (pos = PatientName.find("  ")) != string::npos) {
         PatientName.erase(pos, 1);     
     }
 

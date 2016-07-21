@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMultiCoilPhase, "$Rev$");
+//vtkCxxRevisionMacro(svkMultiCoilPhase, "$Rev$");
 vtkStandardNewMacro(svkMultiCoilPhase);
 
 
@@ -113,7 +113,7 @@ int svkMultiCoilPhase::RequestData( vtkInformation* request, vtkInformationVecto
     int numVoxels[3]; 
     data->GetNumberOfVoxels(numVoxels); 
 
-    this->phaseAlgo->SetInput( data );
+    this->phaseAlgo->SetInputData( data );
     float phase; 
     int index[3]; 
     int denominator = numVoxels[2] * numVoxels[0] * numVoxels[1] + numVoxels[1] * numVoxels[0] + numVoxels[0];
@@ -151,7 +151,7 @@ int svkMultiCoilPhase::RequestData( vtkInformation* request, vtkInformationVecto
 
                             //  Apply algo to data from reader:
                             svkPhaseSpec* pa = svkPhaseSpec::New();
-                            pa->SetInput(data); 
+                            pa->SetInputData(data); 
                             pa->SetChannel( coilNum); 
                             index[0] = x; 
                             index[1] = y; 
@@ -160,7 +160,6 @@ int svkMultiCoilPhase::RequestData( vtkInformation* request, vtkInformationVecto
                             pa->SetPhase0( phase ); 
                             pa->Update( ); 
                             pa->GetOutput()->Modified();
-                            data->Update();
                             pa->Delete(); 
     
                             // SetPhase is relative to the previous value.  Probably need to add a SetPhase, vs 
@@ -176,7 +175,7 @@ int svkMultiCoilPhase::RequestData( vtkInformation* request, vtkInformationVecto
                 }
             } else {
                 svkPhaseSpec* pa = svkPhaseSpec::New();
-                pa->SetInput(data); 
+                pa->SetInputData(data); 
                 pa->SetChannel( coilNum ); 
                 index[0] = numVoxels[0]-1; 
                 index[1] = numVoxels[1]-1; 
@@ -186,7 +185,6 @@ int svkMultiCoilPhase::RequestData( vtkInformation* request, vtkInformationVecto
                 pa->SetPhase0( phase ); 
                 pa->Update( ); 
                 pa->GetOutput()->Modified();
-                data->Update();
                 pa->Delete(); 
             }
         }
@@ -195,7 +193,7 @@ int svkMultiCoilPhase::RequestData( vtkInformation* request, vtkInformationVecto
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
     return 1; 
 } 
 

@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageMapToColors, "$Rev$");
+//vtkCxxRevisionMacro(svkImageMapToColors, "$Rev$");
 vtkStandardNewMacro(svkImageMapToColors);
 
 //! Constructor

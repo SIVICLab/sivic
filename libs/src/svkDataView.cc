@@ -50,7 +50,7 @@ using namespace svk;
 #define DEBUG 0
 
 
-vtkCxxRevisionMacro(svkDataView, "$Rev$");
+//vtkCxxRevisionMacro(svkDataView, "$Rev$");
 
 
 //! Constructor

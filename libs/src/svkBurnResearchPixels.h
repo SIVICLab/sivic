@@ -69,7 +69,7 @@ class svkBurnResearchPixels : public svkImageInPlaceFilter
     public:
 
         static svkBurnResearchPixels* New();
-        vtkTypeRevisionMacro( svkBurnResearchPixels, svkImageInPlaceFilter);
+        vtkTypeMacro( svkBurnResearchPixels, svkImageInPlaceFilter);
 
     protected:
 

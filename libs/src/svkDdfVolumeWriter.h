@@ -48,7 +48,6 @@
 #include <svkImageWriter.h>
 #include <svkImageData.h>
 
-#include <vtkstd/string>
 
 
 namespace svk {
@@ -63,7 +62,7 @@ class svkDdfVolumeWriter : public svkImageWriter
     public:
 
         static svkDdfVolumeWriter* New();
-        vtkTypeRevisionMacro( svkDdfVolumeWriter, svkImageWriter);
+        vtkTypeMacro( svkDdfVolumeWriter, svkImageWriter);
 
         //  Methods:
         vtkDataObject*  GetInput(int port);

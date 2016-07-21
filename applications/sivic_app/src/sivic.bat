@@ -34,5 +34,5 @@ SET TCL_LIBRARY=%~dp0%\.\..\sivic\vtk\lib\tcl8.5
 SET TK_LIBRARY=%~dp0%\..sivic\vtk\lib\tk8.5
 SET HOME=%HOMEDRIVE%%HOMEPATH%
 SET DCMDICTPATH=%~dp0%\..\sivic\dcmtk\lib\dicom.dic
-
+SET __COMPAT_LAYER=WIN7RTM
 "%~dp0%"\..\sivic\sivic.exe

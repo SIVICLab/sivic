@@ -109,7 +109,7 @@ class svkImageData: public vtkImageData
 
     public:
 
-        vtkTypeRevisionMacro( svkImageData, vtkImageData );
+        vtkTypeMacro( svkImageData, vtkImageData );
         virtual void       PrintSelf( ostream &os, vtkIndent indent );
 
 

@@ -64,7 +64,7 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
     public:
 
         static sivicProcessingWidget *New();
-        vtkTypeRevisionMacro(sivicProcessingWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicProcessingWidget,sivicKWCompositeWidget);
 
 
     protected:
@@ -73,6 +73,8 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
         sivicProcessingWidget();
         ~sivicProcessingWidget();
 
+        vtkKWLabel*                     spatialDomainLabel;
+        vtkKWLabel*                     spectralDomainLabel;
         vtkKWCheckButton*               spatialButton;
         vtkKWCheckButton*               spectralButton;
         vtkKWPushButton*                fftButton;
