@@ -224,7 +224,7 @@ void  svkApodizationWindow::GetHammingWindow( vector < vtkFloatArray* >* window,
         svkApodizationWindow::GetHammingWindowData( window, data );
     } else {
         cout << "WINDOW: " << window << endl;
-         vtkErrorWithObjectMacro(data, "Could not generate Hamming window for give data type!");
+        vtkErrorWithObjectMacro(data, "Could not generate Hamming window for give data type!");
     }
 }
 
@@ -249,7 +249,7 @@ void svkApodizationWindow::GetHammingWindowData( vector < vtkFloatArray* >* wind
 
             int numVoxels = (*window)[dim]->GetNumberOfTuples();
             int numComponents = (*window)[dim]->GetNumberOfComponents();
-	    float N = svkApodizationWindow::GetWindowExpansion( data, numVoxels);
+            float N = svkApodizationWindow::GetWindowExpansion( data, numVoxels);
             for( int i = 0; i < numVoxels; i++ ) {
 
                 float hamming = 0.54 - 0.46 * (cos (((2 * vtkMath::Pi())/(N - 1))*(i)));
@@ -277,13 +277,13 @@ float svkApodizationWindow::GetWindowExpansion( svkImageData* data, int numVoxel
 
     if ( k0Sampled.compare("YES") == 0 ) {
         if (numVoxels%2 == 0) {
-	    N = numVoxels + 1;
+	        N = numVoxels + 1;
         } else {
-	    N = numVoxels;
+	        N = numVoxels;
         }
     } else {
         if (numVoxels%2 == 0) {
-	    N = numVoxels;
+	        N = numVoxels;
         } else {
             cout << "Window Error" << endl;
             exit(1);
