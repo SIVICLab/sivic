@@ -71,6 +71,13 @@ class svkApodizationWindow : public vtkObject
             LAST 
         }WindowType;
 
+        typedef enum {
+            ALL = 0,
+            COL,
+            ROW, 
+            Slice, 
+            LAST 
+        }Dimension;
 
         // vtk type revision macro
         vtkTypeMacro( svkApodizationWindow, vtkObject );
@@ -80,7 +87,7 @@ class svkApodizationWindow : public vtkObject
 
         static void  GetLorentzianWindow( vector < vtkFloatArray* >* window, svkImageData* data, float fwhh );
         static void  GetGaussianWindow(   vector < vtkFloatArray* >* window, svkImageData* data, float fwhh, float center = 0 );
-        static void  GetHammingWindow(    vector < vtkFloatArray* >* window, svkImageData* data );
+        static void  GetHammingWindow(    vector < vtkFloatArray* >* window, svkImageData* data, svkApodizationWindow::Dimension = svkApodizationWindow::ALL );
 
 	protected:
 
