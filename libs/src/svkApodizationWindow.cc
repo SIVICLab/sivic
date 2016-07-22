@@ -204,7 +204,7 @@ void svkApodizationWindow::GetGaussianWindow( vector < vtkFloatArray* >* window,
  *                   The number of tuples allocated determines the number of points in the window.
  *
  */
-void  svkApodizationWindow::GetHammingWindow( vector < vtkFloatArray* >* window, svkImageData* data )
+void  svkApodizationWindow::GetHammingWindow( vector < vtkFloatArray* >* window, svkImageData* data, svkApodizationWindow::Dimension dimension )
 {
     if( data->IsA("svkMrsImageData") && window != NULL ) {
 
@@ -221,7 +221,7 @@ void  svkApodizationWindow::GetHammingWindow( vector < vtkFloatArray* >* window,
             }
         }
         svkApodizationWindow::InitializeWindowSpatial( window, data );
-        svkApodizationWindow::GetHammingWindowData( window, data );
+        svkApodizationWindow::GetHammingWindowData( window, data, dimension );
     } else {
         cout << "WINDOW: " << window << endl;
         vtkErrorWithObjectMacro(data, "Could not generate Hamming window for give data type!");
@@ -239,7 +239,7 @@ void  svkApodizationWindow::GetHammingWindow( vector < vtkFloatArray* >* window,
  *                   The number of tuples allocated determines the number of points in the window.
  */
  
-void svkApodizationWindow::GetHammingWindowData( vector < vtkFloatArray* >* window, svkImageData* data )
+void svkApodizationWindow::GetHammingWindowData( vector < vtkFloatArray* >* window, svkImageData* data, svkApodizationWindow::Dimension dimension )
 {
 
     if( window != NULL ) {
@@ -250,14 +250,17 @@ void svkApodizationWindow::GetHammingWindowData( vector < vtkFloatArray* >* wind
             int numVoxels = (*window)[dim]->GetNumberOfTuples();
             int numComponents = (*window)[dim]->GetNumberOfComponents();
             float N = svkApodizationWindow::GetWindowExpansion( data, numVoxels);
+
             for( int i = 0; i < numVoxels; i++ ) {
 
-                float hamming = 0.54 - 0.46 * (cos (((2 * vtkMath::Pi())/(N - 1))*(i)));
+                //  Only set hamming window in requested dimensions, others set to 1: 
+                float hamming = 1;  
+                if ( dim == dimension || dimension == svkApodizationWindow::THREE_D ) {  
+                    hamming = 0.54 - 0.46 * (cos (((2 * vtkMath::Pi())/(N - 1))*(i)));
+                }
                 
-                float value = hamming; 
-
                 for( int j = 0; j < numComponents; j++ ) {
-                    (*window)[dim]->SetComponent( i, j, value );
+                    (*window)[dim]->SetComponent( i, j, hamming);
                 }
             }
         }
@@ -266,7 +269,7 @@ void svkApodizationWindow::GetHammingWindowData( vector < vtkFloatArray* >* wind
 
 
 /*!
- * Below is a truth table that determines the size of the window under different conditions.
+ *  Below is a truth table that determines the size of the window under different conditions.
  */
 
 float svkApodizationWindow::GetWindowExpansion( svkImageData* data, int numVoxels )

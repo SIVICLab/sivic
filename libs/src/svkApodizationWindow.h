@@ -72,11 +72,10 @@ class svkApodizationWindow : public vtkObject
         }WindowType;
 
         typedef enum {
-            ALL = 0,
-            COL,
+            COL = 0,
             ROW, 
             Slice, 
-            LAST 
+            THREE_D
         }Dimension;
 
         // vtk type revision macro
@@ -87,7 +86,9 @@ class svkApodizationWindow : public vtkObject
 
         static void  GetLorentzianWindow( vector < vtkFloatArray* >* window, svkImageData* data, float fwhh );
         static void  GetGaussianWindow(   vector < vtkFloatArray* >* window, svkImageData* data, float fwhh, float center = 0 );
-        static void  GetHammingWindow(    vector < vtkFloatArray* >* window, svkImageData* data, svkApodizationWindow::Dimension = svkApodizationWindow::ALL );
+        static void  GetHammingWindow(    vector < vtkFloatArray* >* window, 
+                                          svkImageData* data, 
+                                          svkApodizationWindow::Dimension dimension = svkApodizationWindow::THREE_D);
 
 	protected:
 
@@ -98,7 +99,7 @@ class svkApodizationWindow : public vtkObject
     private:
         static void  GetLorentzianWindow( vector < vtkFloatArray* >* window, float fwhh, float dt );
         static void  GetGaussianWindow(   vector < vtkFloatArray* >* window, float fwhh, float dt, float center = 0 );
-        static void  GetHammingWindowData(    vector < vtkFloatArray* >* window, svkImageData* data );
+        static void  GetHammingWindowData(    vector < vtkFloatArray* >* window, svkImageData* data, svkApodizationWindow::Dimension dimension );
         static void  InitializeWindowSpectral( vector < vtkFloatArray* >*  window, svkImageData* data );
         static void  InitializeWindowSpatial(  vector < vtkFloatArray* >*  window, svkImageData* data );
         static float GetWindowResolution( svkImageData* data );
