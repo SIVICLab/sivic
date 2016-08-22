@@ -111,11 +111,14 @@ void svkImageActor::ComputeMatrix()
 
             vtkTransform* rotationTransform = vtkTransform::New();
             rotationTransform->Identity();
+            vtkMatrix4x4* rotationMatrix = vtkMatrix4x4::New();
             for( int i = 0; i < 3; i++) {
                 for( int j = 0; j < 3; j++) {
-                    rotationTransform->GetMatrix()->SetElement(i,j,dcos[j][i]);
+                    rotationMatrix->SetElement(i,j,dcos[j][i]);
                 }
             }
+            rotationTransform->SetMatrix(rotationMatrix);
+            rotationMatrix->Delete();
 
             vtkTransform* retranslate = vtkTransform::New();
             retranslate->Identity();
