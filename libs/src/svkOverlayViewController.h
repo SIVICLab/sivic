@@ -104,7 +104,7 @@ class svkOverlayViewController: public svkDataViewController
     public:
 
  
-        vtkTypeRevisionMacro( svkOverlayViewController, svkDataViewController );
+        vtkTypeMacro( svkOverlayViewController, svkDataViewController );
 
         static svkOverlayViewController*       New();
 

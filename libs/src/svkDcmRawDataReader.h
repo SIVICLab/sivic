@@ -60,7 +60,7 @@ class svkDcmRawDataReader : public svkDcmVolumeReader
     public:
 
         static svkDcmRawDataReader* New();
-        vtkTypeRevisionMacro( svkDcmRawDataReader, svkDcmVolumeReader );
+        vtkTypeMacro( svkDcmRawDataReader, svkDcmVolumeReader );
 
         // Description: 
         // A descriptive name for this format

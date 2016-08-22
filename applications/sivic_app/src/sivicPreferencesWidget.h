@@ -65,7 +65,7 @@ class sivicPreferencesWidget : public sivicKWCompositeWidget
 
 		static void GetColorFromRegistry(vtkKWApplication* app, string subkey, double rgb[3]);
         static sivicPreferencesWidget *New();
-        vtkTypeRevisionMacro(sivicPreferencesWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicPreferencesWidget,sivicKWCompositeWidget);
 
         void   RestorePreferencesFromRegistry( );
         bool   GetReadOnlyOneInputFile();

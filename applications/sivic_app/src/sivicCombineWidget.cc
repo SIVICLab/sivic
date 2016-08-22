@@ -11,7 +11,7 @@
 #include <vtkSivicController.h>
 
 vtkStandardNewMacro( sivicCombineWidget );
-vtkCxxRevisionMacro( sivicCombineWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicCombineWidget, "$Revision$");
 
 
 /*! 
@@ -126,7 +126,7 @@ void sivicCombineWidget::ExecuteCombine(svkMRSCombine::CombinationMethod method,
         this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
 
         svkMRSCombine* coilCombine = svkMRSCombine::New();
-        coilCombine->SetInput( data );
+        coilCombine->SetInputData( data );
 
         coilCombine->SetCombinationDimension( dimension );  //for combining time points
         coilCombine->SetCombinationMethod( method );  //for combining as magnitude data

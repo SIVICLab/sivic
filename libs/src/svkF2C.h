@@ -69,7 +69,7 @@ class svkF2C: public vtkObject
     public:
 
         static svkF2C* New();
-        vtkTypeRevisionMacro( svkF2C, vtkObject);
+        vtkTypeMacro( svkF2C, vtkObject);
 
 
         static int  GetIDFHeader( char* fileRootName, char* headerString );

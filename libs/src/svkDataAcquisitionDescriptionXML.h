@@ -96,7 +96,7 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
     public:
 
         static svkDataAcquisitionDescriptionXML* New();
-        vtkTypeRevisionMacro( svkDataAcquisitionDescriptionXML, vtkObject);
+        vtkTypeMacro( svkDataAcquisitionDescriptionXML, vtkObject);
 
         int                         SetXMLFileName( vtkstd::string xmlFileName );     
         vtkstd::string              GetXMLFileName( );

@@ -64,7 +64,7 @@ int main (int argc, char** argv)
 
     svkImageData* data = model->LoadFile( filename.c_str() );
     data->Register(NULL); 
-    data->Update();
+    //data->Update();
     if( !data->IsA("svkMriImageData") ) {
         cerr << "INPUT MUST BE AN IMAGE!" << endl;
         data->Delete();

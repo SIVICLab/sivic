@@ -70,7 +70,7 @@ class svkUCSFUtils : public vtkObject
         static bool mapCreated;
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkUCSFUtils,vtkObject );
+        vtkTypeMacro( svkUCSFUtils,vtkObject );
   
         // vtk initialization 
         static svkUCSFUtils* New();  

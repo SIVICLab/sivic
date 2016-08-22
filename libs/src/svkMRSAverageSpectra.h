@@ -70,7 +70,7 @@ class svkMRSAverageSpectra : public svkImageInPlaceFilter
     public:
 
         static svkMRSAverageSpectra* New();
-        vtkTypeRevisionMacro( svkMRSAverageSpectra, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMRSAverageSpectra, svkImageInPlaceFilter);
 
         void            LimitToSelectionBox(); 
         void            AverageMagnitudeSpectra();
@@ -112,7 +112,7 @@ class svkMRSAverageSpectra : public svkImageInPlaceFilter
         bool                useSelectionBoxMask;
         bool                useMagnitudeSpectra;
         bool                averageOverNonSpatialDims;
-        short*              maskROI;
+        vtkDataArray*       maskROI;
         svkMrsImageData*    averageData; 
 
 };

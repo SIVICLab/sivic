@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageView2DController, "$Rev$");
+//vtkCxxRevisionMacro(svkImageView2DController, "$Rev$");
 vtkStandardNewMacro(svkImageView2DController);
 
 

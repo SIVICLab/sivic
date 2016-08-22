@@ -62,7 +62,7 @@ class svkGESignaLX2Reader : public svkGESigna5XReader
     public:
         
         static svkGESignaLX2Reader* New();
-        vtkTypeRevisionMacro( svkGESignaLX2Reader, svkGESigna5XReader);
+        vtkTypeMacro( svkGESignaLX2Reader, svkGESigna5XReader);
 
         //  Methods:
         virtual int CanReadFile(const char* fname);

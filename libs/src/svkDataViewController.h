@@ -79,7 +79,7 @@ class svkDataViewController: public vtkObject
     //  validate inputs and initialization order... simplify life for application layer. 
     public:
 
-        vtkTypeRevisionMacro( svkDataViewController, vtkObject);
+        vtkTypeMacro( svkDataViewController, vtkObject);
         
         svkDataViewController();
         ~svkDataViewController();

@@ -38,7 +38,7 @@
 #include <vtkSivicController.h>
 
 vtkStandardNewMacro( sivicProcessingWidget );
-vtkCxxRevisionMacro( sivicProcessingWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicProcessingWidget, "$Revision$");
 
 
 /*! 
@@ -95,6 +95,18 @@ void sivicProcessingWidget::CreateWidget()
     checkButtons->ExpandWidgetsOn( );
     checkButtons->Create();
 
+    this->spatialDomainLabel = vtkKWLabel::New();
+    this->spatialDomainLabel->SetText( string("Current Domain:").c_str() );
+    this->spatialDomainLabel->SetParent(this);
+    this->spatialDomainLabel->EnabledOff();
+    this->spatialDomainLabel->Create();
+
+    this->spectralDomainLabel = vtkKWLabel::New();
+    this->spectralDomainLabel->SetText( string("Current Domain:").c_str() );
+    this->spectralDomainLabel->SetParent(this);
+    this->spectralDomainLabel->EnabledOff();
+    this->spectralDomainLabel->Create();
+
     this->spatialButton = checkButtons->AddWidget(0);
     this->spatialButton->SetParent(this);
     this->spatialButton->Create();
@@ -116,17 +128,14 @@ void sivicProcessingWidget::CreateWidget()
     this->fftButton->SetText( "Transform" );
     this->fftButton->SetBalloonHelpString("Prototype Single Voxel FFT.");
 
-    //this->Script("grid %s -row 0 -column 0 -columnspan 6 -sticky nwes", this->phaseSlider->GetWidgetName() );
-    //this->Script("grid %s -row 1 -column 0 -columnspan 6 -sticky nwes", this->linearPhaseSlider->GetWidgetName() );
-    //this->Script("grid %s -row 2 -column 0 -columnspan 2 -sticky nwes ", this->phasePivotEntry->GetWidgetName() );
-    //this->Script("grid %s -row 2 -column 2 -columnspan 4 -sticky nwes", checkButtons->GetWidgetName() );
     this->Script("grid %s -row 0 -column 0 -columnspan 6 -sticky we -padx 4 -pady 2 ", this->fftButton->GetWidgetName() );
-    this->Script("grid %s -row 1 -column 2 -columnspan 6 -sticky nwes", checkButtons->GetWidgetName() );
+    this->Script("grid %s -row 1 -column 0 -columnspan 6 -sticky nwes", checkButtons->GetWidgetName() );
+    this->Script("grid %s -row 2 -column 1 -columnspan 2 -sticky nw -padx 4 -pady 2 ", this->spatialDomainLabel->GetWidgetName() );
+    this->Script("grid %s -row 2 -column 4 -columnspan 2 -sticky nw -padx 4 -pady 2 ", this->spectralDomainLabel->GetWidgetName() );
 
     this->Script("grid rowconfigure %s 0  -weight 2", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 1  -weight 2", this->GetWidgetName() );
-    //this->Script("grid rowconfigure %s 2  -weight 1", this->GetWidgetName() );
-    //this->Script("grid rowconfigure %s 3  -weight 2", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 2  -weight 2", this->GetWidgetName() );
 
     this->Script("grid columnconfigure %s 0 -weight 1", this->GetWidgetName() );
     this->Script("grid columnconfigure %s 1 -weight 1", this->GetWidgetName() );
@@ -175,7 +184,7 @@ void sivicProcessingWidget::ExecuteFFT()
         // We'll turn the renderer off to avoid rendering intermediate steps
         this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
         svkMrsImageFFT* imageFFT = svkMrsImageFFT::New();
-        imageFFT->SetInput( data );
+        imageFFT->SetInputData( data );
         imageFFT->Update();
         data->Modified();
         imageFFT->Delete();
@@ -212,7 +221,7 @@ void sivicProcessingWidget::ExecuteRecon()
             string spatialDomain1 = data->GetDcmHeader()->GetStringValue( "SVK_RowsDomain");
             string spatialDomain2 = data->GetDcmHeader()->GetStringValue( "SVK_SliceDomain");
 
-            spatialFFT->SetInput( data );
+            spatialFFT->SetInputData( data );
             spatialFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
             if ( spatialDomain0.compare("KSPACE") == 0 && spatialDomain1.compare("KSPACE") == 0 && spatialDomain2.compare("KSPACE") == 0 )  {
                 spatialFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
@@ -233,9 +242,9 @@ void sivicProcessingWidget::ExecuteRecon()
             spectralFFT->AddObserver(vtkCommand::ProgressEvent, progressCallback);
             this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing FFT...");
             if ( this->spatialButton->GetSelectedState() ) {
-                spectralFFT->SetInput( spatialFFT->GetOutput() );
+                spectralFFT->SetInputData( spatialFFT->GetOutput() );
             } else {
-                spectralFFT->SetInput( data );
+                spectralFFT->SetInputData( data );
             }
             spectralFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
             if ( domain.compare("TIME") == 0 ) {
@@ -245,7 +254,7 @@ void sivicProcessingWidget::ExecuteRecon()
             }
             spectralFFT->Update();
             data->Modified();
-            data->Update();
+            //data->Update();
             spectralFFT->RemoveObserver( progressCallback);
         }
         

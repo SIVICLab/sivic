@@ -55,7 +55,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRSFirstOrderPhase, "$Rev$");
+//vtkCxxRevisionMacro(svkMRSFirstOrderPhase, "$Rev$");
 vtkStandardNewMacro(svkMRSFirstOrderPhase);
 
 

@@ -41,7 +41,7 @@
 #define MINIMUM_RANGE_FACTOR 100
 
 vtkStandardNewMacro( sivicWindowLevelWidget );
-vtkCxxRevisionMacro( sivicWindowLevelWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicWindowLevelWidget, "$Revision$");
 
 
 /*! 

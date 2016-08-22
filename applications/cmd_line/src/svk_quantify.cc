@@ -78,11 +78,11 @@ int main (int argc, char** argv)
     usemsg += "             [--verbose ] [ -h ]                                                     \n"; 
     usemsg += "                                                                                     \n";  
     usemsg += "   -i input_file_name        name of file to convert.                                \n"; 
-    usemsg += "   -o output_root_name       root name of outputfile. This is a directory if using   \n";  
-    usemsg += "                             --xml.  All files will get written to the dir.          \n";  
+    usemsg += "   -o output_root_name       root name of outputfile. May include a directory        \n";  
+    usemsg += "                             e.g.:  -o dirName/fileRoot.                             \n";  
     usemsg += "   -t output_data_type       target data type:                                       \n";  
     usemsg += "                                 3 = UCSF IDF                                        \n";  
-    usemsg += "                                 6 = DICOM_MRI                                       \n";  
+    usemsg += "                                 6 = DICOM_Enhanced MRI                              \n";  
     usemsg += "   -b                        Only fit inside volume selection                        \n"; 
     usemsg += "   -s                        Scale output data to full floating point range for idf  \n"; 
     usemsg += "                             output. Default is to cast double precision results to  \n"; 
@@ -294,7 +294,7 @@ int main (int argc, char** argv)
         if ( onlyQuantifySelectedVolume ) { 
             quantMets->LimitToSelectedVolume();
         }    
-        quantMets->SetInput( reader->GetOutput() ); 
+        quantMets->SetInputData( reader->GetOutput() ); 
         quantMets->Update();
         vtkstd::vector<svkMriImageData*>* metMapVector = quantMets->GetMetMaps();
     
@@ -307,10 +307,10 @@ int main (int argc, char** argv)
             cout << "mapId: " << mapId << endl; 
             cout << "SD: " << (*metMapVector)[mapId]->GetDcmHeader()->GetStringValue("SeriesDescription") << endl;
             string outputMap = outputFileRoot; 
-            outputMap.append("/");    
             outputMap.append( (*metMapVector)[mapId]->GetDcmHeader()->GetStringValue("SeriesDescription") );    
+            cout << "output file: " << outputMap << endl; 
             writer->SetFileName( outputMap.c_str() ); 
-            writer->SetInput( (*metMapVector)[mapId] );
+            writer->SetInputData( (*metMapVector)[mapId] );
     
             //  Set the input command line into the data set provenance:
             reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
@@ -321,7 +321,7 @@ int main (int argc, char** argv)
     } else {
 
         svkMetaboliteMap* quant = svkMetaboliteMap::New();
-        quant->SetInput( reader->GetOutput() ); 
+        quant->SetInputData( reader->GetOutput() ); 
 
         if ( isVerbose ) { 
             quant->SetVerbose( isVerbose ); 
@@ -387,7 +387,7 @@ int main (int argc, char** argv)
             }
     
             writer->SetFileName( outputFileRoot.c_str() );
-            writer->SetInput( quant->GetOutput() );
+            writer->SetInputData( quant->GetOutput() );
     
             //  Set the input command line into the data set provenance:
             reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );

@@ -38,7 +38,7 @@
 #include <vtkSivicController.h>
 
 vtkStandardNewMacro( sivicImageDataWidget );
-vtkCxxRevisionMacro( sivicImageDataWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicImageDataWidget, "$Revision$");
 
 
 /*! 

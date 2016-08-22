@@ -196,7 +196,7 @@ int main (int argc, char** argv)
         exit(1);
     }
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( reader->GetOutput() );
+    writer->SetInputData( reader->GetOutput() );
 
     writer->Write();
 

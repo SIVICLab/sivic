@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDataViewController, "$Rev$");
+//vtkCxxRevisionMacro(svkDataViewController, "$Rev$");
 
 //! Constructor
 svkDataViewController::svkDataViewController()

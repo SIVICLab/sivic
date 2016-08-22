@@ -42,7 +42,7 @@
 #define MINIMUM_RANGE_FACTOR 100
 
 vtkStandardNewMacro( sivicSpectraViewWidget );
-vtkCxxRevisionMacro( sivicSpectraViewWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicSpectraViewWidget, "$Revision$");
 
 
 /*! 

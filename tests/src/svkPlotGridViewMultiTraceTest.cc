@@ -144,26 +144,26 @@ void DefaultTest()
     if( globalArgs.firstSpectraName  != NULL ) {
         firstSpectra = model->LoadFile( globalArgs.firstSpectraName );
         firstSpectra->Register( NULL );
-        firstSpectra->Update();
+        //firstSpectra->Update();
     } 
     svkImageData* secondSpectra = NULL;
     if( globalArgs.secondSpectraName  != NULL ) {
         secondSpectra = model->LoadFile( globalArgs.secondSpectraName );
         secondSpectra->Register( NULL );
-        secondSpectra->Update();
+        //secondSpectra->Update();
     }
     svkImageData* thirdSpectra = NULL;
     if( globalArgs.thirdSpectraName  != NULL ) {
         thirdSpectra = model->LoadFile( globalArgs.thirdSpectraName );
         thirdSpectra->Register( NULL );
-        thirdSpectra->Update();
+        //thirdSpectra->Update();
     }
 
     svkImageData* overlay = NULL;
     if( globalArgs.overlayName  != NULL ) {
         overlay = model->LoadFile( globalArgs.overlayName );
         overlay->Register( NULL );
-        overlay->Update();
+        //overlay->Update();
     }
 
 

@@ -69,7 +69,7 @@ class svkImageMapToColors : public vtkImageMapToColors
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageMapToColors,vtkImageMapToColors );
+        vtkTypeMacro( svkImageMapToColors,vtkImageMapToColors );
    
         static svkImageMapToColors*     New();  
 

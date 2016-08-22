@@ -72,7 +72,7 @@ class svkImageAlgorithm : public vtkImageAlgorithm
 
     public:
 
-        vtkTypeRevisionMacro( svkImageAlgorithm, vtkImageAlgorithm);
+        vtkTypeMacro( svkImageAlgorithm, vtkImageAlgorithm);
         svkImageData*           GetOutput(); 
         svkImageData*           GetOutput(int port); 
         svkImageData*           GetImageDataInput(int port);

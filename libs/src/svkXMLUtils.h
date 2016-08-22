@@ -75,7 +75,7 @@ class svkXMLUtils : public vtkObject
 
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkXMLUtils, vtkObject );
+        vtkTypeMacro( svkXMLUtils, vtkObject );
   
         // vtk initialization 
         static svkXMLUtils* New();  

@@ -69,13 +69,13 @@ int main (int argc, char** argv)
         }
 
     svkMrsLinearPhase* phasor = svkMrsLinearPhase::New();
-    phasor->SetInput( data );
+    phasor->SetInputData( data );
     double window[3] = {-0.5, -0.5, -0.5 };
     phasor->SetShiftWindow( window );
     phasor->Update();
     svkDdfVolumeWriter* writer = svkDdfVolumeWriter::New();
     writer->SetFileName( fnameOut.c_str() );
-    writer->SetInput( data );
+    writer->SetInputData( data );
     writer->Write();
     phasor->Delete();
     phasor = NULL;

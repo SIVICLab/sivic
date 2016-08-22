@@ -126,7 +126,6 @@ void QuickView( const char* filename)
         exit(1);
     }
     data->Register(NULL);
-    data->Update();
     int* extent = data->GetExtent();
     svkDataViewController* dataViewer;
     if( data->IsA("svkMriImageData")) {

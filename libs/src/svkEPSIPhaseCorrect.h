@@ -84,7 +84,7 @@ class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
     public:
 
         static svkEPSIPhaseCorrect* New();
-        vtkTypeRevisionMacro( svkEPSIPhaseCorrect, svkImageInPlaceFilter);
+        vtkTypeMacro( svkEPSIPhaseCorrect, svkImageInPlaceFilter);
 
         void            SetNumEPSIkRead( int numKspaceSamples );
         void            SetEPSIAxis( int epsiAxis );

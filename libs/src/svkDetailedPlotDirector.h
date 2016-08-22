@@ -88,7 +88,7 @@ class svkDetailedPlotDirector : public vtkObject
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkDetailedPlotDirector, vtkObject );
+        vtkTypeMacro( svkDetailedPlotDirector, vtkObject );
 
         static svkDetailedPlotDirector*       New();
     

@@ -52,7 +52,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDSCDeltaR2, "$Rev$");
+//vtkCxxRevisionMacro(svkDSCDeltaR2, "$Rev$");
 vtkStandardNewMacro(svkDSCDeltaR2);
 
 

@@ -72,7 +72,7 @@ class svkOverlaySelector : public vtkInteractorStyleRubberBand2D
 
     public:
     
-        //vtkTypeRevisionMacro( svkOverlaySelector, vtkInteractorStyleRubberBand2D );
+        //vtkTypeMacro( svkOverlaySelector, vtkInteractorStyleRubberBand2D );
 
         static       svkOverlaySelector* New(); 
         virtual void OnLeftButtonUp();

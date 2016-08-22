@@ -65,7 +65,7 @@ class svkEPSIReorder : public svkImageInPlaceFilter
     public:
 
         static svkEPSIReorder* New();
-        vtkTypeRevisionMacro( svkEPSIReorder, svkImageInPlaceFilter);
+        vtkTypeMacro( svkEPSIReorder, svkImageInPlaceFilter);
 
        typedef enum {
             UNDEFINED_EPSI_TYPE = 0,
@@ -92,6 +92,8 @@ class svkEPSIReorder : public svkImageInPlaceFilter
         virtual int                 GetNumEPSIAcquisitions();
         virtual int                 GetNumEPSIAcquisitionsPerFID();
         virtual int                 GetNumEPSIFrequencyPoints();
+        static void                 CombineLobes(svkImageData* data); 
+
 
 
     protected:

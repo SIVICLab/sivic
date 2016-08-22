@@ -63,7 +63,7 @@ int main (int argc, char** argv)
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                   "\n";   
     usemsg += "svk_dcm_deid -i input_file_name                                              \n"; 
     usemsg += "             [ -r deid_id | -p pat_deid_id -s study_deid_id ]                \n"; 
-    usemsg += "             [ --stu UID ] [ --seu UID ] -h                                  \n"; 
+    usemsg += "             [ --stu UID ] [ --seu UID ] [ --fru UID ] -h                    \n"; 
     usemsg += "             | -guid                                                         \n"; 
     usemsg += "                                                                             \n";  
     usemsg += "   -i    input_file_name     Name of dcm file to deidentify                  \n"; 
@@ -72,6 +72,7 @@ int main (int argc, char** argv)
     usemsg += "   -s    study_deid_id       replacement study id                            \n"; 
     usemsg += "   --stu UID                 use the specified StudyInstanceUID              \n";
     usemsg += "   --seu UID                 use the specified SeriesInstanceUID             \n";
+    usemsg += "   --fru UID                 use the specified FrameOfReferenceUID           \n";
     usemsg += "   --guid                    generate a new unique UID, do nothing else.     \n";
     usemsg += "   -h                        Print help mesage.                              \n";  
     usemsg += "                                                                             \n";  
@@ -84,6 +85,7 @@ int main (int argc, char** argv)
     string studyDeidID = ""; 
     string studyUID = ""; 
     string seriesUID = ""; 
+    string frameOfRefUID = ""; 
     bool   generateUID = false;  
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
@@ -91,6 +93,7 @@ int main (int argc, char** argv)
     enum FLAG_NAME {
         FLAG_STUDY_UID = 0,
         FLAG_SERIES_UID, 
+        FLAG_FRAME_UID, 
         FLAG_GENERATE_UID
     };
 
@@ -100,6 +103,7 @@ int main (int argc, char** argv)
         /* This option sets a flag. */
         {"stu",             required_argument, NULL,  FLAG_STUDY_UID},
         {"seu",             required_argument, NULL,  FLAG_SERIES_UID},
+        {"fru",             required_argument, NULL,  FLAG_FRAME_UID},
         {"guid",            no_argument,       NULL,  FLAG_GENERATE_UID},
         {0, 0, 0, 0}
     };
@@ -129,6 +133,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_SERIES_UID:
                 seriesUID.assign( optarg ); 
+                break;
+            case FLAG_FRAME_UID:
+                frameOfRefUID.assign( optarg ); 
                 break;
             case FLAG_GENERATE_UID:
                 generateUID = true; 
@@ -194,6 +201,11 @@ int main (int argc, char** argv)
         image->GetDcmHeader()->InsertUniqueUID("SeriesInstanceUID");
     } else {
         image->GetDcmHeader()->SetValue("SeriesInstanceUID", seriesUID );
+    }
+    if ( frameOfRefUID.size() == 0 ) {
+        image->GetDcmHeader()->InsertUniqueUID("FrameOfReferenceUID");
+    } else {
+        image->GetDcmHeader()->SetValue("FrameOfReferenceUID", frameOfRefUID );
     }
 
     string newUID = "";

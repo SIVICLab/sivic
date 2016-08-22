@@ -82,6 +82,7 @@ option( BUILD_PROFILER "Build for profiling with gprof." FALSE)
 option( BUILD_TESTS "Build test applications." FALSE)
 option( BUILD_CREATE_RAW "Build svk_create_raw. Requires open ssl" FALSE)
 option( BUILD_EPIC "Build for EPIC PSD linking." FALSE)
+option( CREATE_WRAPPER_SCRIPTS "Create wrapper scripts for executables." TRUE)
 
 ADD_DEFINITIONS(-DSVK_RELEASE_VERSION="\\"${SVK_RELEASE_VERSION}\\"" )
 ADD_DEFINITIONS( -DSVK_MAJOR_VERSION="${SVK_MAJOR_VERSION}" )
@@ -97,17 +98,24 @@ IF(UNIX)
         SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
     ENDIF( BUILD_EPIC )
 ENDIF(UNIX)
+IF (WIN32)
+    FIND_PATH(TK_INCLUDE "TK Include Path" )
+ENDIF(WIN32)
 
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK REQUIRED)
+FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE )
+INCLUDE(${VTK_USE_FILE})
+
 
 ###################################
 #   KWWidgets
 ###################################
 IF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
-    FIND_PACKAGE(KWWidgets REQUIRED)
+    FIND_PACKAGE(KWWidgets REQUIRED PATHS ${KWWidgets_DIR} HINTS ${KWWidgets_DIR} )
+    MESSAGE(${KWWidgets_USE_FILE})
+    INCLUDE(${KWWidgets_USE_FILE})
     IF( NOT BUILD_VIZ_LIBRARY  )
         message( FATAL_ERROR "ERROR: You must turn BUILD_VIZ_LIBRARY on to build requested components (BUILD_SIVIC, BUILD_EXAMPLES, BUILD_APPS, BUILD_OSIRIX, BUILD_SLICER)")
     ENDIF( NOT BUILD_VIZ_LIBRARY )
@@ -125,8 +133,8 @@ if( BUILD_PROFILER)
 endif( BUILD_PROFILER )
 
 if( BUILD_OSIRIX)
-#    ADD_DEFINITIONS(-DCMAKE_UNIVERSAL=TRUE)
-    SET (CMAKE_UNIVERSAL TRUE)
+    #   ADD_DEFINITIONS(-DCMAKE_UNIVERSAL=TRUE)
+    #   SET (CMAKE_UNIVERSAL TRUE)
 endif (BUILD_OSIRIX)
 
 if( BUILD_SLICER )
@@ -179,5 +187,10 @@ endif ( BUILD_CLAPACK )
 if( BUILD_CREATE_RAW )
     FIND_PATH( OPENSSL_DIR REQUIRED )
 endif ( BUILD_CREATE_RAW )
+
+IF(CLION_BUILD)
+    FILE(GLOB CLION_VTK_INCLUDE ${VTK_DIR}/../../../include/*)
+    message(CLION_VTK_INCLUDE = ${CLION_VTK_INCLUDE})
+ENDIF(CLION_BUILD)
 
 INSTALL_FILES( /local/sivic FILES README LICENSE)

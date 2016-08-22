@@ -49,9 +49,9 @@
 
 #include <svkVarianReader.h>
 
-#include <vtkstd/map>
-#include <vtkstd/string>
-#include <vtkstd/vector>
+#include <map>
+#include <string>
+#include <vector>
 
 
 namespace svk {
@@ -74,7 +74,7 @@ class svkFdfVolumeReader : public svkVarianReader
     public:
 
         static svkFdfVolumeReader* New();
-        vtkTypeRevisionMacro( svkFdfVolumeReader, svkVarianReader);
+        vtkTypeMacro( svkFdfVolumeReader, svkVarianReader);
 
         // Description: 
         // A descriptive name for this format
@@ -98,7 +98,7 @@ class svkFdfVolumeReader : public svkVarianReader
 
         virtual int                      FillOutputPortInformation(int port, vtkInformation* info);
         virtual void                     ExecuteInformation();
-        virtual void                     ExecuteData(vtkDataObject *output);
+        virtual void                     ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo);
         svkDcmHeader::DcmPixelDataFormat GetFileType();
         void                             ScaleTo16Bit( bool scaleTo16Bit, bool scaleToSignedShort, bool scaleToPositiveRange ); 
 
@@ -123,22 +123,22 @@ class svkFdfVolumeReader : public svkVarianReader
         void                             InitPlaneOrientationMacro();
         void                             InitMRReceiveCoilMacro();
         void                             ReadFdfFiles();
-        vtkstd::string                   VarianToDicomDate(vtkstd::string* volumeDate);
-        vtkstd::string                   GetDcmPatientPositionString();
+        string                           VarianToDicomDate(string* volumeDate);
+        string                           GetDcmPatientPositionString();
         void                             GetTLCAndSliceSpacing(double* toplc, double* sliceSpacing); 
         void                             GetPixelSize( double* pixelSize);
         void                             ParseFdf();
         int                              GetFdfKeyValuePair( vtkStringArray* keySet = NULL);
         void                             SetKeysToSearch(vtkStringArray* fltArray, int fileIndex);
         int                              GetDataBufferSize();
-        int                              GetHeaderValueAsInt(vtkstd::string keyString, int valueIndex = 0); 
-        float                            GetHeaderValueAsFloat(vtkstd::string keyString, int valueIndex = 0); 
-        vtkstd::string                   GetHeaderValueAsString(vtkstd::string keyString, int valueIndex = 0);
-        bool                             IsKeyInHeader(vtkstd::string keyString); 
-        void                             ParseAndSetStringElements(vtkstd::string key, vtkstd::string valueArrayString);
+        int                              GetHeaderValueAsInt(string keyString, int valueIndex = 0); 
+        float                            GetHeaderValueAsFloat(string keyString, int valueIndex = 0); 
+        string                           GetHeaderValueAsString(string keyString, int valueIndex = 0);
+        bool                             IsKeyInHeader(string keyString); 
+        void                             ParseAndSetStringElements(string key, string valueArrayString);
         void                             ConvertCmToMm();  
         void                             ConvertUserToMagnetFrame(); 
-        vtkstd::string                   GetStringFromFloat(float floatValue); 
+        string                           GetStringFromFloat(float floatValue); 
         void                             AddDimensionTo2DData();
         void                             PrintKeyValuePairs();
         void                             MapFloatValuesTo16Bit(
@@ -149,7 +149,7 @@ class svkFdfVolumeReader : public svkVarianReader
         //  Members:
         void*                                       pixelData; 
         ifstream*                                   fdfFile;
-        vtkstd::map <vtkstd::string, vtkstd::vector<vtkstd::string> >       
+        map <string, vector<string> >       
                                                     fdfMap; 
         long                                        fileSize; 
         vtkStringArray*                             tmpFileNames;

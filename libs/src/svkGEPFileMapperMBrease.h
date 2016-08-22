@@ -58,7 +58,7 @@ class svkGEPFileMapperMBrease : public svkGEPFileMapper
 
     public:
 
-        vtkTypeRevisionMacro( svkGEPFileMapperMBrease, svkGEPFileMapper );
+        vtkTypeMacro( svkGEPFileMapperMBrease, svkGEPFileMapper );
         static          svkGEPFileMapperMBrease* New();
 
         void            ReadData( vtkstd::string pFileName, vtkImageData* data );

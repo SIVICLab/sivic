@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRSAverageSpectra, "$Rev$");
+//vtkCxxRevisionMacro(svkMRSAverageSpectra, "$Rev$");
 vtkStandardNewMacro(svkMRSAverageSpectra);
 
 
@@ -214,15 +214,14 @@ void svkMRSAverageSpectra::InitAverageSpectrum()
 
 
 /*
- *  Get the mask ROI from file or teh selection box.
+ *  Get the mask ROI from file or the selection box.
  */
 void svkMRSAverageSpectra::InitMask()
 {
     if ( this->useMaskFile == true ) {
 
         svkMriImageData* maskImage = svkMriImageData::SafeDownCast( this->GetImageDataInput(1) );
-        this->maskROI = static_cast<vtkShortArray*>( 
-            maskImage->GetPointData()->GetArray(0) )->GetPointer(0) ; 
+        this->maskROI = maskImage->GetPointData()->GetArray(0); 
 
     } else if ( this->useSelectionBoxMask ) {
 
@@ -231,8 +230,13 @@ void svkMRSAverageSpectra::InitMask()
         int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
 
         float tolerance = .5;     
-        this->maskROI = new short[numCells];
-        data->GetSelectionBoxMask( this->maskROI, tolerance); 
+        short* mask = new short[numCells];
+        data->GetSelectionBoxMask( mask, tolerance); 
+        this->maskROI = vtkShortArray::New(); 
+        for ( int i = 0; i < numCells; i++ ) {
+            float maskVal = static_cast<float>(mask[i]);
+            this->maskROI->SetTuple(i, &maskVal );
+        }
     }
 
 }
@@ -269,9 +273,9 @@ void svkMRSAverageSpectra::AverageSpectraInROI()
         //  Then check to see if this cell is within the mask. 
         //  ==========================================================
         int maskCellID = svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &dimVec, &loopVec ); 
-        //cout << "MASK CELL ID: " << maskCellID << endl;
+        //cout << "MASK CELL ID: " << maskCellID << " = " << this->maskROI->GetTuple(maskCellID)[0] << endl;
 
-        if ( maskROI[maskCellID] != 0 ) {
+        if ( this->maskROI->GetTuple(maskCellID)[0] != 0 ) {
 
             // Get loop values, and set first 3 dimensions to 1 to create correct output 
             //  loop

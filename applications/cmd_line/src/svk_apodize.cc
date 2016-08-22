@@ -68,7 +68,7 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";   
     usemsg += "svk_apodize -i input_file_name -o output_root                                    \n"; 
-    usemsg += "                 -t filter_type --width [-vh]                                    \n";
+    usemsg += "                 -f filter_type --width -single [-vh]                            \n";
     usemsg += "                                                                                 \n";  
     usemsg += "   -i        input_file_name   Name of file to convert.                          \n"; 
     usemsg += "   -o        output_root       Root name of outputfile.                          \n";  
@@ -208,7 +208,7 @@ int main (int argc, char** argv)
     }
 
     svkMrsApodizationFilter* apodizeFilter = svkMrsApodizationFilter::New();
-    apodizeFilter->SetInput( reader->GetOutput() );
+    apodizeFilter->SetInputData( reader->GetOutput() );
     apodizeFilter->SetWindow( window );
     apodizeFilter->Update();
 
@@ -226,7 +226,7 @@ int main (int argc, char** argv)
 
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( apodizeFilter->GetOutput() );
+    writer->SetInputData( apodizeFilter->GetOutput() );
     writer->Write();
     writer->Delete();
 

@@ -70,7 +70,7 @@ class svkMrsTopoGenerator: public svkImageTopologyGenerator
     public:
 
         static svkMrsTopoGenerator* New();
-        vtkTypeRevisionMacro( svkMrsTopoGenerator, vtkObject );
+        vtkTypeMacro( svkMrsTopoGenerator, vtkObject );
 
         svkMrsTopoGenerator();
         ~svkMrsTopoGenerator();

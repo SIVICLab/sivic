@@ -45,7 +45,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDataModel, "$Rev$");
+//vtkCxxRevisionMacro(svkDataModel, "$Rev$");
 vtkStandardNewMacro(svkDataModel);
 
 
@@ -373,7 +373,7 @@ bool svkDataModel::WriteToFile(svkImageData *data, const char *fileName)
     writer->SetFileName(fileName);
     writerFactory->Delete();
 
-    writer->SetInput(data);
+    writer->SetInputData(data);
 
     writer->Write();
     writer->Delete();

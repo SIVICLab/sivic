@@ -70,7 +70,7 @@ class svkStatistics : public vtkObject
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkStatistics, vtkObject );
+        vtkTypeMacro( svkStatistics, vtkObject );
   
         // vtk initialization 
         static svkStatistics* New();

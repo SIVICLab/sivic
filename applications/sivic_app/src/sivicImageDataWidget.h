@@ -58,7 +58,7 @@ class sivicImageDataWidget : public sivicKWCompositeWidget
     public:
 
         static sivicImageDataWidget *New();
-        vtkTypeRevisionMacro(sivicImageDataWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicImageDataWidget,sivicKWCompositeWidget);
         void UpdateReferenceImageList();
         void SetFilename( int row, string filename );
         void SetModel( svkDataModel* model );

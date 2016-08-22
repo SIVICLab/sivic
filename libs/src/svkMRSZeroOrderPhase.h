@@ -63,7 +63,7 @@ class svkMRSZeroOrderPhase : public svkMRSAutoPhase
 
     public:
 
-        vtkTypeRevisionMacro( svkMRSZeroOrderPhase, svkMRSAutoPhase );
+        vtkTypeMacro( svkMRSZeroOrderPhase, svkMRSAutoPhase );
         static          svkMRSZeroOrderPhase* New();
         
 

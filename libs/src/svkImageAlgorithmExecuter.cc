@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageAlgorithmExecuter, "$Rev$");
+//vtkCxxRevisionMacro(svkImageAlgorithmExecuter, "$Rev$");
 vtkStandardNewMacro(svkImageAlgorithmExecuter);
 
 
@@ -94,7 +94,7 @@ int svkImageAlgorithmExecuter::RequestData( vtkInformation* request,
     }
     
     // Set the input of the vtk algorithm to be the input of the executer
-    this->algo->SetInput(this->GetImageDataInput(0));
+    this->algo->SetInputData(this->GetImageDataInput(0));
 
     // Pass the header through NOTE: We may want to generate a new header here.....
     

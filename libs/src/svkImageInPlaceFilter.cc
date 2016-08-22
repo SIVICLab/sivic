@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageInPlaceFilter, "$Rev$");
+//vtkCxxRevisionMacro(svkImageInPlaceFilter, "$Rev$");
 
 
 /*!

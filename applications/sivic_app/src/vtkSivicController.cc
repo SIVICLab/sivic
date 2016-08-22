@@ -45,7 +45,7 @@ using namespace svk;
 
 
 vtkStandardNewMacro( vtkSivicController );
-vtkCxxRevisionMacro( vtkSivicController, "$Revision$");
+//vtkCxxRevisionMacro( vtkSivicController, "$Revision$");
 
 const int vtkSivicController::ANATOMY_BRAIN = 0;
 const int vtkSivicController::ANATOMY_PROSTATE = 1;
@@ -1702,12 +1702,12 @@ int vtkSivicController::OpenFile( const char* openType, const char* startPath, b
 
 			this->app->GetRegistryValue( this->registryLevel, "defaults", "spectra_extension_filtering", defaultSpectraExtension );
 			if( defaultSpectraExtension != NULL && strcmp( defaultSpectraExtension, "OFF" ) == 0 ) {
-				dlg->SetFileTypes("{{All files} {.*}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid}}");
+				dlg->SetFileTypes("{{All files} {.*}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid .SDAT}}");
 			} else {
-				dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm .DCM fid}} {{All files} {.*}}");
+				dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm .DCM fid .SDAT}} {{All files} {.*}}");
 			}
         } else {
-            dlg->SetFileTypes("{{All files} {.*}} {{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid}}");
+            dlg->SetFileTypes("{{All files} {.*}} {{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid .SDAT}}");
         }
     
 
@@ -1865,8 +1865,8 @@ void vtkSivicController::SaveMetaboliteMaps()
         char* cStrFilename = new char [filename.size()+1];
         strcpy (cStrFilename, filename.c_str());
 
-        vtkstd::string root = svkImageReader2::GetFileRoot( cStrFilename ); 
-        vtkstd::string ext = svkImageReader2::GetFileExtension( cStrFilename ); 
+        string root = svkImageReader2::GetFileRoot( cStrFilename ); 
+        string ext = svkImageReader2::GetFileExtension( cStrFilename ); 
         int fileType; 
         if ( ext.compare("DCM") == 0 ) {
             fileType = 5;       // MRI
@@ -1934,8 +1934,8 @@ void vtkSivicController::SaveImageFromModel( const char* modelObjectName, bool a
 			char* cStrFilename = new char [filename.size()+1];
 			strcpy (cStrFilename, filename.c_str());
 
-			vtkstd::string root = svkImageReader2::GetFileRoot( cStrFilename );
-			vtkstd::string ext = svkImageReader2::GetFileExtension( cStrFilename );
+			string root = svkImageReader2::GetFileRoot( cStrFilename );
+			string ext = svkImageReader2::GetFileExtension( cStrFilename );
 			int fileType;
 			if ( ext.compare("DCM") == 0 ) {
 				fileType = 5;       // MRI
@@ -1991,7 +1991,7 @@ void vtkSivicController::SaveMetMapData( svkImageData* image, char* fileName, in
     writer->SetFileName(fileName);
     writerFactory->Delete();
 
-    writer->SetInput( image ); 
+    writer->SetInputData( image ); 
     writer->Write();
 
     writer->Delete();
@@ -2018,7 +2018,7 @@ void vtkSivicController::SaveData( char* fileName )
     writer->SetFileName(fileName);
     writerFactory->Delete();
 
-    writer->SetInput( this->GetActive4DImageData() );
+    writer->SetInputData( this->GetActive4DImageData() );
 
     writer->Write();
     writer->Delete();
@@ -3178,10 +3178,24 @@ void vtkSivicController::EnableWidgets()
 
     if ( activeData != NULL && activeData->IsA("svkMrsImageData") ) {
         string domain = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue("SignalDomainColumns");
+        string spatialDomain0 = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
+        string spatialDomain1 = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue( "SVK_RowsDomain");
+        string spatialDomain2 = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue( "SVK_SliceDomain");
+
         int numChannels = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetDcmHeader()->GetNumberOfCoils();
         this->processingWidget->fftButton->EnabledOn(); 
+        this->processingWidget->spatialDomainLabel->EnabledOn();
+        this->processingWidget->spectralDomainLabel->EnabledOn();
         this->processingWidget->spatialButton->EnabledOn(); 
         this->processingWidget->spectralButton->EnabledOn(); 
+        if ( spatialDomain0.compare("KSPACE") == 0 && spatialDomain1.compare("KSPACE") == 0 && spatialDomain2.compare("KSPACE") == 0 )  {
+            this->processingWidget->spatialDomainLabel->SetText( string("Current Domain: KSPACE").c_str() );
+        } else if ( spatialDomain0.compare("SPACE") == 0 && spatialDomain1.compare("SPACE") == 0 && spatialDomain2.compare("SPACE") == 0 )  {
+            this->processingWidget->spatialDomainLabel->SetText( string("Current Domain: SPACE").c_str() );
+        } else {
+            this->processingWidget->spatialDomainLabel->SetText( string("Current Domain: Mixed or Undefined").c_str() );
+        }
+
         if( domain == "TIME" ) {
             this->preprocessingWidget->applyButton->EnabledOn(); 
             this->preprocessingWidget->zeroFillSelectorSpec->EnabledOn();
@@ -3197,6 +3211,7 @@ void vtkSivicController::EnableWidgets()
 			this->combineWidget->magnitudeCombinationButton->EnabledOff();
 			this->combineWidget->additionCombinationButton->EnabledOff();
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Time" );
+            this->processingWidget->spectralDomainLabel->SetText( string("Current Domain: TIME").c_str() );;
             this->spectraRangeWidget->unitSelectBox->SetValue( "PTS" );
             this->spectraRangeWidget->SetSpecUnitsCallback(svkSpecPoint::PTS);
             this->spectraRangeWidget->unitSelectBox->EnabledOff();
@@ -3208,6 +3223,7 @@ void vtkSivicController::EnableWidgets()
 				this->combineWidget->additionCombinationButton->EnabledOn();
             }
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Frequency" );
+            this->processingWidget->spectralDomainLabel->SetText( string("Current Domain: FREQUENCY").c_str() );;
             this->spectraRangeWidget->unitSelectBox->EnabledOn();
             string nucleus = activeData->GetDcmHeader()->GetStringValue("ResonantNucleus");
             if( !nucleus.empty() ) {
@@ -3792,7 +3808,7 @@ void vtkSivicController::ExitSivic(vtkObject* subject, unsigned long, void* this
  */
 void vtkSivicController::GetMRSDefaultPPMRange( svkImageData* mrsData, float& ppmMin, float& ppmMax )
 {
-    vtkstd::string nucleus = mrsData->GetDcmHeader()->GetStringValue( "ResonantNucleus" );
+    string nucleus = mrsData->GetDcmHeader()->GetStringValue( "ResonantNucleus" );
     if ( nucleus.find("13C") !=string::npos ) {
         ppmMin = PPM_13C_DEFAULT_MIN; 
         ppmMax = PPM_13C_DEFAULT_MAX;

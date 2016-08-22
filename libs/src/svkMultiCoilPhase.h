@@ -72,7 +72,7 @@ class svkMultiCoilPhase : public svkImageInPlaceFilter
     public:
 
         static svkMultiCoilPhase* New();
-        vtkTypeRevisionMacro( svkMultiCoilPhase, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMultiCoilPhase, svkImageInPlaceFilter);
 
         float   PhaseBySymmetry( vtkFloatArray* spectrum, int peakMaxPtIn, int peakStartPtIn, int peakStopPtIn); 
         float   CalculateCenterPhase( int timePt, int coilNum );

@@ -44,9 +44,9 @@
 #define SVK_LCMODEL_READER_H
 
 #include <vtkInformation.h>
-#include <vtkstd/map>
+#include <map>
 #include <vtkStringArray.h>
-#include <vtkstd/string>
+#include <string>
 
 #include <svkImageReader2.h>
 
@@ -62,7 +62,7 @@ class svkLCModelReader : public svkImageReader2
 
     public:
 
-        vtkTypeRevisionMacro( svkLCModelReader, svkImageReader2);
+        vtkTypeMacro( svkLCModelReader, svkImageReader2);
 
         // Description: 
         // A descriptive name for this format

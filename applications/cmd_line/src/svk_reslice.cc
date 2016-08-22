@@ -205,7 +205,7 @@ int main (int argc, char** argv)
     // We are going copy this image to avoid trigging the reader to change its extent
     svkMriImageData* input = svkMriImageData::New();
     input->DeepCopy(inputReader->GetOutput());
-    reslicer->SetInput( input );
+    reslicer->SetInputData( input );
     reslicer->SetInterpolationMode(interpolationMode);
 
     svkImageReader2* targetReader = readerFactory->CreateImageReader2(targetFileName.c_str());
@@ -242,7 +242,7 @@ int main (int argc, char** argv)
     svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( dataTypeOut ));
     writer->SetFileName( outputFileName.c_str() );
     // Add check to see if the output is null.
-    writer->SetInput( reslicer->GetOutput() );
+    writer->SetInputData( reslicer->GetOutput() );
     writer->Write();
     writer->Delete();
     input->Delete();

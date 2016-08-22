@@ -76,7 +76,7 @@ class svkVoxelTaggingUtils : public vtkObject
 		static int              GetPointDataScalarVolumeIndex( svkImageData* voxelTagData );
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkVoxelTaggingUtils, vtkObject );
+        vtkTypeMacro( svkVoxelTaggingUtils, vtkObject );
   
         // vtk initialization 
         static svkVoxelTaggingUtils* New();

@@ -93,7 +93,7 @@ class svkBoxPlot : public vtkOpenGLActor
             MAGNITUDE 
         };
 
-        vtkTypeRevisionMacro( svkBoxPlot, vtkOpenGLActor );
+        vtkTypeMacro( svkBoxPlot, vtkOpenGLActor );
         
         static svkBoxPlot*  New();
 

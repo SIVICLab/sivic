@@ -53,6 +53,7 @@
 #include <svkGEPFileMapperUCSFfidcsiDev0.h>
 #include <svkGEPFileMapperUCSFfidcsiDev07t.h>
 #include <svkGEPFileMapperUCSFProseProstate.h>
+#include <svkGEPFileMapperUCSFProseBreast.h>
 #include <svkGEPFileMapperMPCSIOBL.h>
 #include <svkEPSIReorder.h>
 
@@ -90,7 +91,7 @@ class svkGEPFileReader : public svkImageReader2
 
     public:
 
-        vtkTypeRevisionMacro( svkGEPFileReader, svkImageReader2 );
+        vtkTypeMacro( svkGEPFileReader, svkImageReader2 );
         static              svkGEPFileReader* New();
         virtual int         CanReadFile( const char* fname );
         svkGEPFileMapper*   GetMapper(); 
@@ -145,7 +146,7 @@ class svkGEPFileReader : public svkImageReader2
   
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
         virtual void                             ExecuteInformation();
-        virtual void                             ExecuteData( vtkDataObject *output );
+        virtual void                             ExecuteDataWithInformation( vtkDataObject *output, vtkInformation* outInfo );
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
         void                                     ReadGEPFile();
         void                                     ParsePFile();
@@ -154,6 +155,8 @@ class svkGEPFileReader : public svkImageReader2
 
         map <string, vector< string > >          
                                                  pfMap;
+        virtual string                           GetFileSeriesDescription( string fileName );
+
 
 
     private:

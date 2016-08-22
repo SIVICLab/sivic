@@ -63,7 +63,7 @@ class svkDICOMImageWriter : public svkDICOMWriter
 
     public:
 
-        vtkTypeRevisionMacro( svkDICOMImageWriter, svkDICOMWriter);
+        vtkTypeMacro( svkDICOMImageWriter, svkDICOMWriter);
 
         //  Methods:
         void            UseLosslessCompression(); 

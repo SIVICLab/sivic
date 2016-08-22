@@ -71,7 +71,7 @@ class svkDSCRecovery: public svkDynamicImageMap
     public:
 
         static svkDSCRecovery* New();
-        vtkTypeRevisionMacro( svkDSCRecovery, svkDynamicImageMap);
+        vtkTypeMacro( svkDSCRecovery, svkDynamicImageMap);
 
 
     protected:

@@ -64,7 +64,7 @@ class svkSpecUtils : public vtkObject
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkSpecUtils, vtkObject );
+        vtkTypeMacro( svkSpecUtils, vtkObject );
         
         static float    GetMagnigutude(vtkFloatArray* spectrum, int point); 
         static void     PhaseSpectrum(vtkFloatArray* spectrum, float phase, int point, float phasedPoint[2]); 
@@ -73,11 +73,20 @@ class svkSpecUtils : public vtkObject
         static void     CreateLinearPhaseShiftArray(int N, vtkImageComplex* phaseArray, double shift);
         static void     CreateLinearPhaseShiftArray(int N, vtkImageComplex* phaseArray, double shift, int origin);
         static string   GetNucleus( float transmitFreq, float fieldStrength ); 
+        static float    GetFieldStrength( string nucleus, float transmitFreq); 
+
 
         static const float ZERO_KELVIN;
         static const float H2O_Y_INTERCEPT; 
         static const float H2O_SLOPE; 
         static const float BODY_TEMPERATURE; 
+
+        static const float GAMMA_1H;
+        static const float GAMMA_13C;
+        static const float GAMMA_31P;
+        static const float GAMMA_19F;
+        static const float GAMMA_15N;
+
 
 };
 

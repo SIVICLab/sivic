@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkVarianUCSF2DcsiMapper, "$Rev$");
+//vtkCxxRevisionMacro(svkVarianUCSF2DcsiMapper, "$Rev$");
 vtkStandardNewMacro(svkVarianUCSF2DcsiMapper);
 
 

@@ -163,7 +163,7 @@ int main (int argc, char** argv)
     //  Pick Peaks 
     // ===============================================  
     svkMRSPeakPick* peaks = svkMRSPeakPick::New();
-    peaks->SetInput( reader->GetOutput() ); 
+    peaks->SetInputData( reader->GetOutput() ); 
     if ( limitToSelectionBox ) {
         peaks->OnlyUseSelectionBox(); 
     }
@@ -174,7 +174,7 @@ int main (int argc, char** argv)
 ////////////////////////////////////////////////////
 // temporary test: put average mag data in cell0
 svkMRSNoise* noise = svkMRSNoise::New();
-noise->SetInput( reader->GetOutput() );
+noise->SetInputData( reader->GetOutput() );
 if ( limitToSelectionBox ) {
     noise->OnlyUseSelectionBox();
 }
@@ -198,7 +198,7 @@ noise->Delete();
 vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New();
 svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( svkImageWriterFactory::DDF));
 writer->SetFileName( "magcheck" ); 
-writer->SetInput( reader->GetOutput() );
+writer->SetInputData( reader->GetOutput() );
 writer->Write();
 writer->Delete();
 

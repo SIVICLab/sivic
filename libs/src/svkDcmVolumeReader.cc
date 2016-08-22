@@ -57,7 +57,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDcmVolumeReader, "$Rev$");
+//vtkCxxRevisionMacro(svkDcmVolumeReader, "$Rev$");
 
 
 /*!
@@ -94,14 +94,14 @@ svkDcmVolumeReader::ProprietarySOP svkDcmVolumeReader::ContainsProprietaryConten
     ProprietarySOP proprietaryContent = svkDcmVolumeReader::DICOM_STD_SOP;
 
     if ( data->GetDcmHeader()->ElementExists("Manufacturer") == true && data->GetDcmHeader()->ElementExists("ImagedNucleus") == true ) {
-        vtkstd::string mfg = data->GetDcmHeader()->GetStringValue( "Manufacturer" ) ;
-        vtkstd::string imagedNucleus = data->GetDcmHeader()->GetStringValue( "ImagedNucleus" ) ;
+        string mfg = data->GetDcmHeader()->GetStringValue( "Manufacturer" ) ;
+        string imagedNucleus = data->GetDcmHeader()->GetStringValue( "ImagedNucleus" ) ;
 
-        vtkstd::string gePSSeq1 = ""; 
+        string gePSSeq1 = ""; 
         if( data->GetDcmHeader()->ElementExists( "GE_PS_SEQ_1" ) ) {
             gePSSeq1 = data->GetDcmHeader()->GetStringValue( "GE_PS_SEQ_1" ) ;
         }
-        vtkstd::string gePSSeq2 = ""; 
+        string gePSSeq2 = ""; 
         if( data->GetDcmHeader()->ElementExists( "GE_PS_SEQ_2" ) ) {
             gePSSeq2 = data->GetDcmHeader()->GetStringValue( "GE_PS_SEQ_2" ) ;
         }
@@ -154,7 +154,7 @@ void svkDcmVolumeReader::ExecuteInformation()
 
         //  SetNumberOfIncrements is supposed to call this, but only works if the data has already
         //  been allocated. but that requires the number of components to be specified.
-        this->GetOutput()->GetIncrements();
+//        this->GetOutput()->GetIncrements();
         this->SetupOutputInformation();
 
         //rewrite the DimensionIndexSequence if necessary:
@@ -225,7 +225,7 @@ void svkDcmVolumeReader::InitSliceOrder()
 /*!
  *  Method to set the slice order in dcos
  */
-void svkDcmVolumeReader::InitSliceOrder(vtkstd::string fileStart, vtkstd::string fileEnd)
+void svkDcmVolumeReader::InitSliceOrder(string fileStart, string fileEnd)
 {
 
     if ( fileStart.compare(fileEnd) != 0 ) {
@@ -277,7 +277,7 @@ void svkDcmVolumeReader::InitSliceOrder(vtkstd::string fileStart, vtkstd::string
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkDcmVolumeReader::ExecuteData(vtkDataObject* output)
+void svkDcmVolumeReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
@@ -290,7 +290,7 @@ void svkDcmVolumeReader::ExecuteData(vtkDataObject* output)
     }
 
 
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
     if ( this->FileName ) {
 
@@ -320,12 +320,12 @@ void svkDcmVolumeReader::ExecuteData(vtkDataObject* output)
  */
 void svkDcmVolumeReader::InitFileNames()
 {
-    vtkstd::string dcmFileName( this->GetFileName() );
-    vtkstd::string dcmFilePath( this->GetFilePath( this->GetFileName() ) );  
+    string dcmFileName( this->GetFileName() );
+    string dcmFilePath( this->GetFilePath( this->GetFileName() ) );  
 
     //  Get all files in the directory of the specified input image file:
     vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
-    globFileNames->AddFileNames( vtkstd::string( dcmFilePath + "/*").c_str() );
+    globFileNames->AddFileNames( string( dcmFilePath + "/*").c_str() );
 
     vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
     sortFileNames->SetInputFileNames( globFileNames->GetFileNames() );
@@ -337,8 +337,8 @@ void svkDcmVolumeReader::InitFileNames()
     //  These are used for parsing the glob'd files.  
     svkImageData* tmp = svkMriImageData::New(); 
     tmp->GetDcmHeader()->ReadDcmFileHeaderOnly(  this->GetFileName() );
-    vtkstd::string imageOrientationPatient( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient"));
-    vtkstd::string seriesInstanceUID( tmp->GetDcmHeader()->GetStringValue("SeriesInstanceUID"));
+    string imageOrientationPatient( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient"));
+    string seriesInstanceUID( tmp->GetDcmHeader()->GetStringValue("SeriesInstanceUID"));
     double referenceNormal[3]; 
     tmp->GetDcmHeader()->GetNormalVector( referenceNormal );
     tmp->Delete();
@@ -373,7 +373,7 @@ void svkDcmVolumeReader::InitFileNames()
      *  Note: the projection onto the normal of the input image orientation is 
      *  used for sorting slice order.
      */
-    vtkstd::vector < vtkstd::vector< vtkstd::string > > dcmSeriesAttributes; 
+    vector < vector< string > > dcmSeriesAttributes; 
 
     for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
 
@@ -386,7 +386,7 @@ void svkDcmVolumeReader::InitFileNames()
                 cout << "FN: " << fileNames->GetValue(i) << endl;
             }
 
-            vtkstd::vector< vtkstd::string > dcmFileAttributes;  
+            vector< string > dcmFileAttributes;  
             if( tmp != NULL ) {
                 tmp->Delete();
                 tmp = NULL;
@@ -431,7 +431,7 @@ void svkDcmVolumeReader::InitFileNames()
             double position[3];   
             if( tmp->GetDcmHeader()->ElementExists( "ImagePositionPatient", "top" ) ) {
                 for (int i = 0; i < 3; i++ ) {
-                    vtkstd::string pos( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient", i));
+                    string pos( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient", i));
                     std::istringstream positionInString(pos);
                     positionInString >> position[i];
                 }
@@ -470,12 +470,12 @@ void svkDcmVolumeReader::InitFileNames()
     //  Now validate that the DICOM files comprise a single volumetric series
     //  wrt seriesUID and orientation.  Pop files from vector that do not belong: 
     //  ======================================================================
-    vtkstd::vector < vtkstd::vector< vtkstd::string > >::iterator seriesIt; 
+    vector < vector< string > >::iterator seriesIt; 
     seriesIt = dcmSeriesAttributes.begin(); 
 
     while ( seriesIt != dcmSeriesAttributes.end() ) { 
 
-        vtkstd::string tmpSeriesInstanceUID = (*seriesIt)[1]; 
+        string tmpSeriesInstanceUID = (*seriesIt)[1]; 
 
         //  if seriesUID doesnt match, remove it:
         if ( tmpSeriesInstanceUID != seriesInstanceUID ) {
@@ -494,7 +494,7 @@ void svkDcmVolumeReader::InitFileNames()
 
         bool isOrientationOK = true; 
 
-        vtkstd::string tmpImageOrientationPatient = (*seriesIt)[2]; 
+        string tmpImageOrientationPatient = (*seriesIt)[2]; 
 
         //  Check the orientation.  If the orientation differs check by how much, permiting a small 
         //  variance to within a tolerance: 
@@ -530,7 +530,7 @@ void svkDcmVolumeReader::InitFileNames()
     //  Is Data multi-volumetric (multiple 
     //  instances of same ImagePositionPatient):
     //  ============================
-    set < vtkstd::string > uniqueSlices;
+    set < string > uniqueSlices;
     seriesIt = dcmSeriesAttributes.begin(); 
     while ( seriesIt != dcmSeriesAttributes.end() ) { 
         uniqueSlices.insert( (*seriesIt)[6] ); 
@@ -612,7 +612,7 @@ void svkDcmVolumeReader::InitFileNames()
  *  Sets the slice spacing.  If multi slice, from actual spacing between slices, or for single slice, from 
  *  DCM SliceThickness attribute. 
  */ 
-void svkDcmVolumeReader::SetSliceSpacing( svkDcmHeader* hdr, int numSlices, vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes )
+void svkDcmVolumeReader::SetSliceSpacing( svkDcmHeader* hdr, int numSlices, vector< vector< string> >& dcmSeriesAttributes )
 {
     if ( dcmSeriesAttributes.size() > 1 ) {
         int index1 = 1;
@@ -706,7 +706,7 @@ void svkDcmVolumeReader::OnlyReadInputFile()
  *  sort compare utility method.  Gets the 7th element of the vectors 
  *  being compared.
  */
-float svkDcmVolumeReader::GetFloatValAttribute7( vtkstd::vector< vtkstd::string > vec ) 
+float svkDcmVolumeReader::GetFloatValAttribute7( vector< string > vec ) 
 {
     istringstream* posString = new istringstream();
 
@@ -726,7 +726,7 @@ float svkDcmVolumeReader::GetFloatValAttribute7( vtkstd::vector< vtkstd::string 
  *  sort compare utility method.  Gets the 8th element of the vectors 
  *  being compared.
  */
-int svkDcmVolumeReader::GetIntValAttribute8( vtkstd::vector< vtkstd::string > vec ) 
+int svkDcmVolumeReader::GetIntValAttribute8( vector< string > vec ) 
 {
     istringstream* instanceString = new istringstream();
 
@@ -742,28 +742,28 @@ int svkDcmVolumeReader::GetIntValAttribute8( vtkstd::vector< vtkstd::string > ve
 
 
 //  sort ascending slice order
-bool SortAscendAttribute7( vtkstd::vector< vtkstd::string > first, vtkstd::vector < vtkstd::string> second )
+bool SortAscendAttribute7( vector< string > first, vector < string> second )
 {
     return svkDcmVolumeReader::GetFloatValAttribute7( first ) < svkDcmVolumeReader::GetFloatValAttribute7( second );  
 }
 
 
 //  sort descending slice order
-bool SortDescendAttribute7( vtkstd::vector< vtkstd::string > first, vtkstd::vector < vtkstd::string> second )
+bool SortDescendAttribute7( vector< string > first, vector < string> second )
 {
     return svkDcmVolumeReader::GetFloatValAttribute7( first ) > svkDcmVolumeReader::GetFloatValAttribute7( second );  
 }
 
 
 //  sort ascending slice order
-bool SortAscendAttribute8( vtkstd::vector< vtkstd::string > first, vtkstd::vector < vtkstd::string> second )
+bool SortAscendAttribute8( vector< string > first, vector < string> second )
 {
     return svkDcmVolumeReader::GetIntValAttribute8( first ) < svkDcmVolumeReader::GetIntValAttribute8( second );  
 }
 
 
 //  sort descending slice order
-bool SortDescendAttribute8( vtkstd::vector< vtkstd::string > first, vtkstd::vector < vtkstd::string> second )
+bool SortDescendAttribute8( vector< string > first, vector < string> second )
 {
     return svkDcmVolumeReader::GetIntValAttribute8( first ) > svkDcmVolumeReader::GetIntValAttribute8( second );  
 }
@@ -773,7 +773,7 @@ bool SortDescendAttribute8( vtkstd::vector< vtkstd::string > first, vtkstd::vect
  *  Sort the list of files in either ascending or descending order by ImagePositionPatient
  */
 void svkDcmVolumeReader::SortFilesByImagePositionPatient(
-        vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes, 
+        vector< vector< string> >& dcmSeriesAttributes, 
         bool ascending
     )
 {
@@ -793,7 +793,7 @@ void svkDcmVolumeReader::SortFilesByImagePositionPatient(
  *  thie input is already sorted by ImagePositionPatient   
  */
 void svkDcmVolumeReader::SortFilesByInstanceNumber(
-        vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes, 
+        vector< vector< string> >& dcmSeriesAttributes, 
         int numSlicesPerVol, 
         bool ascending
     )
@@ -807,7 +807,7 @@ void svkDcmVolumeReader::SortFilesByInstanceNumber(
 
 
         //  Put all instances of this slice into a new vector and sort it 
-        vtkstd::vector< vtkstd::vector< vtkstd::string> > dcmSliceAttributes;
+        vector< vector< string> > dcmSliceAttributes;
         for ( int vol = 0; vol < this->numVolumes; vol++ ) {
             counter++; 
             dcmSliceAttributes.push_back( dcmSeriesAttributes[counter] );

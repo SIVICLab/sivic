@@ -69,7 +69,7 @@ class svkDICOMMRSWriter : public svkDICOMWriter
     public:
 
         static svkDICOMMRSWriter* New();
-        vtkTypeRevisionMacro( svkDICOMMRSWriter, svkDICOMWriter);
+        vtkTypeMacro( svkDICOMMRSWriter, svkDICOMWriter);
 
         //  Methods:
         virtual void    Write();

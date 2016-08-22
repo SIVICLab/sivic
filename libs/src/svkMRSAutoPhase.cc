@@ -39,7 +39,7 @@
  *      Beck Olson,
  */
 
-
+#include "vtkMultiThreader.h"
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
@@ -59,7 +59,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRSAutoPhase, "$Rev$");
+//vtkCxxRevisionMacro(svkMRSAutoPhase, "$Rev$");
 int* svkMRSAutoPhase::progress; //  static pointer 
 
 
@@ -131,7 +131,6 @@ int svkMRSAutoPhase::RequestInformation( vtkInformation* request, vtkInformation
         outUpExt[2*i+1]    = inWholeExt[2*i+1];
         outWholeExt[2*i]   = inWholeExt[2*i];
         outWholeExt[2*i+1] = inWholeExt[2*i+1];
-
         outSpacing[i] = inSpacing[i];
     }
 
@@ -147,8 +146,128 @@ int svkMRSAutoPhase::RequestInformation( vtkInformation* request, vtkInformation
     outInfo->Set(vtkDataObject::SPACING(), outSpacing, 3);
     outInfo->Set(vtkDataObject::ORIGIN(), outOrigin, 3);
 
+    //int numComponents = 1; 
+    //vtkDataObject::SetPointDataActiveScalarInfo(
+        //outInfo, 
+        //vtkImageData::GetScalarType( inInfo ),         
+        //numComponents 
+    //);
+
+    vtkImageData::SetScalarType(
+        vtkImageData::GetScalarType( inInfo ), 
+        outInfo
+   );
+
     return 1; 
 }
+
+
+/*  directly from VTK6
+ *   
+ */
+struct vtkImageThreadStruct
+{
+    vtkThreadedImageAlgorithm *Filter;
+    vtkInformation *Request;
+    vtkInformationVector **InputsInfo;
+    vtkInformationVector *OutputsInfo;
+    vtkImageData   ***Inputs;
+    vtkImageData   **Outputs;
+};
+
+
+// this mess is really a simple function. All it does is call
+// the ThreadedExecute method after setting the correct
+// extent for this thread. Its just a pain to calculate
+// the correct extent.
+static VTK_THREAD_RETURN_TYPE vtkThreadedImageAlgorithmThreadedExecute( void *arg )
+{
+  vtkImageThreadStruct *str;
+  int ext[6], splitExt[6], total;
+  int threadId, threadCount;
+
+  threadId = static_cast<vtkMultiThreader::ThreadInfo *>(arg)->ThreadID;
+  threadCount = static_cast<vtkMultiThreader::ThreadInfo *>(arg)->NumberOfThreads;
+
+  str = static_cast<vtkImageThreadStruct *>
+    (static_cast<vtkMultiThreader::ThreadInfo *>(arg)->UserData);
+
+  // if we have an output
+  if (str->Filter->GetNumberOfOutputPorts())
+    {
+    // which output port did the request come from
+    int outputPort =
+      str->Request->Get(vtkDemandDrivenPipeline::FROM_OUTPUT_PORT());
+
+    // if output port is negative then that means this filter is calling the
+    // update directly, for now an error
+    if (outputPort == -1)
+      {
+      return VTK_THREAD_RETURN_VALUE;
+      }
+
+    // get the update extent from the output port
+    vtkInformation *outInfo =
+      str->OutputsInfo->GetInformationObject(outputPort);
+    int updateExtent[6];
+    outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),
+                 updateExtent);
+    memcpy(ext,updateExtent, sizeof(int)*6);
+    }
+  else
+    {
+    // if there is no output, then use UE from input, use the first input
+    int inPort;
+    bool found = false;
+    for (inPort = 0; inPort < str->Filter->GetNumberOfInputPorts(); ++inPort)
+      {
+      if (str->Filter->GetNumberOfInputConnections(inPort))
+        {
+        int updateExtent[6];
+        str->InputsInfo[inPort]
+          ->GetInformationObject(0)
+          ->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),
+                updateExtent);
+        memcpy(ext,updateExtent, sizeof(int)*6);
+        found = true;
+        break;
+        }
+      }
+    if (!found)
+      {
+      return VTK_THREAD_RETURN_VALUE;
+      }
+    }
+
+  // execute the actual method with appropriate extent
+  // first find out how many pieces extent can be split into.
+  total = str->Filter->SplitExtent(splitExt, ext, threadId, threadCount);
+
+  if (threadId < total)
+    {
+    // return if nothing to do
+    if (splitExt[1] < splitExt[0] ||
+        splitExt[3] < splitExt[2] ||
+        splitExt[5] < splitExt[4])
+      {
+      return VTK_THREAD_RETURN_VALUE;
+      }
+    str->Filter->ThreadedRequestData(str->Request,
+                                     str->InputsInfo, str->OutputsInfo,
+                                     str->Inputs, str->Outputs,
+                                     splitExt, threadId);
+    }
+  // else
+  //   {
+  //   otherwise don't use this thread. Sometimes the threads dont
+  //   break up very well and it is just as efficient to leave a
+  //   few threads idle.
+  //   }
+
+  return VTK_THREAD_RETURN_VALUE;
+}
+
+
 
 
 /*!
@@ -156,12 +275,103 @@ int svkMRSAutoPhase::RequestInformation( vtkInformation* request, vtkInformation
  */
 int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
+  int i;
+
+  // setup the threasd structure
+  vtkImageThreadStruct str;
+  str.Filter = this;
+  str.Request = request;
+  str.InputsInfo = inputVector;
+  str.OutputsInfo = outputVector;
+
+  // now we must create the output array
+  str.Outputs = 0;
+  if (this->GetNumberOfOutputPorts())
+    {
+    str.Outputs = new vtkImageData * [this->GetNumberOfOutputPorts()];
+    for (i = 0; i < this->GetNumberOfOutputPorts(); ++i)
+      {
+      vtkInformation* info = outputVector->GetInformationObject(i);
+      vtkImageData *outData = vtkImageData::SafeDownCast(
+        info->Get(vtkDataObject::DATA_OBJECT()));
+      str.Outputs[i] = outData;
+      if (outData)
+        {
+        int updateExtent[6];
+        info->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),
+                  updateExtent);
+
+        // unlike geometry filters, for image filters data is pre-allocated
+        // in the superclass (which means, in this class)
+        this->AllocateOutputData(outData, info, updateExtent);
+        }
+      }
+    }
+
+  // now create the inputs array
+  str.Inputs = 0;
+  if (this->GetNumberOfInputPorts())
+    {
+    str.Inputs = new vtkImageData ** [this->GetNumberOfInputPorts()];
+    for (i = 0; i < this->GetNumberOfInputPorts(); ++i)
+      {
+      str.Inputs[i] = 0;
+      vtkInformationVector* portInfo = inputVector[i];
+
+      if (portInfo->GetNumberOfInformationObjects())
+        {
+        int j;
+        str.Inputs[i] =
+          new vtkImageData *[portInfo->GetNumberOfInformationObjects()];
+        for (j = 0; j < portInfo->GetNumberOfInformationObjects(); ++j)
+          {
+          vtkInformation* info = portInfo->GetInformationObject(j);
+          str.Inputs[i][j] = vtkImageData::SafeDownCast(
+            info->Get(vtkDataObject::DATA_OBJECT()));
+          }
+        }
+      }
+    }
+
+  // copy other arrays
+  if (str.Inputs && str.Inputs[0] && str.Outputs)
+    {
+    this->CopyAttributeData(str.Inputs[0][0],str.Outputs[0],inputVector);
+    }
+
+    //  Add Call to initialize the output data with header: 
+    this->SVKRequestDataPreExec( request, inputVector, outputVector ); 
+
+  this->Threader->SetNumberOfThreads(this->NumberOfThreads);
+  this->Threader->SetSingleMethod(vtkThreadedImageAlgorithmThreadedExecute, &str);
+
+  // always shut off debugging to avoid threading problems with GetMacros
+  bool debug = this->Debug;
+  this->Debug = false;
+  this->Threader->SingleMethodExecute();
+  this->Debug = debug;
+
+  // free up the arrays
+  for (i = 0; i < this->GetNumberOfInputPorts(); ++i)
+    {
+    delete [] str.Inputs[i];
+    }
+  delete [] str.Inputs;
+  delete [] str.Outputs;
+
+    this->SVKRequestDataPostExec( request, inputVector, outputVector ); 
+
+  return 1;
+}
+
+
+/*!
+ *  Copy the Dcm Header and Provenance from the input to the output. 
+ */
+int svkMRSAutoPhase::SVKRequestDataPreExec( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+{
 
     svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
-
-    //  Initialize the output object (1) that will contain the image map of phases
-    int indexArray[1];
-    indexArray[0] = 0;
 
     //  Initialize the output metabolite map using a single frequency image from the 
     //  input MRS object. Extract an image from the input and set it as the outputimage: 
@@ -203,14 +413,12 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
     svkDcmHeader::DimensionVector mriDimensionVector = dimensionVector; 
     mriData->GetDcmHeader()->Redimension( &mriDimensionVector ); 
 
-
     svkDcmHeader* hdr = this->GetOutput(0)->GetDcmHeader();
     hdr->InsertUniqueUID("SeriesInstanceUID");
     hdr->InsertUniqueUID("SOPInstanceUID");
     this->SetMapSeriesDescription(); 
 
     this->numTimePoints = mrsData->GetDcmHeader()->GetIntValue( "DataPointColumns" );
-
 
     float tolerance = .5;     
     this->selectionBoxMask = new short[numSpatialVoxels];
@@ -232,15 +440,17 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
     progressStream << "Executing Phase Correction";
     this->SetProgressText( progressStream.str().c_str() );
     this->UpdateProgress(.0);
+}
+
+
+/*
+ *
+ */
+int svkMRSAutoPhase::SVKRequestDataPostExec( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+{
 
     //  This will call AutoPhaseCellSpectrum foreach cell within the 
     //  sub-extent within each thread, via ThreadedRequestData. 
-    this->Superclass::RequestData(
-        request,
-        inputVector,
-        outputVector
-    );
-
     if ( svkMRSAutoPhase::progress != NULL ) {
         delete [] svkMRSAutoPhase::progress;
         svkMRSAutoPhase::progress = NULL;
@@ -252,8 +462,6 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
-
 
     //this->SyncPointsFromCells(); 
 
@@ -333,6 +541,7 @@ void svkMRSAutoPhase::ThreadedRequestData(
     if ( this->GetDebug() ) {
         cout << "THREADED EXECUTE " << id << endl ;
     }
+
     this->AutoPhaseExecute(outExt, id);
 
 }
@@ -373,8 +582,19 @@ void svkMRSAutoPhase::AutoPhaseExecute(int* ext, int id)
 
     this->ValidateInput(); 
 
+    svkMriImageData* mriData = svkMriImageData::SafeDownCast(this->GetOutput(0));
+    svkDcmHeader::DimensionVector mriDimensionVector = mriData->GetDcmHeader()->GetDimensionIndexVector();
+    int numSpatialVoxels = svkDcmHeader::GetNumSpatialVoxels(&mriDimensionVector);
 
     for (int cellID = 0; cellID < numMRSCells; cellID++) {
+
+        //  initialize the cell to 0: 
+        //int volumeNumber = static_cast<int>(cellID/numSpatialVoxels);
+        //this->mapArrayZeroOrderPhase = mriData->GetPointData()->GetArray(volumeNumber);
+        //svkDcmHeader::DimensionVector mriLoopVector = mriDimensionVector;
+        //svkDcmHeader::GetDimensionVectorIndexFromCellID( &mriDimensionVector, &mriLoopVector, cellID);
+        //int spatialCellID = mriData->GetDcmHeader()->GetSpatialCellIDFromDimensionVectorIndex( &mriDimensionVector, &mriLoopVector);
+        //this->mapArrayZeroOrderPhase->SetTuple1(spatialCellID, 0);
 
         svkDcmHeader::GetDimensionVectorIndexFromCellID( &mrsDimensionVector, &loopVector, cellID );
         bool isCellInSubExtent = svkMrsImageData::IsIndexInExtent( ext, &loopVector ); 
@@ -431,6 +651,7 @@ void svkMRSAutoPhase::AutoPhaseSpectrum( int cellID )
             return; 
         }
     }
+
 
     this->FitPhase( cellID ); 
 
@@ -491,4 +712,5 @@ int svkMRSAutoPhase::FillOutputPortInformation( int port, vtkInformation* info )
     } 
     return 1;
 }
+
 

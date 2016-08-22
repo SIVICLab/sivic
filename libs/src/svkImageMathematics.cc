@@ -52,7 +52,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageMathematics, "$Rev$");
+//vtkCxxRevisionMacro(svkImageMathematics, "$Rev$");
 vtkStandardNewMacro(svkImageMathematics);
 
 
@@ -204,8 +204,9 @@ void svkImageMathematics::SetDatatypes()
     }
 
     if (this->GetInput(1)) {
-        int outType0 = this->GetImageDataInput(0)->GetScalarType();
-        int outType1 = this->GetImageDataInput(1)->GetScalarType();
+
+        int outType0 = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() );
+        int outType1 = vtkImageData::GetScalarType( this->GetImageDataInput(1)->GetInformation() );
         
         vtkImageCast* cast = vtkImageCast::New();
         if ( outType0 > outType1 ) {

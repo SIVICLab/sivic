@@ -83,7 +83,7 @@ class svkImageAlgorithmPipeline : public svkImageAlgorithmWithPortMapper
         } svkXMLImageAlgorithmParameters;
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageAlgorithmPipeline, svkImageAlgorithmWithPortMapper );
+        vtkTypeMacro( svkImageAlgorithmPipeline, svkImageAlgorithmWithPortMapper );
   
         // vtk initialization 
         static svkImageAlgorithmPipeline* New();

@@ -71,7 +71,7 @@ class svkDSCPeakHeight: public svkDynamicImageMap
     public:
 
         static svkDSCPeakHeight* New();
-        vtkTypeRevisionMacro( svkDSCPeakHeight, svkDynamicImageMap);
+        vtkTypeMacro( svkDSCPeakHeight, svkDynamicImageMap);
 
 
     protected:

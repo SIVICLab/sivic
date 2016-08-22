@@ -69,7 +69,7 @@ class svkMrsApodizationFilter : public svkImageInPlaceFilter
     public:
 
         static svkMrsApodizationFilter* New();
-        vtkTypeRevisionMacro( svkMrsApodizationFilter, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMrsApodizationFilter, svkImageInPlaceFilter);
 
         void SetWindow( vtkFloatArray* window );
 

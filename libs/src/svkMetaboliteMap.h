@@ -73,7 +73,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
     public:
 
         static svkMetaboliteMap* New();
-        vtkTypeRevisionMacro( svkMetaboliteMap, svkImageAlgorithm);
+        vtkTypeMacro( svkMetaboliteMap, svkImageAlgorithm);
 
         typedef enum {
             INTEGRATE = 0, 

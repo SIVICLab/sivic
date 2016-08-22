@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGEPFileMapperUCSFProseProstate, "$Rev: 2119 $");
+//vtkCxxRevisionMacro(svkGEPFileMapperUCSFProseProstate, "$Rev: 2119 $");
 vtkStandardNewMacro(svkGEPFileMapperUCSFProseProstate);
 
 

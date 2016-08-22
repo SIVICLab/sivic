@@ -60,7 +60,17 @@ IF (CMAKE_SYSTEM_NAME MATCHES Linux)
         SET(EXECUTABLE_OUTPUT_PATH ../${PLATFORM})
         SET(LIBRARY_OUTPUT_PATH ../${PLATFORM})
     ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
-	SET(PLATFORM_LIBS z)
+	SET(PLATFORM_LIBS z
+                      GLU
+                      GL
+                      SM
+                      ICE
+                      X11
+                      Xext
+                      Xt
+                      Xss 
+                      Xft
+	)
 ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
     IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         SET(PLATFORM Darwin_i386)
@@ -107,20 +117,20 @@ if ( EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib"
     SET(DCMTK_OFLOG oflog )
 endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
 
+
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK REQUIRED)
-
-IF(VTK_FOUND)
-  INCLUDE(${VTK_USE_FILE})
-ENDIF(VTK_FOUND)
+#FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE)
+#IF(VTK_FOUND)
+#  INCLUDE(${VTK_USE_FILE})
+#ENDIF(VTK_FOUND)
 
 
 ###################################
 #   KWWidgets
 ###################################
-INCLUDE(${KWWidgets_USE_FILE})
+#INCLUDE(${KWWidgets_USE_FILE})
 
 
 if( BUILD_PROFILER)
@@ -143,6 +153,7 @@ ENDIF( NOT WIN32 )
 #############################################
 
 LINK_DIRECTORIES(
+    ${VTK_DIR}/../../
 	${LIBRARY_OUTPUT_PATH}
     ../../../libs/${PLATFORM}
     ../${PLATFORM}
@@ -203,7 +214,6 @@ ENDIF(WIN32)
 if ( BUILD_ITK )
     SET( ITK_LIBS 
         svkNumerical 
-        #cminpack 
         ITKDICOMParser
     )
     SET( ITK_LIBS_PRE
@@ -234,36 +244,165 @@ if ( BUILD_CLAPACK )
     ENDIF(WIN32)
 endif( BUILD_CLAPACK )
 
-SET(SVK_LIBS
-    ${ITK_LIBS}
-    ${CLAPACK_LIBS}
-    svkPSD
-    svk 
-    svkPSD
-    svkTypeUtils
-    svkadapt 
-    vtkImaging
-    vtkIO
-    vtkFiltering
-    vtkCommon
-    vtkInfovis
-    dcmdata
-    ${DCMTK_OFLOG}
-    ofstd 
-    ${PLATFORM_LIBS}
-    ${ITK_LIBS_PRE}
+IF (CMAKE_SYSTEM_NAME MATCHES Darwin) 
+    SET(SVK_LIBS
+        ${ITK_LIBS}
+        ${CLAPACK_LIBS}
+        svkPSD
+        svk 
+        svkPSD
+        svkTypeUtils
+        svkadapt 
+        #   this needs to be refined since includeing all the libs quadruples the static binary size
+        ${VTK_LIBRARIES}
+        vtkImagingSources-6.3.a
+        vtkFiltersHybrid-6.3
+        vtkFiltersGeneral-6.3
+        vtkCommonDataModel-6.3
+        vtkCommonMath-6.3
+        vtkCommonCore-6.3
+        vtksys-6.3
+        vtkCommonMisc-6.3
+        vtkCommonSystem-6.3
+        vtkCommonTransforms-6.3
+        vtkFiltersCore-6.3
+        vtkCommonExecutionModel-6.3
+        vtkImagingCore-6.3
+        vtkRenderingCore-6.3
+        vtkCommonColor-6.3
+        vtkFiltersExtraction-6.3
+        vtkImagingFourier-6.3
+        vtkFiltersGeometry-6.3
+        vtkFiltersSources-6.3
+        vtkRenderingImage-6.3
+        vtkImagingHybrid-6.3
+        vtkIOImage-6.3
+        vtkIOCore-6.3
+        vtkzlib-6.3
+        vtkmetaio-6.3
+        vtkjpeg-6.3
+        vtkpng-6.3
+        vtktiff-6.3
+        vtkInteractionStyle-6.3
+        vtkRenderingAnnotation-6.3
+        vtkImagingColor-6.3
+        vtkRenderingFreeType-6.3
+        vtkfreetype-6.3
+        vtkftgl-6.3
+        vtkRenderingVolume-6.3
+        vtkImagingStencil-6.3.a
+        vtkIOInfovis-6.3.a
+        vtkInfovisCore-6.3.a
+        vtkInfovisLayout-6.3.a
+        vtkViewsInfovis-6.3.a
+        vtkFiltersStatistics-6.3.a
+        vtkImagingStatistics-6.3
+        vtkIOXMLParser-6.3
+        vtkexpat-6.3
+        vtkRenderingContext2D-6.3
+        vtkRenderingGL2PS-6.3
+        vtkRenderingContextOpenGL-6.3
+        vtkRenderingOpenGL-6.3
+        vtkRenderingLOD-6.3
+        vtkImagingMath-6.3
+        vtkRenderingLabel-6.3
+        vtkRenderingVolumeOpenGL-6.3
+        vtkInteractionImage-6.3
+        vtkRenderingLIC-6.3
+        vtkRenderingGL2PS-6.3
+        vtkRenderingContextOpenGL-6.3
+        vtkRenderingContext2D-6.3
+        vtkRenderingLabel-6.3
+        vtkRenderingAnnotation-6.3
+        vtkImagingColor-6.3
+        vtkRenderingFreeType-6.3
+        vtkftgl-6.3
+        vtkfreetype-6.3
+        vtkRenderingVolume-6.3
+        vtkInteractionStyle-6.3
+        vtkFiltersHybrid-6.3
+        vtkRenderingOpenGL-6.3
+        vtkRenderingCore-6.3
+        vtkCommonColor-6.3
+        vtkFiltersGeometry-6.3
+        vtkFiltersSources-6.3
+        vtkImagingHybrid-6.3
+        vtkIOImage-6.3
+        vtkmetaio-6.3
+        vtkpng-6.3
+        vtktiff-6.3
+        vtkjpeg-6.3
+        GLU
+        GL
+        SM
+        ICE
+        X11
+        Xext
+        Xt
+        vtkIOXMLParser-6.3
+        vtkIOXML-6.3.a
+        vtkexpat-6.3
+        vtkFiltersExtraction-6.3
+        vtkFiltersGeneral-6.3
+        vtkFiltersCore-6.3
+        vtkImagingFourier-6.3
+        vtkImagingCore-6.3
+        vtkIOCore-6.3
+        vtkCommonExecutionModel-6.3
+        vtkCommonDataModel-6.3
+        vtkCommonMisc-6.3
+        vtkCommonSystem-6.3
+        vtkCommonTransforms-6.3
+        vtkCommonMath-6.3
+        vtkCommonCore-6.3
+        dcmdata
+        ${DCMTK_OFLOG}
+        ofstd 
+        ${PLATFORM_LIBS}
+        ${ITK_LIBS_PRE}
+        GLU
+        GL
+        SM
+        ICE
+        X11
+        Xext
+        Xt
+        Xss 
+        Xft
+    )
+ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin) 
+    SET(SVK_LIBS
+        ${ITK_LIBS}
+        ${CLAPACK_LIBS}
+        svkPSD
+        svk 
+        svkPSD
+        svkTypeUtils
+        svkadapt 
+        #   this needs to be refined since includeing all the libs quadruples the static binary size
+        ${VTK_LIBRARIES}
+        dcmdata
+        ${DCMTK_OFLOG}
+        ofstd 
+        ${ITK_LIBS_PRE}
+        ${PLATFORM_LIBS}
+    )
+ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin) 
+
+SET(SVK_INFOVIS_LIBS
 )
 
-SET(SVK_VIZ_LIBS
-    svkviz
-    vtkRendering
-    vtkVolumeRendering
-    vtkGraphics
-    vtkHybrid
-    vtkInfovis
-)
-
-
+IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    SET(SVK_VIZ_LIBS
+        svkviz
+        OSMesa
+    )
+    SET(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -framework OpenGL")
+ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    SET(SVK_VIZ_LIBS
+        svkviz
+    )
+ENDIF(CMAKE_SYSTEM_NAME MATCHES Darwin)
 
 
 ADD_EXECUTABLE(
@@ -342,6 +481,15 @@ ADD_EXECUTABLE(
 )
 TARGET_LINK_LIBRARIES(
     svk_gepfile_reader
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    svk_variable_flip_scaler
+    svk_variable_flip_scaler.cc 
+)
+TARGET_LINK_LIBRARIES(
+    svk_variable_flip_scaler
 	${SVK_LIBS}
 )
 
@@ -592,6 +740,24 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_simulate
+    svk_simulate.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_simulate
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    svk_zerofill
+    svk_zerofill.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_zerofill
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_channel2time
     svk_channel2time.cc
 )
@@ -616,8 +782,8 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     svk_image_stats
 	${SVK_LIBS}
+    ${SVK_INFOVIS_LIBS}
     svkXMLUtils
-    vtkInfovis
 )
 
 ADD_EXECUTABLE(
@@ -627,8 +793,8 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     svk_image_pipeline
 	${SVK_LIBS}
+    ${SVK_INFOVIS_LIBS}
     svkXMLUtils
-    vtkInfovis
 )
 
 ADD_EXECUTABLE(
@@ -721,6 +887,7 @@ SET(APPS
     svk_quick_view
     svk_multi_view
     svk_gepfile_reader 
+    svk_variable_flip_scaler
     svk_gepfile_anon
     svk_lcmodel_reader
     svk_lcmodel_writer
@@ -747,6 +914,8 @@ SET(APPS
     svk_peak_pick
     svk_volume_diff
     svk_psd_prescription_convert
+    svk_reorder_epsi
+    svk_zerofill
 )
 if ( BUILD_CLAPACK )
     LIST(APPEND APPS svk_hsvd)
@@ -756,19 +925,21 @@ if ( BUILD_ITK )
     LIST(APPEND APPS svk_met_kinetics)
 endif ( BUILD_ITK )
 
-IF (NOT WIN32)	
-    FOREACH(APP ${APPS})    
-        configure_file( svk_cmd_start ./${APP} [COPYONLY])
-        INSTALL_TARGETS( /local/sivic ${APP} )
-        INSTALL_PROGRAMS( /local/bin FILES ${APP} )
-    ENDFOREACH(APP)
-ELSE (NOT WIN32)
-    FOREACH(APP ${APPS})    
-        configure_file( svk_cmd_start.bat ${APP}.bat [COPYONLY])
-        INSTALL_TARGETS( /local/sivic ${APP} )
-        INSTALL_PROGRAMS( /local/bin FILES ${APP}.bat )
-    ENDFOREACH(APP)
-ENDIF (NOT WIN32)
+IF( CREATE_WRAPPER_SCRIPTS )
+    IF (NOT WIN32)
+        FOREACH(APP ${APPS})
+            configure_file( svk_cmd_start ./${APP} [COPYONLY])
+            INSTALL_TARGETS( /local/sivic ${APP} )
+            INSTALL_PROGRAMS( /local/bin FILES ${APP} )
+        ENDFOREACH(APP)
+    ELSE (NOT WIN32)
+        FOREACH(APP ${APPS})
+            configure_file( svk_cmd_start.bat ${APP}.bat [COPYONLY])
+            INSTALL_TARGETS( /local/sivic ${APP} )
+            INSTALL_PROGRAMS( /local/bin FILES ${APP}.bat )
+        ENDFOREACH(APP)
+    ENDIF (NOT WIN32)
+ENDIF( CREATE_WRAPPER_SCRIPTS )
 
 
 

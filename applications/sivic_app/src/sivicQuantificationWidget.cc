@@ -14,7 +14,7 @@
 
 
 vtkStandardNewMacro( sivicQuantificationWidget );
-vtkCxxRevisionMacro( sivicQuantificationWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicQuantificationWidget, "$Revision$");
 
 
 /*! 
@@ -215,7 +215,7 @@ void sivicQuantificationWidget::ExecuteQuantification()
 
     if( data != NULL ) {
 
-        this->mrsQuant->SetInput( data );
+        this->mrsQuant->SetInputData( data );
         this->mrsQuant->LimitToSelectedVolume();
 		svkSpecPoint* point = svkSpecPoint::New();
 		point->SetDcmHeader( data->GetDcmHeader() );
@@ -304,7 +304,7 @@ void sivicQuantificationWidget::EnableWidgets()
 
         this->mrsQuant->SetAnatomyType( static_cast<svkTypes::AnatomyType>(this->sivicController->anatomyType) );
 
-        this->mrsQuant->SetInput( data );
+        this->mrsQuant->SetInputData( data );
         this->RefreshQuantFile();
 
         //  Generate button

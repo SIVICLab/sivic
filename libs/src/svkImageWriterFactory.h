@@ -68,7 +68,7 @@ class svkImageWriterFactory : public vtkObject
     public:
 
         static svkImageWriterFactory* New();
-        vtkTypeRevisionMacro( svkImageWriterFactory, vtkObject);
+        vtkTypeMacro( svkImageWriterFactory, vtkObject);
 
         typedef enum {
             UNDEFINED = -1, 

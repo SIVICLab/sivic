@@ -43,7 +43,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkApodizationWindow, "$Rev$");
+//vtkCxxRevisionMacro(svkApodizationWindow, "$Rev$");
 vtkStandardNewMacro(svkApodizationWindow);
 
 //! Constructor

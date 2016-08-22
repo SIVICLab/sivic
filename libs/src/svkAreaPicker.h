@@ -101,7 +101,7 @@ class VTK_RENDERING_EXPORT svkAreaPicker : public vtkAbstractPropPicker
 {
 public:
   static svkAreaPicker *New();
-  vtkTypeRevisionMacro(svkAreaPicker,vtkAbstractPropPicker);
+  vtkTypeMacro(svkAreaPicker,vtkAbstractPropPicker);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

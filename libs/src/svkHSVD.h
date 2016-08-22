@@ -137,7 +137,7 @@ class svkHSVD : public svkThreadedImageAlgorithm
         };
 
         static svkHSVD* New();
-        vtkTypeRevisionMacro( svkHSVD, svkThreadedImageAlgorithm);
+        vtkTypeMacro( svkHSVD, svkThreadedImageAlgorithm);
 
         void    RemoveH20On();
         void    RemoveLipidOn();

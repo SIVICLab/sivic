@@ -53,7 +53,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkEPSIReorder, "$Rev$");
+//vtkCxxRevisionMacro(svkEPSIReorder, "$Rev$");
 vtkStandardNewMacro(svkEPSIReorder);
 
 
@@ -272,7 +272,7 @@ int svkEPSIReorder::RequestData( vtkInformation* request, vtkInformationVector**
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    //this->Update();
 
     return 1; 
 } 
@@ -370,6 +370,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     svkDcmHeader::SetDimensionVectorValue(&outDimensionVector, svkDcmHeader::SLICE_INDEX, reorderedVoxels[2] - 1); 
     svkDcmHeader::SetDimensionVectorValue(&outDimensionVector, svkDcmHeader::TIME_INDEX, numTimePoints - 1); 
     svkDcmHeader::SetDimensionVectorValue(&outDimensionVector, svkDcmHeader::CHANNEL_INDEX, numChannels - 1); 
+
     reorderedImageData->GetDcmHeader()->AddDimensionIndex( &outDimensionVector, svkDcmHeader::EPSI_ACQ_INDEX, numEPSIAcquisitions - 1 ); 
     svkDcmHeader::DimensionVector outLoopVector = outDimensionVector; 
 
@@ -424,9 +425,9 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
         //  convert these indices to a frame number
         vtkFloatArray* epsiSpectrum = static_cast<vtkFloatArray*>(svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID) );
         //vtkFloatArray* epsiSpectrumAN = static_cast<vtkFloatArray*>(svkMrsImageData::SafeDownCast(data)->GetSpectrum( &inputLoopVector) );
-//cout << "CHECK ARRAY NAME (" << cellID <<  ") : "  <<  svkMrsImageData::SafeDownCast(data)->GetArrayName(&inputLoopVector) << endl;
-//cout << "CHECK in reorder: " << *epsiSpectrum->GetTuple(0) << endl; 
-//cout << "CHECK in reorder: " << *epsiSpectrumAN->GetTuple(0) << endl; 
+        //cout << "CHECK ARRAY NAME (" << cellID <<  ") : "  <<  svkMrsImageData::SafeDownCast(data)->GetArrayName(&inputLoopVector) << endl;
+        //cout << "CHECK in reorder: " << *epsiSpectrum->GetTuple(0) << endl; 
+        //cout << "CHECK in reorder: " << *epsiSpectrumAN->GetTuple(0) << endl; 
     
         //  define range of spatial dimension to expand (i.e. epsiAxis):  
         int xEPSI   = svkDcmHeader::GetDimensionVectorValue( &inputLoopVector, svkDcmHeader::COL_INDEX); 
@@ -479,6 +480,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
             if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
                 currentAcq = acq; //testing
             }
+            //cout << "ACQ: " << acq << " " << currentAcq << endl;
 
             //  If numAcqs Per FID = 1, then reset the currentEPSIPt being read
             //  to the start of the FID: 
@@ -506,6 +508,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                             //  Now get the cell ID for this set of indices: 
                             int cellIDInner = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &outDimensionVector, &outLoopVector ); 
                             //svkDcmHeader::PrintDimensionIndexVector(&outDimensionVector); 
+                            //cout << " CELL ID: " << cellIDInner << endl;                    
                             //svkDcmHeader::PrintDimensionIndexVector(&outLoopVector); 
 
                             vtkDataArray* dataArray = reorderedImageData->GetCellData()->GetArray( cellIDInner );
@@ -519,6 +522,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                             float epsiTuple[2]; 
                             float tuple[2]; 
                             int epsiOffset; 
+
                             for (int i = 0; i < numFreqPts; i++) {
                                 epsiOffset = (lobeStride * numEPSIAcquisitionsPerFID * i ) + currentEPSIPt;
                                 epsiSpectrum->GetTupleValue(epsiOffset, epsiTuple); 
@@ -679,8 +683,99 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
 
     reorderedImageData->Delete();
 
-
 }
+
+
+/*!
+ *  Static method to compute sum of squares combination of lobes 
+ */
+void svkEPSIReorder::CombineLobes(svkImageData* data)
+{
+
+    svkDcmHeader* hdr = data->GetDcmHeader();
+
+    int numFreqPts = hdr->GetIntValue( "DataPointColumns" );
+
+    svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector loopVectorLobe0 = dimVector;
+
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimVector );
+
+    //  Loop over all cellss where EPSI_ACQ_INDEX = 0 and combine with EPSI_ACQ_INDEX = 1 
+
+    float specPtLobe0[2];
+    float specPtLobe1[2];
+    float specPtSOS[2];
+    
+    int lastPrint = -1;
+    for (int cellIDLobe0 = 0; cellIDLobe0 < numCells; cellIDLobe0++ ) {
+
+        //  Get the dimensionVector index for the non-dynamic image: 
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimVector, &loopVectorLobe0, cellIDLobe0 );
+
+        int lobe = hdr->GetDimensionVectorValue( &loopVectorLobe0, svkDcmHeader::EPSI_ACQ_INDEX);
+
+        if ( lobe == 0 ) {
+
+            int completed = 100 * ( static_cast<float>(cellIDLobe0) / static_cast<float>(numCells) );
+            if( completed % 5 == 0 && completed != lastPrint ) {
+                cout << "combine lobes " << completed << " %" << endl;
+                lastPrint = completed;
+            }
+
+
+            //get spectrum from both lobes 
+            svkDcmHeader::DimensionVector loopVectorLobe1 = loopVectorLobe0;
+            svkDcmHeader::SetDimensionVectorValue( &loopVectorLobe1, svkDcmHeader::EPSI_ACQ_INDEX, 1);
+
+            int cellIDLobe1 = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &loopVectorLobe1);
+
+            vtkFloatArray* spectrumLobe0 = vtkFloatArray::SafeDownCast(
+                svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellIDLobe0)
+            );
+            vtkFloatArray* spectrumLobe1 = vtkFloatArray::SafeDownCast(
+                svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellIDLobe1)
+            );
+
+            for ( int freq = 0; freq < numFreqPts; freq++ ) {
+                spectrumLobe0->GetTupleValue( freq, specPtLobe0 );
+                spectrumLobe1->GetTupleValue( freq, specPtLobe1 );
+                specPtSOS[0]  = ( specPtLobe0[0] * specPtLobe0[0] + specPtLobe0[1] * specPtLobe0[1] );
+                specPtSOS[0] += ( specPtLobe1[0] * specPtLobe1[0] + specPtLobe1[1] * specPtLobe1[1] );
+                specPtSOS[0]  = pow( static_cast<float>(specPtSOS[0]), static_cast<float>(0.5) );
+                specPtSOS[1] = 0;
+                spectrumLobe0->SetTupleValue( freq, specPtSOS );
+            }
+        }
+    }
+
+    //  redimension here: 
+    //  remove EPSI_ACQ_INDEX = 1 arrays
+    //  remove dimension index for EPSI_ACQ /? 
+    svkDcmHeader::DimensionVector loopVector = dimVector;
+    for (int cellID = 0; cellID < numCells; cellID++ ) {
+
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimVector, &loopVector, cellID);
+
+        int lobeNum = hdr->GetDimensionVectorValue( &loopVector, svkDcmHeader::EPSI_ACQ_INDEX);
+
+        if ( lobeNum == 1 ) {
+
+            int completed = 100 * ( static_cast<float>(cellID) / static_cast<float>(numCells) );
+            if( completed % 5 == 0 && completed != lastPrint ) {
+                cout << "combine redimension " << completed << " %" << endl;
+                lastPrint = completed;
+            }
+
+            //int cellIDLobe1 = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &loopVector); 
+
+            string arrayName = svk4DImageData::GetArrayName( &loopVector );
+            data->GetCellData()->RemoveArray( arrayName.c_str() );
+        }
+    }
+    data->GetDcmHeader()->RemoveDimensionIndex( svkDcmHeader::EPSI_ACQ_INDEX );
+}
+
 
 
 /*!

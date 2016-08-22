@@ -73,7 +73,7 @@ class svkMRSNoise : public svkImageInPlaceFilter
     public:
 
         static svkMRSNoise* New();
-        vtkTypeRevisionMacro( svkMRSNoise, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMRSNoise, svkImageInPlaceFilter);
 
         float           GetNoiseSD(); 
         float           GetMagnitudeNoiseSD(); 
