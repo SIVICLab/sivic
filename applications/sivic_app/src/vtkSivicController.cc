@@ -3190,8 +3190,14 @@ void vtkSivicController::EnableWidgets()
         this->processingWidget->spectralButton->EnabledOn(); 
         if ( spatialDomain0.compare("KSPACE") == 0 && spatialDomain1.compare("KSPACE") == 0 && spatialDomain2.compare("KSPACE") == 0 )  {
             this->processingWidget->spatialDomainLabel->SetText( string("Current Domain: KSPACE").c_str() );
+            this->preprocessingWidget->apodizationSelectorCols->EnabledOn();
+            this->preprocessingWidget->apodizationSelectorRows->EnabledOn();
+            this->preprocessingWidget->apodizationSelectorSlices->EnabledOn();
         } else if ( spatialDomain0.compare("SPACE") == 0 && spatialDomain1.compare("SPACE") == 0 && spatialDomain2.compare("SPACE") == 0 )  {
             this->processingWidget->spatialDomainLabel->SetText( string("Current Domain: SPACE").c_str() );
+            this->preprocessingWidget->apodizationSelectorCols->EnabledOff();
+            this->preprocessingWidget->apodizationSelectorRows->EnabledOff();
+            this->preprocessingWidget->apodizationSelectorSlices->EnabledOn();
         } else {
             this->processingWidget->spatialDomainLabel->SetText( string("Current Domain: Mixed or Undefined").c_str() );
         }

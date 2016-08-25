@@ -256,7 +256,7 @@ void svkApodizationWindow::GetHammingWindowData( vector < vtkFloatArray* >* wind
                 //  Only set hamming window in requested dimensions, others set to 1: 
                 float hamming = 1;  
                 if ( dim == dimension || dimension == svkApodizationWindow::THREE_D ) {  
-                    hamming = 0.54 - 0.46 * (cos (((2 * vtkMath::Pi())/(N - 1))*(i)));
+                    hamming = 0.54 - 0.46 * (cos ((2 * vtkMath::Pi() * i)/(N - 1)));
                 }
                 
                 for( int j = 0; j < numComponents; j++ ) {

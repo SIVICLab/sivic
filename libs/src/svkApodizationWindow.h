@@ -74,7 +74,7 @@ class svkApodizationWindow : public vtkObject
         typedef enum {
             COL = 0,
             ROW, 
-            Slice, 
+            SLICE, 
             THREE_D
         }Dimension;
 
