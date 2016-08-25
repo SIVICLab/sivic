@@ -82,6 +82,7 @@ option( BUILD_PROFILER "Build for profiling with gprof." FALSE)
 option( BUILD_TESTS "Build test applications." FALSE)
 option( BUILD_CREATE_RAW "Build svk_create_raw. Requires open ssl" FALSE)
 option( BUILD_EPIC "Build for EPIC PSD linking." FALSE)
+option( CREATE_WRAPPER_SCRIPTS "Create wrapper scripts for executables." TRUE)
 
 ADD_DEFINITIONS(-DSVK_RELEASE_VERSION="\\"${SVK_RELEASE_VERSION}\\"" )
 ADD_DEFINITIONS( -DSVK_MAJOR_VERSION="${SVK_MAJOR_VERSION}" )
