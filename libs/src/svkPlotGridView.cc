@@ -546,7 +546,7 @@ void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
             if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( VOL_SELECTION ))
                  && this->dataVector[MR4D]->IsA("svkMrsImageData") ) {
                 string acquisitionType = this->dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-                if( acquisitionType != "SINGLE VOXEL" ) {
+                if( acquisitionType != "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
                     this->GetRenderer(svkPlotGridView::PRIMARY)->AddViewProp( this->GetProp( VOL_SELECTION ) );
                 }
             }
