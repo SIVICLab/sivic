@@ -414,7 +414,7 @@ void OrientationTest( )
     svkMrsImageData::SafeDownCast(firstSpectra)->EstimateDataRange( range, lowestPoint, highestPoint, svkImageData::REAL  );
     double minValue = range[0];
     double maxValue = range[1];
-    
+
     plotController->SetWindowLevelRange( minValue, maxValue, 1 );
     cout << "Setting range to: " << minValue << " " << maxValue << endl;
     if( firstOverlay != NULL ) {
@@ -429,6 +429,10 @@ void OrientationTest( )
         stringstream filename;
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_AXIAL" << i << ".tiff" ;
         plotController->SetSlice(i);
+        // Due to an xvfb only rendering issue we have to reset the overlay. Not sure why.
+        if( firstOverlay != NULL ) {
+            plotController->SetInput( firstOverlay, 1 );
+        }
         window->Render();
         svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
@@ -440,6 +444,10 @@ void OrientationTest( )
         stringstream filename;
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_CORONAL" << i << ".tiff" ;
         plotController->SetSlice(i);
+        // Due to an xvfb only rendering issue we have to reset the overlay. Not sure why.
+        if( firstOverlay != NULL ) {
+            plotController->SetInput( firstOverlay, 1 );
+        }
         window->Render();
         svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
@@ -451,6 +459,10 @@ void OrientationTest( )
         stringstream filename;
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_SAGITTAL" << i << ".tiff" ;
         plotController->SetSlice(i);
+        // Due to an xvfb only rendering issue we have to reset the overlay. Not sure why.
+        if( firstOverlay != NULL ) {
+            plotController->SetInput( firstOverlay, 1 );
+        }
         window->Render();
         svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
