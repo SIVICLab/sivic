@@ -249,13 +249,13 @@ void svkApodizationWindow::GetHammingWindowData( vector < vtkFloatArray* >* wind
 
             int numVoxels = (*window)[dim]->GetNumberOfTuples();
             int numComponents = (*window)[dim]->GetNumberOfComponents();
-            float N = svkApodizationWindow::GetWindowExpansion( data, numVoxels);
-
+            
             for( int i = 0; i < numVoxels; i++ ) {
 
                 //  Only set hamming window in requested dimensions, others set to 1: 
                 float hamming = 1;  
-                if ( dim == dimension || dimension == svkApodizationWindow::THREE_D ) {  
+                if ( (dim == dimension || dimension == svkApodizationWindow::THREE_D) && numVoxels > 1) {  
+                    float N = svkApodizationWindow::GetWindowExpansion( data, numVoxels);
                     hamming = 0.54 - 0.46 * (cos ((2 * vtkMath::Pi() * i)/(N - 1)));
                 }
                 
@@ -288,7 +288,7 @@ float svkApodizationWindow::GetWindowExpansion( svkImageData* data, int numVoxel
         if (numVoxels%2 == 0) {
 	        N = numVoxels;
         } else {
-            cout << "Window Error" << endl;
+            cout << "Error: svkApodizationWindow::GetWindowExpansion, numVoxels is too small." << endl;
             exit(1);
         }
     }
@@ -345,12 +345,12 @@ void  svkApodizationWindow::InitializeWindowSpatial( vector < vtkFloatArray* >* 
         data->GetNumberOfVoxels( numVoxels ); 
 
 
-		// And the number of components
-		int numComponents = 1;
-		string representation =  data->GetDcmHeader()->GetStringValue( "DataRepresentation" );
-		if (representation.compare( "COMPLEX" ) == 0 ) {
-			numComponents = 2;
-		}
+        // And the number of components
+        int numComponents = 1;
+        string representation =  data->GetDcmHeader()->GetStringValue( "DataRepresentation" );
+        if (representation.compare( "COMPLEX" ) == 0 ) {
+            numComponents = 2;
+        }
 
         // Lets set the number of components and the number of tuples
         for ( int dim = 0; dim < 3; dim++ ) {
