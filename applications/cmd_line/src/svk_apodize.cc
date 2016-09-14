@@ -68,7 +68,7 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";   
     usemsg += "svk_apodize -i input_file_name -o output_root                                    \n"; 
-    usemsg += "                 -f filter_type --width -single [-vh]                            \n";
+    usemsg += "                 -f filter_type [ --width ] --single [-vh]                       \n";
     usemsg += "                                                                                 \n";  
     usemsg += "   -i        input_file_name   Name of file to convert.                          \n"; 
     usemsg += "   -o        output_root       Root name of outputfile.                          \n";  
@@ -76,7 +76,9 @@ int main (int argc, char** argv)
     usemsg += "                                     2 = UCSF DDF                                \n";
     usemsg += "                                     4 = DICOM_MRS (default)                     \n";
     usemsg += "   -f        filter_type       Type of apodization .  Options:                   \n";
-    usemsg += "                                     1 = Lorentzian                              \n";
+    usemsg += "                                     1 = Lorentzian (spectral)                   \n";
+    usemsg += "                                     2 = Gaussian (spectral)                     \n";
+    usemsg += "                                     3 = Hamming (spatial)                       \n";
     usemsg += "   --width   width             Width of filter in Hz (FWHH)                      \n";
     usemsg += "   --single                    Only apodize specified file if multiple in series \n"; 
     usemsg += "   -v                          Verbose output.                                   \n";
@@ -87,7 +89,7 @@ int main (int argc, char** argv)
 
     string inputFileName; 
     string outputFileName; 
-    int    filterType = -1; 
+    svkApodizationWindow::WindowType filterType = svkApodizationWindow::UNDEFINED; 
     float  width = -1;  
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS; 
     bool onlyApodizeSingle = false; 
@@ -134,7 +136,7 @@ int main (int argc, char** argv)
                 onlyApodizeSingle = true;
                 break;
             case 'f': 
-                filterType = atoi( optarg);
+                filterType = static_cast<svkApodizationWindow::WindowType>(atoi( optarg));
                 break;
             case 'v':
                 verbose = true;
@@ -158,8 +160,7 @@ int main (int argc, char** argv)
     if ( 
         argc != 0 || inputFileName.length() == 0 || outputFileName.length() == 0 ||
         ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) ||
-        filterType == -1 || 
-        width == -1 
+        filterType == svkApodizationWindow::UNDEFINED || filterType >= svkApodizationWindow::LAST
     ) {
         cout << usemsg << endl;
         exit(1); 
@@ -202,9 +203,12 @@ int main (int argc, char** argv)
     //  Apply apodization filter 
     //  ===============================================
 
-    vtkFloatArray* window = vtkFloatArray::New();
-    if ( filterType == 1 ) {
+    vector< vtkFloatArray* >* window = new vector< vtkFloatArray* >(); 
+    if ( filterType == svkApodizationWindow::LORENTZIAN ) {
         svkApodizationWindow::GetLorentzianWindow( window, reader->GetOutput(), width);
+    } else if ( filterType == svkApodizationWindow::GAUSSIAN ) {
+    } else if ( filterType == svkApodizationWindow::HAMMING ) {
+        svkApodizationWindow::GetHammingWindow( window, reader->GetOutput() );
     }
 
     svkMrsApodizationFilter* apodizeFilter = svkMrsApodizationFilter::New();
@@ -224,14 +228,31 @@ int main (int argc, char** argv)
         exit(1);
     }
 
-    writerFactory->Delete();
+
     writer->SetFileName( outputFileName.c_str() );
     writer->SetInputData( apodizeFilter->GetOutput() );
     writer->Write();
+
+    if ( filterType == svkApodizationWindow::HAMMING ) {
+        svkImageWriter* spatialFilterWriter = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_ENHANCED_MRI ) );
+        if ( spatialFilterWriter == NULL ) {
+            cerr << "Can not create writer for spatial filter " << endl;
+            exit(1);
+        }
+        string spatialFilterFileName = outputFileName; 
+        spatialFilterFileName.append("_hamming"); 
+        spatialFilterWriter->SetFileName( spatialFilterFileName.c_str() );
+        spatialFilterWriter->SetInputData( apodizeFilter->GetSpatialFilter() );
+        spatialFilterWriter->Write();
+        spatialFilterWriter->Delete();
+    }
+
+
+    writerFactory->Delete();
     writer->Delete();
 
     apodizeFilter->Delete();
-    window->Delete();
+    delete window; 
     reader->Delete();
 
 

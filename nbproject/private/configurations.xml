@@ -48,6 +48,7 @@
             <in>svk_reorder_epsi.cc</in>
             <in>svk_reslice.cc</in>
             <in>svk_scale_image.cc</in>
+            <in>svk_simulate.cc</in>
             <in>svk_spec_diff.cc</in>
             <in>svk_surface_area.cc</in>
             <in>svk_svrecon.cc</in>
@@ -278,6 +279,8 @@
                     <df name="svk_reslice.dir">
                     </df>
                     <df name="svk_scale_image.dir">
+                    </df>
+                    <df name="svk_simulate.dir">
                     </df>
                     <df name="svk_spec_diff.dir">
                     </df>
@@ -658,8 +661,17 @@
           <in>getopt_long.c</in>
         </df>
         <df name="src">
+          <df name="bak">
+            <in>svk2SiteExchangeCostFunction.h</in>
+            <in>svk2SiteIMCostFunction.h</in>
+            <in>svk2SitePerfCostFunction.h</in>
+            <in>svkDcmEnhancedVolumeReader.cc</in>
+            <in>svkKineticModelCostFunction.h</in>
+          </df>
           <df name="headers">
             <in>svk2SiteExchangeCostFunction.h</in>
+            <in>svk2SiteIMCostFunction.h</in>
+            <in>svk2SiteIMPyrCostFunction.h</in>
             <in>svk2SitePerfCostFunction.h</in>
             <in>svk4DImageData.h</in>
             <in>svkAlgoTemplate.h</in>
@@ -723,6 +735,7 @@
             <in>svkGEPFileMapperMBrease.h</in>
             <in>svkGEPFileMapperMPCSIOBL.h</in>
             <in>svkGEPFileMapperUCSF.h</in>
+            <in>svkGEPFileMapperUCSFProseBreast.h</in>
             <in>svkGEPFileMapperUCSFProseProstate.h</in>
             <in>svkGEPFileMapperUCSFfidcsi.h</in>
             <in>svkGEPFileMapperUCSFfidcsiDev0.h</in>
@@ -798,6 +811,7 @@
             <in>svkMrsImageFlip.h</in>
             <in>svkMrsImageFourierCenter.h</in>
             <in>svkMrsLinearPhase.h</in>
+            <in>svkMrsSimulate.h</in>
             <in>svkMrsSingleVoxelSincExtraction.h</in>
             <in>svkMrsTopoGenerator.h</in>
             <in>svkMrsZeroFill.h</in>
@@ -861,7 +875,17 @@
             <in>itkImageIOFactoryRegisterManager.h</in>
             <in>itkTransformIOFactoryRegisterManager.h</in>
           </df>
+          <df name="libsvk">
+            <df name="html">
+              <df name="apps">
+              </df>
+              <df name="search">
+              </df>
+            </df>
+          </df>
           <in>svk2SiteExchangeCostFunction.h</in>
+          <in>svk2SiteIMCostFunction.h</in>
+          <in>svk2SiteIMPyrCostFunction.h</in>
           <in>svk2SitePerfCostFunction.h</in>
           <in>svk4DImageData.cc</in>
           <in>svk4DImageData.h</in>
@@ -987,6 +1011,8 @@
           <in>svkGEPFileMapperMPCSIOBL.h</in>
           <in>svkGEPFileMapperUCSF.cc</in>
           <in>svkGEPFileMapperUCSF.h</in>
+          <in>svkGEPFileMapperUCSFProseBreast.cc</in>
+          <in>svkGEPFileMapperUCSFProseBreast.h</in>
           <in>svkGEPFileMapperUCSFProseProstate.cc</in>
           <in>svkGEPFileMapperUCSFProseProstate.h</in>
           <in>svkGEPFileMapperUCSFfidcsi.cc</in>
@@ -1134,6 +1160,8 @@
           <in>svkMrsImageFourierCenter.h</in>
           <in>svkMrsLinearPhase.cc</in>
           <in>svkMrsLinearPhase.h</in>
+          <in>svkMrsSimulate.cc</in>
+          <in>svkMrsSimulate.h</in>
           <in>svkMrsSingleVoxelSincExtraction.cc</in>
           <in>svkMrsSingleVoxelSincExtraction.h</in>
           <in>svkMrsTopoGenerator.cc</in>
@@ -1782,6 +1810,8 @@
         </df>
       </df>
       <df name="LocalMake">
+        <df name="Linux_x86_64">
+        </df>
       </df>
       <df name="stash">
         <in>svkDICOMRawDataWriter.cc</in>
@@ -2354,314 +2384,6 @@
             </df>
           </df>
         </df>
-        <df name="results_tmp">
-          <df name="COLOR_MAP_RENDER_MCHK">
-          </df>
-          <df name="COR_IMAGE_SPEC_RENDER_MCHK">
-          </df>
-          <df name="COR_SPEC_RENDER_MCHK">
-          </df>
-          <df name="MRI_4D_IMAGE_MCHK">
-          </df>
-          <df name="ORIENTATION_RENDER_MCHK">
-          </df>
-          <df name="ORIENTATION_SPEC_MET_MCHK">
-          </df>
-          <df name="OVERLAY_LOAD_ORDER_RENDER_MCHK">
-          </df>
-          <df name="OVERLAY_MEMORY_RENDER_MCHK">
-          </df>
-          <df name="OVERLAY_MET_RENDER_MCHK">
-          </df>
-          <df name="PHANTOM_IMAGE_RENDER_MCHK">
-          </df>
-          <df name="PHANTOM_IMAGE_SAT_BANDS_MCHK">
-          </df>
-          <df name="PHANTOM_SPECTRA_RENDER_MCHK">
-          </df>
-          <df name="PHANTOM_SPECTRA_SAT_BANDS_MCHK">
-          </df>
-          <df name="PHNTM_IMG_SPEC_RENDER_MCHK">
-          </df>
-          <df name="PLOT_GRID_DETAILED_VOXEL_MCHK">
-          </df>
-          <df name="PLOT_GRID_MET_RENDER_MCHK">
-          </df>
-          <df name="PLOT_GRID_MET_SHIFT_RENDER_MCHK">
-          </df>
-          <df name="SAG_IMAGE_SPEC_RENDER_MCHK">
-          </df>
-          <df name="SAG_SPEC_RENDER_MCHK">
-          </df>
-          <df name="SVK_MULTI_VIEW_TEST_1_MCHK">
-          </df>
-          <df name="SVK_MULTI_VIEW_TEST_2_MCHK">
-          </df>
-          <df name="SVK_MULTI_VIEW_TEST_3_MCHK">
-          </df>
-          <df name="SVK_MULTI_VIEW_TEST_4_MCHK">
-          </df>
-          <df name="SVK_MULTI_VIEW_TEST_5_MCHK">
-          </df>
-          <df name="SVK_MULTI_VIEW_TEST_6_MCHK">
-          </df>
-          <df name="TEST_BRUKER_2_DCM">
-          </df>
-          <df name="TEST_ERRORHANDLING_HSVD">
-          </df>
-          <df name="TEST_EXTRACT_RAW_LEGACY">
-          </df>
-          <df name="TEST_FP_PHASE">
-          </df>
-          <df name="TEST_HSVD">
-          </df>
-          <df name="TEST_MCHK_11XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_12XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_14XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_15XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_20XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_23XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_24XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_9XPF_SWAP_DDF">
-          </df>
-          <df name="TEST_MCHK_ALL_SATS">
-          </df>
-          <df name="TEST_MCHK_CHANNEL_TO_TIME">
-          </df>
-          <df name="TEST_MCHK_COMBINE">
-          </df>
-          <df name="TEST_MCHK_DCE_QUANTIFY">
-          </df>
-          <df name="TEST_MCHK_DCMMRI_2_DCMMRI">
-          </df>
-          <df name="TEST_MCHK_DCMMRI_2_DCMMRI_ANON">
-          </df>
-          <df name="TEST_MCHK_DCMMRI_2_IDF">
-          </df>
-          <df name="TEST_MCHK_DCMMRS_2_DCMMRS">
-          </df>
-          <df name="TEST_MCHK_DDF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_DICOM_RAW_WRITER">
-          </df>
-          <df name="TEST_MCHK_DICOM_RAW_WRITER_2">
-          </df>
-          <df name="TEST_MCHK_EVEN_IMAGE_CENTER">
-          </df>
-          <df name="TEST_MCHK_EVEN_IMAGE_LINEAR_PHASE">
-          </df>
-          <df name="TEST_MCHK_EVEN_IMAGE_PAD">
-          </df>
-          <df name="TEST_MCHK_EVEN_MRI_FFT">
-          </df>
-          <df name="TEST_MCHK_EVEN_SINC_INTERPOLATE">
-          </df>
-          <df name="TEST_MCHK_FDF_2_IDF">
-          </df>
-          <df name="TEST_MCHK_FLOAT_DCMENH_2_DCMENH">
-          </df>
-          <df name="TEST_MCHK_GE_POSTAGE_TO_DDF">
-          </df>
-          <df name="TEST_MCHK_GEPFILE_2_DDF_1">
-          </df>
-          <df name="TEST_MCHK_GEPFILE_2_DDF_2">
-          </df>
-          <df name="TEST_MCHK_GEPFILE_2_DDF_LAC">
-          </df>
-          <df name="TEST_MCHK_GEPFILE_ANON">
-          </df>
-          <df name="TEST_MCHK_IDF_2_IDF_INT2">
-          </df>
-          <df name="TEST_MCHK_IDF_2_IDF_REAL">
-          </df>
-          <df name="TEST_MCHK_INTEGRATE_MET_MAP">
-          </df>
-          <df name="TEST_MCHK_KIN_MOD">
-          </df>
-          <df name="TEST_MCHK_LINE_WIDTH_MET_MAP">
-          </df>
-          <df name="TEST_MCHK_MAG_INTEGRATE_MET_MAP">
-          </df>
-          <df name="TEST_MCHK_MAG_LINE_WIDTH_MET_MAP">
-          </df>
-          <df name="TEST_MCHK_MAG_PEAK_HT_MET_MAP">
-          </df>
-          <df name="TEST_MCHK_MRS_APODIZATION">
-          </df>
-          <df name="TEST_MCHK_MRS_FFT">
-          </df>
-          <df name="TEST_MCHK_MRS_VOXEL_SHIFT">
-          </df>
-          <df name="TEST_MCHK_MRS_ZERO_FILL">
-          </df>
-          <df name="TEST_MCHK_MULTI_VOL_DCM_2_IDF">
-          </df>
-          <df name="TEST_MCHK_MULTI_VOL_DCMENH_2_DCMENH">
-          </df>
-          <df name="TEST_MCHK_MULTI_VOL_IDF_2_DCM">
-          </df>
-          <df name="TEST_MCHK_MULTI_VOL_IDF_2_DCMENH">
-          </df>
-          <df name="TEST_MCHK_MULTI_VOL_IDF_2_IDF">
-          </df>
-          <df name="TEST_MCHK_OBLIQUE_RESLICE">
-          </df>
-          <df name="TEST_MCHK_ODD_IMAGE_CENTER">
-          </df>
-          <df name="TEST_MCHK_ODD_IMAGE_LINEAR_PHASE">
-          </df>
-          <df name="TEST_MCHK_ODD_IMAGE_PAD">
-          </df>
-          <df name="TEST_MCHK_ODD_MRI_FFT">
-          </df>
-          <df name="TEST_MCHK_ODD_SINC_INTERPOLATE">
-          </df>
-          <df name="TEST_MCHK_PEAK_HT_MET_MAP">
-          </df>
-          <df name="TEST_MCHK_PHASE_SPEC_FROM_FILE">
-            <df name="out1">
-            </df>
-          </df>
-          <df name="TEST_MCHK_PHASE_ZERO_LINEAR_SPEC">
-          </df>
-          <df name="TEST_MCHK_PHASE_ZERO_LINEAR_SPEC_2">
-          </df>
-          <df name="TEST_MCHK_PHILIPS_SFILES_TO_DDF">
-          </df>
-          <df name="TEST_MCHK_RDA_2_DDF">
-          </df>
-          <df name="TEST_MCHK_RDA_CSI_2_DDF">
-          </df>
-          <df name="TEST_MCHK_READ_GE_SHF">
-          </df>
-          <df name="TEST_MCHK_READ_LCM_COORD">
-          </df>
-          <df name="TEST_MCHK_READ_LCM_CSV">
-          </df>
-          <df name="TEST_MCHK_READ_LCM_TABLE">
-          </df>
-          <df name="TEST_MCHK_READ_PROSE_UCSF">
-          </df>
-          <df name="TEST_MCHK_READ_SYM_EPSI">
-          </df>
-          <df name="TEST_MCHK_READ_SYM_EPSI_DYNAMIC">
-          </df>
-          <df name="TEST_MCHK_REORDER_FLYBACK">
-          </df>
-          <df name="TEST_MCHK_REORDER_INTERLEAVED_EPSI">
-          </df>
-          <df name="TEST_MCHK_RESAMPLE">
-          </df>
-          <df name="TEST_MCHK_RESLICE_INTERPOLATION_CUBIC">
-          </df>
-          <df name="TEST_MCHK_RESLICE_INTERPOLATION_LINEAR">
-          </df>
-          <df name="TEST_MCHK_RESLICE_INTERPOLATION_NEAREST">
-          </df>
-          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_DOTS_ASYMMETRIC_TRANSLATED">
-          </df>
-          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_DOTS_ROTATED_TRANSLATED">
-          </df>
-          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_HIGH_TO_LOW_RES">
-          </df>
-          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_HIGH_TO_LOW_RES_AXIAL">
-          </df>
-          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_IMAGE_TO_SPEC">
-          </df>
-          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_LOW_TO_HIGH_RES">
-          </df>
-          <df name="TEST_MCHK_RESLICE_MATCH_TARGET_RESHAPE_UPSAMPLE">
-          </df>
-          <df name="TEST_MCHK_SIG5XV2_2_IDF">
-          </df>
-          <df name="TEST_MCHK_SIGLX2_2_IDF">
-          </df>
-          <df name="TEST_MCHK_SIGNA5X_2_IDF">
-          </df>
-          <df name="TEST_MCHK_SPEC_DIFF">
-          </df>
-          <df name="TEST_MCHK_SVK_APODIZE">
-          </df>
-          <df name="TEST_MCHK_SVK_CHECK_VOL_LOAD">
-          </df>
-          <df name="TEST_MCHK_SVK_CONVERT_LEGACY_DAT_3PLANE">
-          </df>
-          <df name="TEST_MCHK_SVK_CONVERT_LEGACY_DAT_6PLANE">
-          </df>
-          <df name="TEST_MCHK_SVK_DAD_SATS_XML">
-          </df>
-          <df name="TEST_MCHK_SVK_DAD_TRAJECTORY_XML">
-          </df>
-          <df name="TEST_MCHK_SVK_FILE_INFO">
-          </df>
-          <df name="TEST_MCHK_SVK_IMAGE_MATHEMATICS_ADD">
-          </df>
-          <df name="TEST_MCHK_SVK_IMAGE_MATHEMATICS_DIV">
-          </df>
-          <df name="TEST_MCHK_SVK_IMAGE_MATHEMATICS_MUL">
-          </df>
-          <df name="TEST_MCHK_SVK_IMAGE_MATHEMATICS_SCL">
-          </df>
-          <df name="TEST_MCHK_SVK_IMAGE_MATHEMATICS_SUB">
-          </df>
-          <df name="TEST_MCHK_SVK_IMAGE_THRESHOLD_1">
-          </df>
-          <df name="TEST_MCHK_SVK_IMAGE_THRESHOLD_2">
-          </df>
-          <df name="TEST_MCHK_SVK_IMAGE_THRESHOLD_3">
-          </df>
-          <df name="TEST_MCHK_SVK_IMAGE_THRESHOLD_4">
-          </df>
-          <df name="TEST_MCHK_SVK_INTERPOLATE_SPECTRA_1">
-          </df>
-          <df name="TEST_MCHK_SVK_INTERPOLATE_SPECTRA_2">
-          </df>
-          <df name="TEST_MCHK_SVK_INTERPOLATE_SPECTRA_3">
-          </df>
-          <df name="TEST_MCHK_SVK_INTERPOLATE_SPECTRA_4">
-          </df>
-          <df name="TEST_MCHK_SVK_MRS_AVERAGE_SPEC">
-          </df>
-          <df name="TEST_MCHK_SVK_MRS_COMBINE_SUB">
-            <df name="out2">
-            </df>
-          </df>
-          <df name="TEST_MCHK_SVK_MRS_COMBINE_WTD_ADD">
-            <df name="out1">
-            </df>
-          </df>
-          <df name="TEST_MCHK_SVK_PARSE_XML_PFILE_1">
-          </df>
-          <df name="TEST_MCHK_SVK_PARSE_XML_PFILE_2">
-          </df>
-          <df name="TEST_MCHK_SVK_QUANTIFY_XML">
-          </df>
-          <df name="TEST_MCHK_SVK_SAT_BANDS_XML_1">
-          </df>
-          <df name="TEST_MCHK_SVK_SAT_BANDS_XML_2">
-          </df>
-          <df name="TEST_MCHK_SVK_VARIABLE_FLIP_SCALAR">
-          </df>
-          <df name="TEST_MCHK_SVK_ZSCORE">
-          </df>
-          <df name="TEST_MCHK_TRANSFORM">
-          </df>
-          <df name="TEST_MCHK_VARIANFID_2_DDF">
-          </df>
-          <df name="TEST_MRS_FFT_VOXEL_SHIFT">
-          </df>
-          <df name="TEST_PHASE_SPEC">
-          </df>
-          <df name="VTK_RENDER_MCHK">
-          </df>
-        </df>
         <df name="sample_epsi">
           <df name="input">
           </df>
@@ -2816,6 +2538,12 @@
         </df>
         <df name="svk_met_kinetics">
           <df name="hmtrc_2016">
+            <df name="input">
+            </df>
+            <df name="output">
+            </df>
+          </df>
+          <df name="model3_IM">
             <df name="input">
             </df>
             <df name="output">
@@ -3085,6 +2813,8 @@
                   <df name="svk_reslice.dir">
                   </df>
                   <df name="svk_scale_image.dir">
+                  </df>
+                  <df name="svk_simulate.dir">
                   </df>
                   <df name="svk_spec_diff.dir">
                   </df>
@@ -4010,6 +3740,8 @@
                   </df>
                   <df name="svk_scale_image.dir">
                   </df>
+                  <df name="svk_simulate.dir">
+                  </df>
                   <df name="svk_spec_diff.dir">
                   </df>
                   <df name="svk_surface_area.dir">
@@ -4071,6 +3803,8 @@
             <df name="CompilerIdCXX">
               <in>CMakeCXXCompilerId.cpp</in>
             </df>
+          </df>
+          <df name="iclibs">
           </df>
           <df name="libs">
             <df name="Linux_x86_64">
@@ -4290,6 +4024,8 @@
                   </df>
                   <df name="svk_scale_image.dir">
                   </df>
+                  <df name="svk_simulate.dir">
+                  </df>
                   <df name="svk_spec_diff.dir">
                   </df>
                   <df name="svk_surface_area.dir">
@@ -4329,6 +4065,8 @@
                   <in>itkImageIOFactoryRegisterManager.h</in>
                   <in>itkTransformIOFactoryRegisterManager.h</in>
                 </df>
+                <in>SivicKWCallbacksLibInit.cxx</in>
+                <in>vtkSivicControllerTcl.cxx</in>
               </df>
             </df>
           </df>
@@ -4526,6 +4264,28 @@
             <df name="20160518-0559">
             </df>
             <df name="20160518-0616">
+            </df>
+            <df name="20160608-2227">
+            </df>
+            <df name="20160622-2102">
+            </df>
+            <df name="20160622-2125">
+            </df>
+            <df name="20160622-2200">
+            </df>
+            <df name="20160622-2203">
+            </df>
+            <df name="20160622-2216">
+            </df>
+            <df name="20160622-2240">
+            </df>
+            <df name="20160623-1730">
+            </df>
+            <df name="20160721-1850">
+            </df>
+            <df name="20160721-2014">
+            </df>
+            <df name="20160721-2046">
             </df>
             <df name="CoverageInfo">
             </df>

@@ -63,6 +63,20 @@ class svkApodizationWindow : public vtkObject
 
     public:
 
+        typedef enum {
+            UNDEFINED = 0,
+            LORENTZIAN,
+            GAUSSIAN, 
+            HAMMING, 
+            LAST 
+        }WindowType;
+
+        typedef enum {
+            COL = 0,
+            ROW, 
+            SLICE, 
+            THREE_D
+        }Dimension;
 
         // vtk type revision macro
         vtkTypeMacro( svkApodizationWindow, vtkObject );
@@ -70,17 +84,26 @@ class svkApodizationWindow : public vtkObject
         // vtk initialization 
         static svkApodizationWindow* New();  
 
-        static void  GetLorentzianWindow( vtkFloatArray* window, float fwhh, float dt );
-        static void  GetLorentzianWindow( vtkFloatArray* window, svkImageData* data, float fwhh );
-        static void  GetGaussianWindow( vtkFloatArray* window, float fwhh, float dt, float center = 0 );
-        static void  GetGaussianWindow( vtkFloatArray* window, svkImageData* data, float fwhh, float center = 0 );
-        static void  InitializeWindow( vtkFloatArray* window, svkImageData* data );
-        static float GetWindowResolution( svkImageData* data );
+        static void  GetLorentzianWindow( vector < vtkFloatArray* >* window, svkImageData* data, float fwhh );
+        static void  GetGaussianWindow(   vector < vtkFloatArray* >* window, svkImageData* data, float fwhh, float center = 0 );
+        static void  GetHammingWindow(    vector < vtkFloatArray* >* window, 
+                                          svkImageData* data, 
+                                          svkApodizationWindow::Dimension dimension = svkApodizationWindow::THREE_D);
 
 	protected:
 
        svkApodizationWindow();
        ~svkApodizationWindow();
+
+
+    private:
+        static void  GetLorentzianWindow( vector < vtkFloatArray* >* window, float fwhh, float dt );
+        static void  GetGaussianWindow(   vector < vtkFloatArray* >* window, float fwhh, float dt, float center = 0 );
+        static void  GetHammingWindowData(    vector < vtkFloatArray* >* window, svkImageData* data, svkApodizationWindow::Dimension dimension );
+        static void  InitializeWindowSpectral( vector < vtkFloatArray* >*  window, svkImageData* data );
+        static void  InitializeWindowSpatial(  vector < vtkFloatArray* >*  window, svkImageData* data );
+        static float GetWindowResolution( svkImageData* data );
+        static float GetWindowExpansion( svkImageData* data, int numVoxels );
         
 };
 
