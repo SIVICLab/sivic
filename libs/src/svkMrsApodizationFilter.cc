@@ -199,10 +199,9 @@ int svkMrsApodizationFilter::RequestDataSpatial()
                 (*this->window)[2]->GetTuple(z, filterTupleZ);     
                 filterTuple3D[0] = filterTupleX[0] * filterTupleY[0] * filterTupleZ[0]; // real 
                 filterTuple3D[1] = filterTupleX[1] * filterTupleY[1] * filterTupleZ[1]; // imaginary
-                cout << "FILTER( " << x << ", " << y << ", " << z << ") = " 
-                    << filterTupleX[0] << " " << filterTupleY[0] << " " << filterTupleZ[0] << endl;
-                cout << "FILTERVAL( " << x << ", " << y << ", " << z << ") = " << filterTuple3D[0] << endl;
-                cout << "FILTERVAL( " << x << ", " << y << ", " << z << ") = " << filterTuple3D[0] << endl;
+                //cout << "FILTER( " << x << ", " << y << ", " << z << ") = " 
+                    //<< filterTupleX[0] << " " << filterTupleY[0] << " " << filterTupleZ[0] << endl;
+                //cout << "FILTERVAL( " << x << ", " << y << ", " << z << ") = " << filterTuple3D[0] << endl;
                 this->spatialFilter->SetImagePixelTuple(x, y, z, filterTuple3D ); 
                 this->spatialFilterReal->SetImagePixel( x, y, z, filterTuple3D[0] ); 
             }
