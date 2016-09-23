@@ -418,6 +418,36 @@ ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${T
 SET_TESTS_PROPERTIES(SVK_MULTI_VIEW_TEST_6_DIFF PROPERTIES DEPENDS SVK_MULTI_VIEW_TEST_6_MCHK)
 
 #############################################################
+# Test for the svk_multi_view command line tool for multiple
+# overlays.
+#############################################################
+SET( TEST_NAME SVK_MULTI_VIEW_MULTIPLE_OVERLAYS_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST_WITH_TARGETS(${TEST_NAME} ${GRAPHICS_WRAPPER} ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met_shifted.idf -j ${TEST_RESULTS_PATH}/out ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImage.idf  ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImageMask.idf)
+
+SET( TEST_NAME SVK_MULTI_VIEW_MULTIPLE_OVERLAYS_DIFF)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_multiple_overlays)
+SET_TESTS_PROPERTIES(SVK_MULTI_VIEW_MULTIPLE_OVERLAYS_DIFF PROPERTIES DEPENDS SVK_MULTI_VIEW_MULTIPLE_OVERLAYS_MCHK)
+
+#############################################################
+# Test for the svk_multi_view command line tool for multiple
+# overlays.
+#############################################################
+SET( TEST_NAME SVK_MULTI_VIEW_MULTIPLE_OVERLAYS_WITH_SPEC_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST_WITH_TARGETS(${TEST_NAME} ${GRAPHICS_WRAPPER} ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met_shifted.idf -j ${TEST_RESULTS_PATH}/out ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImage.idf  -s ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/spec.ddf)
+
+SET( TEST_NAME SVK_MULTI_VIEW_MULTIPLE_OVERLAYS_WITH_SPEC_DIFF)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_multiple_overlays_with_spec)
+SET_TESTS_PROPERTIES(SVK_MULTI_VIEW_MULTIPLE_OVERLAYS_WITH_SPEC_DIFF PROPERTIES DEPENDS SVK_MULTI_VIEW_MULTIPLE_OVERLAYS_WITH_SPEC_MCHK)
+
+#############################################################
 # Check to see if you can render an image from a phantom with sat bands
 #############################################################
 SET( TEST_NAME PHANTOM_IMAGE_SAT_BANDS_MCHK)
