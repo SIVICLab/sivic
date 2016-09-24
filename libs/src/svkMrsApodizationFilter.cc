@@ -58,7 +58,8 @@ svkMrsApodizationFilter::svkMrsApodizationFilter()
 #if VTK_DEBUG_ON
     this->DebugOn();
 #endif
-
+    this->spatialFilter = NULL;
+    this->spatialFilterReal = NULL;
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 
 }
