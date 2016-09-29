@@ -152,7 +152,7 @@ void svkDICOMSCWriter::Write()
     // Fill in image information.
     this->UpdateInformation(); 
 
-    int* wExtent = this->GetOutputInformation(0)->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
+    int* wExtent = vtkImageData::SafeDownCast(this->GetInput(0))->GetExtent();
     this->FileNumber = wExtent[4]; 
     this->MaximumFileNumber = this->FileNumber;
     this->MinimumFileNumber = this->FileNumber;
