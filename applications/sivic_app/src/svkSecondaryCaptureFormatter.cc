@@ -584,7 +584,7 @@ void svkSecondaryCaptureFormatter::RenderCombinedImage( int firstFrame, int last
     if( flipImage ) {  
         vtkImageFlip* flipper = vtkImageFlip::New();
         flipper->SetFilteredAxis( 1 );
-        flipper->SetInputData( sliceAppender->GetOutput() );
+        flipper->SetInputConnection( sliceAppender->GetOutputPort() );
         flipper->Update();
         outputImage->DeepCopy( flipper->GetOutput() );
         flipper->Delete();

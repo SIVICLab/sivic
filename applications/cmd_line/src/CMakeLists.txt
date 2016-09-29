@@ -416,6 +416,16 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_create_secondary_capture
+    svk_create_secondary_capture.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_create_secondary_capture
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_image_threshold
     svk_image_threshold.cc
 )
