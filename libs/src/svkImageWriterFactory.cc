@@ -56,7 +56,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageWriterFactory, "$Rev$");
+//vtkCxxRevisionMacro(svkImageWriterFactory, "$Rev$");
 vtkStandardNewMacro(svkImageWriterFactory);
 
 

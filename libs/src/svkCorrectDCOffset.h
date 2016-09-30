@@ -70,7 +70,7 @@ class svkCorrectDCOffset : public svkImageInPlaceFilter
     public:
 
         static svkCorrectDCOffset* New();
-        vtkTypeRevisionMacro( svkCorrectDCOffset, svkImageInPlaceFilter);
+        vtkTypeMacro( svkCorrectDCOffset, svkImageInPlaceFilter);
 
 
     protected:

@@ -67,7 +67,7 @@ class svkImageClip : public vtkImageClip
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageClip, vtkImageClip );
+        vtkTypeMacro( svkImageClip, vtkImageClip );
    
         static svkImageClip*  New();  
         

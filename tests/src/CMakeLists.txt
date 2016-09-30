@@ -35,7 +35,6 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-#cmake_policy(SET CMP0002 OLD)
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0015 OLD)
 endif(COMMAND cmake_policy)
@@ -59,7 +58,6 @@ IF (CMAKE_SYSTEM_NAME MATCHES Linux)
         SET(PLATFORM Linux_x86_64)
     ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
     SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-    SET(PLATFORM_LIBS z)
 ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
     IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         SET(PLATFORM Darwin_i386)
@@ -77,6 +75,8 @@ ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
 
 IF(WIN32)
     SET(GNU_DIFFUTILS_PATH CACHE PATH "Location of gnu diffutils installation. Provides diff command for testing on Windows." )
+    SET(PLATFORM_LIB_DIR  ${VTK_DIR}/lib/${CMAKE_BUILD_TYPE})
+ELSE(WIN32)
 ENDIF(WIN32)
 
 
@@ -103,11 +103,15 @@ endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.li
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK)
-
-IF (USE_VTK_FILE)
-    INCLUDE(${USE_VTK_FILE})
-ENDIF (USE_VTK_FILE)
+if(CLION_BUILD)
+    FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE )
+    INCLUDE(${VTK_USE_FILE})
+else(CLION_BUILD)
+    FIND_PACKAGE(VTK)
+    IF (USE_VTK_FILE)
+        INCLUDE(${USE_VTK_FILE})
+    ENDIF (USE_VTK_FILE)
+endif(CLION_BUILD)
 
 FIND_PATH(DCMTK_DIR dctk.h)
 
@@ -142,6 +146,8 @@ INCLUDE(CTest)
 
 
 LINK_DIRECTORIES(
+    ${VTK_DIR}/../../ 
+    ${PLATFORM_LIB_DIR}   
     ../${PLATFORM}
     ../lib/${PLATFORM}
     ${DCMTK_DIR}/lib
@@ -150,6 +156,10 @@ LINK_DIRECTORIES(
 IF(WIN32)
 	SET(PLATFORM_INCLUDE ../../libs/getopt)
 ENDIF(WIN32)
+IF(CLION_BUILD)
+    SET(PLATFORM_INCLUDE ${CLION_VTK_INCLUDE})
+ENDIF(CLION_BUILD)
+
 
 INCLUDE_DIRECTORIES(
     ./
@@ -161,6 +171,15 @@ INCLUDE_DIRECTORIES(
 IF(WIN32)
 	SET(PLATFORM_LIBS getopt
 	                  netapi32)
+ELSE(WIN32)
+    Set(PLATFORM_LIBS z
+                      GLU
+                      GL
+                      SM
+                      ICE
+                      X11
+                      Xext
+                      Xt)
 ENDIF(WIN32)
 
 
@@ -184,10 +203,92 @@ SET(SVK_LIBS
     svkPSD
     svkTypeUtils
     svkadapt 
-    vtkIO
-    vtkImaging
-    vtkFiltering
-    vtkCommon
+    ${VTK_LIBRARIES}
+    vtkFiltersHybrid-6.3
+    vtkFiltersGeneral-6.3
+    vtkCommonDataModel-6.3
+    vtkCommonMath-6.3
+    vtkCommonCore-6.3
+    vtksys-6.3
+    vtkCommonMisc-6.3
+    vtkCommonSystem-6.3
+    vtkCommonTransforms-6.3
+    vtkFiltersCore-6.3
+    vtkCommonExecutionModel-6.3
+    vtkImagingCore-6.3
+    vtkRenderingCore-6.3
+    vtkCommonColor-6.3
+    vtkFiltersExtraction-6.3
+    vtkImagingFourier-6.3
+    vtkFiltersGeometry-6.3
+    vtkFiltersSources-6.3
+    vtkRenderingImage-6.3
+    vtkImagingHybrid-6.3
+    vtkIOImage-6.3
+    vtkIOCore-6.3
+    vtkzlib-6.3
+    vtkmetaio-6.3
+    vtkjpeg-6.3
+    vtkpng-6.3
+    vtktiff-6.3
+    vtkInteractionStyle-6.3
+    vtkRenderingAnnotation-6.3
+    vtkImagingColor-6.3
+    vtkRenderingFreeType-6.3
+    vtkfreetype-6.3
+    vtkftgl-6.3
+    vtkRenderingVolume-6.3
+    vtkImagingStatistics-6.3
+    vtkIOXMLParser-6.3
+    vtkexpat-6.3
+    vtkRenderingContext2D-6.3
+    vtkRenderingGL2PS-6.3
+    vtkRenderingContextOpenGL-6.3
+    vtkRenderingOpenGL-6.3
+    vtkRenderingLOD-6.3
+    vtkImagingMath-6.3
+    vtkRenderingLabel-6.3
+    vtkRenderingVolumeOpenGL-6.3
+    vtkInteractionImage-6.3
+    vtkRenderingLIC-6.3
+    vtkRenderingGL2PS-6.3
+    vtkRenderingContextOpenGL-6.3
+    vtkRenderingContext2D-6.3
+    vtkRenderingLabel-6.3
+    vtkRenderingAnnotation-6.3
+    vtkImagingColor-6.3
+    vtkRenderingFreeType-6.3
+    vtkftgl-6.3
+    vtkfreetype-6.3
+    vtkRenderingVolume-6.3
+    vtkInteractionStyle-6.3
+    vtkFiltersHybrid-6.3
+    vtkRenderingOpenGL-6.3
+    vtkRenderingCore-6.3
+    vtkCommonColor-6.3
+    vtkFiltersGeometry-6.3
+    vtkFiltersSources-6.3
+    vtkImagingHybrid-6.3
+    vtkIOImage-6.3
+    vtkmetaio-6.3
+    vtkpng-6.3
+    vtktiff-6.3
+    vtkjpeg-6.3
+    vtkIOXMLParser-6.3
+    vtkexpat-6.3
+    vtkFiltersExtraction-6.3
+    vtkFiltersGeneral-6.3
+    vtkFiltersCore-6.3
+    vtkImagingFourier-6.3
+    vtkImagingCore-6.3
+    vtkIOCore-6.3
+    vtkCommonExecutionModel-6.3
+    vtkCommonDataModel-6.3
+    vtkCommonMisc-6.3
+    vtkCommonSystem-6.3
+    vtkCommonTransforms-6.3
+    vtkCommonMath-6.3
+    vtkCommonCore-6.3
     dcmdata
     ${DCMTK_OFLOG}
     ofstd 
@@ -197,9 +298,22 @@ SET(SVK_LIBS
 
 SET(SVK_VIZ_LIBS
     svkviz
-    vtkRendering
-    vtkGraphics
-    vtkHybrid
+    #vtkRenderingAnnotation-6.3
+    #vtkRenderingContext2D-6.3
+    #vtkRenderingContextOpenGL-6.3
+    #vtkRenderingCore-6.3
+    #vtkRenderingFreeType-6.3
+    #vtkRenderingGL2PS-6.3
+    #vtkRenderingImage-6.3
+    #vtkRenderingLabel-6.3
+    #vtkRenderingLIC-6.3
+    #vtkRenderingLOD-6.3
+    #vtkRenderingOpenGL-6.3
+    #vtkRenderingVolume-6.3
+    #vtkRenderingVolumeOpenGL-6.3
+    #vtkRenderingCore-6.3
+    #vtkFiltersHybrid-6.3
+    #vtkImagingHybrid-6.3
 )
 
 
@@ -448,7 +562,7 @@ IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(
         svkSatBandsXML_c
         ${SVK_LIBS}
-        vtkIO
+        #vtkIO
     )
     ADD_EXECUTABLE(
         svkDadSatsXMLTest_c
@@ -458,7 +572,6 @@ IF(NOT WIN32)
         svkDadSatsXMLTest_c
         ${SVK_LIBS}
         svkXMLUtils
-        vtkIO
     )
     ADD_EXECUTABLE(
         svkDadTrajectoryXMLTest_c
@@ -467,8 +580,8 @@ IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(
         svkDadTrajectoryXMLTest_c
         ${SVK_LIBS}
+        vtkIOCore-6.3
         svkXMLUtils
-        vtkIO
     )
 ENDIF(NOT WIN32)
 

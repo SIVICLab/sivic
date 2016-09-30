@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRSIOD, "$Rev$");
+//vtkCxxRevisionMacro(svkMRSIOD, "$Rev$");
 vtkStandardNewMacro(svkMRSIOD);
 
 

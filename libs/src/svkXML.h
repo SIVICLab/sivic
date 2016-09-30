@@ -63,7 +63,7 @@ class svkXML : public vtkDataObject
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkXML, vtkDataObject );
+        vtkTypeMacro( svkXML, vtkDataObject );
   
         // vtk initialization 
         static svkXML* New();

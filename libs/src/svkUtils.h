@@ -78,7 +78,7 @@ class svkUtils : public vtkObject
 
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkUtils, vtkObject );
+        vtkTypeMacro( svkUtils, vtkObject );
   
         // vtk initialization 
         static svkUtils* New();  

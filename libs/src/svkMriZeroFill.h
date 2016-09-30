@@ -77,7 +77,7 @@ class svkMriZeroFill : public svkImageAlgorithm
     public:
 
         static svkMriZeroFill* New();
-        vtkTypeRevisionMacro( svkMriZeroFill, svkImageAlgorithm);
+        vtkTypeMacro( svkMriZeroFill, svkImageAlgorithm);
 
         void             SetOperateInPlace( bool operateInPlace );
         svkImageData*    GetOutput();

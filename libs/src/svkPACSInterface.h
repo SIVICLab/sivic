@@ -65,7 +65,7 @@ class svkPACSInterface : public vtkObject
     // if these are accessed only via the corresponding controller, then these don't need to be public
     public:
 
-        vtkTypeRevisionMacro( svkPACSInterface, vtkObject);
+        vtkTypeMacro( svkPACSInterface, vtkObject);
 
         //! Create a connection to PACS. Return true if the connection can be made.        
         virtual bool                    Connect() = 0;

@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRSNoise, "$Rev$");
+//vtkCxxRevisionMacro(svkMRSNoise, "$Rev$");
 vtkStandardNewMacro(svkMRSNoise);
 
 
@@ -112,7 +112,7 @@ int svkMRSNoise::RequestData( vtkInformation* request, vtkInformationVector** in
     
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    this->Update();
 
     return 1; 
 }

@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkSpecPoint, "$Rev$");
+//vtkCxxRevisionMacro(svkSpecPoint, "$Rev$");
 vtkStandardNewMacro(svkSpecPoint);
 
 

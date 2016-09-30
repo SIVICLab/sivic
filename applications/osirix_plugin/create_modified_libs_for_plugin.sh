@@ -46,16 +46,11 @@
 
 current=`pwd`
 depend_dir="./plugin_depends"
+rm -rf ${depend_dir}
 mkdir ${depend_dir} 
 
-#./vtk_dependencies.csh
-
-#cp -R /usr/local/lib/KWWidgets  ${depend_dir}
-#cp -R ./vtk-5.6 ${depend_dir}
-cp -R /usr/local/lib/tcl8.5 ${depend_dir}
-cp -R /usr/local/lib/tk8.5 ${depend_dir}
-#cp -R /usr/local/lib/libtcl8.5.dylib ${depend_dir}
-#cp -R /usr/local/lib/libtk8.5.dylib ${depend_dir}
+cp -RL /usr/local/tcl8.5 ${depend_dir}
+cp -RL /usr/local/tk8.5 ${depend_dir}
 
 exit
 
@@ -77,22 +72,4 @@ install_name_tool -change "${tcl_system}" "${plugin_path}/${tcl_plugin}" sivic
 install_name_tool -change "${tk_system}" "${plugin_path}/${tk_plugin}" sivic
 cd ${current}
 
-
-############################
-#   kwwidgets
-############################
-#cd "${depend_dir}/KWWidgets"
-#install_name_tool -change "${tcl_system}" "${plugin_path}/${tcl_plugin}" libKWWidgets.dylib
-#install_name_tool -change "${tk_system}" "${plugin_path}/${tk_plugin}" libKWWidgets.dylib
-#cd ${current}
-
-############################
-#   vtk
-############################
-#cd "${depend_dir}/vtk-5.6"
-#for f in ./*.dylib
-#do
-#    install_name_tool -change "${tcl_system}" "${plugin_path}/${tcl_plugin}" $f
-#    install_name_tool -change "${tk_system}" "${plugin_path}/${tk_plugin}" $f
-#done
 

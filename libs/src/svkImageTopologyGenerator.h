@@ -92,7 +92,7 @@ class svkImageTopologyGenerator: public vtkObject
 
     public:
 
-        vtkTypeRevisionMacro( svkImageTopologyGenerator, vtkObject );
+        vtkTypeMacro( svkImageTopologyGenerator, vtkObject );
 
         svkImageTopologyGenerator();
         ~svkImageTopologyGenerator();

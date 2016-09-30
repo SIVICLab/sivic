@@ -104,7 +104,7 @@ class svkOverlayViewController: public svkDataViewController
     public:
 
  
-        vtkTypeRevisionMacro( svkOverlayViewController, svkDataViewController );
+        vtkTypeMacro( svkOverlayViewController, svkDataViewController );
 
         static svkOverlayViewController*       New();
 
@@ -132,6 +132,7 @@ class svkOverlayViewController: public svkDataViewController
         virtual int*              GetTlcBrc();
         virtual void              SetTlcBrc( int* tlcBrc );
         void                      SetOverlayOpacity(double opacity);
+        double                    GetOverlayOpacity();
         void                      SetOverlayThreshold(double threshold);
         double                    GetOverlayThreshold();
         double                    GetOverlayThresholdValue();

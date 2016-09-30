@@ -191,10 +191,10 @@ void MemoryTest()
     svkImageData* secondOverlay = model->LoadFile( globalArgs.secondOverlayName );
     secondOverlay->Register(NULL);
 
-    firstSpectra->Update();
-    secondSpectra->Update();
-    firstOverlay->Update();
-    secondOverlay->Update();
+    //firstSpectra->Update();
+    //secondSpectra->Update();
+    //firstOverlay->Update();
+    //secondOverlay->Update();
 
     vtkRenderWindow* window = vtkRenderWindow::New(); 
     vtkRenderWindowInteractor* rwi = window->MakeRenderWindowInteractor();
@@ -277,7 +277,7 @@ void RenderingTest()
 
     svkImageData* firstSpectra = model->LoadFile( globalArgs.firstSpectraName );
     firstSpectra->Register(NULL);
-    firstSpectra->Update();
+    //firstSpectra->Update();
     svkImageData* firstOverlay = NULL;
     if( globalArgs.firstOverlayName != NULL ) {
         string overlayRoot = string( globalArgs.firstOverlayName );
@@ -286,7 +286,7 @@ void RenderingTest()
         rootName += overlayRoot.substr(path+1,ext-path-1);
         firstOverlay =  model->LoadFile( globalArgs.firstOverlayName );
         firstOverlay->Register(NULL);
-        firstOverlay->Update();
+        //firstOverlay->Update();
     }
 
     vtkRenderWindow* window = vtkRenderWindow::New(); 
@@ -357,7 +357,7 @@ void OrientationTest( )
 
     svkImageData* firstSpectra = model->LoadFile( globalArgs.firstSpectraName );
     firstSpectra->Register(NULL);
-    firstSpectra->Update();
+    //firstSpectra->Update();
     svkImageData* firstOverlay = NULL;
     if( globalArgs.firstOverlayName != NULL ) {
         string overlayRoot = string( globalArgs.firstOverlayName );
@@ -366,7 +366,7 @@ void OrientationTest( )
         rootName += overlayRoot.substr(path+1,ext-path-1);
         firstOverlay =  model->LoadFile( globalArgs.firstOverlayName );
         firstOverlay->Register(NULL);
-        firstOverlay->Update();
+        //firstOverlay->Update();
     }
 
     vtkRenderWindow* window = vtkRenderWindow::New(); 
@@ -414,10 +414,12 @@ void OrientationTest( )
     svkMrsImageData::SafeDownCast(firstSpectra)->EstimateDataRange( range, lowestPoint, highestPoint, svkImageData::REAL  );
     double minValue = range[0];
     double maxValue = range[1];
-    
+
     plotController->SetWindowLevelRange( minValue, maxValue, 1 );
     cout << "Setting range to: " << minValue << " " << maxValue << endl;
-    plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
+    if( firstOverlay != NULL ) {
+        plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
+    }
 
     int firstSlice = firstSpectra->GetFirstSlice(svkDcmHeader::AXIAL);
     int lastSlice = firstSpectra->GetLastSlice(svkDcmHeader::AXIAL);
@@ -427,6 +429,10 @@ void OrientationTest( )
         stringstream filename;
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_AXIAL" << i << ".tiff" ;
         plotController->SetSlice(i);
+        // Due to an xvfb only rendering issue we have to reset the overlay. Not sure why.
+        if( firstOverlay != NULL ) {
+            plotController->SetInput( firstOverlay, 1 );
+        }
         window->Render();
         svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
@@ -438,6 +444,10 @@ void OrientationTest( )
         stringstream filename;
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_CORONAL" << i << ".tiff" ;
         plotController->SetSlice(i);
+        // Due to an xvfb only rendering issue we have to reset the overlay. Not sure why.
+        if( firstOverlay != NULL ) {
+            plotController->SetInput( firstOverlay, 1 );
+        }
         window->Render();
         svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
@@ -449,6 +459,10 @@ void OrientationTest( )
         stringstream filename;
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_SAGITTAL" << i << ".tiff" ;
         plotController->SetSlice(i);
+        // Due to an xvfb only rendering issue we have to reset the overlay. Not sure why.
+        if( firstOverlay != NULL ) {
+            plotController->SetInput( firstOverlay, 1 );
+        }
         window->Render();
         svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }

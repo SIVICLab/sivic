@@ -76,7 +76,7 @@ class svkGenericAlgorithmWithPortMapper : public vtkAlgorithm
 
     public:
 
-        vtkTypeRevisionMacro( svkGenericAlgorithmWithPortMapper, vtkAlgorithm);
+        vtkTypeMacro( svkGenericAlgorithmWithPortMapper, vtkAlgorithm);
 
         //! Uses port mapper to parse an XML element and convert it into input port data objects.
         void                    SetInputPortsFromXML( vtkXMLDataElement* element );

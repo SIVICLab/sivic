@@ -93,7 +93,7 @@ class svkDCEQuantify: public svkImageAlgorithmWithPortMapper
         } svkDCEQuantifyOutput;
 
         static svkDCEQuantify* New();
-        vtkTypeRevisionMacro( svkDCEQuantify, svkImageAlgorithmWithPortMapper);
+        vtkTypeMacro( svkDCEQuantify, svkImageAlgorithmWithPortMapper);
         vtkstd::vector< svkMriImageData* >* GetDCEMaps();
 
         void    SetTimepointStart(int startPt);

@@ -58,7 +58,7 @@ class svkDcmEnhancedVolumeReader : public svkDcmVolumeReader
     public:
 
         static svkDcmEnhancedVolumeReader* New();
-        vtkTypeRevisionMacro( svkDcmEnhancedVolumeReader, svkDcmVolumeReader );
+        vtkTypeMacro( svkDcmEnhancedVolumeReader, svkDcmVolumeReader );
 
         void UseDoublePrecision( bool useDoublePrecision );
         void SetRescalePixels( bool rescalePixels );

@@ -58,7 +58,7 @@ class svkTypes : public vtkObject
 
     public:
 
-        vtkTypeRevisionMacro( svkTypes, vtkObject);
+        vtkTypeMacro( svkTypes, vtkObject);
 
         typedef enum {
             ANATOMY_UNDEFINED = -1,

@@ -59,7 +59,7 @@ class svkGEPostageStampReader : public svkDcmVolumeReader
     public:
 
         static svkGEPostageStampReader* New();
-        vtkTypeRevisionMacro( svkGEPostageStampReader, svkDcmVolumeReader );
+        vtkTypeMacro( svkGEPostageStampReader, svkDcmVolumeReader );
 
 
         // Description: 

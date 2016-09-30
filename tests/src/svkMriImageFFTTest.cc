@@ -84,7 +84,7 @@ int main (int argc, char** argv)
     
     //Reverse FFT spatial data: kspace to spatial domain
     svkMriImageFFT* fft = svkMriImageFFT::New();
-    fft->SetInput( data );
+    fft->SetInputData( data );
     fft->SetFFTMode( svkMriImageFFT::FORWARD );
     fft->Update();
 
@@ -99,7 +99,7 @@ int main (int argc, char** argv)
 
     vtkImageExtractComponents* real = vtkImageExtractComponents::New();
     real->SetComponents( 0 );
-    real->SetInput( fft->GetOutput() );
+    real->SetInputData( fft->GetOutput() );
     real->Update();
 
 
@@ -123,7 +123,7 @@ int main (int argc, char** argv)
 
     vtkImageExtractComponents* imag = vtkImageExtractComponents::New();
     imag->SetComponents( 1 );
-    imag->SetInput( fft->GetOutput() );
+    imag->SetInputData( fft->GetOutput() );
     imag->Update();
 
 
@@ -143,7 +143,7 @@ int main (int argc, char** argv)
      ***********************************************/
 
     svkMriImageFFT* rfft = svkMriImageFFT::New();
-    rfft->SetInput( fft->GetOutput() );
+    rfft->SetInputData( fft->GetOutput() );
     rfft->SetFFTMode( svkMriImageFFT::REVERSE );
     rfft->Update();
 
@@ -156,7 +156,7 @@ int main (int argc, char** argv)
 
     real = vtkImageExtractComponents::New();
     real->SetComponents( 0 );
-    real->SetInput( rfft->GetOutput() );
+    real->SetInputData( rfft->GetOutput() );
     real->Update();
 
 
@@ -180,7 +180,7 @@ int main (int argc, char** argv)
 
     imag = vtkImageExtractComponents::New();
     imag->SetComponents( 1 );
-    imag->SetInput( rfft->GetOutput() );
+    imag->SetInputData( rfft->GetOutput() );
     imag->Update();
 
 
@@ -209,7 +209,7 @@ void WriteData( string name, svkImageData* data )
     svkIdfVolumeWriter* writer = svkIdfVolumeWriter::New();
     writer->SetCastDoubleToFloat( true );
     writer->SetFileName( name.c_str() );    
-    writer->SetInput( data );
+    writer->SetInputData( data );
     writer->Write();
     writer->Delete();
 }

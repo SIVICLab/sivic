@@ -77,7 +77,7 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
     public:
 
         static svkQuantifyMetabolites* New();
-        vtkTypeRevisionMacro( svkQuantifyMetabolites, svkImageAlgorithm);
+        vtkTypeMacro( svkQuantifyMetabolites, svkImageAlgorithm);
 
         void                                                SetXMLFileName( vtkstd::string xmlFileName );     
         vtkstd::string                                      GetXMLFileName( );

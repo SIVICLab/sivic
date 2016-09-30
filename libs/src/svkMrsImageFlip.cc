@@ -48,7 +48,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMrsImageFlip, "$Rev$");
+//vtkCxxRevisionMacro(svkMrsImageFlip, "$Rev$");
 vtkStandardNewMacro(svkMrsImageFlip);
 
 
@@ -66,7 +66,7 @@ svkMrsImageFlip::svkMrsImageFlip()
 
     //  Initialize any member variables
     this->filteredAxis = 0; 
-    this->filteredChannel = -1; 
+    this->filterDimVector = NULL; 
 }
 
 
@@ -79,12 +79,18 @@ svkMrsImageFlip::~svkMrsImageFlip()
 
 
 /*
- *  Filter only the specified channel.  By default filters all 
- *  channels if this method isn't called to set one.
+ *  Sets a set of indices to flip. By default will iterate through all non spatial domains 
+ *  and flip all 3D volumes.  If this dimVector is set, any index that is >=0 will be used
+ *  to limit which volumes get flipped.  For example the following input would limit the 
+ *  flips to only volumes with EPSI_ACQ_INDEX == 1: 
+ *      SLICE_INDEX     = -1; 
+ *      CHANNEL_INDEX   = -1; 
+ *      EPSI_ACQ_INDEX  = 1; 
+ *  By default filters all the dimVector is null and all vols get flipped in the specified orientation. 
  */
-void svkMrsImageFlip::SetFilteredChannel( int channel)
+void svkMrsImageFlip::SetFilterDomainIndices( svkDcmHeader::DimensionVector* dimVector)
 {
-    this->filteredChannel = channel; 
+    this->filterDimVector = dimVector; 
 }
 
 
@@ -114,42 +120,85 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
     svkDcmHeader* hdr = mrsData->GetDcmHeader();  
 
     int numSpecPts = hdr->GetIntValue( "DataPointColumns" );
-    int cols       = hdr->GetIntValue( "Columns" );
-    int rows       = hdr->GetIntValue( "Rows" );
-    int slices     = hdr->GetNumberOfSlices();
-    int numTimePts = hdr->GetNumberOfTimePoints();
-    int numCoils   = hdr->GetNumberOfCoils();  
 
     vtkImageData* tmpData = NULL;
     svkMriImageData* singleFreqImage = svkMriImageData::New();
 
-    int lowerChannel = 0; 
-    int upperChannel = numCoils; 
-    if ( this->filteredChannel != -1 ) {
-        lowerChannel = this->filteredChannel; 
-        upperChannel = this->filteredChannel + 1; 
-    }
-        
+    //  Initialize the dim vector representing the input volume: 
+    svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector();
 
-    for( int timePt = 0 ; timePt < numTimePts; timePt++ ) {
-        for( int coil = lowerChannel; coil < upperChannel; coil++ ) {
+    //  Retain the spatial info to put into the target DimVector for GetImage
+    int voxelDims[3];
+    svkDcmHeader::GetSpatialDimensions(&dimVector, voxelDims);
+    
+    //  Initialze the dim vector that limits filtering
+    //  if not set initialize it to all -1 values, implying that all volumes are filtered. 
+    if ( this->filterDimVector == NULL )  {
+        *this->filterDimVector = dimVector; 
+        for ( int i = 0; i < this->filterDimVector->size(); i++ ) {
+            svkDcmHeader::SetDimensionVectorValue(this->filterDimVector, i, -1); 
+        }
+    }
+
+    //  Only loop over non spatial voxels: 
+    svkDcmHeader::SetDimensionVectorValue(&dimVector, svkDcmHeader::COL_INDEX,   0);
+    svkDcmHeader::SetDimensionVectorValue(&dimVector, svkDcmHeader::ROW_INDEX,   0);
+    svkDcmHeader::SetDimensionVectorValue(&dimVector, svkDcmHeader::SLICE_INDEX, 0);
+    svkDcmHeader::DimensionVector loopVector = dimVector; 
+
+    //  get number of volumes (cells in this case with spatial dims set to 0)
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimVector );
+
+    if (this->GetDebug()) {
+        svkDcmHeader::PrintDimensionIndexVector( &dimVector ); 
+    }
+
+    for ( int cellID = 0; cellID < numCells; cellID++ ) {
+
+        //  Get the dim vector for this loop iteration: 
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimVector, &loopVector, cellID );
+
+        //  for the indices in this iteration, check if any are restriced by this->filterDimVector 
+        //  if the filterDimVector index is set, but it doesn't match this iteration, then skip to next
+        bool flipVolume = true; 
+        for ( int dimIndex = 0; dimIndex < this->filterDimVector->size(); dimIndex++ ) {
+            int loopIndexValue = svkDcmHeader::GetDimensionVectorValue(&loopVector, dimIndex); 
+            int filterDimValue = svkDcmHeader::GetDimensionVectorValue(this->filterDimVector, dimIndex); 
+            if ( filterDimValue >=0 && loopIndexValue != filterDimValue ) {
+                if (this->GetDebug()) {
+                    svkDcmHeader::PrintDimensionIndexVector( this->filterDimVector); 
+                }
+                flipVolume = false;  
+                break; 
+            }
+        }
+        
+        if ( flipVolume == true ) { 
+
+            svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::COL_INDEX,   voxelDims[0] -1 );
+            svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::ROW_INDEX,   voxelDims[1] -1 );
+            svkDcmHeader::SetDimensionVectorValue(&loopVector, svkDcmHeader::SLICE_INDEX, voxelDims[2] -1 );
+
             for( int freq = 0; freq < numSpecPts; freq++ ) {
 
-                mrsData->GetImage( singleFreqImage, freq, timePt, coil, 2, "");
+                //mrsData->GetImage( singleFreqImage, freq, timePt, coil, 2, "");
+                mrsData->GetImage( singleFreqImage, freq, &loopVector, 2, "");  
 
                 singleFreqImage->Modified();
 
                 tmpData = singleFreqImage;
 
                 vtkImageFlip* flip = vtkImageFlip::New();
+            
                 flip->SetFilteredAxis( this->filteredAxis ); 
 
-                flip->SetInput( tmpData ); 
+                flip->SetInputData( tmpData ); 
                 tmpData = flip->GetOutput();
-                tmpData->Update();
+                flip->Update();
+           
 
-
-                mrsData->SetImage( tmpData, freq, timePt, coil);
+                mrsData->SetImage( tmpData, freq, &loopVector); 
+                //mrsData->SetImage( tmpData, freq, timePt, coil);
 
                 flip->Delete(); 
 
@@ -157,10 +206,8 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
         }
     }
 
-
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
 
     return 1; 
 } 

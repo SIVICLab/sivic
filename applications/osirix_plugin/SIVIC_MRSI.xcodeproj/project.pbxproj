@@ -17,9 +17,9 @@
 		921B50FE109BA6E500134C22 /* DicomSeries.h in Headers */ = {isa = PBXBuildFile; fileRef = 921B50FB109BA6E500134C22 /* DicomSeries.h */; };
 		921B50FF109BA6E500134C22 /* DicomImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 921B50FC109BA6E500134C22 /* DicomImage.h */; };
 		921B5100109BA6E500134C22 /* browserController.h in Headers */ = {isa = PBXBuildFile; fileRef = 921B50FD109BA6E500134C22 /* browserController.h */; };
-		921B5143109BAF0700134C22 /* sivic in Resources */ = {isa = PBXBuildFile; fileRef = 921B5142109BAF0700134C22 /* sivic */; };
 		92A2BAF910B3D48A00877E0F /* dicom.dic in Resources */ = {isa = PBXBuildFile; fileRef = 92A2BAF810B3D48A00877E0F /* dicom.dic */; };
 		92A2BD2A109AAA8200A29D8F /* sivic.sh in Resources */ = {isa = PBXBuildFile; fileRef = 92A2BD29109AAA8200A29D8F /* sivic.sh */; };
+		92C845AD1C77035B0093DD95 /* sivic in Resources */ = {isa = PBXBuildFile; fileRef = 92C845AC1C77035B0093DD95 /* sivic */; };
 		ABA48A650680BB600089EB4F /* SIVIC_MRSIFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = ABA48A640680BB600089EB4F /* SIVIC_MRSIFilter.h */; };
 		ABA48A670680BB690089EB4F /* SIVIC_MRSIFilter.mm in Sources */ = {isa = PBXBuildFile; fileRef = ABA48A660680BB690089EB4F /* SIVIC_MRSIFilter.mm */; };
 		ABB76340067FB2A8000912C1 /* DCMPix.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB76339067FB2A8000912C1 /* DCMPix.h */; };
@@ -278,6 +278,7 @@
 		92AB23BE187C8FB3001AF20E /* tclIndex */ = {isa = PBXFileReference; lastKnownFileType = text; path = tclIndex; sourceTree = "<group>"; };
 		92AB23BF187C8FB3001AF20E /* tm.tcl */ = {isa = PBXFileReference; lastKnownFileType = text; path = tm.tcl; sourceTree = "<group>"; };
 		92AB23C0187C8FB3001AF20E /* word.tcl */ = {isa = PBXFileReference; lastKnownFileType = text; path = word.tcl; sourceTree = "<group>"; };
+		92C845AC1C77035B0093DD95 /* sivic */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = sivic; path = ../../working/release/applications/sivic_app/Darwin_i386/sivic; sourceTree = "<group>"; };
 		AB5D36050680E57E00F4007A /* SIVIC_MRSI.osirixplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SIVIC_MRSI.osirixplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABA48A640680BB600089EB4F /* SIVIC_MRSIFilter.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SIVIC_MRSIFilter.h; sourceTree = "<group>"; };
 		ABA48A660680BB690089EB4F /* SIVIC_MRSIFilter.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = SIVIC_MRSIFilter.mm; sourceTree = "<group>"; };
@@ -307,6 +308,7 @@
 		089C166AFE841209C02AAC07 /* SIVIC_MRSI */ = {
 			isa = PBXGroup;
 			children = (
+				92C845AC1C77035B0093DD95 /* sivic */,
 				92AB22E0187C8FB1001AF20E /* tcl8.5 */,
 				92A2BAF810B3D48A00877E0F /* dicom.dic */,
 				921B5142109BAF0700134C22 /* sivic */,
@@ -721,7 +723,7 @@
 		089C1669FE841209C02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0610;
 			};
 			buildConfigurationList = CE6A9A9408AC841300D0C1EE /* Build configuration list for PBXProject "SIVIC_MRSI" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -747,9 +749,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92C845AD1C77035B0093DD95 /* sivic in Resources */,
 				8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */,
 				92A2BD2A109AAA8200A29D8F /* sivic.sh in Resources */,
-				921B5143109BAF0700134C22 /* sivic in Resources */,
 				92A2BAF910B3D48A00877E0F /* dicom.dic in Resources */,
 				9215AB8617E81AFD0041BF15 /* prism_blue.icns in Resources */,
 			);
@@ -793,7 +795,6 @@
 		CE6A9A9108AC841300D0C1EE /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
 				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "ppc i386 ppc64 x86_64";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
@@ -809,17 +810,17 @@
 				GCC_WARN_UNKNOWN_PRAGMAS = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"/usr/local/include/vtk-5.6",
+					"/usr/local/vtk6.3/include/vtk-6.3",
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "@executable_path/../Plug-ins ";
 				LD_RUNPATH_SEARCH_PATHS = "$(SRCROOT)";
 				LIBRARY_SEARCH_PATHS = (
 					/usr/X11R6/lib,
-					/Users/jasonc/sivic/trunk/libs/Darwin_i386,
-					/Users/jasonc/sivic/trunk/applications/sivic_app/Darwin_i386,
-					"/usr/local/lib/vtk-5.6",
-					"/usr/local/lib/KWWidgets/**",
+					/Users/jasonc/github/sivic/working/release/libs/Darwin_i386,
+					/Users/jasonc/github/sivic/working/release/applications/sivic_app/Darwin_i386,
+					/usr/local/vtk6.3/lib/,
+					"/usr/local/kwwidgets_vtk6/lib/KWWidgets/**",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
 				);
@@ -845,7 +846,7 @@
 				PRODUCT_NAME = SIVIC_MRSI;
 				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
-				USER_HEADER_SEARCH_PATHS = "/usr/local/include/KWWidgets /usr/X11R6/include /usr/local/include/vtk-5.6 /Users/jasonc/sivic/trunk/libs/src /Users/jasonc/sivic/trunk/applications/sivic_app/src /usr/local/dicom/include";
+				USER_HEADER_SEARCH_PATHS = "/usr/local/kwwidgets_vtk6/include/KWWidgets /usr/X11R6/include /usr/local/vtk6/include/vtk-6.3 /Users/jasonc/github/sivic/libs/src /Users/jasonc/github/sivic/applications/sivic_app/src /usr/local/dicom/include";
 				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = (
 					"-Wmost",
@@ -860,7 +861,6 @@
 		CE6A9A9208AC841300D0C1EE /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
 				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "ppc i386 ppc64 x86_64";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
@@ -872,13 +872,13 @@
 				GCC_WARN_UNKNOWN_PRAGMAS = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"/usr/local/include/vtk-5.6",
+					"/usr/local/vtk6.3/include/vtk-6.3",
 				);
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/usr/local/lib/KWWidgets,
-					/Users/jasonc/sivic/trunk/applications/sivic_app/Darwin_i386,
+					/usr/local/kwwidgets_vtk6/lib/KWWidgets,
+					/Users/jasonc/github/sivic/working/release/applications/sivic_app/Darwin_i386,
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
 				);
@@ -901,7 +901,7 @@
 				PRODUCT_NAME = SIVIC_MRSI;
 				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
-				USER_HEADER_SEARCH_PATHS = "/Users/jasonc/freeware/clapack-3.2.1-CMAKE/INCLUDE /usr/X11R6/include /usr/local/include/KWWidgets /usr/local/include/vtk-5.6 /usr/local/dicom/include /Users/jasonc/sourceforge/sivic/trunk/libs/src /Users/jasonc/sourceforge/sivic/trunk/applications/sivic_app/src";
+				USER_HEADER_SEARCH_PATHS = "/Users/jasonc/freeware/clapack-3.2.1-CMAKE/INCLUDE /usr/X11R6/include /usr/local/kwwidgets_vtk6/include/KWWidgets /usr/local/vtk6.3/include/vtk-5.6 /usr/local/dicom/include /Users/jasonc/github/sivic/libs/src /Users/jasonc/github/sivic/applications/sivic_app/src";
 				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = (
 					"-Wmost",
@@ -924,12 +924,12 @@
 				GCC_WARN_UNKNOWN_PRAGMAS = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"/usr/local/include/vtk-5.6",
+					"/usr/local/vtk6.3/include/vtk-6.3",
 				);
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/usr/local/lib/KWWidgets,
+					/usr/local/kwwidgets_vtk6/lib/KWWidgets,
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
 				);
@@ -957,7 +957,6 @@
 		CE6A9A9508AC841300D0C1EE /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.5.sdk";
 			};
@@ -966,7 +965,6 @@
 		CE6A9A9608AC841300D0C1EE /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.5.sdk";
 			};
@@ -975,7 +973,6 @@
 		CE6A9A9708AC841300D0C1EE /* Default */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.5.sdk";
 			};

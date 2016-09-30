@@ -41,12 +41,13 @@
 
 
 #include <svkDICOMSCWriter.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDICOMSCWriter, "$Rev$");
+//vtkCxxRevisionMacro(svkDICOMSCWriter, "$Rev$");
 vtkStandardNewMacro(svkDICOMSCWriter);
 
 
@@ -149,12 +150,12 @@ void svkDICOMSCWriter::Write()
     
 
     // Fill in image information.
-    this->GetImageDataInput(0)->UpdateInformation();
+    this->UpdateInformation(); 
 
-    int *wExtent;
-    wExtent = this->GetImageDataInput(0)->GetWholeExtent();
-    this->FileNumber = this->GetImageDataInput(0)->GetWholeExtent()[4];
-    this->MinimumFileNumber = this->MaximumFileNumber = this->FileNumber;
+    int* wExtent = vtkImageData::SafeDownCast(this->GetInput(0))->GetExtent();
+    this->FileNumber = wExtent[4]; 
+    this->MaximumFileNumber = this->FileNumber;
+    this->MinimumFileNumber = this->FileNumber;
     this->FilesDeleted = 0;
     this->UpdateProgress(0.0);
 
@@ -182,12 +183,17 @@ void svkDICOMSCWriter::Write()
         }
 
         this->MaximumFileNumber = this->FileNumber;
-        this->GetImageDataInput(0)->SetUpdateExtent(
-            wExtent[0], wExtent[1],
-            wExtent[2], wExtent[3],
-            this->FileNumber,
-            this->FileNumber
-        );
+        this->UpdateInformation(); 
+        int upExtent[6];  
+        upExtent[0] = wExtent[0]; 
+        upExtent[1] = wExtent[1]; 
+        upExtent[2] = wExtent[2]; 
+        upExtent[3] = wExtent[3]; 
+        upExtent[4] = this->FileNumber; 
+        upExtent[5] = this->FileNumber; 
+
+        this->SetUpdateExtent( upExtent );  
+        this->Update();
 
         // determine the name
         if (this->FileName) {
@@ -209,7 +215,7 @@ void svkDICOMSCWriter::Write()
                 }
             }
         }
-        this->GetImageDataInput(0)->Update();
+        this->Update(); 
         this->WriteSlice();
         if (this->ErrorCode == vtkErrorCode::OutOfDiskSpaceError) {
             vtkErrorMacro("Ran out of disk space; deleting file(s) already written");
@@ -241,7 +247,7 @@ void svkDICOMSCWriter::WriteSlice()
         //  Get luminance of image for mapping to grey scale for pixel 
         //  extraction.
         vtkImageLuminance* luminance = vtkImageLuminance::New();
-        luminance->SetInput( this->GetImageDataInput(0) );
+        luminance->SetInputData( this->GetImageDataInput(0) );
         luminance->Update();
     
         /*  
@@ -480,7 +486,7 @@ void svkDICOMSCWriter::SetInput( vtkDataObject* input )
 void svkDICOMSCWriter::SetInput(int index, vtkDataObject* input)
 {
     if(input) {
-        this->SetInputConnection(index, input->GetProducerPort());
+        this->SetInputData(index, input); 
     } else {
         // Setting a NULL input removes the connection.
         this->SetInputConnection(index, 0);

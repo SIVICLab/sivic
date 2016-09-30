@@ -61,7 +61,7 @@ class sivicDSCWidget : public sivicKWCompositeWidget
     public:
 
         static sivicDSCWidget *New();
-        vtkTypeRevisionMacro(sivicDSCWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicDSCWidget,sivicKWCompositeWidget);
         vtkstd::vector < vtkstd::string >   modelDSCNames;
 
 

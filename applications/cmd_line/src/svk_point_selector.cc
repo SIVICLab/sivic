@@ -209,7 +209,7 @@ int main ( int argc, char** argv )
 		exit(1);
 	}
 	globalVars.data->Register(NULL);
-	globalVars.data->Update();
+	//globalVars.data->Update();
 	globalVars.primaryImage = globalVars.data;
 	globalVars.primaryImage->Register(NULL);
 
@@ -221,7 +221,7 @@ int main ( int argc, char** argv )
 			exit(1);
 		}
 		globalVars.overlayData->Register(NULL);
-		globalVars.overlayData->Update();
+		//globalVars.overlayData->Update();
 
     }
 
@@ -238,13 +238,13 @@ int main ( int argc, char** argv )
 		if( !dcosMatch ) {
 			cout << "WARNING: Alternate image is being resliced to primary image " << endl;
 			svkObliqueReslice* reslicer = svkObliqueReslice::New();
-			reslicer->SetInput( globalVars.alternateImage );
+			reslicer->SetInputData( globalVars.alternateImage );
 			reslicer->SetTarget( globalVars.data );
 			reslicer->Update();
 			globalVars.alternateImage = reslicer->GetOutput();
 		}
 		globalVars.alternateImage->Register(NULL);
-		globalVars.alternateImage->Update();
+		//globalVars.alternateImage->Update();
 
     }
 
@@ -255,7 +255,7 @@ int main ( int argc, char** argv )
 		reader->SetFileName( globalVars.screenshotFilename.c_str() );
 		globalVars.screenshot = reader->GetOutput();
 		reader->Update();
-		globalVars.screenshot->Update();
+		//globalVars.screenshot->Update();
 	}
 
 
@@ -267,7 +267,7 @@ int main ( int argc, char** argv )
 		if( !dcosMatch ) {
 			cout << "WARNING: Overlay is being resliced to image " << endl;
 			svkObliqueReslice* reslicer = svkObliqueReslice::New();
-			reslicer->SetInput( globalVars.overlayData );
+			reslicer->SetInputData( globalVars.overlayData );
 			reslicer->SetTarget( globalVars.data );
 			reslicer->Update();
 			globalVars.overlayData = reslicer->GetOutput();
@@ -300,7 +300,7 @@ int main ( int argc, char** argv )
 	vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
 	sphereActor->SetMapper( mapper);
 	sphereActor->GetProperty()->SetDiffuseColor(1,1,1 );
-	mapper->SetInput( globalVars.sphere->GetOutput() );
+	mapper->SetInputConnection( globalVars.sphere->GetOutputPort() );
 
     // Lets create setup our window and renderers
 	globalVars.window = vtkRenderWindow::New();
@@ -323,9 +323,9 @@ int main ( int argc, char** argv )
 
 		if( globalVars.overlayData != NULL ) {
 			globalVars.transformers.push_back(vtkTransform::New());
-			globalVars.colorMappers[i]->SetInput(globalVars.overlayData);
+			globalVars.colorMappers[i]->SetInputData(globalVars.overlayData);
 			globalVars.overlayActors.push_back( svkOrientedImageActor::New() );
-			globalVars.overlayActors[i]->SetInput(globalVars.colorMappers[i]->GetOutput());
+			globalVars.overlayActors[i]->SetInputData(globalVars.colorMappers[i]->GetOutput());
 			globalVars.overlayActors[i]->SetUserTransform( globalVars.transformers[i] );
 			globalVars.overlayActors[i]->InterpolateOn();
 		} else {
@@ -334,7 +334,7 @@ int main ( int argc, char** argv )
 		}
 
 		globalVars.imageViewers.push_back( svkImageViewer2::New() );
-		globalVars.imageViewers[i]->SetInput( globalVars.data );
+		globalVars.imageViewers[i]->SetInputData( globalVars.data );
 		globalVars.imageViewers[i]->SetInteractorStyle( vtkInteractorStyleImage::SafeDownCast( globalVars.window->GetInteractor()->GetInteractorStyle()));
 		globalVars.imageViewers[i]->SetupInteractor( globalVars.window->GetInteractor() );
 		globalVars.imageViewers[i]->SetRenderWindow( globalVars.window );
@@ -364,7 +364,7 @@ int main ( int argc, char** argv )
 	globalVars.window->AddRenderer( screenshotRenderer );
 	if( globalVars.screenshot != NULL ) {
 		vtkImageActor* actor = vtkImageActor::New();
-		actor->SetInput( globalVars.screenshot );
+		actor->SetInputData( globalVars.screenshot );
 		screenshotRenderer->AddActor( actor );
 	}
 
@@ -498,12 +498,12 @@ void SetupImageViewer( double position[4], svkDcmHeader::Orientation orientation
 			line->SetPoint1(lineLength*orthSliceNormal[0] + disp*sliceNormal[0], lineLength*orthSliceNormal[1] + disp*sliceNormal[1], lineLength*orthSliceNormal[2] + disp*sliceNormal[2] );
 			line->SetPoint2(-lineLength*orthSliceNormal[0] + disp*sliceNormal[0], -lineLength*orthSliceNormal[1] + disp*sliceNormal[1], -lineLength*orthSliceNormal[2] + disp*sliceNormal[2] );
 			vtkGlyph3D* glyph = vtkGlyph3D::New();
-			glyph->SetSource( line->GetOutput() );
-			glyph->SetInput(pd);
+			glyph->SetSourceConnection( line->GetOutputPort() );
+			glyph->SetInputData(pd);
 			vtkActor* cursorActor = vtkActor::New();
 			vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
 			cursorActor->GetProperty()->SetLineWidth(1);
-			mapper->SetInput( glyph->GetOutput() );
+			mapper->SetInputConnection( glyph->GetOutputPort() );
 			cursorActor->SetMapper( mapper );
 			cursorActor->GetProperty()->SetColor(globalVars.inactiveCursorColor);
 			imageViewer->GetRenderer()->AddActor( cursorActor );
@@ -653,7 +653,7 @@ void ToggleReferenceImage( )
 			// Save the current window level
 			globalVars.primaryWindow = globalVars.imageViewers[i]->GetColorWindow();
 			globalVars.primaryLevel = globalVars.imageViewers[i]->GetColorLevel();
-			globalVars.imageViewers[i]->SetInput( globalVars.alternateImage );
+			globalVars.imageViewers[i]->SetInputData( globalVars.alternateImage );
 			globalVars.data = globalVars.alternateImage;
 
 			if( globalVars.alternateWindow == -1 ) {
@@ -669,7 +669,7 @@ void ToggleReferenceImage( )
 			// Save the current window level
 			globalVars.alternateWindow = globalVars.imageViewers[i]->GetColorWindow();
 			globalVars.alternateLevel = globalVars.imageViewers[i]->GetColorLevel();
-			globalVars.imageViewers[i]->SetInput( globalVars.primaryImage );
+			globalVars.imageViewers[i]->SetInputData( globalVars.primaryImage );
 			globalVars.data = globalVars.primaryImage;
 			globalVars.imageViewers[i]->SetColorLevel( globalVars.primaryLevel);
 			globalVars.imageViewers[i]->SetColorWindow( globalVars.primaryWindow);
@@ -770,7 +770,7 @@ void UpdateCursorLocation(vtkObject* subject, unsigned long eid, void* thisObjec
 
 
 /*!
- * Displays the usage message.
+ * Displays the usage message
  */
 void DisplayUsage( void )
 {

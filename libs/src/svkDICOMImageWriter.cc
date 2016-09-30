@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDICOMImageWriter, "$Rev$");
+//vtkCxxRevisionMacro(svkDICOMImageWriter, "$Rev$");
 
 
 /*!
@@ -95,8 +95,10 @@ int svkDICOMImageWriter::FillInputPortInformation( int vtkNotUsed(port), vtkInfo
  */
 void svkDICOMImageWriter::GetPixelRange(double& min, double& max, int volNumber)
 {
+
+    int vtkDataType = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() ); 
     int dataType = 
-            this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ); 
+            this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( vtkDataType ); 
     int cols = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Columns" );
     int rows = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" );
     int slices = (this->GetImageDataInput(0)->GetExtent() ) [5] - (this->GetImageDataInput(0)->GetExtent() ) [4] + 1;
@@ -186,8 +188,9 @@ void svkDICOMImageWriter::GetScaledPixels( unsigned short* shortPixels, double s
         offset = dataLength * sliceNumber; 
     }
 
+    int vtkDataType = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() ); 
     int dataType = 
-            this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ); 
+            this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( vtkDataType ); 
 
     if (dataType == svkDcmHeader::SIGNED_FLOAT_4) {
 

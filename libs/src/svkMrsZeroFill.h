@@ -72,7 +72,7 @@ class svkMrsZeroFill : public svkImageInPlaceFilter
     public:
 
         static svkMrsZeroFill* New();
-        vtkTypeRevisionMacro( svkMrsZeroFill, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMrsZeroFill, svkImageInPlaceFilter);
 
         typedef enum {
             VALUE = 0,

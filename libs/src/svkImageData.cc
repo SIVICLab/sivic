@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageData, "$Rev$");
+//vtkCxxRevisionMacro(svkImageData, "$Rev$");
 
 
 /*!
@@ -188,6 +188,14 @@ void svkImageData::CopyMetaData( vtkDataObject* src, svkDcmHeader::DcmPixelDataF
     this->CopyDcos( src );
     if( castToFormat != svkDcmHeader::UNDEFINED ) {
         this->CastDataFormat( castToFormat );
+    } else {
+        if (this->GetDebug()) {
+            cout << "svkImageData::DeepCopy::CopyMetaData: TYPE: " << vtkImageData::GetScalarType( src->GetInformation() ) << endl; 
+        }
+        vtkImageData::SetScalarType( 
+            vtkImageData::GetScalarType( src->GetInformation() ), 
+            this->GetInformation()
+        ); 
     }
 
 }
@@ -293,7 +301,12 @@ void svkImageData::CopyAndFillComponents( vtkImageData* src, double fillValue, s
     }
     //  arg should be type DcmPixelDataFormat
 	this->GetDcmHeader()->SetPixelDataType( svkDcmHeader::GetVtkDataTypeFromSvkDataType(dataTypeVtk) );
-    this->SetScalarType( dataTypeVtk );
+    vtkDataObject::SetPointDataActiveScalarInfo(
+            this->GetInformation(),
+            dataTypeVtk,
+            this->GetNumberOfScalarComponents()
+    );
+
 }
 
 
@@ -411,7 +424,12 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
         }
 
         this->GetDcmHeader()->SetPixelDataType( castToFormat );
-        this->SetScalarType( dataTypeVtk );
+        vtkDataObject::SetPointDataActiveScalarInfo(
+            this->GetInformation(), 
+            dataTypeVtk, 
+            this->GetNumberOfScalarComponents()
+        );
+
     } else {
         cerr << "ERROR: You must define the format to which you wish to cast" << endl; 
     }
@@ -485,7 +503,12 @@ void svkImageData::CastDataArrays( int dataTypeVtk, vtkDataSetAttributes* fieldD
     if( scalarHasName ) { 
         fieldData->SetActiveScalars( scalarName.c_str() );
     }
-    this->SetScalarType( dataTypeVtk );
+    //this->SetScalarType( dataTypeVtk );
+    vtkDataObject::SetPointDataActiveScalarInfo(
+        this->GetInformation(), 
+        dataTypeVtk, 
+        this->GetNumberOfScalarComponents()
+    );
 }
 
 
@@ -1764,8 +1787,7 @@ void svkImageData::SyncVTKImageDataToDcmHeader()
             numVoxels[2] - 1
         );
     }
-    this->SetUpdateExtent( this->GetExtent() ); 
-    this->SetWholeExtent( this->GetExtent() ); 
+    this->SetExtent( this->GetExtent() ); 
 
     //  ============================
     //  Set Voxel Spacing ( includes any gaps )

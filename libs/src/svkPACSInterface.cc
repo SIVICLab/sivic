@@ -42,7 +42,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkPACSInterface, "$Rev$");
+//vtkCxxRevisionMacro(svkPACSInterface, "$Rev$");
 
 //! Constructor
 svkPACSInterface::svkPACSInterface()

@@ -73,7 +73,7 @@ class svkLookupTable : public vtkLookupTable
         } svkLookupTableType;
 
         static svkLookupTable* New();
-        vtkTypeRevisionMacro( svkLookupTable, vtkLookupTable);
+        vtkTypeMacro( svkLookupTable, vtkLookupTable);
 
 
         //  Methods

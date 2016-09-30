@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageTopologyGenerator, "$Rev$");
+//vtkCxxRevisionMacro(svkImageTopologyGenerator, "$Rev$");
 
 
 /*!
@@ -145,7 +145,7 @@ vtkActor* svkImageTopologyGenerator::MakeRectGridVoxelActor( double* bounds )
     rgrid->SetZCoordinates(zCoords);
 
     vtkDataSetMapper *rgridMapper = vtkDataSetMapper::New();
-    rgridMapper->SetInput(rgrid);
+    rgridMapper->SetInputData(rgrid);
     rgridMapper->ImmediateModeRenderingOn();
     rgridMapper->StaticOn();
 
@@ -255,11 +255,11 @@ void svkImageTopologyGenerator::GenerateVoxelGridActor( svkImageData* data, vtkA
         geometryData->SetExtent( data->GetExtent() );
         data->GetDcos(dcos);
         geometryData->SetDcos(dcos);
-        edgeExtractor->SetInput( geometryData );
+        edgeExtractor->SetInputData( geometryData );
         geometryData->Delete();
 
         // Pipe the edges into the mapper
-        entireGridMapper->SetInput( edgeExtractor->GetOutput() );
+        entireGridMapper->SetInputData( edgeExtractor->GetOutput() );
         edgeExtractor->Delete();
         targetActor->SetMapper( entireGridMapper );
         entireGridMapper->Delete();
@@ -274,7 +274,7 @@ vtkPolyData* svkImageTopologyGenerator::GenerateVoxelGridPolyData( svkImageData*
 {
     // We need a filter to pull out the edges of the data cells (voxels)
     vtkExtractEdges* edgeExtractor = vtkExtractEdges::New();
-    edgeExtractor->SetInput( data );
+    edgeExtractor->SetInputData( data );
     
     vtkPolyData* pdata = edgeExtractor->GetOutput();
 cout <<"TOPO5" << endl;
@@ -319,7 +319,6 @@ vtkActorCollection* svkImageTopologyGenerator::GenerateSelectionBox ( svkImageDa
     vtkPolyData* polyData = vtkPolyData::New();
     polyData->Allocate(12, 12);
     polyData->SetPoints(selectionBoxPoints);
-    polyData->Update();
 
     for( int i = 0; i < selectionBox->GetNumberOfEdges(); i++) {
         vtkCell* edge = selectionBox->GetEdge(i);
@@ -329,7 +328,7 @@ vtkActorCollection* svkImageTopologyGenerator::GenerateSelectionBox ( svkImageDa
         
     // We will need a mapper to draw the data.
     vtkPolyDataMapper* selectionBoxMapper = vtkPolyDataMapper::New();
-    selectionBoxMapper->SetInput(polyData);
+    selectionBoxMapper->SetInputData(polyData);
     
     /*
     // In case we want to return to using the UnstructuredGrid...

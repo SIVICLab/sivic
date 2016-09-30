@@ -72,7 +72,7 @@ class svkMrsLinearPhase : public svkImageInPlaceFilter
     public:
 
         static svkMrsLinearPhase* New();
-        vtkTypeRevisionMacro( svkMrsLinearPhase, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMrsLinearPhase, svkImageInPlaceFilter);
         void SetShiftWindow( double shiftWindow[3] );
 
     protected:

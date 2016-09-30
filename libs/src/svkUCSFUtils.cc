@@ -44,7 +44,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkUCSFUtils, "$Rev$");
+//vtkCxxRevisionMacro(svkUCSFUtils, "$Rev$");
 vtkStandardNewMacro(svkUCSFUtils);
 
 // We have to initialize static variables here.

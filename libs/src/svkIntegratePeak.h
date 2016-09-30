@@ -70,7 +70,7 @@ class svkIntegratePeak : public svkImageInPlaceFilter
     public:
 
         static svkIntegratePeak* New();
-        vtkTypeRevisionMacro( svkIntegratePeak, svkImageInPlaceFilter);
+        vtkTypeMacro( svkIntegratePeak, svkImageInPlaceFilter);
 
         void    SetPeakPosPPM( float centerPPM); 
         void    SetPeakWidthPPM( float widthPPM); 

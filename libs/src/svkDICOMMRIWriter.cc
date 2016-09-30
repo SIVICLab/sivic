@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDICOMMRIWriter, "$Rev$");
+//vtkCxxRevisionMacro(svkDICOMMRIWriter, "$Rev$");
 vtkStandardNewMacro(svkDICOMMRIWriter);
 
 
@@ -125,7 +125,7 @@ void svkDICOMMRIWriter::Write()
     iod->InitDcmHeader();
     iod->Delete();
 
-    vtkIdType dataType = this->GetImageDataInput(0)->GetScalarType(); 
+    vtkIdType dataType = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() ); 
 
     this->GetImageDataInput(0)->GetDcmHeader()->ConvertEnhancedMriToMriHeader(
         mriHeader, 
@@ -221,7 +221,8 @@ void svkDICOMMRIWriter::InitPixelData( svkDcmHeader* dcmHeader, int sliceNumber,
         offset = dataLength * sliceNumber; 
     }
 
-    switch ( this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ) ) {
+    int vtkDataType = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() );
+    switch ( this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( vtkDataType ) ) {
 
         case svkDcmHeader::UNSIGNED_INT_1:
         {

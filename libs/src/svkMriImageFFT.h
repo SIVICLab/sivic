@@ -74,7 +74,7 @@ class svkMriImageFFT : public svkImageAlgorithm
     public:
 
         static svkMriImageFFT* New();
-        vtkTypeRevisionMacro( svkMriImageFFT, svkImageAlgorithm);
+        vtkTypeMacro( svkMriImageFFT, svkImageAlgorithm);
 
         typedef enum {
             FORWARD = 0, 

@@ -83,7 +83,7 @@ class svkDICOMSCWriter : public svkImageWriter
     public:
 
         static svkDICOMSCWriter* New();
-        vtkTypeRevisionMacro( svkDICOMSCWriter, svkImageWriter);
+        vtkTypeMacro( svkDICOMSCWriter, svkImageWriter);
 
         // Description:
         void            SetInput( vtkDataObject* input );

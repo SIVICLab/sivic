@@ -56,7 +56,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDCEQuantify, "$Rev$");
+//vtkCxxRevisionMacro(svkDCEQuantify, "$Rev$");
 vtkStandardNewMacro(svkDCEQuantify);
 
 
@@ -153,7 +153,7 @@ void svkDCEQuantify::GenerateDCEMaps()
     //  Calculate DCE maps:
     svkDCEBasicFit* dcePkHt = svkDCEBasicFit::New();
     // dcePkHt->SetInput1(this->GetImageDataInput(0));
-    dcePkHt->SetInput(0, this->GetInput(0));
+    dcePkHt->SetInputData(0, this->GetInput(0));
     dcePkHt->SetTimepointStart(this->GetTimepointStart()->GetValue());
     dcePkHt->SetTimepointEnd(this->GetTimepointEnd()->GetValue());
     dcePkHt->SetSeriesDescription("DCE Params");
@@ -179,7 +179,7 @@ void svkDCEQuantify::GenerateNormalizedMaps()
 {
     //  Calculate DCE Peak Ht map:
     svkDCEBasicFit* dcePkHt = svkDCEBasicFit::New();
-    dcePkHt->SetInput(this->GetInput(0));
+    dcePkHt->SetInputData(this->GetInput(0));
     dcePkHt->SetTimepointStart(this->GetTimepointStart()->GetValue());
     dcePkHt->SetTimepointEnd(this->GetTimepointEnd()->GetValue());    
     dcePkHt->SetSeriesDescription("Normalized Peak Height");

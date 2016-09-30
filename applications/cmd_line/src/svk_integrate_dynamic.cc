@@ -210,7 +210,7 @@ int main (int argc, char** argv)
         }
 
         svkIntegratePeak* integrator = svkIntegratePeak::New(); 
-        integrator->SetInput( reader->GetOutput() ); 
+        integrator->SetInputData( reader->GetOutput() ); 
         integrator->SetPeakPosPPM( peak_center_ppm );     //  Alanine 1.9
         integrator->SetPeakWidthPPM( peak_width_ppm  );     // 1.2
         integrator->SetMagnitudeIntegration(); 
@@ -277,7 +277,7 @@ int main (int argc, char** argv)
     }
    
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( dynamicImage );
+    writer->SetInputData( dynamicImage );
 
     //  Set the input command line into the data set provenance:
     reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );

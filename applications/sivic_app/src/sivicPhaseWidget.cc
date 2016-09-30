@@ -41,7 +41,7 @@
 #endif
 
 vtkStandardNewMacro( sivicPhaseWidget );
-vtkCxxRevisionMacro( sivicPhaseWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicPhaseWidget, "$Revision$");
 
 
 /*! 
@@ -407,7 +407,7 @@ void sivicPhaseWidget::ExecutePhase()
         this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
         svkMultiCoilPhase* multiCoilPhase = svkMultiCoilPhase::New();
         multiCoilPhase->AddObserver(vtkCommand::ProgressEvent, progressCallback);
-        multiCoilPhase->SetInput( data );
+        multiCoilPhase->SetInputData( data );
         multiCoilPhase->Update();
         data->Modified();
         multiCoilPhase->RemoveObserver( progressCallback);
@@ -445,7 +445,7 @@ void sivicPhaseWidget::ExecuteFirstPointPhase()
 
         svkMRSAutoPhase* fptPhaser = svkMRSFirstPointPhase::New();
         fptPhaser->AddObserver(vtkCommand::ProgressEvent, progressCallback);
-        fptPhaser->SetInput(0, data ); 
+        fptPhaser->SetInputData(0, data ); 
         fptPhaser->OnlyUseSelectionBox();
         fptPhaser->Update();
         data->Modified();
@@ -478,7 +478,7 @@ void sivicPhaseWidget::InitializePhaser()
     this->phaser = svkPhaseSpec::New();
     if( this->model->DataExists("SpectroscopicData") ) {
         svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-        this->phaser->SetInput( data );
+        this->phaser->SetInputData( data );
         int pivotPoint = data->GetCellData()->GetNumberOfTuples() / 2;
         this->phaser->SetLinearPhasePivot( pivotPoint );
         this->phasePivotEntry->GetWidget()->SetValueAsInt( pivotPoint );

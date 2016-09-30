@@ -66,7 +66,7 @@ class sivicPreprocessingWidget : public sivicKWCompositeWidget
     public:
 
         static sivicPreprocessingWidget *New();
-        vtkTypeRevisionMacro(sivicPreprocessingWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicPreprocessingWidget,sivicKWCompositeWidget);
 
 
     protected:

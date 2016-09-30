@@ -57,7 +57,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkLCModelCSVReader, "$Rev$");
+//vtkCxxRevisionMacro(svkLCModelCSVReader, "$Rev$");
 vtkStandardNewMacro(svkLCModelCSVReader);
 
 
@@ -128,19 +128,18 @@ int svkLCModelCSVReader::CanReadFile(const char* fname)
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkLCModelCSVReader::ExecuteData(vtkDataObject* output)
+void svkLCModelCSVReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
     //  Create the template data object by  
     //  extractng an svkMriImageData from the input svkMrsImageData object
     //  Use an arbitrary point for initialization of scalars.  Actual data 
     //  will be overwritten by algorithm. 
     svkMriImageData::SafeDownCast( this->GetOutput() ); 
-    this->GetImageDataInput(0); 
     
     svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetImage(
                 svkMriImageData::SafeDownCast( this->GetOutput() ),
@@ -212,13 +211,8 @@ void svkLCModelCSVReader::ParseCSVFiles()
 
         vtkDelimitedTextReader* csvReader = vtkDelimitedTextReader::New();
         csvReader->SetFieldDelimiterCharacters(",");
-        //csvReader->SetStringDelimiter(', ');
-        // produces | Col|
-//csvReader->SetFieldDelimiterCharacters(",");
-//csvReader->SetStringDelimiter(',');
         csvReader->SetMergeConsecutiveDelimiters(true); 
         csvReader->SetHaveHeaders(true);
-        //csvReader->DetectNumericColumnsOn();
         csvReader->SetFileName( csvFileName.c_str() ); 
         csvReader->Update();
 
@@ -226,8 +220,6 @@ void svkLCModelCSVReader::ParseCSVFiles()
         numeric->SetInputConnection ( csvReader->GetOutputPort());
         numeric->Update();
         vtkTable* table = vtkTable::SafeDownCast(numeric->GetOutput());
-        //vtkTable* table = csvReader->GetOutput();
-        //cout << *table << endl;
         
         //cout << "==========================================" << endl;
         //table->Dump();
@@ -235,8 +227,6 @@ void svkLCModelCSVReader::ParseCSVFiles()
         int numCols = table->GetNumberOfColumns() ; 
         int numRows = table->GetNumberOfRows() ; 
 
-        //cout << "NC: " << numCols  << endl; 
-        //cout << "NR: " << numRows  << endl; 
         for ( int i = 0; i < numCols; i++ ) {
             string colName( table->GetColumn(i)->GetName() ); 
             table->GetColumn(i)->SetName( this->StripWhite( colName ).c_str() ); 
@@ -244,8 +234,6 @@ void svkLCModelCSVReader::ParseCSVFiles()
             //cout << table->GetColumn(i)->GetName() << endl; 
             //cout << *table->GetColumn(i) << endl; 
         }
-
-
 
         //  =============================
         //  initialize the row vals 

@@ -45,7 +45,7 @@ using namespace svk;
 
 
 vtkStandardNewMacro( vtkSivicController );
-vtkCxxRevisionMacro( vtkSivicController, "$Revision$");
+//vtkCxxRevisionMacro( vtkSivicController, "$Revision$");
 
 const int vtkSivicController::ANATOMY_BRAIN = 0;
 const int vtkSivicController::ANATOMY_PROSTATE = 1;
@@ -583,6 +583,7 @@ void vtkSivicController::OpenImage( svkImageData* data, string stringFilename )
  */
 void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilename, svkImageData* oldData )
 {
+    bool geometryChanged = false;
 
     int toggleDraw = this->GetDraw();
     if( toggleDraw ) {
@@ -649,14 +650,19 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
 
 
         // If the 4D image file is already in the model
-        int* tlcBrc = NULL; 
-        if( oldData != NULL ) {
-            // We need to copy the tlc brc so it carries over to the new data set.
-            tlcBrc = new int[2];
-            memcpy( tlcBrc, this->plotController->GetTlcBrc(), 2*sizeof(int) );
-            this->model->ChangeDataObject( objectName, newData );
-            this->model->SetDataFileName( objectName, stringFilename );
+        int* tlcBrc = NULL;
+        svkDataValidator* validator = svkDataValidator::New();
+        geometryChanged = !validator->AreDataGeometriesSame( newData, oldData );
+        validator->Delete();
 
+        if( oldData != NULL ) {
+            if( !geometryChanged ) {
+                // We need to copy the tlc brc so it carries over to the new data set.
+                tlcBrc = new int[2];
+                memcpy(tlcBrc, this->plotController->GetTlcBrc(), 2 * sizeof(int));
+                this->model->ChangeDataObject(objectName, newData);
+                this->model->SetDataFileName(objectName, stringFilename);
+            }
         } else {
             this->model->AddDataObject( objectName, newData );
             this->model->SetDataFileName( objectName, stringFilename );
@@ -702,18 +708,33 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
 		this->UpdateModelForReslicedImage("AnatomicalData");
 		this->UpdateModelForReslicedImage("OverlayData");
         if( tlcBrc == NULL ) {
-            int firstSlice = newData->GetFirstSlice( newData->GetDcmHeader()->GetOrientationType() );
-            int lastSlice = newData->GetLastSlice( newData->GetDcmHeader()->GetOrientationType() );
-            this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-            this->spectraViewWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
+            int firstSlice = newData->GetFirstSlice(newData->GetDcmHeader()->GetOrientationType());
+            int lastSlice = newData->GetLastSlice(newData->GetDcmHeader()->GetOrientationType());
             int channels = newData->GetDcmHeader()->GetNumberOfCoils();
-            this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
-            this->spectraViewWidget->channelSlider->SetValue( 1 );
+            this->spectraViewWidget->channelSlider->SetRange(1, channels);
+            this->spectraViewWidget->channelSlider->SetValue(1);
             int timePoints = newData->GetDcmHeader()->GetNumberOfTimePoints();
-            this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints); 
-            this->spectraViewWidget->timePointSlider->SetValue( 1 );
-            this->plotController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
-            this->overlayController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
+            this->spectraViewWidget->timePointSlider->SetRange(1, timePoints);
+            this->spectraViewWidget->timePointSlider->SetValue(1);
+            this->spectraViewWidget->sliceSlider->SetRange(firstSlice + 1, lastSlice + 1);
+            if( !this->model->DataExists( "AnatomicalData" ) ) {
+                this->spectraViewWidget->sliceSlider->SetValue((lastSlice - firstSlice) / 2 + 1);
+                this->plotController->SetSlice((lastSlice - firstSlice) / 2);
+                this->overlayController->SetSlice((lastSlice - firstSlice) / 2);
+            } else {
+                int new4DSlice = this->overlayController->GetSlice();
+                int axialSlice = this->imageViewWidget->axialSlider->GetValue();
+                int coronalSlice = this->imageViewWidget->coronalSlider->GetValue();
+                int sagittalSlice = this->imageViewWidget->sagittalSlider->GetValue();
+                this->plotController->SetSlice(new4DSlice);
+                this->spectraViewWidget->sliceSlider->SetValue(new4DSlice+1);
+                this->imageViewWidget->axialSlider->SetValue(axialSlice);
+                this->imageViewWidget->axialSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent);
+                this->imageViewWidget->coronalSlider->SetValue(coronalSlice);
+                this->imageViewWidget->coronalSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent);
+                this->imageViewWidget->sagittalSlider->SetValue(sagittalSlice);
+                this->imageViewWidget->sagittalSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent);
+            }
         }
 
         /*
@@ -807,10 +828,13 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
         this->PopupMessage( resultInfo ); 
     }
 
-    this->DisableWidgets();
-    this->EnableWidgets();
     if( toggleDraw ) {
         this->DrawOn();
+    }
+    this->DisableWidgets();
+    this->EnableWidgets();
+    if( this->spectraViewWidget->sliceSlider->GetEnabled() && !geometryChanged) {
+        this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent);
     }
     // This is a temporary check to see if the orientations are okay with the new reslice implementation.
     svkOverlayView::SafeDownCast(this->overlayController->GetView())->CheckDataOrientations();
@@ -857,11 +881,6 @@ void vtkSivicController::Open4DImage( const char* fileName, bool onlyReadOneInpu
         return;
     } else {
         this->Open4DImage( newData,  stringFilename, oldData );
-    }
-    this->DisableWidgets();
-    this->EnableWidgets();
-    if( this->spectraViewWidget->sliceSlider->GetEnabled() ) {
-        this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
     }
 
     // Update the metabolite menu for the current spectra
@@ -1170,9 +1189,12 @@ void vtkSivicController::Add4DImageData( svkImageData* data, string stringFilena
 	if( data != NULL && data->IsA("svk4DImageData") ) {
 		string resultInfo = this->plotController->GetDataCompatibility( data,  svkPlotGridView::ADDITIONAL_MR4D );
 		if( resultInfo.compare("") != 0 ) {
-			string message =  "ERROR: Could not load reference trace.\n Info: ";
+			string message =  "WARNING: 4D data is not compatible. Previous 4D dataset will be closed. Would you like to continue? \n Info: ";
 			message.append( resultInfo );
-			this->PopupMessage( message );
+            int dialogStatus = this->PopupMessage( message, vtkKWMessageDialog::StyleYesNo );
+            if( dialogStatus == 2 ) {
+                this->Open4DImage(data, stringFilename, this->GetActive4DImageData());
+            }
 		} else {
 			svkPlotGridView::SafeDownCast(this->plotController->GetView())->AddReferenceInput( data );
 			this->dataWidget->UpdateReferenceSpectraList();
@@ -1702,12 +1724,12 @@ int vtkSivicController::OpenFile( const char* openType, const char* startPath, b
 
 			this->app->GetRegistryValue( this->registryLevel, "defaults", "spectra_extension_filtering", defaultSpectraExtension );
 			if( defaultSpectraExtension != NULL && strcmp( defaultSpectraExtension, "OFF" ) == 0 ) {
-				dlg->SetFileTypes("{{All files} {.*}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid}}");
+				dlg->SetFileTypes("{{All files} {.*}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid .SDAT}}");
 			} else {
-				dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm .DCM fid}} {{All files} {.*}}");
+				dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm .DCM fid .SDAT}} {{All files} {.*}}");
 			}
         } else {
-            dlg->SetFileTypes("{{All files} {.*}} {{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid}}");
+            dlg->SetFileTypes("{{All files} {.*}} {{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid .SDAT}}");
         }
     
 
@@ -1865,8 +1887,8 @@ void vtkSivicController::SaveMetaboliteMaps()
         char* cStrFilename = new char [filename.size()+1];
         strcpy (cStrFilename, filename.c_str());
 
-        vtkstd::string root = svkImageReader2::GetFileRoot( cStrFilename ); 
-        vtkstd::string ext = svkImageReader2::GetFileExtension( cStrFilename ); 
+        string root = svkImageReader2::GetFileRoot( cStrFilename ); 
+        string ext = svkImageReader2::GetFileExtension( cStrFilename ); 
         int fileType; 
         if ( ext.compare("DCM") == 0 ) {
             fileType = 5;       // MRI
@@ -1934,8 +1956,8 @@ void vtkSivicController::SaveImageFromModel( const char* modelObjectName, bool a
 			char* cStrFilename = new char [filename.size()+1];
 			strcpy (cStrFilename, filename.c_str());
 
-			vtkstd::string root = svkImageReader2::GetFileRoot( cStrFilename );
-			vtkstd::string ext = svkImageReader2::GetFileExtension( cStrFilename );
+			string root = svkImageReader2::GetFileRoot( cStrFilename );
+			string ext = svkImageReader2::GetFileExtension( cStrFilename );
 			int fileType;
 			if ( ext.compare("DCM") == 0 ) {
 				fileType = 5;       // MRI
@@ -1991,7 +2013,7 @@ void vtkSivicController::SaveMetMapData( svkImageData* image, char* fileName, in
     writer->SetFileName(fileName);
     writerFactory->Delete();
 
-    writer->SetInput( image ); 
+    writer->SetInputData( image ); 
     writer->Write();
 
     writer->Delete();
@@ -2018,7 +2040,7 @@ void vtkSivicController::SaveData( char* fileName )
     writer->SetFileName(fileName);
     writerFactory->Delete();
 
-    writer->SetInput( this->GetActive4DImageData() );
+    writer->SetInputData( this->GetActive4DImageData() );
 
     writer->Write();
     writer->Delete();
@@ -3178,10 +3200,30 @@ void vtkSivicController::EnableWidgets()
 
     if ( activeData != NULL && activeData->IsA("svkMrsImageData") ) {
         string domain = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue("SignalDomainColumns");
+        string spatialDomain0 = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
+        string spatialDomain1 = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue( "SVK_RowsDomain");
+        string spatialDomain2 = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue( "SVK_SliceDomain");
+
         int numChannels = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetDcmHeader()->GetNumberOfCoils();
         this->processingWidget->fftButton->EnabledOn(); 
+        this->processingWidget->spatialDomainLabel->EnabledOn();
+        this->processingWidget->spectralDomainLabel->EnabledOn();
         this->processingWidget->spatialButton->EnabledOn(); 
         this->processingWidget->spectralButton->EnabledOn(); 
+        if ( spatialDomain0.compare("KSPACE") == 0 && spatialDomain1.compare("KSPACE") == 0 && spatialDomain2.compare("KSPACE") == 0 )  {
+            this->processingWidget->spatialDomainLabel->SetText( string("Current Domain: KSPACE").c_str() );
+            this->preprocessingWidget->apodizationSelectorCols->EnabledOn();
+            this->preprocessingWidget->apodizationSelectorRows->EnabledOn();
+            this->preprocessingWidget->apodizationSelectorSlices->EnabledOn();
+        } else if ( spatialDomain0.compare("SPACE") == 0 && spatialDomain1.compare("SPACE") == 0 && spatialDomain2.compare("SPACE") == 0 )  {
+            this->processingWidget->spatialDomainLabel->SetText( string("Current Domain: SPACE").c_str() );
+            this->preprocessingWidget->apodizationSelectorCols->EnabledOff();
+            this->preprocessingWidget->apodizationSelectorRows->EnabledOff();
+            this->preprocessingWidget->apodizationSelectorSlices->EnabledOn();
+        } else {
+            this->processingWidget->spatialDomainLabel->SetText( string("Current Domain: Mixed or Undefined").c_str() );
+        }
+
         if( domain == "TIME" ) {
             this->preprocessingWidget->applyButton->EnabledOn(); 
             this->preprocessingWidget->zeroFillSelectorSpec->EnabledOn();
@@ -3197,6 +3239,7 @@ void vtkSivicController::EnableWidgets()
 			this->combineWidget->magnitudeCombinationButton->EnabledOff();
 			this->combineWidget->additionCombinationButton->EnabledOff();
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Time" );
+            this->processingWidget->spectralDomainLabel->SetText( string("Current Domain: TIME").c_str() );;
             this->spectraRangeWidget->unitSelectBox->SetValue( "PTS" );
             this->spectraRangeWidget->SetSpecUnitsCallback(svkSpecPoint::PTS);
             this->spectraRangeWidget->unitSelectBox->EnabledOff();
@@ -3208,6 +3251,7 @@ void vtkSivicController::EnableWidgets()
 				this->combineWidget->additionCombinationButton->EnabledOn();
             }
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Frequency" );
+            this->processingWidget->spectralDomainLabel->SetText( string("Current Domain: FREQUENCY").c_str() );;
             this->spectraRangeWidget->unitSelectBox->EnabledOn();
             string nucleus = activeData->GetDcmHeader()->GetStringValue("ResonantNucleus");
             if( !nucleus.empty() ) {
@@ -3792,7 +3836,7 @@ void vtkSivicController::ExitSivic(vtkObject* subject, unsigned long, void* this
  */
 void vtkSivicController::GetMRSDefaultPPMRange( svkImageData* mrsData, float& ppmMin, float& ppmMax )
 {
-    vtkstd::string nucleus = mrsData->GetDcmHeader()->GetStringValue( "ResonantNucleus" );
+    string nucleus = mrsData->GetDcmHeader()->GetStringValue( "ResonantNucleus" );
     if ( nucleus.find("13C") !=string::npos ) {
         ppmMin = PPM_13C_DEFAULT_MIN; 
         ppmMax = PPM_13C_DEFAULT_MAX;

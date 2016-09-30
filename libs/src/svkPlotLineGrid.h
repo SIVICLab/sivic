@@ -86,7 +86,7 @@ class svkPlotLineGrid : public vtkObject
 
     public:
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkPlotLineGrid, vtkObject );
+        vtkTypeMacro( svkPlotLineGrid, vtkObject );
 
         static svkPlotLineGrid*       New();
 

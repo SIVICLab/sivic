@@ -69,9 +69,19 @@ class svkMrsApodizationFilter : public svkImageInPlaceFilter
     public:
 
         static svkMrsApodizationFilter* New();
-        vtkTypeRevisionMacro( svkMrsApodizationFilter, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMrsApodizationFilter, svkImageInPlaceFilter);
 
-        void SetWindow( vtkFloatArray* window );
+
+        typedef enum {
+            UNDEFINED = 0,
+            SPECTRAL_WINDOW,
+            SPATIAL_WINDOW,
+            LAST
+        }FilterDomain;
+
+        void                SetWindow( vector< vtkFloatArray* >* window );
+        svkMriImageData*    GetSpatialFilter(); 
+
 
     protected:
 
@@ -95,8 +105,16 @@ class svkMrsApodizationFilter : public svkImageInPlaceFilter
 
 
     private:
+
+        int             RequestDataSpectral(); 
+        int             RequestDataSpatial(); 
+
         
-        vtkFloatArray* window;
+        vector< vtkFloatArray* >*               window;
+        svkMrsApodizationFilter::FilterDomain   filterDomain;  
+        svkMriImageData*                        spatialFilter;
+        svkMriImageData*                        spatialFilterReal;
+ 
 
 };
 

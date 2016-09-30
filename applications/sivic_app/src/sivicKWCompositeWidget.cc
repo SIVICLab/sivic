@@ -11,7 +11,7 @@
 #include <vtkSivicController.h>
 
 vtkStandardNewMacro( sivicKWCompositeWidget );
-vtkCxxRevisionMacro( sivicKWCompositeWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicKWCompositeWidget, "$Revision$");
 
 
 /*! 

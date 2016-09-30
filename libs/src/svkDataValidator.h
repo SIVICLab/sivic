@@ -69,7 +69,7 @@ class svkDataValidator : public vtkObject
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkDataValidator,vtkObject );
+        vtkTypeMacro( svkDataValidator,vtkObject );
    
         static svkDataValidator*       New();  
         

@@ -81,7 +81,7 @@
 
 
 
-vtkCxxRevisionMacro(svkAreaPicker, "$Revision$");
+//vtkCxxRevisionMacro(svkAreaPicker, "$Revision$");
 vtkStandardNewMacro(svkAreaPicker);
 
 //--------------------------------------------------------------------------

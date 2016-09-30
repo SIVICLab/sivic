@@ -64,7 +64,7 @@ class svkImageView2DController : public svkDataViewController
     public:
 
         static svkImageView2DController* New();
-        vtkTypeRevisionMacro( svkImageView2DController, svkDataViewController );
+        vtkTypeMacro( svkImageView2DController, svkDataViewController );
 
         virtual void SetInput( svkImageData* data, int index = 0 );
 

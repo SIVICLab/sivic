@@ -11,7 +11,7 @@
 #include <vtkSivicController.h>
 
 vtkStandardNewMacro( sivicPreprocessingWidget );
-vtkCxxRevisionMacro( sivicPreprocessingWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicPreprocessingWidget, "$Revision$");
 
 
 /*! 
@@ -265,20 +265,21 @@ void sivicPreprocessingWidget::CreateWidget()
     string apOption1 = "none";
     string apOption2 = "Lorentz";
     string apOption3 = "Gauss";
+    string apOption4 = "Hamming";
 
     apSpecMenu->AddRadioButton(apOption1.c_str(), this->sivicController, "");
     apSpecMenu->AddRadioButton(apOption2.c_str(), this->sivicController, "");
     apSpecMenu->AddRadioButton(apOption3.c_str(), this->sivicController, "");
 
     apColsMenu->AddRadioButton(apOption1.c_str(), this->sivicController, "");
-    apColsMenu->AddRadioButton(apOption2.c_str(), this->sivicController, "");
+    apColsMenu->AddRadioButton(apOption4.c_str(), this->sivicController, "");
 
     apRowsMenu->AddRadioButton(apOption1.c_str(), this->sivicController, "");
-    apRowsMenu->AddRadioButton(apOption2.c_str(), this->sivicController, "");
+    apRowsMenu->AddRadioButton(apOption4.c_str(), this->sivicController, "");
 
     apSlicesMenu->AddRadioButton(apOption1.c_str(), this->sivicController, "");
-    apSlicesMenu->AddRadioButton(apOption2.c_str(), this->sivicController, "");
-
+    apSlicesMenu->AddRadioButton(apOption4.c_str(), this->sivicController, "");
+    
     //  Set default values
     this->apodizationSelectorSpec->SetValue( apOption1.c_str() );
     this->apodizationSelectorCols->SetValue( apOption1.c_str() );
@@ -430,7 +431,7 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
 
         bool executeZeroFill = false;
         svkMrsZeroFill* zeroFill = svkMrsZeroFill::New();
-        zeroFill->SetInput(data);
+        zeroFill->SetInputData(data);
 
         if( zeroFillSpec.compare("double") == 0 ) {
             zeroFill->SetNumberOfSpecPointsToDouble();
@@ -484,16 +485,16 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
         float fwhh = this->GetApodizationFWHH(); 
         if( apodizeSpec.compare("Lorentz") == 0 ) {
             svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
-            vtkFloatArray* window = vtkFloatArray::New();
+            vector< vtkFloatArray* >* window = new vector< vtkFloatArray* >();
             svkApodizationWindow::GetLorentzianWindow( window, data, fwhh );
-            af->SetInput( data );
+            af->SetInputData( data );
             af->SetWindow( window );
             af->Update();
             af->Delete();
             data->Modified();
         } else if ( apodizeSpec.compare("Gauss") == 0 ) {
             svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
-            vtkFloatArray* window = vtkFloatArray::New();
+            vector< vtkFloatArray* >* window = new vector< vtkFloatArray* >();
             float center = 0.0;
             //  default, set center to center time point (assume full symmetric echo)
             float bandwidth = data->GetDcmHeader()->GetFloatValue("SpectralWidth");
@@ -514,19 +515,61 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
                 center = atof( centerDefault );
             }
             svkApodizationWindow::GetGaussianWindow( window, data, fwhh, center );
-            af->SetInput( data );
+            af->SetInputData( data );
             af->SetWindow( window );
             af->Update();
             af->Delete();
             data->Modified();
-        }
-        zeroFill->Delete();
-        if( toggleDraw ) {
-        	this->sivicController->DrawOn();
-        }
-    }
-    return; 
+        } 
 
+        if ( apodizeCols.compare("Hamming") == 0 && apodizeRows.compare("Hamming") == 0 && apodizeSlices.compare("Hamming") == 0 ) {
+            svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
+            vector< vtkFloatArray* >* window = new vector< vtkFloatArray* >();
+            svkApodizationWindow::GetHammingWindow( window, data, svkApodizationWindow::THREE_D );
+            af->SetInputData( data );
+            af->SetWindow( window );
+            af->Update();
+            af->Delete();
+            data->Modified();
+        } else {
+            if ( apodizeCols.compare("Hamming") == 0 ) {
+                svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
+                vector< vtkFloatArray* >* window = new vector< vtkFloatArray* >();
+                svkApodizationWindow::GetHammingWindow( window, data, svkApodizationWindow::COL );
+                af->SetInputData( data );
+                af->SetWindow( window );
+                af->Update();
+                af->Delete();
+                data->Modified();
+            }
+            if ( apodizeRows.compare("Hamming") == 0 ) {
+                svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
+                vector< vtkFloatArray* >* window = new vector< vtkFloatArray* >();
+                svkApodizationWindow::GetHammingWindow( window, data, svkApodizationWindow::ROW );
+                af->SetInputData( data );
+                af->SetWindow( window );
+                af->Update();
+                af->Delete();
+                data->Modified();
+            }
+            if ( apodizeSlices.compare("Hamming") == 0 ) {
+                svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
+                vector< vtkFloatArray* >* window = new vector< vtkFloatArray* >();
+                svkApodizationWindow::GetHammingWindow( window, data, svkApodizationWindow::SLICE );
+                af->SetInputData( data );
+                af->SetWindow( window );
+                af->Update();
+                af->Delete();
+                data->Modified();
+            }
+        }
+
+	zeroFill->Delete();
+        if( toggleDraw ) {
+           this->sivicController->DrawOn();
+	}
+
+    }
 }
 
 
@@ -570,4 +613,3 @@ void sivicPreprocessingWidget::UpdateProgress(vtkObject* subject, unsigned long,
                   static_cast<vtkAlgorithm*>(subject)->GetProgressText() );
 
 }
-

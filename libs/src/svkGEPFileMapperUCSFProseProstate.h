@@ -55,7 +55,7 @@ class svkGEPFileMapperUCSFProseProstate : public svkGEPFileMapperUCSF
 
     public:
 
-        vtkTypeRevisionMacro( svkGEPFileMapperUCSFProseProstate, svkGEPFileMapperUCSF );
+        vtkTypeMacro( svkGEPFileMapperUCSFProseProstate, svkGEPFileMapperUCSF );
         static          svkGEPFileMapperUCSFProseProstate* New();
 
 

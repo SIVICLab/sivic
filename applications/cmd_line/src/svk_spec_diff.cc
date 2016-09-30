@@ -260,7 +260,7 @@ int main (int argc, char** argv)
     }
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( svkMrsImageData::SafeDownCast( testData ) );
+    writer->SetInputData( svkMrsImageData::SafeDownCast( testData ) );
 
     // ===============================================  
     //  Set the input command line into the data set 

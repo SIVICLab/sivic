@@ -37,7 +37,7 @@
 #include <vtkSivicController.h>
 
 vtkStandardNewMacro( sivicPreferencesWidget );
-vtkCxxRevisionMacro( sivicPreferencesWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicPreferencesWidget, "$Revision$");
 
 
 /*! 

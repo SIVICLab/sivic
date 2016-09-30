@@ -54,7 +54,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkOpenGLOrientedImageActor, "$Revision$");
+//vtkCxxRevisionMacro(svkOpenGLOrientedImageActor, "$Revision$");
 vtkStandardNewMacro(svkOpenGLOrientedImageActor);
 
 

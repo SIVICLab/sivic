@@ -74,7 +74,7 @@ class svkMrsSingleVoxelSincExtraction: public svkImageAlgorithmWithPortMapper
             RETAIN_INPUT_EXTENT
         } svkMrsSingleVoxelExtractionInput;
 
-        vtkTypeRevisionMacro( svkMrsSingleVoxelSincExtraction, svkImageAlgorithmWithPortMapper);
+        vtkTypeMacro( svkMrsSingleVoxelSincExtraction, svkImageAlgorithmWithPortMapper);
         static                  svkMrsSingleVoxelSincExtraction* New();
 
         void    SetVoxelCenter(double l_coordinate, double p_coordinate, double s_coordinate);

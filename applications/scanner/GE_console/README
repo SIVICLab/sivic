@@ -17,12 +17,16 @@ Brute force upgrading for now. Need a streamlined protocol for doing this automa
 
     cp -r svk/console/packages/* sivic_GE_console_0.9.24_Linux_x86_64/console/packages/
 
+5.  link the matlab RT if necessary, e.g. 
+    cd ~sdc/svk/console/lib/
+    ln -s ~/rrc/lib/matlab
 
-3.  Set the svk link to point to the new distribution
+
+6.  Set the svk link to point to the new distribution
 
         cd ~sdc/
         rm svk
         ln -s sivic_GE_console_0.9.24_Linux_x86_64 svk
 
-4. Cleanup: 
+7. Cleanup: 
     After testing apps in new distribution, then remove the old directory. 

@@ -51,7 +51,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkVarianFidReader, "$Rev$");
+//vtkCxxRevisionMacro(svkVarianFidReader, "$Rev$");
 vtkStandardNewMacro(svkVarianFidReader);
 
 
@@ -119,7 +119,7 @@ svkVarianFidReader::~svkVarianFidReader()
 int svkVarianFidReader::CanReadFile(const char* fname)
 {
 
-    vtkstd::string fileToCheck(fname);
+    string fileToCheck(fname);
 
     if( fileToCheck.size() >= 3 ) {
 
@@ -165,11 +165,11 @@ int svkVarianFidReader::CanReadFile(const char* fname)
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkVarianFidReader::ExecuteData(vtkDataObject* output)
+void svkVarianFidReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
     if ( this->FileName ) {
         this->mapper->ReadFidFile( this->FileName, data );
@@ -270,10 +270,10 @@ svkVarianFidMapper* svkVarianFidReader::GetFidMapper()
 {
     svkVarianFidMapper* aMapper = NULL;
 
-    vtkstd::string seqfil = this->procparMap["seqfil"][0][0];
+    string seqfil = this->procparMap["seqfil"][0][0];
 
     //convert to lower case:
-    vtkstd::string::iterator it;
+    string::iterator it;
     for ( it = seqfil.begin(); it < seqfil.end(); it++ ) {
         *it = (char)tolower(*it);
     }
@@ -321,8 +321,8 @@ svkDcmHeader::DcmPixelDataFormat svkVarianFidReader::GetFileType()
 void svkVarianFidReader::ParseFid()
 {
 
-    vtkstd::string fidFileName( this->GetFileName() );  
-    vtkstd::string fidFilePath( this->GetFilePath( this->GetFileName() ) );  
+    string fidFileName( this->GetFileName() );  
+    string fidFilePath( this->GetFilePath( this->GetFileName() ) );  
 
     try { 
 

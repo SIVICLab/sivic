@@ -224,7 +224,7 @@ int main (int argc, char** argv)
     // ===============================================  
     vtkSmartPointer< svkCorrectDCOffset > dc = vtkSmartPointer< svkCorrectDCOffset >::New(); 
 
-    dc->SetInput( reader->GetOutput() ); 
+    dc->SetInputData( reader->GetOutput() ); 
     dc->Update(); 
 
     //  if this step is included, then reset the current algo to be 
@@ -235,7 +235,7 @@ int main (int argc, char** argv)
     //  fft
     // ===============================================  
     svkMrsImageFFT* imageFFT = svkMrsImageFFT::New();
-    imageFFT->SetInput( currentImage );
+    imageFFT->SetInputData( currentImage );
     imageFFT->Update();
     currentImage->Modified();
     imageFFT->Delete();
@@ -244,7 +244,7 @@ int main (int argc, char** argv)
     //  phase, 
     // ===============================================  
     svkMultiCoilPhase* multiCoilPhase = svkMultiCoilPhase::New();
-    multiCoilPhase->SetInput( currentImage );
+    multiCoilPhase->SetInputData( currentImage );
     multiCoilPhase->Update();
     currentImage->Modified();
     multiCoilPhase->Delete();
@@ -253,7 +253,7 @@ int main (int argc, char** argv)
     //  combine, 
     // ===============================================  
     svkMRSCombine* coilCombine = svkMRSCombine::New();
-    coilCombine->SetInput( currentImage );
+    coilCombine->SetInputData( currentImage );
     coilCombine->Update();
     currentImage->Modified();
     coilCombine->Delete();
@@ -266,7 +266,7 @@ int main (int argc, char** argv)
         imageFFT = svkMrsImageFFT::New();
         imageFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL ); 
         imageFFT->SetFFTMode( svkMrsImageFFT::REVERSE ); 
-        imageFFT->SetInput( currentImage );
+        imageFFT->SetInputData( currentImage );
         imageFFT->Update();
         currentImage->Modified();
         imageFFT->Delete();
@@ -287,7 +287,7 @@ int main (int argc, char** argv)
     }
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( svkMrsImageData::SafeDownCast( currentImage ) );
+    writer->SetInputData( svkMrsImageData::SafeDownCast( currentImage ) );
 
     // ===============================================  
     //  Set the input command line into the data set 

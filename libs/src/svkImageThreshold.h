@@ -94,7 +94,7 @@ class svkImageThreshold : public svkImageAlgorithmWithPortMapper
         } svkImageThresholdParameters;
 
         static svkImageThreshold* New();
-        vtkTypeRevisionMacro( svkImageThreshold, svkImageAlgorithmWithPortMapper);
+        vtkTypeMacro( svkImageThreshold, svkImageAlgorithmWithPortMapper);
 
         void        SetThresholdMax( double max );
         svkDouble*  GetThresholdMax( );

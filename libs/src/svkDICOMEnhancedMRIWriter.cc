@@ -41,6 +41,7 @@
 
 
 #include <svkDICOMEnhancedMRIWriter.h>
+#include <svkTypeUtils.h>
 #include <svkImageReader2.h>
 #include <vtkErrorCode.h>
 #include <vtkCellData.h>
@@ -51,7 +52,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDICOMEnhancedMRIWriter, "$Rev$");
+//vtkCxxRevisionMacro(svkDICOMEnhancedMRIWriter, "$Rev$");
 vtkStandardNewMacro(svkDICOMEnhancedMRIWriter);
 
 
@@ -103,6 +104,7 @@ void svkDICOMEnhancedMRIWriter::Write()
         new char[(this->FileName ? strlen(this->FileName) : 1) +
         (this->FilePrefix ? strlen(this->FilePrefix) : 1) +
         (this->FilePattern ? strlen(this->FilePattern) : 1) + 10];
+    string internalFileNameString; 
 
     this->FileNumber = 0;
     this->MinimumFileNumber = this->FileNumber;
@@ -113,13 +115,16 @@ void svkDICOMEnhancedMRIWriter::Write()
 
     // determine the name
     if (this->FileName) {
-        sprintf(this->InternalFileName,"%s",this->FileName);
+        //sprintf(this->InternalFileName,"%s",this->FileName);
+        internalFileNameString = this->FileName; 
     } else {
         if (this->FilePrefix) {
-            sprintf(this->InternalFileName, this->FilePattern,
-                    this->FilePrefix, this->FileNumber);
+            //sprintf(this->InternalFileName, this->FilePattern,
+                    //this->FilePrefix, this->FileNumber);
+            internalFileNameString = string(this->FilePattern) + string(this->FilePrefix) + svkTypeUtils::IntToString(this->FileNumber); 
         } else {
-            sprintf(this->InternalFileName, this->FilePattern,this->FileNumber);
+            //sprintf(this->InternalFileName, this->FilePattern,this->FileNumber);
+            internalFileNameString = string(this->FilePattern) + svkTypeUtils::IntToString(this->FileNumber); 
         }
     }
 
@@ -129,13 +134,13 @@ void svkDICOMEnhancedMRIWriter::Write()
 
 
     //  Make sure there is an extension:
-    sprintf(this->InternalFileName, "%s.dcm", this->InternalFileName );
+    internalFileNameString.append(".dcm");
     
     if ( this->useLosslessCompression ) {
         this->GetImageDataInput(0)->GetDcmHeader()->
-                WriteDcmFileCompressed(this->InternalFileName); 
+                WriteDcmFileCompressed(internalFileNameString); 
     } else {
-        this->GetImageDataInput(0)->GetDcmHeader()->WriteDcmFile(this->InternalFileName); 
+        this->GetImageDataInput(0)->GetDcmHeader()->WriteDcmFile(internalFileNameString); 
     }
 
     if (this->ErrorCode == vtkErrorCode::OutOfDiskSpaceError) {
@@ -173,7 +178,8 @@ void svkDICOMEnhancedMRIWriter::InitPixelData( svkDcmHeader* dcmHeader )
 
     int offset = 0; 
 
-    switch ( this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ) ) {
+    int vtkDataType = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() ); 
+    switch ( this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( vtkDataType ) ) {
 
         case svkDcmHeader::UNSIGNED_INT_1:
         {

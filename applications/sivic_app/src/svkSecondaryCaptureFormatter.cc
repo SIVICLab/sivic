@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkSecondaryCaptureFormatter, "$Rev$");
+//vtkCxxRevisionMacro(svkSecondaryCaptureFormatter, "$Rev$");
 vtkStandardNewMacro(svkSecondaryCaptureFormatter);
 
 
@@ -182,11 +182,10 @@ void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, 
     if( !writer->IsA("svkImageWriter") ) {  
         vtkImageData* imageCopy = vtkImageData::New();
         imageCopy->DeepCopy( outputImage );
-        imageCopy->Update();
-        writer->SetInput( imageCopy );
+        writer->SetInputData( imageCopy );
         imageCopy->Delete();
     } else {
-        writer->SetInput( outputImage );
+        writer->SetInputData( outputImage );
     }
     writer->Write();
 
@@ -225,15 +224,15 @@ void svkSecondaryCaptureFormatter::RenderSpectraImage( int firstFrame, int lastF
         wtif->SetInput( window );
         wtif->Update();
         tmpData->DeepCopy( wtif->GetOutput() );
-        tmpData->Update();
-        sliceAppender->SetInput(m-firstFrame, tmpData );
+        //tmpData->Update();
+        sliceAppender->SetInputData(m-firstFrame, tmpData );
         wtif->Delete();
         tmpData->Delete();
     }
     if( flipImage ) {  
         vtkImageFlip* flipper = vtkImageFlip::New();
         flipper->SetFilteredAxis( 1 );
-        flipper->SetInput( sliceAppender->GetOutput() );
+        flipper->SetInputData( sliceAppender->GetOutput() );
         flipper->Update();
         outputImage->DeepCopy( flipper->GetOutput() );
         flipper->Delete();
@@ -316,11 +315,11 @@ void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer,
     if( !writer->IsA("svkImageWriter") ) {  
         vtkImageData* imageCopy = vtkImageData::New();
         imageCopy->DeepCopy( outputImage );
-        imageCopy->Update();
-        writer->SetInput( imageCopy );
+        //imageCopy->Update();
+        writer->SetInputData( imageCopy );
         imageCopy->Delete();
     } else {
-        writer->SetInput( outputImage );
+        writer->SetInputData( outputImage );
     }
     writer->Write();
 
@@ -395,7 +394,7 @@ void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWrit
     outputImageCopy1->SetDcmHeader( outputImage->GetDcmHeader() );
     outputImageCopy1->GetDcmHeader()->Register( outputImageCopy1 );
     this->RenderCombinedImage( firstFrame, lastFrame, outputImageCopy1, flipImage, print );
-    sliceAppender->SetInput(0, outputImageCopy1 );
+    sliceAppender->SetInputData(0, outputImageCopy1 );
     firstFrame = firstFrame-2 < 0 ? 0 : firstFrame-2;
     int numSummaryImages = lastFrame-firstFrame+1;
     int currentSummaryImage = 1;
@@ -406,7 +405,7 @@ void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWrit
         this->RenderSummaryImage( firstFrame, firstFrame+5, outputImageCopy2, flipImage, print );
         firstFrame+=6;
         numSummaryImages = lastFrame-firstFrame+1;
-        sliceAppender->SetInput(currentSummaryImage, outputImageCopy2 );
+        sliceAppender->SetInputData(currentSummaryImage, outputImageCopy2 );
         currentSummaryImage++;
         outputImageCopy2->Delete();
     }
@@ -415,22 +414,22 @@ void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWrit
         outputImageCopy2->SetDcmHeader( outputImage->GetDcmHeader() );
         outputImageCopy2->GetDcmHeader()->Register( outputImageCopy2 );
         this->RenderSummaryImage( firstFrame, lastFrame, outputImageCopy2, flipImage, print );
-        sliceAppender->SetInput(currentSummaryImage, outputImageCopy2 );
+        sliceAppender->SetInputData(currentSummaryImage, outputImageCopy2 );
     }
     sliceAppender->Update();
     outputImage->DeepCopy( sliceAppender->GetOutput() );
-    outputImage->Update();
+    //outputImage->Update();
     if( preview ) {
         this->PreviewImage( outputImage );
     }
     if( !writer->IsA("svkImageWriter") ) {  
         vtkImageData* imageCopy = vtkImageData::New();
         imageCopy->DeepCopy( outputImage );
-        imageCopy->Update();
-        writer->SetInput( imageCopy );
+        //imageCopy->Update();
+        writer->SetInputData( imageCopy );
         imageCopy->Delete();
     } else {
-        writer->SetInput( outputImage );
+        writer->SetInputData( outputImage );
     }
     writer->Write();
 
@@ -577,15 +576,15 @@ void svkSecondaryCaptureFormatter::RenderCombinedImage( int firstFrame, int last
         wtif->Update( );
 
         tmpData->DeepCopy( wtif->GetOutput() );
-        tmpData->Update();
-        sliceAppender->SetInput(m-firstFrame, tmpData );
+        //tmpData->Update();
+        sliceAppender->SetInputData(m-firstFrame, tmpData );
         wtif->Delete();
     }
 
     if( flipImage ) {  
         vtkImageFlip* flipper = vtkImageFlip::New();
         flipper->SetFilteredAxis( 1 );
-        flipper->SetInput( sliceAppender->GetOutput() );
+        flipper->SetInputConnection( sliceAppender->GetOutputPort() );
         flipper->Update();
         outputImage->DeepCopy( flipper->GetOutput() );
         flipper->Delete();
@@ -677,7 +676,7 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
         this->RenderSummaryImage( firstFrame, firstFrame+5, outputImageCopy, flipImage, print );
         firstFrame+=6;
         remainingSummaryImages = lastFrame-firstFrame+1;
-        sliceAppender->SetInput(currentSummaryImage, outputImageCopy );
+        sliceAppender->SetInputData(currentSummaryImage, outputImageCopy );
         currentSummaryImage++;
         outputImageCopy->Delete();
     }
@@ -686,19 +685,19 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
         outputImageCopy->SetDcmHeader( outputImage->GetDcmHeader() );
         outputImageCopy->GetDcmHeader()->Register( outputImageCopy );
         this->RenderSummaryImage( firstFrame, lastFrame, outputImageCopy, flipImage, print );
-        sliceAppender->SetInput(currentSummaryImage, outputImageCopy );
+        sliceAppender->SetInputData(currentSummaryImage, outputImageCopy );
     }
     sliceAppender->Update();
     outputImage->DeepCopy( sliceAppender->GetOutput() );
-    outputImage->Update();
+    //outputImage->Update();
     if( !writer->IsA("svkImageWriter") ) {  
         vtkImageData* imageCopy = vtkImageData::New();
         imageCopy->DeepCopy( outputImage );
-        imageCopy->Update();
-        writer->SetInput( imageCopy );
+        //imageCopy->Update();
+        writer->SetInputData( imageCopy );
         imageCopy->Delete();
     } else {
-        writer->SetInput( outputImage );
+        writer->SetInputData( outputImage );
     }
     writer->Write();
     if( print ) {
@@ -776,10 +775,10 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
         rendererToImage->SetMagnification(1);
         rendererToImage->Update();
         data->DeepCopy( rendererToImage->GetOutput() );
-        data->Update();
+        //data->Update();
         if( (m - firstFrame) % numCols == 0 ) {
             colAppenders[(m-firstFrame)/numCols] = vtkImageAppend::New();
-            colAppenders[(m-firstFrame)/numCols]->SetInput(0, data );
+            colAppenders[(m-firstFrame)/numCols]->SetInputData(0, data );
             colAppenders[(m-firstFrame)/numCols]->SetAppendAxis(0);
 
             // In case of an odd number of slices we need to pad each
@@ -788,14 +787,14 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
                 padder->SetConstant( 255 );
             }
             if( numCols == 1 ) { 
-                padder->SetInput(  data );
+                padder->SetInputData(  data );
             } else {
-                padder->SetInput(  colAppenders[(m-firstFrame)/numCols]->GetOutput() );
+                padder->SetInputData(  colAppenders[(m-firstFrame)/numCols]->GetOutput() );
             }
             padder->SetOutputWholeExtent(0,x*numCols-1,0,y-1,0,0);
-            rowAppender->SetInput( numRows - 1 - ((m-firstFrame)/(numCols)), padder->GetOutput() );
+            rowAppender->SetInputData( numRows - 1 - ((m-firstFrame)/(numCols)), padder->GetOutput() );
         } else {
-            colAppenders[(m-firstFrame)/numCols]->SetInput((m-firstFrame) % numCols, data );
+            colAppenders[(m-firstFrame)/numCols]->SetInputData((m-firstFrame) % numCols, data );
         }
         rendererToImage->Delete();
     }
@@ -824,8 +823,8 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
 
     vtkImageAppend* titleAppender = vtkImageAppend::New();
     titleAppender->SetAppendAxis(1);
-    titleAppender->SetInput( 0, rowAppender->GetOutput() );
-    titleAppender->SetInput( 1, wtif->GetOutput() );
+    titleAppender->SetInputData( 0, rowAppender->GetOutput() );
+    titleAppender->SetInputData( 1, wtif->GetOutput() );
     wtif->Delete();
     
 
@@ -833,14 +832,14 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
     if( print ) {
         padder->SetConstant( 255 );
     }
-    padder->SetInput(  titleAppender->GetOutput() );
+    padder->SetInputData(  titleAppender->GetOutput() );
     padder->SetOutputWholeExtent(0,imageSize[0]-1,0,imageSize[1]-1,0,0);
     titleAppender->Delete();
 
     if( flipImage ) {  
         vtkImageFlip* flipper = vtkImageFlip::New();
         flipper->SetFilteredAxis( 1 );
-        flipper->SetInput( padder->GetOutput() );
+        flipper->SetInputData( padder->GetOutput() );
         flipper->Update();
         outputImage->DeepCopy( flipper->GetOutput() );
         flipper->Delete();
@@ -1123,7 +1122,7 @@ void svkSecondaryCaptureFormatter::PreviewImage( svkImageData* image )
     viewer->SetRenderer( ren );
     window->AddRenderer( ren);  
     window->SetSize(600,600); 
-    viewer->SetInput( orthogonalCopy );
+    viewer->SetInputData( orthogonalCopy );
     viewer->SetupInteractor( rwi );
     viewer->SetOrientation(orthogonalCopy->GetDcmHeader()->GetOrientationType());
     viewer->GetImageActor()->InterpolateOff();

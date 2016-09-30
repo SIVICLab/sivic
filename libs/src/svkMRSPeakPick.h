@@ -72,7 +72,7 @@ class svkMRSPeakPick : public svkImageInPlaceFilter
     public:
 
         static svkMRSPeakPick* New();
-        vtkTypeRevisionMacro( svkMRSPeakPick, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMRSPeakPick, svkImageInPlaceFilter);
 
         void            SetNoiseSD(float noise); 
         void            SetBaselineValue(float baseline); 

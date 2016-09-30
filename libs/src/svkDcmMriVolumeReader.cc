@@ -49,15 +49,15 @@
 #include <vtkMath.h>
 #include <svkIOD.h>
 #include <svkEnhancedMRIIOD.h>
-#include <vtkstd/vector>
-#include <vtkstd/utility>
+#include <vector>
+#include <utility>
 #include <sstream>
 
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDcmMriVolumeReader, "$Rev$");
+//vtkCxxRevisionMacro(svkDcmMriVolumeReader, "$Rev$");
 vtkStandardNewMacro(svkDcmMriVolumeReader);
 
 
@@ -104,8 +104,10 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
         //verify that this isn't a proprietary use of DICOM MR ImageStorage: 
         if ( this->ContainsProprietaryContent( tmp ) == svkDcmVolumeReader::DICOM_STD_SOP ) {
                     
-            // Check for MR Image Storage (and for now CTImageStorage too, see SIVIC tickets in trac)
-            if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" || SOPClassUID == "1.2.840.10008.5.1.4.1.1.2") {           
+            // Check for MR Image Storage (and for now CTImageStorage and PETImageStorage too )
+            if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" 
+                || SOPClassUID == "1.2.840.10008.5.1.4.1.1.2" 
+                || SOPClassUID == "1.2.840.10008.5.1.4.1.1.128" ) { 
                 this->SetFileName(fname);
                 isDcmMri = true; 
             }

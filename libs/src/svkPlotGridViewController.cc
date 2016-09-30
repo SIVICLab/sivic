@@ -48,7 +48,7 @@ using namespace svk;
 
 #define DEBUG 0
 
-vtkCxxRevisionMacro(svkPlotGridViewController, "$Rev$");
+//vtkCxxRevisionMacro(svkPlotGridViewController, "$Rev$");
 vtkStandardNewMacro(svkPlotGridViewController);
 
 

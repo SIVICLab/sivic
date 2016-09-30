@@ -66,7 +66,7 @@ class svkMrsImageFourierCenter : public svkImageInPlaceFilter
     public:
 
         static svkMrsImageFourierCenter* New();
-        vtkTypeRevisionMacro( svkMrsImageFourierCenter, svkImageInPlaceFilter);
+        vtkTypeMacro( svkMrsImageFourierCenter, svkImageInPlaceFilter);
 
         typedef enum {
             SPECTRAL = 0,

@@ -43,7 +43,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkGEConsolePACSInterface, "$Rev$");
+//vtkCxxRevisionMacro(svkGEConsolePACSInterface, "$Rev$");
 vtkStandardNewMacro(svkGEConsolePACSInterface);
 
 

@@ -11,7 +11,7 @@
 #include <vtkSivicController.h>
 
 vtkStandardNewMacro( sivicDSCWidget );
-vtkCxxRevisionMacro( sivicDSCWidget, "$Revision$");
+//vtkCxxRevisionMacro( sivicDSCWidget, "$Revision$");
 
 
 /*! 
@@ -200,7 +200,7 @@ void sivicDSCWidget::SetDSCRepresentationCallback( svkDSCDeltaR2::representation
         if (dscRep == NULL) {
             dscRep = svkDSCDeltaR2::New();
         }
-        dscRep->SetInput( data );
+        dscRep->SetInputData( data );
         dscRep->SetRepresentation(representation);
         data->Modified();
         dscRep->Update();
@@ -237,7 +237,7 @@ void sivicDSCWidget::ExecuteDSC()
         if (dscRep == NULL) {
             dscRep = svkDSCDeltaR2::New();
         }
-        dscRep->SetInput( data );
+        dscRep->SetInputData( data );
 
         dscRep->Update();
         data->Modified();
@@ -275,7 +275,7 @@ void sivicDSCWidget::ExecuteQuantification()
     if( data != NULL ) {
 
         this->dscQuant = svkDSCQuantify::New();
-        this->dscQuant->SetInput( data );
+        this->dscQuant->SetInputData( data );
         this->dscQuant->Update();
         vtkstd::vector< svkMriImageData* >* dscMaps = this->dscQuant->GetDSCMaps();
 

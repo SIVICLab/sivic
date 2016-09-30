@@ -83,7 +83,7 @@ class svkObliqueReslice : public svkImageAlgorithmWithPortMapper
         } svkObliqueResliceOutput;
 
         static svkObliqueReslice* New();
-        vtkTypeRevisionMacro( svkObliqueReslice, svkImageAlgorithm );
+        vtkTypeMacro( svkObliqueReslice, svkImageAlgorithm );
 
 
         //  Set the target orientation from a target image or the dcos explicitily:

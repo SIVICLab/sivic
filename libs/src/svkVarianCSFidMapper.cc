@@ -54,7 +54,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkVarianCSFidMapper, "$Rev$");
+//vtkCxxRevisionMacro(svkVarianCSFidMapper, "$Rev$");
 vtkStandardNewMacro(svkVarianCSFidMapper);
 
 

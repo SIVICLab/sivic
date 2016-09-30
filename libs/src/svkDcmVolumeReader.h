@@ -61,10 +61,10 @@ class svkDcmVolumeReader : public svkImageReader2
 
     public:
 
-        vtkTypeRevisionMacro( svkDcmVolumeReader, svkImageReader2);
+        vtkTypeMacro( svkDcmVolumeReader, svkImageReader2);
 
-        static float                            GetFloatValAttribute7( vtkstd::vector< vtkstd::string > vec ); 
-        static int                              GetIntValAttribute8( vtkstd::vector< vtkstd::string > vec ); 
+        static float                            GetFloatValAttribute7( vector< string > vec ); 
+        static int                              GetIntValAttribute8( vector< string > vec ); 
         static void                             GetVOILUTScaledPixels( float* floatPixels, unsigned short* shortPixels, float center, float window, int numberOfPixels );
 
 
@@ -82,16 +82,16 @@ class svkDcmVolumeReader : public svkImageReader2
 
 
         virtual void                            ExecuteInformation();
-        virtual void                            ExecuteData(vtkDataObject* output); 
+        virtual void                            ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo); 
         ProprietarySOP                          ContainsProprietaryContent( svkImageData* data );
         void                                    InitFileNames(); 
         void                                    OnlyReadInputFile(); 
         void                                    SortFilesByImagePositionPatient(
-                                                    vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes,
+                                                    vector< vector< string> >& dcmSeriesAttributes,
                                                     bool ascending
                                                 );
         void                                    SortFilesByInstanceNumber(
-                                                    vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes,
+                                                    vector< vector< string> >& dcmSeriesAttributes,
                                                     int numSlicesPerVol, 
                                                     bool ascending
                                                 ); 
@@ -100,7 +100,7 @@ class svkDcmVolumeReader : public svkImageReader2
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         virtual void                            InitDcmHeader();
         void                                    InitSliceOrder(); 
-        void                                    InitSliceOrder(vtkstd::string hfileStart, vtkstd::string fileEnd); 
+        void                                    InitSliceOrder(string hfileStart, string fileEnd); 
         virtual bool                            CheckForMultiVolume(); 
         int                                     numVolumes; 
         float                                   GetSliceSpacing(); 
@@ -116,7 +116,7 @@ class svkDcmVolumeReader : public svkImageReader2
         void                                    SetSliceSpacing( 
                                                     svkDcmHeader* hdr, 
                                                     int numSlices, 
-                                                    vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes 
+                                                    vector< vector< string> >& dcmSeriesAttributes 
                                                 );
 
 

@@ -311,9 +311,10 @@ int main (int argc, char** argv)
     }
 
     //  if chop was specified, must be either On or Off
-    if ( chopString.compare("") != 0 && (chopString.compare("on")!=0 || chopString.compare("off") != 0 ))  {
-        cout << "chop value must be either on or off." << endl;
+    if ( chopString.compare("") != 0 && (chopString.compare("on")!=0 && chopString.compare("off") != 0 ))  {
+        cout << "chop value must be either on or off: " << chopString <<  endl;
         cout << usemsg << endl;
+        exit(1);
     }
         
 
@@ -332,10 +333,8 @@ int main (int argc, char** argv)
     cout << "file name: " << inputFileName << endl;
 
     // ===============================================  
-    //  Use a reader factory to get the correct reader  
-    //  type . 
+    //  Get a GEPFile Reader. 
     // ===============================================  
-    vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
     svkGEPFileReader* reader = svkGEPFileReader::New(); 
 
     if (reader == NULL) {
@@ -347,7 +346,6 @@ int main (int argc, char** argv)
     if ( onlyLoadSingleFile == true ) {
         reader->OnlyReadOneInputFile();
     }
-
 
     //  If printing header just print and return
     if ( printHeader || printShortHeader ) {
@@ -425,7 +423,7 @@ int main (int argc, char** argv)
     // ===============================================  
     vtkSmartPointer< svkCorrectDCOffset > dc = vtkSmartPointer< svkCorrectDCOffset >::New(); 
     if ( dcCorrection ) {
-        dc->SetInput( reader->GetOutput() ); 
+        dc->SetInputData( reader->GetOutput() ); 
         dc->Update(); 
 
         //  if this step is included, then reset the current algo to be 
@@ -448,7 +446,7 @@ int main (int argc, char** argv)
 
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( svkMrsImageData::SafeDownCast( currentImage ) );
+    writer->SetInputData( svkMrsImageData::SafeDownCast( currentImage ) );
     if ( oneTimePtPerFile ) { 
         svkDdfVolumeWriter::SafeDownCast( writer )->SetOneTimePointsPerFile();
     }

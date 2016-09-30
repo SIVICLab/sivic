@@ -45,8 +45,8 @@
 
 
 #include <svkDcmVolumeReader.h>
-#include <vtkstd/vector>
-#include <vtkstd/string>
+#include <vector>
+#include <string>
 
 
 namespace svk {
@@ -62,7 +62,7 @@ class svkDcmMriVolumeReader : public svkDcmVolumeReader
     public:
 
         static svkDcmMriVolumeReader* New();
-        vtkTypeRevisionMacro( svkDcmMriVolumeReader, svkDcmVolumeReader );
+        vtkTypeMacro( svkDcmMriVolumeReader, svkDcmVolumeReader );
 
         // Description: 
         // A descriptive name for this format

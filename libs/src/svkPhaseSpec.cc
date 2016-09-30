@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkPhaseSpec, "$Rev$");
+//vtkCxxRevisionMacro(svkPhaseSpec, "$Rev$");
 vtkStandardNewMacro(svkPhaseSpec);
 
 
@@ -94,8 +94,7 @@ svkPhaseSpec::~svkPhaseSpec()
  */
 int svkPhaseSpec::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-    int wholeExtent[6]; 
-    this->GetInput()->GetWholeExtent( wholeExtent ); 
+    int* wholeExtent = this->GetOutputInformation(0)->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
     
     bool useWholeExtent = false; 
     //  If the specified update extent is outside the whole extent, just use
@@ -134,7 +133,7 @@ int svkPhaseSpec::RequestInformation( vtkInformation* request, vtkInformationVec
 int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    int retVal; 
+    int retVal = 0; 
 
     if ( this->GetImageDataInput(1) ) {
         retVal = this->ApplyPhaseMap(); 
@@ -143,7 +142,6 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
     }
 
     svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetProvenance()->AddAlgorithm( this->GetClassName() );
-
     return retVal; 
 
 }
@@ -326,7 +324,7 @@ int svkPhaseSpec::ApplyGlobalPhase( )
     this->linearPhasePivot = this->linearPhasePivotTarget;
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
-    this->GetInput()->Update();
+    return 1; 
 
 } 
 

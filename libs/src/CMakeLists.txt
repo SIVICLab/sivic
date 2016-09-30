@@ -91,10 +91,10 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE( VTK REQUIRED )
-IF(VTK_FOUND)
-  INCLUDE(${VTK_USE_FILE})
-ENDIF(VTK_FOUND)
+#FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE)
+#IF(VTK_FOUND)
+#  INCLUDE(${VTK_USE_FILE})
+#ENDIF(VTK_FOUND)
 
 
 
@@ -115,6 +115,10 @@ ADD_DEFINITIONS(-DSVK_ADAPT_DCMTK)
 IF(WIN32)
 	SET(PLATFORM_INCLUDE ../getopt)
 ENDIF(WIN32)
+
+IF(CLION_BUILD)
+    SET(PLATFORM_INCLUDE ${CLION_VTK_INCLUDE})
+ENDIF(CLION_BUILD)
 
 INCLUDE_DIRECTORIES(
     ./
@@ -165,6 +169,8 @@ ADD_LIBRARY(
     svkLCModelReader.cc
     svkLCModelCSVReader.cc
     svkLCModelCoordReader.cc
+    svkLCModelTableReader.cc
+    svkVariableFlipDatReader.cc
     svkImageWriterFactory.cc
     svkImageReaderFactory.cc
     svkImageReader2.cc
@@ -178,6 +184,7 @@ ADD_LIBRARY(
     svkGEPFileMapperUCSFfidcsiDev0.cc
     svkGEPFileMapperUCSFfidcsiDev07t.cc
     svkGEPFileMapperUCSFProseProstate.cc
+    svkGEPFileMapperUCSFProseBreast.cc
     svkGEPFileMapperMPCSIOBL.cc
     svkIdfVolumeReader.cc
     svkDdfVolumeReader.cc
@@ -190,6 +197,8 @@ ADD_LIBRARY(
     svkDcmRawDataReader.cc
     svkGEPostageStampReader.cc
     svkBrukerDCMMRSReader.cc
+    svkPhilipsSReader.cc
+    svkPhilipsSMapper.cc
     svkVarianReader.cc
     svkFdfVolumeReader.cc
     svkVarianFidReader.cc
@@ -267,6 +276,7 @@ ADD_LIBRARY(
     svkIntegratePeak.cc
     svkApodizationWindow.cc
     svkMrsApodizationFilter.cc
+    svkMrsSimulate.cc
     svkExtractVOI.cc
     svkDICOMParser.cc
     svkImageStatistics.cc
@@ -316,11 +326,7 @@ IF( BUILD_VIZ_LIBRARY )
         svkDataViewController.cc
         svkPlotGridView.cc
         svkPlotGridViewController.cc
-        svkDetailedPlotDirector.cc
-        svkXYPlotActor.cc
         svkOverlaySelector.cc
-        svkOverlayView.cc
-        svkOverlayViewController.cc
         svkLabeledDataMapper.cc
         svkSatBandSet.cc
         svkImageTopologyGenerator.cc
@@ -333,6 +339,11 @@ IF( BUILD_VIZ_LIBRARY )
         svkImageMapToColors.cc
         svkLabeledDataMapper.cc
         svkVizUtils.cc
+        svkXYPlotActor.cc
+        svkXYPlotActorConnections.cc
+        svkOverlayView.cc
+        svkOverlayViewController.cc
+        svkDetailedPlotDirector.cc
         ${SVK_ORIENTED_IMAGE_ACTOR_SRC}
     )
 ENDIF( BUILD_VIZ_LIBRARY )

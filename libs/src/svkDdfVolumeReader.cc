@@ -53,7 +53,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDdfVolumeReader, "$Rev$");
+//vtkCxxRevisionMacro(svkDdfVolumeReader, "$Rev$");
 vtkStandardNewMacro(svkDdfVolumeReader);
 
 
@@ -198,7 +198,7 @@ void svkDdfVolumeReader::ExecuteInformation()
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkDdfVolumeReader::ExecuteData(vtkDataObject* output)
+void svkDdfVolumeReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
 
     this->FileNames = vtkStringArray::New();
@@ -210,7 +210,7 @@ void svkDdfVolumeReader::ExecuteData(vtkDataObject* output)
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
     if ( this->GetFileNames()->GetNumberOfValues() ) {
         vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
@@ -793,7 +793,7 @@ void svkDdfVolumeReader::InitPatientModule()
     this->GetOutput()->GetDcmHeader()->InitPatientModule(
         this->GetOutput()->GetDcmHeader()->GetDcmPatientName(  ddfMap["patientName"] ),  
         ddfMap["patientId"], 
-        this->RemoveSlashesFromDate( &(ddfMap["dateOfBirth"]) ), 
+        this->RemoveDelimFromDate( &(ddfMap["dateOfBirth"]) ), 
         ddfMap["sex"] 
     );
 
@@ -806,7 +806,7 @@ void svkDdfVolumeReader::InitPatientModule()
 void svkDdfVolumeReader::InitGeneralStudyModule() 
 {
     this->GetOutput()->GetDcmHeader()->InitGeneralStudyModule(
-        this->RemoveSlashesFromDate( &(ddfMap["studyDate"]) ), 
+        this->RemoveDelimFromDate( &(ddfMap["studyDate"]) ), 
         "", 
         "", 
         ddfMap["studyId"], 
@@ -872,7 +872,7 @@ void svkDdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "ContentDate", 
-        this->RemoveSlashesFromDate( &(ddfMap["studyDate"]) ) 
+        this->RemoveDelimFromDate( &(ddfMap["studyDate"]) ) 
     );
 
     this->numSlices = this->GetHeaderValueAsInt( ddfMap, "dimensionNumberOfPoints3" ); 
@@ -1481,7 +1481,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "AcquisitionDateTime",
-        this->RemoveSlashesFromDate( &(ddfMap["studyDate"]) ) + "000000"
+        this->RemoveDelimFromDate( &(ddfMap["studyDate"]) ) + "000000"
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(

@@ -53,6 +53,7 @@
 #include <vtkTextProperty.h>
 #include <vtkDoubleArray.h>
 #include <vtkExtractEdges.h>
+#include <vtkImageMapper3D.h>
 #include <svkImageMapToColors.h>
 #include <svkDataView.h>
 #include <svkPlotGridViewController.h>
@@ -97,7 +98,7 @@ class svkPlotGridView : public svkDataView
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkPlotGridView, svkDataView );
+        vtkTypeMacro( svkPlotGridView, svkDataView );
 
         static svkPlotGridView*       New();
     

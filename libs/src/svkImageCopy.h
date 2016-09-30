@@ -78,7 +78,7 @@ class svkImageCopy : public svkImageAlgorithmWithPortMapper
         } svkImageCopyParameters;
 
         static svkImageCopy* New();
-        vtkTypeRevisionMacro( svkImageCopy, svkImageAlgorithmWithPortMapper);
+        vtkTypeMacro( svkImageCopy, svkImageAlgorithmWithPortMapper);
 
         void                    SetSeriesDescription(string newSeriesDescription);
         void                    SetOutputDataType(int dataType);

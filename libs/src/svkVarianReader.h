@@ -45,9 +45,9 @@
 
 #include <svkImageReader2.h>
 
-#include <vtkstd/map>
-#include <vtkstd/vector>
-#include <vtkstd/string>
+#include <map>
+#include <vector>
+#include <string>
 
 namespace svk {
 
@@ -60,7 +60,7 @@ class svkVarianReader : public svkImageReader2
 
     public:
 
-        vtkTypeRevisionMacro( svkVarianReader, svkImageReader2);
+        vtkTypeMacro( svkVarianReader, svkImageReader2);
         static void                      UserToMagnet(double* user, double* magnet, double dcos[3][3]); 
 
 
@@ -73,26 +73,26 @@ class svkVarianReader : public svkImageReader2
         //  Methods:
         int                              GetNumPixelsInVol();
         int                              GetNumSlices();
-	    void                             ParseProcpar( vtkstd::string path );
+	    void                             ParseProcpar( string path );
         int                              GetProcparKeyValuePair();
         void                             ReadLine(ifstream* fs, istringstream* iss);
         void                             ParseAndSetProcparStringElements(
-                                             vtkstd::string key, 
-                                             vtkstd::string valueArray1, 
-                                             vtkstd::string valueArray2
+                                             string key, 
+                                             string valueArray1, 
+                                             string valueArray2
                                          );
         void                             PrintProcparKeyValuePairs();
-        int                              GetNumberOfProcparElements( vtkstd::string* valueString );
-        void                             GetProcparValueArray( vtkstd::string* valueString );
-        void                             RemoveStringQuotes(vtkstd::string* input); 
+        int                              GetNumberOfProcparElements( string* valueString );
+        void                             GetProcparValueArray( string* valueString );
+        void                             RemoveStringQuotes(string* input); 
         void                             AssignProcparVectorElements(
-                                             vtkstd::vector<vtkstd::string>* procparVector,
-                                             vtkstd::string valueArray
+                                             vector<string>* procparVector,
+                                             string valueArray
                                             );
 
         //  Members:
         ifstream*                                   procparFile;
-        vtkstd::map <vtkstd::string, vtkstd::vector < vtkstd::vector<vtkstd::string> > >    
+        map <string, vector < vector<string> > >    
                                                     procparMap; 
         int                                         numSlices; 
         long                                        procparFileSize; 

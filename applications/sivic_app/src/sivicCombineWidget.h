@@ -65,7 +65,7 @@ class sivicCombineWidget : public sivicKWCompositeWidget
     public:
 
         static sivicCombineWidget *New();
-        vtkTypeRevisionMacro(sivicCombineWidget,sivicKWCompositeWidget);
+        vtkTypeMacro(sivicCombineWidget,sivicKWCompositeWidget);
         //typedef svkCoilCombine::CombinationMethod CombinationMethod;
 
     protected:

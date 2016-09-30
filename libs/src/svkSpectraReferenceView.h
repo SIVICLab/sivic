@@ -96,7 +96,7 @@ class svkSpectraReferenceView : public svkDataView
     
     public:
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkSpectraReferenceView, svkDataView );
+        vtkTypeMacro( svkSpectraReferenceView, svkDataView );
 
         static svkSpectraReferenceView*       New();
     

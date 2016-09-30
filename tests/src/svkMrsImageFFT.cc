@@ -66,7 +66,7 @@ int main (int argc, char** argv)
 
     //  Reverse FFT spatial data: kspace to spatial domain
     svkMrsImageFFT* spatialRFFT= svkMrsImageFFT::New();
-    spatialRFFT->SetInput( data );
+    spatialRFFT->SetInputData( data );
     spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
     spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
     spatialRFFT->SetPreCorrectCenter( true );
@@ -75,14 +75,14 @@ int main (int argc, char** argv)
     
     //  FFT spectral data: time to frequency domain
     svkMrsImageFFT* spectralFFT = svkMrsImageFFT::New();
-    spectralFFT->SetInput( spatialRFFT->GetOutput() );
+    spectralFFT->SetInputData( spatialRFFT->GetOutput() );
     spectralFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
     spectralFFT->SetFFTMode( svkMrsImageFFT::FORWARD );
     spectralFFT->Update();
     
     svkDdfVolumeWriter* writer = svkDdfVolumeWriter::New();
     writer->SetFileName( fnameOut.c_str() );    
-    writer->SetInput( spectralFFT->GetOutput() );
+    writer->SetInputData( spectralFFT->GetOutput() );
     writer->Write();
     writer->Delete();
     spatialRFFT->Delete();

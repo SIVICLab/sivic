@@ -252,7 +252,7 @@ int main (int argc, char** argv)
     end[2] = -1;
     svkMrsImageData* mrsData = svkMrsImageData::New();
     mrsData->DeepCopy( svkMrsImageData::SafeDownCast(reader->GetOutput()) );
-    phaser->SetInput( mrsData );
+    phaser->SetInputData( mrsData );
     phaser->SetChannel( 0 );
     phaser->SetUpdateExtent(start, end );
 
@@ -294,7 +294,7 @@ int main (int argc, char** argv)
     }
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( mrsData );
+    writer->SetInputData( mrsData );
 
     // ===============================================  
     //  Set the input command line into the data set 

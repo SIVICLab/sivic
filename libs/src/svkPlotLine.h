@@ -81,7 +81,7 @@ class svkPlotLine : public vtkObject
         } PlotDirection;
 
 
-        vtkTypeRevisionMacro( svkPlotLine, vtkObject );
+        vtkTypeMacro( svkPlotLine, vtkObject );
         
         static svkPlotLine*  New();
 

@@ -80,7 +80,7 @@ class svkMultiWindowToImageFilter: public vtkAlgorithm
     public:
 
         static svkMultiWindowToImageFilter* New();
-        vtkTypeRevisionMacro( svkMultiWindowToImageFilter, vtkAlgorithm);
+        vtkTypeMacro( svkMultiWindowToImageFilter, vtkAlgorithm);
 
         //  Methods
         virtual void            SetInput(vtkRenderWindow* data, int indX = 0, int indY = 0, int magnification = 1 );

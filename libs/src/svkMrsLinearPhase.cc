@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMrsLinearPhase, "$Rev$");
+//vtkCxxRevisionMacro(svkMrsLinearPhase, "$Rev$");
 vtkStandardNewMacro(svkMrsLinearPhase);
 
 

@@ -41,13 +41,13 @@
 
 
 #include <svkImageReaderFactory.h>
-#include <vtkstd/string>
+#include <string>
 
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageReaderFactory, "$Rev$");
+//vtkCxxRevisionMacro(svkImageReaderFactory, "$Rev$");
 vtkStandardNewMacro(svkImageReaderFactory);
 
 
@@ -75,8 +75,11 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->geSignaLX2Reader          = svkGESignaLX2Reader::New();
     this->gePostageStampReader      = svkGEPostageStampReader::New();
     this->brukerDCMMRSReader        = svkBrukerDCMMRSReader::New();
+    this->philipsSReader            = svkPhilipsSReader::New();
     this->dcmRawDataReader          = svkDcmRawDataReader::New();
     this->dcmSegmentationVolReader  = svkDcmSegmentationVolumeReader::New();
+    this->lcmodelCSVReader          = svkLCModelCSVReader::New();
+    this->lcmodelTableReader        = svkLCModelTableReader::New();
 
     vtkImageReader2Factory::RegisterReader( this->dcmMriVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmMrsVolReader );
@@ -92,8 +95,11 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->geSignaLX2Reader );
     vtkImageReader2Factory::RegisterReader( this->gePostageStampReader );
     vtkImageReader2Factory::RegisterReader( this->brukerDCMMRSReader );
+    vtkImageReader2Factory::RegisterReader( this->philipsSReader );
     vtkImageReader2Factory::RegisterReader( this->dcmRawDataReader);
     vtkImageReader2Factory::RegisterReader( this->dcmSegmentationVolReader );
+    vtkImageReader2Factory::RegisterReader( this->lcmodelCSVReader );
+    vtkImageReader2Factory::RegisterReader( this->lcmodelTableReader );
 
     //  this can be used if only need to check file type for example.
     this->quickParse = false; 
@@ -178,6 +184,11 @@ svkImageReaderFactory::~svkImageReaderFactory()
         this->brukerDCMMRSReader = NULL;
     }
 
+    if (this->philipsSReader != NULL) {
+        this->philipsSReader->Delete();
+        this->philipsSReader = NULL;
+    }
+
     if (this->dcmRawDataReader != NULL) {
         this->dcmRawDataReader->Delete();
         this->dcmRawDataReader = NULL;
@@ -189,6 +200,15 @@ svkImageReaderFactory::~svkImageReaderFactory()
         this->dcmSegmentationVolReader = NULL;
     }
 
+    if (this->lcmodelCSVReader != NULL) {
+        this->lcmodelCSVReader->Delete();
+        this->lcmodelCSVReader = NULL;
+    }
+
+    if (this->lcmodelTableReader != NULL) {
+        this->lcmodelTableReader->Delete();
+        this->lcmodelTableReader = NULL;
+    }
 }
 
 
@@ -258,9 +278,13 @@ svkImageReader2* svkImageReaderFactory::CreateImageReader2( svkImageReader2::Rea
     } else if ( readerType == svkImageReader2::LC_MODEL_COORD) {
         //return svkLCModelCoordReader::New(); 
     } else if ( readerType == svkImageReader2::LC_MODEL_CSV) {
-        //return svkLCModelCSVReader::New(); 
+        return svkLCModelCSVReader::New(); 
+    } else if ( readerType == svkImageReader2::LC_MODEL_TABLE ) {
+        return svkLCModelTableReader::New(); 
     } else if ( readerType == svkImageReader2::BRUKER_MRS) {
         return svkBrukerDCMMRSReader::New(); 
+    } else if ( readerType == svkImageReader2::PHILIPS_S ) {
+        return svkPhilipsSReader::New(); 
     } else if ( readerType == svkImageReader2::DDF) {
         return svkDdfVolumeReader::New(); 
     } else if ( readerType == svkImageReader2::IDF) {

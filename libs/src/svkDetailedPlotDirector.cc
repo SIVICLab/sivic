@@ -42,11 +42,14 @@
 
 #include <svkDetailedPlotDirector.h>
 #include <vtkObjectFactory.h>
+#include <vtkGlyphSource2D.h>
+#include <vtkLegendBoxActor.h>
+#include <vtkFieldData.h>
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDetailedPlotDirector, "$Rev$");
+//vtkCxxRevisionMacro(svkDetailedPlotDirector, "$Rev$");
 vtkStandardNewMacro(svkDetailedPlotDirector);
 
 
@@ -67,7 +70,7 @@ svkDetailedPlotDirector::svkDetailedPlotDirector()
     this->xyPlotActor->GetTitleTextProperty()->SetColor(0,1,1);
     this->xyPlotActor->AdjustTitlePositionOff();
     this->xyPlotActor->SetTitlePosition(0.15, 0.9);
-#if VTK_MINOR_VERSION >= 6
+#if VTK_MINOR_VERSION >= 6 || VTK_MAJOR_VERSION >= 6
     this->xyPlotActor->ChartBoxOn();
     this->xyPlotActor->ChartBorderOn();
     this->xyPlotActor->GetChartBoxProperty()->SetColor(0,0,0);
@@ -84,6 +87,7 @@ svkDetailedPlotDirector::svkDetailedPlotDirector()
     this->xyPlotActor->SetAdjustXLabels(0);
     this->xyPlotActor->SetAdjustYLabels(0);
     this->xyPlotActor->SetXLabelFormat("%0.2f");
+    this->xyPlotActor->GetAxisLabelTextProperty()->BoldOn();
     this->abscissa = NULL;
     this->numPoints = -1;
     this->cursorLocationCB = NULL;
@@ -171,7 +175,8 @@ void svkDetailedPlotDirector::AddInput( vtkDataArray* array, int component, vtkD
         this->xyPlotActor->AddDataObjectInput(dataObject);
         dataObject->Delete();
         this->xyPlotActor->SetXValuesToValue();
-        int numPlots = this->xyPlotActor->GetDataObjectInputList()->GetNumberOfItems();
+        //int numPlots = this->xyPlotActor->GetDataObjectInputList()->GetNumberOfItems();
+        int numPlots = this->xyPlotActor->GetDataObjectInputConnectionHolder()->GetNumberOfInputConnections(0);
         this->xyPlotActor->GetLegendActor()->SetNumberOfEntries(numPlots);
         if( sourceToObserve != NULL ) {
             sourceToObserve->AddObserver(vtkCommand::ModifiedEvent, dataModifiedCB);
@@ -188,6 +193,7 @@ void svkDetailedPlotDirector::AddInput( vtkDataArray* array, int component, vtkD
         // We need to call Modified on the Legend text to get around a VTK bug.
         // Without this the font family goes back to default for added inputs
         this->xyPlotActor->GetLegendActor()->GetEntryTextProperty()->Modified();
+        this->glyphGenerator->Update();
         this->xyPlotActor->GetLegendActor()->SetEntrySymbol(numPlots-1, this->glyphGenerator->GetOutput());
     }
 
@@ -200,10 +206,13 @@ void svkDetailedPlotDirector::AddInput( vtkDataArray* array, int component, vtkD
  */
 void svkDetailedPlotDirector::RegenerateMagnitudeArrays()
 {
-    vtkDataObjectCollection* allData = this->xyPlotActor->GetDataObjectInputList();
-    int numPlots = allData->GetNumberOfItems();
+    //vtkDataObjectCollection* allData = this->xyPlotActor->GetDataObjectInputList();
+    vtkAlgorithm* allDataAlgo = this->xyPlotActor->GetDataObjectInputConnectionHolder();
+
+    int numPlots = allDataAlgo->GetNumberOfInputConnections(0);
     for( int i = 0; i < numPlots; i++ ) {
-        this->GenerateMagnitudeArray( allData->GetItem(i)->GetFieldData()->GetArray(1), allData->GetItem(i)->GetFieldData()->GetArray(2) );
+        //this->GenerateMagnitudeArray( allData->GetItem(i)->GetFieldData()->GetArray(1), allData->GetItem(i)->GetFieldData()->GetArray(2) );
+        this->GenerateMagnitudeArray( allDataAlgo->GetInputDataObject(0, i)->GetFieldData()->GetArray(1), allDataAlgo->GetInputDataObject(0,i)->GetFieldData()->GetArray(2) );
     }
 }
 
@@ -245,7 +254,7 @@ void svkDetailedPlotDirector::RemoveAllInputs( )
         this->dataModifiedCB->SetCallback( UpdateData );
         this->dataModifiedCB->SetClientData( (void*)this );
     }
-    this->xyPlotActor->RemoveAllInputs();
+    this->xyPlotActor->RemoveAllDataSetInputConnections();
     this->numPoints = -1;
 }
 
@@ -276,7 +285,7 @@ void svkDetailedPlotDirector::SetPlotColor( int plotIndex, double* rgb)
 
 void svkDetailedPlotDirector::SetBackgroundColor( double* rgb )
 {
-    #if VTK_MINOR_VERSION >= 6
+    #if VTK_MINOR_VERSION >= 6 || VTK_MAJOR_VERSION >= 6
         this->xyPlotActor->GetChartBoxProperty()->SetColor(rgb);
     #endif
 
@@ -288,7 +297,7 @@ void svkDetailedPlotDirector::SetBackgroundColor( double* rgb )
  */
 void svkDetailedPlotDirector::SetBackgroundOpacity( double opacity )
 {
-    #if VTK_MINOR_VERSION >= 6
+    #if VTK_MINOR_VERSION >= 6 || VTK_MAJOR_VERSION >= 6
         this->xyPlotActor->GetChartBoxProperty()->SetOpacity(opacity);
     #endif
 
@@ -300,7 +309,7 @@ void svkDetailedPlotDirector::SetBackgroundOpacity( double opacity )
  */
 void svkDetailedPlotDirector::SetBackgroundVisibility( bool visible )
 {
-#if VTK_MINOR_VERSION >= 6
+#if VTK_MINOR_VERSION >= 6 || VTK_MAJOR_VERSION >= 6
     if( visible ) {
         this->xyPlotActor->ChartBoxOn();
     } else {
@@ -525,8 +534,12 @@ int svkDetailedPlotDirector::GetPointIndexFromXValue( double xValue )
  */
 double svkDetailedPlotDirector::GetYValueFromIndex( int plotIndex, int pointIndex )
 {
-    vtkDataObjectCollection* collection = this->xyPlotActor->GetDataObjectInputList();
-    vtkDataObject* dataObject = collection->GetItem( plotIndex );
+    //vtkDataObjectCollection* collection = this->xyPlotActor->GetDataObjectInputList();
+    //vtkDataObject* dataObject = collection->GetItem( plotIndex );
+
+    vtkAlgorithm* collection = this->xyPlotActor->GetDataObjectInputConnectionHolder();
+    vtkDataObject* dataObject = collection->GetInputDataObject(0, plotIndex);
+
     int component = this->xyPlotActor->GetDataObjectYComponent( plotIndex );
     int arrayComponent;
     int arrayIndex = dataObject->GetFieldData()->GetArrayContainingComponent( component, arrayComponent );
@@ -607,7 +620,8 @@ void svkDetailedPlotDirector::UpdateCursorLocation( vtkObject* subject, unsigned
             xValue << u ;
             director->GetRuler()->SetTitle(xValue.str().c_str() );
             director->GetRuler()->SetVisibility( true );
-            for( int i = 0; i < director->GetPlotActor()->GetDataObjectInputList()->GetNumberOfItems(); i++ ) {
+            int numPlots = director->GetPlotActor()->GetDataObjectInputConnectionHolder()->GetNumberOfInputConnections(0);
+            for( int i = 0; i < numPlots; i++ ) {
                 double plotValue = director->GetYValueFromXValue( i, u);
                 std::stringstream yValue;
                 yValue.precision(3);

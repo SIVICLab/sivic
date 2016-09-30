@@ -53,7 +53,7 @@ using namespace svk;
 
 
 
-vtkCxxRevisionMacro(svkSatBandsXML, "$Rev$");
+//vtkCxxRevisionMacro(svkSatBandsXML, "$Rev$");
 vtkStandardNewMacro(svkSatBandsXML);
 
 
