@@ -94,8 +94,8 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             float  dc       = parameters[5];    //  dc baseline offset                                
 
             float injectionDuration = 14/3;         //  X seconds normalized by TR into time point space
-            int Tend = static_cast<int>( roundf(Tarrival + injectionDuration) );
-            Tarrival = static_cast<int>( roundf(Tarrival) );
+            int Tend = static_cast<int>( vtkMath::Round(Tarrival + injectionDuration) );
+            Tarrival = static_cast<int>( vtkMath::Round(Tarrival) );
 
             //cout << "Tarrival: " << Tarrival << endl;
             //cout << "TEND:     " << Tend << endl;

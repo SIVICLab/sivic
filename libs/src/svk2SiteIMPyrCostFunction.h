@@ -94,8 +94,8 @@ class svk2SiteIMPyrCostFunction : public svkKineticModelCostFunction
 
             //cout << "TR: " << this->TR << endl;
             //cout << "ID: " << injectionDuration << endl;
-            int Tend = static_cast<int>( roundf(Tarrival + injectionDuration) ); 
-            Tarrival = static_cast<int>( roundf(Tarrival) ); 
+            int Tend = static_cast<int>( vtkMath::Round(Tarrival + injectionDuration) ); 
+            Tarrival = static_cast<int>( vtkMath::Round(Tarrival) ); 
 
 
             //  ==============================================================
