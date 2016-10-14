@@ -74,10 +74,11 @@ int main (int argc, char** argv)
 {
 
     string usemsg("\n") ; 
-    usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_fft -i input_file_name -o output_root_name [ -t output_data_type ]           \n"; 
-    usemsg += "                   [ --spec ] [ --spatial ] [ --single ]                         \n";
-    usemsg += "                   [ --vsx sihftX ] [ --vsy shiftY ] [ --vsz shiftZ ] [ -h ]     \n";
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                                               "\n";   
+    usemsg += "svk_fft -i input_file_name -o output_root_name [ -t output_data_type ]                                   \n"; 
+    usemsg += "        [ --spec ] [ --spatial ] [ --single ]                                                            \n";
+    usemsg += "        ( [ --vsx sihftX ] [ --vsy shiftY ] [ --vsz shiftZ ] || [--ctrL posL --ctrP posP --ctrS posS ])  \n"; 
+    usemsg += "        [ -h ]                                                                                           \n";
     usemsg += "                                                                                 \n";  
     usemsg += "   -i            name        Name of file to convert.                            \n"; 
     usemsg += "   -o            root        Root name of outputfile.                            \n";
@@ -89,14 +90,18 @@ int main (int argc, char** argv)
     usemsg += "   --vsx         shiftX      Fractional voxel shift in X                         \n"; 
     usemsg += "   --vsy         shiftY      Fractional voxel shift in Y                         \n"; 
     usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z                         \n"; 
-    usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z                         \n"; 
+    usemsg += "   --ctrL        ctrL        center of volume (L position)                       \n"; 
+    usemsg += "   --ctrP        ctrP        center of volume (P position)                       \n"; 
+    usemsg += "   --ctrS        ctrS        center of volume (S position)                       \n"; 
     usemsg += "   --single                  Only transform specified file if multiple in series \n"; 
     usemsg += "   -b                        Only transform data in selection box, only valid for\n"; 
     usemsg += "                             --spec transforms. Ignored otherwise                \n"; 
     usemsg += "   -h                        Print this help mesage.                             \n";  
     usemsg += "                                                                                 \n";  
     usemsg += "Performs spatial/spectral FFTs.  If --spec or --spatial is specified,            \n"; 
-    usemsg += "will transform only the specified domain.                                        \n";  
+    usemsg += "will transform only the specified domain .                                       \n";  
+    usemsg += "Fractional voxel shifts can be specified to reconstructe at a shifted location.  \n"; 
+    usemsg += "Use ctrLPS flags to specify the LPS coordinates at the center of the volume.     \n"; 
     usemsg += "\n";  
 
 
@@ -110,6 +115,10 @@ int main (int argc, char** argv)
     voxelShift[0] = 0.; 
     voxelShift[1] = 0.; 
     voxelShift[2] = 0.; 
+    double centerLPS[3]; 
+    centerLPS[0] = VTK_DOUBLE_MIN;
+    centerLPS[0] = VTK_DOUBLE_MIN;
+    centerLPS[0] = VTK_DOUBLE_MIN;
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
@@ -121,6 +130,9 @@ int main (int argc, char** argv)
         FLAG_VOXEL_SHIFT_X, 
         FLAG_VOXEL_SHIFT_Y, 
         FLAG_VOXEL_SHIFT_Z, 
+        FLAG_CENTER_L, 
+        FLAG_CENTER_P, 
+        FLAG_CENTER_S, 
         FLAG_SINGLE
     }; 
 
@@ -133,6 +145,9 @@ int main (int argc, char** argv)
         {"vsx",       required_argument, NULL,  FLAG_VOXEL_SHIFT_X},
         {"vsy",       required_argument, NULL,  FLAG_VOXEL_SHIFT_Y},
         {"vsz",       required_argument, NULL,  FLAG_VOXEL_SHIFT_Z},
+        {"ctrL",      required_argument, NULL,  FLAG_CENTER_L},
+        {"ctrP",      required_argument, NULL,  FLAG_CENTER_P},
+        {"ctrS",      required_argument, NULL,  FLAG_CENTER_S},
         {"single",    no_argument,       NULL,  FLAG_SINGLE}, 
         {0, 0, 0, 0}
     };
@@ -143,7 +158,8 @@ int main (int argc, char** argv)
     //  Process flags and arguments
     // ===============================================  
     int i;
-    int option_index = 0; 
+    int option_index;
+    option_index = 0;
     while ( ( i = getopt_long(argc, argv, "i:o:t:bh", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
@@ -174,6 +190,15 @@ int main (int argc, char** argv)
                 break;
             case FLAG_VOXEL_SHIFT_Z:
                 voxelShift[2] = atof( optarg );
+                break;
+            case FLAG_CENTER_L:
+                centerLPS[0] = atof( optarg );
+                break;
+            case FLAG_CENTER_P:
+                centerLPS[1] = atof( optarg );
+                break;
+            case FLAG_CENTER_S:
+                centerLPS[2] = atof( optarg );
                 break;
             case FLAG_SINGLE: 
                 onlyTransformSingle = true;
@@ -271,6 +296,9 @@ int main (int argc, char** argv)
         spatialFFT->SetPostCorrectCenter( true );
         if ( voxelShift[0] != 0 ||  voxelShift[1] != 0 || voxelShift[2] != 0 ) {
             spatialFFT->SetVoxelShift( voxelShift );
+        }
+        if ( centerLPS[0] != VTK_DOUBLE_MIN ||  centerLPS[1] != VTK_DOUBLE_MIN || centerLPS[2] != VTK_DOUBLE_MIN ) {
+            spatialFFT->SetVolumeCenter( centerLPS );
         }
         spatialFFT->Update();
         spatialFFT->Delete();
