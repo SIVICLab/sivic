@@ -790,6 +790,26 @@ void svkMrsImageFFT::MaximizeVoxelsInSelectionBox()
 
     double voxelShift[3];
     this->SetVoxelShift( voxelShift );
+
+    //  for each dimension:
+    //  get number of whole voxels in the box  = NV
+    //      NV = boxWidth(i) / pixelSize(i)
+    //
+    //  Get the index of the voxel at the center of the press box:
+    //      boxCenterLPS: svkImageData::GetIndexFromPosition(double posLPS[3], int* index)
+    //
+    //  Get the center of the voxel containing the selectionBox center (by it's cellID or index)
+    //      voxelCenterLPS = svkImageData::GetPositionFromIndex(int* index, double* posLPS)
+    //
+    //  if ( NV == even )
+    //      box center is at boundry of two voxels
+    //      compare boxCenterLPS  and boxelCenterLPS and figure out if it's at a boundry
+    //
+    //  if ( NV == odd )
+    //      box center is at center of a voxel
+    //      compare boxCenterLPS  and boxelCenterLPS and figure out if it's at the center
+    //
+
 }
 
 
