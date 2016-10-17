@@ -96,7 +96,7 @@ class svkPlotLineGrid : public vtkObject
 
         //  Methods
         void                    SetInput( svk4DImageData* data );
-        svk4DImageData*        GetInput( );
+        svk4DImageData*         GetInput( );
         void                    Update(int tlcBrc[2]);
         void                    SetTlcBrc(int tlcBrc[2]);
         int*                    GetTlcBrc();
@@ -109,7 +109,7 @@ class svkPlotLineGrid : public vtkObject
         void                    GetIntensityWLRange(double &lower, double &range); 
         void                    AlignCamera( bool invertView = 1 );
         void                    SetComponent( svkPlotLine::PlotComponent component );
-        svkPlotLine::PlotComponent                     GetComponent( );
+        svkPlotLine::PlotComponent GetComponent( );
         vtkstd::vector<int>     GetVolumeIndexVector( );
         void                    SetVolumeIndexVector( vtkstd::vector<int> );
         void                    SetVolumeIndex( int index, int volumeIndex = 0 );
