@@ -151,8 +151,9 @@ CONFIG_DEBUG        = -DCMAKE_BUILD_TYPE=Debug
 CONFIG_EPIC         = -DBUILD_EPIC=ON
 TEST_ROOT 			= ${SVK_TEST_ROOT}/results_tmp
 
-CLION_OPTS_DBG      = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_OPTS_DBG} ${CONFIG_DEBUG} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON}
-CLION_OPTS_REL      = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_OPTS_DIST} ${CONFIG_RELEASE} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON}
+CLION_OPTS_DBG      = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_OPTS_DBG}  ${CONFIG_DEBUG} ${CONFIG_TEST_ON}    ${CONFIG_UCSF_ON}
+CLION_OPTS_REL      = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_OPTS_DIST} ${CONFIG_RELEASE} ${CONFIG_TEST_ON}  ${CONFIG_UCSF_ON}
+CLION_OPTS_REL_OSX  = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_BASE_VTK6_DIST} ${CONFIG_RELEASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON} ${ADD_LINK_DIRS}
 
 clean_results:
 	${RM} -rf ${TEST_ROOT}/
@@ -254,6 +255,10 @@ clion_options:
 	$(info Release:) 
 	$(info ----------------------------------------------------------------------------------)
 	$(info ${CLION_OPTS_REL})
+	$(info ----------------------------------------------------------------------------------)
+	$(info Release_OSX:) 
+	$(info ----------------------------------------------------------------------------------)
+	$(info ${CLION_OPTS_REL_OSX})
 	$(info ----------------------------------------------------------------------------------)
 	$(warning This target does only prints the cmake options for Clion.)
 	$(warning Please configure your project from the GUI.)
