@@ -110,10 +110,8 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
             COMPUTE_MOMENT_3,
             COMPUTE_MOMENT_4,
             COMPUTE_VARIANCE,
-            COMPUTE_SAMPLE_KURTOSIS,
-            COMPUTE_SAMPLE_SKEWNESS,
-            COMPUTE_POPULATION_KURTOSIS,
-            COMPUTE_POPULATION_SKEWNESS,
+            COMPUTE_KURTOSIS,
+            COMPUTE_SKEWNESS,
             NORMALIZATION_METHOD,
             NORMALIZATION_ROI_INDEX,
             OUTPUT_FILE_NAME
@@ -146,7 +144,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
                       vtkInformationVector* outputVector );
 
        void ComputeAccumulateStatistics(svkMriImageData* image, svkMriImageData* roi, double binSize, vtkDataArray* maskedPixels, vtkXMLDataElement* result, double normalization = 0 );
-       void ComputeOrderStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixels, vtkXMLDataElement* result);
+
        void ComputeDescriptiveStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixels, vtkXMLDataElement* result );
        void ComputeSmoothStatistics(svkMriImageData* image, svkMriImageData* roi, double binSize, vtkDataArray* maskedPixel, vtkXMLDataElement* results, double normalization = 0 );
        void AddHistogramTag( vtkDataArray* histogram, double binSize, double startBin, int numBins, int smoothBins, vtkXMLDataElement* results);
