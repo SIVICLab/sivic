@@ -785,30 +785,65 @@ void svkMrsImageFFT::MaximizeVoxelsInSelectionBox()
     double pixelSpacing[3] = {0,0,0};
     data->GetDcmHeader()->GetPixelSpacing( pixelSpacing );
 
-    void GetSelectionBoxSpacing( double spacing[3] );
-    void GetSelectionBoxOrigin(  double origin[3] );
+    double selBoxSpacing[3];
+    data->GetSelectionBoxSpacing( selBoxSpacing );
 
-    double voxelShift[3];
-    this->SetVoxelShift( voxelShift );
+    double selBoxCenter[3];
+    data->GetSelectionBoxCenter( selBoxCenter );
 
-    //  for each dimension:
-    //  get number of whole voxels in the box  = NV
-    //      NV = boxWidth(i) / pixelSize(i)
-    //
     //  Get the index of the voxel at the center of the press box:
-    //      boxCenterLPS: svkImageData::GetIndexFromPosition(double posLPS[3], int* index)
-    //
-    //  Get the center of the voxel containing the selectionBox center (by it's cellID or index)
-    //      voxelCenterLPS = svkImageData::GetPositionFromIndex(int* index, double* posLPS)
-    //
-    //  if ( NV == even )
-    //      box center is at boundry of two voxels
-    //      compare boxCenterLPS  and boxelCenterLPS and figure out if it's at a boundry
-    //
-    //  if ( NV == odd )
-    //      box center is at center of a voxel
-    //      compare boxCenterLPS  and boxelCenterLPS and figure out if it's at the center
-    //
+    int boxCenterVoxelIndex[3];
+    data->GetIndexFromPosition( selBoxCenter, boxCenterVoxelIndex );
+
+    //  Get the LPS center of the voxel containing the selectionBox center (from it's cell index)
+    double boxCenterVoxelLPS[3];
+    data->GetPositionFromIndex( boxCenterVoxelIndex, boxCenterVoxelLPS );
+
+
+    //  Get the distance along the col, row or slice from the voxel center to the center of the selection box:
+    //  LPS to row,col,slice space ( convert LPS to cols, rows slices displacement)
+    double displacementAlongLPSAxes[3];
+    for (int i = 0; i < 3; i++) {
+        displacementAlongLPSAxes[i] = boxCenterVoxelLPS[i] - selBoxCenter[i];
+    }
+    // this is the displacemnt from the center of the voxel containing the sel box center to the center of the sel box
+    double displacementAlongDataAxes[3];
+    double dcos[3][3];
+    data->GetDcos(dcos);
+    for (int i = 0; i < 3; i++) {
+        displacementAlongDataAxes[i] = 0.;
+        for (int j = 0; j < 3; j++) {
+            displacementAlongDataAxes[i] -= dcos[i][j] * displacementAlongLPSAxes[j];
+        }
+    }
+
+    //  loop over data dimension (cols, rows slices)
+    double voxelShift[3];
+    for ( int dim = 0; dim < 3; dim++ ) {
+
+        //  Get number of whole voxels in the box
+        int numWholeVoxels = static_cast<int>(selBoxSpacing[dim] / pixelSpacing[dim]);
+
+        // Even number of whole voxels: box center is between two voxels
+        // Odd number of whole voxels:  box center is at center of voxel
+        //      compare boxCenterLPS  and boxelCenterLPS and figure out if it's
+        //      at a boundry or center.
+        if ( numWholeVoxels % 2 == 0 ) {
+            // displacement should be 1/2 pixel spacing
+            if ( abs( displacementAlongDataAxes[dim] ) != pixelSpacing[dim] /2. ) {
+                double voxelShiftAbsolute = 0.5 - displacementAlongDataAxes[dim];
+                voxelShift[dim] = voxelShiftAbsolute / pixelSpacing[dim];
+            }
+        } else if ( numWholeVoxels % 2 == 1 ) {
+            if ( abs( displacementAlongDataAxes[dim] ) != 0. ) {
+                double voxelShiftAbsolute = -1 * displacementAlongDataAxes[dim];
+                voxelShift[dim] = voxelShiftAbsolute / pixelSpacing[dim];
+            }
+        }
+
+    }
+
+    this->SetVoxelShift( voxelShift );
 
 }
 
