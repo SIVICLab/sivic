@@ -796,7 +796,7 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
 
         }
 
-        if( tlcBrc == NULL || !svkDataView::IsTlcBrcWithinData(newData, tlcBrc[0], tlcBrc[1]) ) {
+        if( (tlcBrc == NULL || !svkDataView::IsTlcBrcWithinData(newData, tlcBrc[0], tlcBrc[1])) && this->overlayController->IsImageInsideSpectra()) {
             this->plotController->HighlightSelectionVoxels();
             this->overlayController->HighlightSelectionVoxels();
         } else {
