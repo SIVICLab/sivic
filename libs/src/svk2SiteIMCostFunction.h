@@ -93,7 +93,7 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             float  Klac     = parameters[4];    //  Klac, signal decay from T1 and excitation
             float  dc       = parameters[5];    //  dc baseline offset                                
 
-            float injectionDuration = 14/3;         //  X seconds normalized by TR into time point space
+            float injectionDuration = 10/3;         //  X seconds normalized by TR into time point space
             int Tend = static_cast<int>( vtkMath::Round(Tarrival + injectionDuration) );
             Tarrival = static_cast<int>( vtkMath::Round(Tarrival) );
 
