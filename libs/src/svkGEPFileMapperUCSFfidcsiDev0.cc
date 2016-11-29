@@ -545,13 +545,24 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  flip first lobe along epsiAxis
     //  first gradient is negative in this sequence:
     //  This should get encoded in the DAD file
-    float pfileVersion = this->GetHeaderValueAsFloat( "rhr.rh_rdbm_rev" );
-    if ( pfileVersion < 25 ) {
-        //this->FlipAxis( data, epsiAxis, 0);     //original
-        this->FlipAxis( data, epsiAxis, 1);     //  new 2016    
-    } else {
-        this->FlipAxis( data, epsiAxis, 1);     //  new 2016    
+    map < string, void* >::iterator  it;
+    it = this->inputArgs.find( "epsiFlipLobe" );
+    int lobeToFlip = 0;
+    if ( it != this->inputArgs.end() ) {
+        lobeToFlip = *(static_cast<int*>( ( this->inputArgs[ it->first ] )));
     }
+    
+    if ( lobeToFlip == 0 ) {
+        float pfileVersion = this->GetHeaderValueAsFloat( "rhr.rh_rdbm_rev" );
+        if ( pfileVersion < 25 ) {
+            lobeToFlip = 1;
+        } else {
+            lobeToFlip = 2;
+        }
+
+    }
+    
+    this->FlipAxis( data, epsiAxis, lobeToFlip - 1);     //original
 
     //data->GetDcmHeader()->PrintDcmHeader(); 
     //data->GetDcmHeader()->GetDimensionIndexVector(); 
