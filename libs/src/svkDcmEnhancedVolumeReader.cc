@@ -140,6 +140,14 @@ void svkDcmEnhancedVolumeReader::InitPrivateHeader()
 }
 
 
+/*!
+ *  If there are instance specific issues that need to be corrected, do so here. 
+ */
+void svkDcmEnhancedVolumeReader::FixHeaderConformance()
+{
+}
+
+
 /*! 
  *  Loads the data. If the data header contains a RescaleSlope and Rescale Intercept
  *  That are not 1 and 0 respectively then the data will be loaded into doubles and
@@ -261,15 +269,23 @@ void svkDcmEnhancedVolumeReader::GetPixelTransform(double& intercept, double& sl
     intercept = 0;
     slope = 1;
 
+    //  The intercept info could be in perFrame or shared: 
+    string parentSequence; 
+    if( this->GetOutput()->GetDcmHeader()->ElementExists( "PixelValueTransformationSequence", "PerFrameFunctionalGroupsSequence" ) ) {
+        parentSequence = "PerFrameFunctionalGroupsSequence";
+    } else {
+        parentSequence = "SharedFunctionalGroupsSequence";
+    }
+
     string interceptString; 
     if ( this->GetOutput()->GetDcmHeader()->ElementExists( "RescaleIntercept", "PixelValueTransformationSequence") == true ) {
-        interceptString = this->GetOutput()->GetDcmHeader()->GetStringSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleIntercept", "SharedFunctionalGroupsSequence" );
+        interceptString = this->GetOutput()->GetDcmHeader()->GetStringSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleIntercept", parentSequence.c_str() );
 	    intercept = svkTypeUtils::StringToDouble( interceptString );
     }
 
     string slopeString;
     if ( this->GetOutput()->GetDcmHeader()->ElementExists( "RescaleSlope", "PixelValueTransformationSequence") == true ) {
-        slopeString = this->GetOutput()->GetDcmHeader()->GetStringSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleSlope", "SharedFunctionalGroupsSequence" );
+        slopeString = this->GetOutput()->GetDcmHeader()->GetStringSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleSlope", parentSequence.c_str() );
 	    slope = svkTypeUtils::StringToDouble( slopeString );
     }
 }

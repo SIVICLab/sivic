@@ -92,6 +92,8 @@ class svkDcmSegmentationVolumeReader : public svkDcmVolumeReader
 
         virtual void    LoadData(svkImageData* data); 
         virtual void    InitPrivateHeader(); 
+        virtual void    FixHeaderConformance();
+
 
 };
 

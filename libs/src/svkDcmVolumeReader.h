@@ -110,6 +110,7 @@ class svkDcmVolumeReader : public svkImageReader2
     private: 
 
         virtual void                            LoadData(svkImageData* data) = 0; 
+        virtual void                            FixHeaderConformance() = 0; 
         virtual void                            InitPrivateHeader() = 0; 
         vtkStringArray*                         tmpFileNames;
         float                                   sliceSpacing; 

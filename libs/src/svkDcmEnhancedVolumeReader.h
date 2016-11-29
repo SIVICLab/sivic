@@ -92,7 +92,7 @@ class svkDcmEnhancedVolumeReader : public svkDcmVolumeReader
 		// Required from parent class
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
-        virtual void                            ExecuteInformation();
+        virtual void                             ExecuteInformation();
 
     private:
         
@@ -101,6 +101,7 @@ class svkDcmEnhancedVolumeReader : public svkDcmVolumeReader
 
         virtual void    LoadData(svkImageData* data); 
         virtual void    InitPrivateHeader(); 
+        virtual void    FixHeaderConformance();
 
 };
 

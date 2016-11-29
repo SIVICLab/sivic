@@ -119,6 +119,13 @@ void svkDcmSegmentationVolumeReader::InitPrivateHeader()
 	// Required by parent class, not sure if we need anything here.
 }
 
+/*!
+ *  If there are instance specific issues that need to be corrected, do so here. 
+ */
+void svkDcmSegmentationVolumeReader::FixHeaderConformance()
+{
+}
+
 
 /*! 
  *  Loads the data. If the data header contains a RescaleSlope and Rescale Intercept

@@ -184,6 +184,13 @@ void svkGEPostageStampReader::InitPrivateHeader()
 }
 
 
+/*!
+ *  If there are instance specific issues that need to be corrected, do so here. 
+ */
+void svkGEPostageStampReader::FixHeaderConformance()
+{
+}
+
 
 /*!
  *

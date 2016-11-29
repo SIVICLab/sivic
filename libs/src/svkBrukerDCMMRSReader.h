@@ -117,6 +117,7 @@ class svkBrukerDCMMRSReader : public svkDcmVolumeReader
 
         virtual void    LoadData(svkImageData* data); 
         virtual void    InitPrivateHeader(); 
+        virtual void    FixHeaderConformance();
         void            SetCellSpectrum(
                             svkImageData* data, 
                             short* specData, 

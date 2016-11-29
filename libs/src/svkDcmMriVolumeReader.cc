@@ -185,6 +185,14 @@ void svkDcmMriVolumeReader::InitPrivateHeader()
 }
 
 
+/*!
+ *  If there are instance specific issues that need to be corrected, do so here. 
+ */
+void svkDcmMriVolumeReader::FixHeaderConformance()
+{
+}
+
+
 /*! 
  *  Read the data for each volume into a separate point array in the vtkImageData object: 
  *  file names are in the following order: 

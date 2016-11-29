@@ -186,6 +186,13 @@ void svkBrukerDCMMRSReader::InitPrivateHeader()
 }
 
 
+/*!
+ *  If there are instance specific issues that need to be corrected, do so here. 
+ */
+void svkBrukerDCMMRSReader::FixHeaderConformance()
+{
+}
+
 
 /*!
  *

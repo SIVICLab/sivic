@@ -793,9 +793,18 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     float selBoxSize[3]; 
     float selBoxCenter[3]; 
 
+    selBoxSize[0] = 0.; 
+    selBoxSize[1] = 0.; 
+    selBoxSize[2] = 0.; 
+    selBoxCenter[0] = 0.; 
+    selBoxCenter[1] = 0.; 
+    selBoxCenter[2] = 0.; 
+
     if( hdr->ElementExists( "VolumeLocalizationSequence" ) ) {
 
-        for (int i = 0; i < 3; i++) {
+        int numSlabs = hdr->GetNumberOfItemsInSequence( "VolumeLocalizationSequence", "top", 0); 
+
+        for (int i = 0; i < numSlabs; i++) {
     
             selBoxSize[i] = hdr->GetFloatSequenceItemElement(
                 "VolumeLocalizationSequence",
@@ -813,14 +822,6 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
             );
 
         }
-    } else {
-
-        selBoxSize[0] = 0.; 
-        selBoxSize[1] = 0.; 
-        selBoxSize[2] = 0.; 
-        selBoxCenter[0] = 0.; 
-        selBoxCenter[1] = 0.; 
-        selBoxCenter[2] = 0.; 
     }
 
     *out << "selection center(lps, mm): " << fixed << setw(14) << setprecision(5) << selBoxCenter[0] 
@@ -835,8 +836,18 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
 
 
     float selBoxOrientation[3][3]; 
+    selBoxOrientation[0][0] = 0; 
+    selBoxOrientation[0][1] = 0; 
+    selBoxOrientation[0][2] = 0; 
+    selBoxOrientation[1][0] = 0; 
+    selBoxOrientation[1][1] = 0; 
+    selBoxOrientation[1][2] = 0; 
+    selBoxOrientation[2][0] = 0; 
+    selBoxOrientation[2][1] = 0; 
+    selBoxOrientation[2][2] = 0; 
     if( hdr->ElementExists( "VolumeLocalizationSequence" ) ) {
-        for (int i = 0; i < 3; i++) {
+        int numSlabs = hdr->GetNumberOfItemsInSequence( "VolumeLocalizationSequence", "top", 0); 
+        for (int i = 0; i < numSlabs; i++) {
             for (int j = 0; j < 3; j++) {
 
                 selBoxOrientation[i][j] = hdr->GetFloatSequenceItemElement(
@@ -847,18 +858,9 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
                     0,    
                     j 
                 );
+
             }
         }
-    } else {
-        selBoxOrientation[0][0] = 0; 
-        selBoxOrientation[0][1] = 0; 
-        selBoxOrientation[0][2] = 0; 
-        selBoxOrientation[1][0] = 0; 
-        selBoxOrientation[1][1] = 0; 
-        selBoxOrientation[1][2] = 0; 
-        selBoxOrientation[2][0] = 0; 
-        selBoxOrientation[2][1] = 0; 
-        selBoxOrientation[2][2] = 0; 
     }
 
     *out << "selection dcos1: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][0] 

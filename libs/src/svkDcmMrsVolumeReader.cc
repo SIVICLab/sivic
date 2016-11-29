@@ -40,9 +40,11 @@
  */
 
 #include <svkDcmMrsVolumeReader.h>
+#include <svkTypeUtils.h>
 #include <vtkObjectFactory.h>
 #include <vtkDebugLeaks.h>
 #include <vtkInformation.h>
+#include <vector>
 
 #include <svkMrsImageData.h>
 
@@ -125,6 +127,111 @@ void svkDcmMrsVolumeReader::InitPrivateHeader()
         this->GetOutput()->GetDcmHeader()->SetValue( "SVK_ColumnsDomain",  "SPACE"); 
         this->GetOutput()->GetDcmHeader()->SetValue( "SVK_RowsDomain", "SPACE"); 
         this->GetOutput()->GetDcmHeader()->SetValue( "SVK_SliceDomain", "SPACE"); 
+    }
+    if( ! this->GetOutput()->GetDcmHeader()->ElementExists( "SVK_FrequencyOffset", "top") ) {
+        this->GetOutput()->GetDcmHeader()->SetValue( "SVK_FrequencyOffset", "0"); 
+    }
+
+}
+
+
+/*!
+ *  If there are instance specific issues that need to be corrected, do so here. 
+ */
+void svkDcmMrsVolumeReader::FixHeaderConformance()
+{
+    //  Normalize orientation vectors if necessary.  In particular, the Philips implementation of DICOM MRS
+    //  has non-normalized orientation vectors that don't conform to the standard.
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+    int numberOfSatBands = hdr->GetNumberOfItemsInSequence("MRSpatialSaturationSequence");
+    vector <string> satBandPositions;
+    vector < vector<double> > satBandOrientations;
+    vector <string> slabThickness;
+
+    bool normalizeSequence = false;
+    for ( int i = 0; i < numberOfSatBands; i++) {
+
+        string pos = hdr->GetStringSequenceItemElement(
+                "MRSpatialSaturationSequence",
+                i,
+                "MidSlabPosition",
+                "SharedFunctionalGroupsSequence");
+
+        string thickness = hdr->GetStringSequenceItemElement(
+                "MRSpatialSaturationSequence",
+                i,
+                "SlabThickness",
+                "SharedFunctionalGroupsSequence");
+
+        //  loop over all three spatial indices:
+        double normal[3];
+        for ( int index = 0; index < 3; index++ ) {
+
+            normal[index] = strtod(hdr->GetStringSequenceItemElement(
+                "MRSpatialSaturationSequence",
+                i,
+                "SlabOrientation",
+                index,
+                "SharedFunctionalGroupsSequence").c_str(), NULL);
+        }
+
+        //  Normalize the vector:
+        double norm = vtkMath::Normalize(normal);
+        if ( norm > 1.001 ) {
+            normalizeSequence = true;
+        }
+        satBandPositions.push_back(pos);
+        slabThickness.push_back(thickness);
+        vector <double> normalVec;
+        for ( int index = 0; index < 3; index++ ) {
+            normalVec.push_back(normal[index]);
+        }
+        satBandOrientations.push_back(normalVec);
+
+    }
+
+    // if  norm is greater than 1, than reset the MRSpatialSaturationSequence with
+    if ( normalizeSequence == true) {
+        hdr->ClearSequence( "MRSpatialSaturationSequence" );
+        hdr->AddSequenceItemElement(
+            "SharedFunctionalGroupsSequence",
+            0,
+            "MRSpatialSaturationSequence"
+        );
+
+        for ( int i = 0; i < numberOfSatBands; i++) {
+
+            hdr->AddSequenceItemElement(
+             "MRSpatialSaturationSequence",
+             i,
+             "MidSlabPosition",
+             satBandPositions[i],
+             "SharedFunctionalGroupsSequence",
+             0
+            );
+            hdr->AddSequenceItemElement(
+                    "MRSpatialSaturationSequence",
+                    i,
+                    "SlabThickness",
+                    slabThickness[i],
+                    "SharedFunctionalGroupsSequence",
+                    0
+            );
+
+            string orientationString;
+            orientationString += svkTypeUtils::DoubleToString((satBandOrientations[i])[0]) + "\\";
+            orientationString += svkTypeUtils::DoubleToString((satBandOrientations[i])[1]) + "\\";
+            orientationString += svkTypeUtils::DoubleToString((satBandOrientations[i])[2]);
+            hdr->AddSequenceItemElement(
+                    "MRSpatialSaturationSequence",
+                    i,
+                    "SlabOrientation",
+                    orientationString,
+                    "SharedFunctionalGroupsSequence",
+                    0
+            );
+        }
     }
 
 }
