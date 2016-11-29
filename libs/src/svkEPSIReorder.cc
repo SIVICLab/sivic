@@ -743,8 +743,18 @@ void svkEPSIReorder::CombineLobes(svkImageData* data)
                 specPtSOS[0]  = ( specPtLobe0[0] * specPtLobe0[0] + specPtLobe0[1] * specPtLobe0[1] );
                 specPtSOS[0] += ( specPtLobe1[0] * specPtLobe1[0] + specPtLobe1[1] * specPtLobe1[1] );
                 specPtSOS[0]  = pow( static_cast<float>(specPtSOS[0]), static_cast<float>(0.5) );
-                specPtSOS[1] = 0;
+                specPtSOS[1]  = 0;
                 spectrumLobe0->SetTupleValue( freq, specPtSOS );
+                //  for testing, only write out first lobe SOS: 
+                    //specPtSOS[0]  = ( specPtLobe0[0] * specPtLobe0[0] + specPtLobe0[1] * specPtLobe0[1] );
+                    //specPtSOS[0]  = pow( static_cast<float>(specPtSOS[0]), static_cast<float>(0.5) );
+                    //specPtSOS[1]  = 0;
+                    //spectrumLobe0->SetTupleValue( freq, specPtSOS );
+                //  for testing, only write out second lobe SOS: 
+                    //specPtSOS[0]  = ( specPtLobe1[0] * specPtLobe1[0] + specPtLobe1[1] * specPtLobe1[1] );
+                    //specPtSOS[0]  = pow( static_cast<float>(specPtSOS[0]), static_cast<float>(0.5) );
+                    //specPtSOS[1]  = 0;
+                    //spectrumLobe0->SetTupleValue( freq, specPtSOS );
             }
         }
     }
