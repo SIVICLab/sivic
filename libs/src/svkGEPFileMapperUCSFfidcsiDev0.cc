@@ -547,7 +547,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  This should get encoded in the DAD file
     float pfileVersion = this->GetHeaderValueAsFloat( "rhr.rh_rdbm_rev" );
     if ( pfileVersion < 25 ) {
-        this->FlipAxis( data, epsiAxis, 0);     //original
+        //this->FlipAxis( data, epsiAxis, 0);     //original
+        this->FlipAxis( data, epsiAxis, 1);     //  new 2016    
     } else {
         this->FlipAxis( data, epsiAxis, 1);     //  new 2016    
     }
