@@ -55,21 +55,13 @@ IF(WIN32)
     SET( DIFF_COMMAND ${GNU_DIFFUTILS_PATH}/bin/diff.exe )
     SET( TEST_PLATFORM Win32 )
 ELSE(WIN32)
-    if(CLION_BUILD)
-        SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/applications/cmd_line/src)
-    else(CLION_BUILD)
-        SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/applications/cmd_line/${PLATFORM})
-    endif(CLION_BUILD)
+    SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/applications/cmd_line/${PLATFORM})
     SET( DIFF_COMMAND diff )
     SET( TEST_PLATFORM "${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}" )
 ENDIF(WIN32)
 
 SET( DCM_2_XML_COMMAND ${DCMTK_DIR}/bin/dcm2xml )
-if(CLION_BUILD)
-    SET( TEST_BIN_PATH_TESTS ${CMAKE_BINARY_DIR}/tests/src)
-else(CLION_BUILD)
-    SET( TEST_BIN_PATH_TESTS ${CMAKE_BINARY_DIR}/tests/${PLATFORM})
-endif(CLION_BUILD)
+SET( TEST_BIN_PATH_TESTS ${CMAKE_BINARY_DIR}/tests/${PLATFORM})
 
 
 #############################################################
