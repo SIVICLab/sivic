@@ -46,7 +46,7 @@
 
 #include <vtkObjectFactory.h>
 #include <vtkImageReader2Factory.h>
-
+#include <svkNIFTIVolumeReader.h>
 #include <svkIdfVolumeReader.h>
 #include <svkDcmMriVolumeReader.h>
 #include <svkDcmMrsVolumeReader.h>
@@ -108,6 +108,7 @@ class svkImageReaderFactory : public vtkImageReader2Factory
         svkDcmMriVolumeReader*          dcmMriVolReader;
         svkDcmMrsVolumeReader*          dcmMrsVolReader;
         svkDcmEnhancedVolumeReader*     dcmEnhancedVolReader;
+        svkNIFTIVolumeReader*           niiVolReader;
         svkIdfVolumeReader*             idfVolReader;
         svkDdfVolumeReader*             ddfVolReader;
         svkFdfVolumeReader*             fdfVolReader;
