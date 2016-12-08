@@ -85,6 +85,7 @@ class svkImageReader2 : public vtkImageReader2
             VARIABLE_FLIP_DAT, 
             BRUKER_MRS,
             PHILIPS_S,
+            NIFTI,
             DDF,
             IDF,
             LAST_TYPE = IDF
