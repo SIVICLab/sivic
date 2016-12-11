@@ -177,30 +177,21 @@ void svkDcmPETVolumeReader::LoadData( svkImageData* data )
             tmpImage->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue( vol + slice * this->numVolumes ) ); 
             tmpImage->GetDcmHeader()->GetShortValue( "PixelData", ((short *)imageData) + (slice * numPixelsInSlice), numPixelsInSlice );
             float rescaleSlope  = tmpImage->GetDcmHeader()->GetFloatValue("RescaleSlope"); 
-            cout << "RS: " << rescaleSlope << endl;
             rescaleSlopeVector.push_back(rescaleSlope); 
             tmpImage->Delete(); 
         }
 
-        //if( isVOILUTDefined ) {
-        	int floatWordSize = 4;
-			void* imageFloatData = (void* ) malloc( numPixelsInSlice * numSlices * floatWordSize );
-            svkImageData* tmpImage = svkMriImageData::New(); 
-            tmpImage->GetDcmHeader()->ReadDcmFileHeaderOnly( this->GetFileNames()->GetValue( vol ) );
-			//double voiWindowCenter = tmpImage->GetDcmHeader()->GetDoubleValue("WindowCenter" );
-			//double voiWindowWidth  = tmpImage->GetDcmHeader()->GetDoubleValue("WindowWidth" );
-			this->GetSUVScaledPixels((float*)imageFloatData,
-					                    (unsigned short*)imageData ,
-					                    numSlices * numPixelsInSlice,
-                                        rescaleSlopeVector);
-			delete (unsigned short*)imageData;
-			imageData = imageFloatData;
-			// The image has now been scaled so we can remove the scaling tags
-			//this->GetOutput()->GetDcmHeader()->RemoveElement("VOILUTFunction" );
-			//this->GetOutput()->GetDcmHeader()->RemoveElement("WindowCenter" );
-			//this->GetOutput()->GetDcmHeader()->RemoveElement("WindowWidth" );
-            tmpImage->Delete();
-        //}
+        int floatWordSize = 4;
+        void* imageFloatData = (void* ) malloc( numPixelsInSlice * numSlices * floatWordSize );
+        svkImageData* tmpImage = svkMriImageData::New(); 
+        tmpImage->GetDcmHeader()->ReadDcmFileHeaderOnly( this->GetFileNames()->GetValue( vol ) );
+        this->GetSUVScaledPixels((float*)imageFloatData,
+                                    (unsigned short*)imageData ,
+                                    numSlices * numPixelsInSlice,
+                                    rescaleSlopeVector);
+        delete (unsigned short*)imageData;
+        imageData = imageFloatData;
+        tmpImage->Delete();
 
         array->SetVoidArray( (void*)(imageData), numPixelsInSlice * numSlices, 0);
         if (vol == 0 ) {
@@ -220,11 +211,10 @@ void svkDcmPETVolumeReader::LoadData( svkImageData* data )
         }
 
     }
-
-
 }
 
-/*
+
+/*!
  *  Scales an array of unsigned short pixel values into to a floating point
  *  array according to the given center and window. The minimum value of the
  *  output will be the center - window/2 and the max will be center + window/2.
