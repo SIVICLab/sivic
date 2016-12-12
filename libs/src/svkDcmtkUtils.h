@@ -94,7 +94,7 @@ class svkDcmtkUtils
         static float getFloatValue(DcmItem* item, const DcmTagKey &tag, int pos = 0)
             throw (overflow_error, svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
 
-        static double getDoubleValue(DcmItem* item, const DcmTagKey &tag) 
+        static double getDoubleValue(DcmItem* item, const DcmTagKey &tag, bool searchIntoSub = false) 
             throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
 
         static string getStringValue(DcmItem* item, const DcmTagKey &tag, int pos)

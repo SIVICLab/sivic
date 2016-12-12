@@ -427,7 +427,7 @@ float svkDcmtkUtils::getFloatValue(DcmItem* item, const DcmTagKey &tag, int pos)
  *  @throws svkTagNotFound
  *  @throws svkIncompatibleVR
  */
-double svkDcmtkUtils::getDoubleValue(DcmItem* item, const DcmTagKey &tag) 
+double svkDcmtkUtils::getDoubleValue(DcmItem* item, const DcmTagKey &tag, bool searchIntoSub) 
     throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR)
 {
 
@@ -436,6 +436,10 @@ double svkDcmtkUtils::getDoubleValue(DcmItem* item, const DcmTagKey &tag)
     double double_value;
     float float_value;
     long int int_value;
+    OFBool searchSub = OFFalse; 
+    if ( searchIntoSub == true ) {
+        searchSub = OFTrue;
+    }
 
     //  Get VR
     DcmStack stack;
@@ -451,7 +455,7 @@ double svkDcmtkUtils::getDoubleValue(DcmItem* item, const DcmTagKey &tag)
 
         case EVR_DS:
         case EVR_FD:
-            handleError(item->findAndGetFloat64(tag, double_value),"getDoubleValue", &tag);
+            handleError(item->findAndGetFloat64(tag, double_value, 0, searchSub),"getDoubleValue", &tag);
             return double_value;
             break;
 

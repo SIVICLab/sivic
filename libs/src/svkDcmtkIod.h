@@ -86,7 +86,7 @@ class svkDcmtkIod : public DcmFileFormat
                     throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
         float    getFloatValue(const DcmTagKey &tag, int pos = 0)
                     throw (overflow_error, svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
-        double   getDoubleValue(const DcmTagKey &tag)          
+        double   getDoubleValue(const DcmTagKey &tag, bool searchIntoSub = false)          
                     throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
         string   getStringValue(const DcmTagKey &tag, int pos) 
                     throw (svkDicomRunTimeError, svkTagNotFound);
