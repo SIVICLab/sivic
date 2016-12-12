@@ -790,7 +790,18 @@ void svkDcmHeader::UpdatePixelSize()
         );
     } else if( this->ElementExists( "SliceThickness") ) {
         //  in case it lives elsewhere
-        this->pixelSize[2] = this->GetDoubleValue("SliceThickness"); 
+        //  first look in top level
+        bool foundSliceThickness = false; 
+        try {
+            this->pixelSize[2] = this->GetDoubleValue("SliceThickness"); 
+            foundSliceThickness = true; 
+        } catch (const exception& e) {
+            cout <<  "WARN:  slice thickness not in top level header: " << e.what() << endl;
+        }
+        if ( foundSliceThickness == false ) {
+            //  Now try to search into sub elements.  if this also throws an exception than just exit, don't catch
+            this->pixelSize[2] = this->GetDoubleValue("SliceThickness", true); 
+        }
     } else {
         this->pixelSize[2] = 0;
         
@@ -849,9 +860,15 @@ void svkDcmHeader::UpdateOrigin0()
         int frameNumber = 0; 
 
         bool inFunctionalGroup = false; 
+        string parentSequence;
         if( this->ElementExists( "ImagePositionPatient", "PerFrameFunctionalGroupsSequence") ) {
+            parentSequence = "PerFrameFunctionalGroupsSequence";
             inFunctionalGroup = true; 
+        } else if( this->ElementExists( "ImagePositionPatient", "SharedFunctionalGroupsSequence" ) ) {
+            parentSequence = "SharedFunctionalGroupsSequence";
+            inFunctionalGroup = true;
         } 
+
 
         //  Iterate of all 3 positions of the ImagePositionPatient element;
         for (int i = 0; i < 3; i++) {
@@ -861,7 +878,7 @@ void svkDcmHeader::UpdateOrigin0()
                     0,
                     "ImagePositionPatient",
                     i, 
-                    "PerFrameFunctionalGroupsSequence",
+                    parentSequence.c_str(), 
                     frameNumber
                 );
             } else {
@@ -1506,6 +1523,12 @@ void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double v
     }
 
     //  =============================================================================
+
+    //  Finally, to avoid confusion there should only be one ImageOrientationPatient entry in the data set, within
+    //  the Shared functional group
+    if( this->ElementExists("ImageOrientationPatient")) {
+        this->RemoveElement( "ImageOrientationPatient" ); 
+    }
 
 }
  

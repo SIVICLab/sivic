@@ -951,9 +951,9 @@ unsigned short svkDcmtkAdapter::GetPixelValue( long unsigned int position )
  *
  * \return the double value of the tag
  */
-double svkDcmtkAdapter::GetDoubleValue(const char* name)
+double svkDcmtkAdapter::GetDoubleValue(const char* name, bool searchIntoSub)
 {
-    return this->dcmFile->getDoubleValue( GetDcmTagKey(name) ); 
+    return this->dcmFile->getDoubleValue( GetDcmTagKey(name), searchIntoSub ); 
 }
 
 
