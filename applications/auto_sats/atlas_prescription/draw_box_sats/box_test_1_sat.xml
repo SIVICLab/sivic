@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svk_sat_bands xmlns="svkSatBands" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="svkSatBands svkSatBands.xsd">
+
+
+   
+   <version>1.0</version>
+
+
+   
+   <press_box> 
+
+    
+      
+      <sat_band id="1" label="Anterior">
+        
+         
+         <normal_x>0</normal_x>
+        
+         
+         <normal_y>-0.96258</normal_y>
+        
+         
+         <normal_z>-0.27099</normal_z>
+        
+         
+         <thickness>0</thickness>
+        
+         
+         <distance_from_origin>32.379</distance_from_origin>
+    
+      
+      </sat_band>
+
+    
+      
+      <sat_band id="2" label="Posterior">
+        
+         
+         <normal_x>0</normal_x>
+        
+         
+         <normal_y>0.96258</normal_y>
+        
+         
+         <normal_z>0.27099</normal_z>
+        
+         
+         <thickness>0</thickness>
+        
+         
+         <distance_from_origin>67.5144</distance_from_origin>
+    
+      
+      </sat_band>
+
+    
+      
+      <sat_band id="3" label="Superior">
+        
+         
+         <normal_x>0</normal_x>
+        
+         
+         <normal_y>-0.27099</normal_y>
+        
+         
+         <normal_z>0.96258</normal_z>
+        
+         
+         <thickness>0</thickness>
+        
+         
+         <distance_from_origin>39.2488</distance_from_origin>
+    
+      
+      </sat_band>
+
+    
+      
+      <sat_band id="4" label="Inferior">
+        
+         
+         <normal_x>0</normal_x>
+        
+         
+         <normal_y>0.27099</normal_y>
+        
+         
+         <normal_z>-0.96258</normal_z>
+        
+         
+         <thickness>0</thickness>
+        
+         
+         <distance_from_origin>11.086</distance_from_origin>
+    
+      
+      </sat_band>
+
+    
+      
+      <sat_band id="5" label="Left">
+        
+         
+         <normal_x>1</normal_x>
+        
+         
+         <normal_y>0</normal_y>
+        
+         
+         <normal_z>0</normal_z>
+        
+         
+         <thickness>0</thickness>
+        
+         
+         <distance_from_origin>49.4277</distance_from_origin>
+    
+      
+      </sat_band>
+    
+    
+      
+      <sat_band id="6" label="Right">
+        
+         
+         <normal_x>-1</normal_x>
+        
+         
+         <normal_y>0</normal_y>
+        
+         
+         <normal_z>0</normal_z>
+        
+         
+         <thickness>0</thickness>
+        
+         
+         <distance_from_origin>51.1459</distance_from_origin>
+    
+      
+      </sat_band>
+
+
+   
+   </press_box> 
+
+
+
+   
+   <auto_sats>
+
+    
+      
+      <sat_band id="1" label="Saggital_Anterior1">
+        
+         
+         <normal_x>0</normal_x>
+        
+         
+         <normal_y>-0.99785</normal_y>
+        
+         
+         <normal_z>0.065607</normal_z>
+        
+         
+         <thickness>45</thickness>
+        
+         
+         <distance_from_origin>80.5008</distance_from_origin>
+    
+      
+      </sat_band>
+
+    
+      
+
+
+   
+   </auto_sats>
+
+
+
+</svk_sat_bands>
