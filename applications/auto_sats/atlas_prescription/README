@@ -71,3 +71,8 @@ Piotr's Image&Video Toolbox (Simplified BSD License)
 https://pdollar.github.io/toolbox/
 imRectRot.m
 getPrmDflt.m
+
+MNI McGill (MNI_LICENSE.txt)
+http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
+atlas_prescription/mni_icbm152_t1_tal_nlin_asym_09a.nii
+draw_box_sats/mni_icbm152_t1_tal_nlin_asym_09a.nii
