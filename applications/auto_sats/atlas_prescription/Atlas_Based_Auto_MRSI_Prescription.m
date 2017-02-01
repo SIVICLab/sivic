@@ -546,9 +546,9 @@ drawnow
 command = strcat(handles.flirt_dir, 'flirt');
 command = strcat('setenv FSLOUTPUTTYPE NIFTI_GZ; ', command);
 if get(handles.checkbox_regist_quality, 'value') == 0
-    system([command ' -in ' handles.regist_dir atlPath ' -ref ' handles.regist_dir patPath ' -searchcost normcorr -out AtlasToPatient -omat transMatrix']);
+    system([command ' -in ' handles.regist_dir atlPath ' -ref ' handles.regist_dir patPath ' -out AtlasToPatient -omat transMatrix -cost normmi -dof 12 -forcescaling -searchrx -20 20 -searchry -20 20 -searchrz -20 20 ']);
 else
-    system([command ' -in ' handles.regist_dir atlPath ' -ref ' handles.regist_dir patPath ' -searchcost normcorr -out AtlasToPatient -omat transMatrix']);
+    system([command ' -in ' handles.regist_dir atlPath ' -ref ' handles.regist_dir patPath ' -out AtlasToPatient -omat transMatrix -cost normmi -dof 12 -forcescaling -searchrx -20 20 -searchry -20 20 -searchrz -20 20 ']);
 end
 
 % Get the transformation matrix from Atlas space to Patient space
