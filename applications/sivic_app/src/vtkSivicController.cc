@@ -2903,6 +2903,12 @@ void vtkSivicController::SetLUTCallback( int type )
     } else if ( type == svkLookupTable::CBF_FIXED ) {
         static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::CBF_FIXED );
         static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::CBF_FIXED );
+    } else if ( type == svkLookupTable::GREEN_SCALE ) {
+        static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::GREEN_SCALE );
+        static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::GREEN_SCALE );
+    } else if ( type == svkLookupTable::RED_SCALE ) {
+        static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::RED_SCALE );
+        static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::RED_SCALE );
     }
 	this->imageViewWidget->UpdateThreshold();
 }
