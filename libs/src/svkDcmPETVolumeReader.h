@@ -40,80 +40,69 @@
  */
 
 
-#ifndef SVK_LOOKUP_TABLE_H
-#define SVK_LOOKUP_TABLE_H
+#ifndef SVK_DCM_PET_VOLUME_READER_H
+#define SVK_DCM_PET_VOLUME_READER_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkLookupTable.h>
+#include <svkDcmMriVolumeReader.h>
+#include <vector>
+#include <string>
 
 
-namespace svk{
+namespace svk {
 
 
-using namespace std;
-
-
-class svkLookupTable : public vtkLookupTable 
-{ 
+/*! 
+ *  Reads a DICOM PET file and initializes a DICOM Enhanced MRI file with BW SUV weighted pixel values.
+ *  In memory the data is represented as a DICOM E MRI instance. 
+ *
+ *  Read the pixels and scale to PET SUV (bw scaled).
+ *  Use vendor agnostic approach from QIBA website:
+ *  http://qibawiki.rsna.org/index.php/Standardized_Uptake_Value_(SUV)
+ *  http://qibawiki.rsna.org/images/6/60/SUV_vendorneutral_pseudocode_happypathonly_20121015_DAC.doc
+ */
+class svkDcmPETVolumeReader : public svkDcmMriVolumeReader
+{
 
     public:
 
-        typedef enum {
-            COLOR = 0, 
-            REVERSE_COLOR,
-            GREY_SCALE, 
-            HURD, 
-            CYAN_HOT,
-            FIRE,
-            CNI_FIXED,
-            CBF_FIXED,
-            GREEN_SCALE,
-            RED_SCALE,
-            NONE
-        } svkLookupTableType;
+        static svkDcmPETVolumeReader* New();
+        vtkTypeMacro( svkDcmPETVolumeReader, svkDcmMriVolumeReader );
 
-        static svkLookupTable* New();
-        vtkTypeMacro( svkLookupTable, vtkLookupTable);
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "DICOM PET File";
+        }
 
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::DICOM_PET;
+        }
 
-        //  Methods
-        virtual void       SetTableRange(double min, double max);
-
-        void               SetAlphaThreshold(double thresholdPercentage);
-        double             GetAlphaThreshold();
-
-        // Returns the actual value
-        double             GetAlphaThresholdValue();
-
-        void               PrintLUT();
-        bool               IsLUTFixed();
-        void               SetLUTType(svkLookupTableType type);
-        svkLookupTableType GetLUTType();
-        
-
+        //  Methods:
+        virtual int CanReadFile(const char* fname);
 
     protected:
 
-        svkLookupTable(); 
-        ~svkLookupTable(); 
-
+        svkDcmPETVolumeReader();
+        ~svkDcmPETVolumeReader();
+        void                                        GetSUVScaledPixels( 
+                                                        float* floatPixels, 
+                                                        unsigned short* shortPixels, 
+                                                        int numberOfPixels,
+                                                        vector < float> rescaleSlopeVector );
+        virtual svkDcmHeader::DcmPixelDataFormat    GetFileType();
 
     private:
 
-        svkLookupTableType type;
-        double             alphaThresholdPercentage;
-
-        void               ConfigureAlphaThreshold();
-        bool               reverseThreshold;
-
-        static const int NUM_COLORS;
+        virtual void    LoadData(svkImageData* data); 
 
 };
 
 
-}   //svk 
-                
+}   //svk
 
-#endif //SVK_LOOKUP_TABLE_H
+
+#endif //SVK_DCM_PET_VOLUME_READER_H
+

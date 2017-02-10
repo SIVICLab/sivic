@@ -55,21 +55,13 @@ IF(WIN32)
     SET( DIFF_COMMAND ${GNU_DIFFUTILS_PATH}/bin/diff.exe )
     SET( TEST_PLATFORM Win32 )
 ELSE(WIN32)
-    if(CLION_BUILD)
-        SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/applications/cmd_line/src)
-    else(CLION_BUILD)
-        SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/applications/cmd_line/${PLATFORM})
-    endif(CLION_BUILD)
+    SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/applications/cmd_line/${PLATFORM})
     SET( DIFF_COMMAND diff )
     SET( TEST_PLATFORM "${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}" )
 ENDIF(WIN32)
 
 SET( DCM_2_XML_COMMAND ${DCMTK_DIR}/bin/dcm2xml )
-if(CLION_BUILD)
-    SET( TEST_BIN_PATH_TESTS ${CMAKE_BINARY_DIR}/tests/src)
-else(CLION_BUILD)
-    SET( TEST_BIN_PATH_TESTS ${CMAKE_BINARY_DIR}/tests/${PLATFORM})
-endif(CLION_BUILD)
+SET( TEST_BIN_PATH_TESTS ${CMAKE_BINARY_DIR}/tests/${PLATFORM})
 
 
 #############################################################
@@ -89,7 +81,7 @@ IF(WIN32)
 ELSE(WIN32)
     SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root --exclude=.svn)
 ENDIF(WIN32)
-SET( DIFF_OPT_DCM --ignore-matching-lines=UID --ignore-matching-lines="0002,0000" --ignore-matching-lines="0002,0012" --ignore-matching-lines="0002,0013" --ignore-matching-lines="0008,0000" --ignore-matching-lines="0020,0000" --exclude=.svn )
+SET( DIFF_OPT_DCM --ignore-matching-lines=UID --ignore-matching-lines="0002,0000" --ignore-matching-lines="0002,0012" --ignore-matching-lines="0002,0013" --ignore-matching-lines="0008,0000" --ignore-matching-lines="0020,0000" --ignore-matching-lines="0018,1020" -exclude=.svn )
 STRING(REPLACE ";" " " DIFF_OPT_DCM_STR "${DIFF_OPT_DCM}")
 
 ########################
@@ -277,6 +269,21 @@ SET_TESTS_PROPERTIES(TEST_DCMMRI_2_DCMMRI_XML PROPERTIES DEPENDS TEST_MCHK_DCMMR
 SET( TEST_NAME TEST_DCMMRI_2_DCMMRI_DIFF)
 ADD_TEST_WITH_TARGETS(${TEST_NAME} ${DIFF_COMMAND} ${DIFF_OPT_DCM} -r ${TEST_RESULTS_PATH}/out.xml ${TEST_CASE_ROOT}/out_2/out.xml ) 
 SET_TESTS_PROPERTIES(TEST_DCMMRI_2_DCMMRI_DIFF PROPERTIES DEPENDS TEST_DCMMRI_2_DCMMRI_XML)
+
+
+########################
+#   DICOM PET to UCSF IDF 
+########################
+SET( TEST_NAME TEST_MCHK_DCMPET_2_IDF)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+file( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/pet)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_file_convert -i ${TEST_CASE_ROOT}/input/4/E1843S4I1.DCM -o${TEST_RESULTS_PATH}/out -t 3 )
+
+SET( TEST_NAME TEST_DCMPET_2_IDF_DIFF)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/output)
+SET_TESTS_PROPERTIES(TEST_DCMPET_2_IDF_DIFF PROPERTIES DEPENDS TEST_MCHK_DCMPET_2_IDF)
 
 
 ########################
@@ -2115,3 +2122,45 @@ ADD_TEST_WITH_TARGETS(${TEST_NAME}_TO_XML ${DCM_2_XML_COMMAND} +M +Wb ${TEST_RES
 SET( TEST_NAME SVK_CREATE_SECONDARY_CAPTURE_DIFF)
 ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff ${DIFF_OPT} ${DIFF_OPT_DCM} -r ${TEST_RESULTS_PATH}/out.xml ${TEST_CASE_ROOT}/out1/out.xml)
 SET_TESTS_PROPERTIES(SVK_CREATE_SECONDARY_CAPTURE_DIFF PROPERTIES DEPENDS SVK_CREATE_SECONDARY_CAPTURE_MCHK)
+
+#############################################################
+# Test for svk_image_stats
+#############################################################
+SET( TEST_NAME SVK_IMAGE_STATS_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_image_stats)
+ADD_TEST_WITH_TARGETS(${TEST_NAME} ${TEST_BIN_PATH_CMD_LINE}/svk_image_stats -sINPUT_PATH=${SVK_TEST_ROOT}/svk_image_stats/input/ -rt1234 -o ${TEST_RESULTS_PATH}/output -c ${SVK_TEST_ROOT}/svk_image_stats/config/test_config.xml -t -sOUTPUT_PATH=${TEST_RESULTS_PATH})
+
+SET( TEST_NAME SVK_IMAGE_STATS_DIFF)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff --ignore-matching-lines=^SUMMARY -r ${TEST_RESULTS_PATH}/ ${TEST_CASE_ROOT}/output)
+SET_TESTS_PROPERTIES(SVK_IMAGE_STATS_DIFF PROPERTIES DEPENDS SVK_IMAGE_STATS_MCHK)
+
+#############################################################
+# Test for svk_image_stats using integers
+#############################################################
+SET( TEST_NAME SVK_IMAGE_STATS_INTEGER_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_image_stats)
+ADD_TEST_WITH_TARGETS(${TEST_NAME} ${TEST_BIN_PATH_CMD_LINE}/svk_image_stats -sINPUT_PATH=${SVK_TEST_ROOT}/svk_image_stats/input/ -rt1234 -o ${TEST_RESULTS_PATH}/output -c ${SVK_TEST_ROOT}/svk_image_stats/config/test_config_integer.xml -t -sOUTPUT_PATH=${TEST_RESULTS_PATH})
+
+SET( TEST_NAME SVK_IMAGE_STATS_INTEGER_DIFF)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff --ignore-matching-lines=^SUMMARY -r ${TEST_RESULTS_PATH}/ ${TEST_CASE_ROOT}/output_integer)
+SET_TESTS_PROPERTIES(SVK_IMAGE_STATS_INTEGER_DIFF PROPERTIES DEPENDS SVK_IMAGE_STATS_INTEGER_MCHK)
+
+#############################################################
+# Test for svk_image_stats using mode thresholding
+#############################################################
+SET( TEST_NAME SVK_IMAGE_STATS_MODE_THRESHOLD_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_image_stats)
+ADD_TEST_WITH_TARGETS(${TEST_NAME} ${TEST_BIN_PATH_CMD_LINE}/svk_image_stats -sINPUT_PATH=${SVK_TEST_ROOT}/svk_image_stats/input/ -rt1234 -o ${TEST_RESULTS_PATH}/output -c ${SVK_TEST_ROOT}/svk_image_stats/config/test_config_mode_thresh.xml -t -sOUTPUT_PATH=${TEST_RESULTS_PATH})
+
+SET( TEST_NAME SVK_IMAGE_STATS_MODE_THRESHOLD_DIFF)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff --ignore-matching-lines=^SUMMARY -r ${TEST_RESULTS_PATH}/ ${TEST_CASE_ROOT}/output)
+SET_TESTS_PROPERTIES(SVK_IMAGE_STATS_MODE_THRESHOLD_DIFF PROPERTIES DEPENDS SVK_IMAGE_STATS_MODE_THRESHOLD_MCHK)

@@ -796,7 +796,7 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
 
         }
 
-        if( tlcBrc == NULL || !svkDataView::IsTlcBrcWithinData(newData, tlcBrc[0], tlcBrc[1]) ) {
+        if( (tlcBrc == NULL || !svkDataView::IsTlcBrcWithinData(newData, tlcBrc[0], tlcBrc[1])) && this->overlayController->IsImageInsideSpectra()) {
             this->plotController->HighlightSelectionVoxels();
             this->overlayController->HighlightSelectionVoxels();
         } else {
@@ -2903,6 +2903,12 @@ void vtkSivicController::SetLUTCallback( int type )
     } else if ( type == svkLookupTable::CBF_FIXED ) {
         static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::CBF_FIXED );
         static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::CBF_FIXED );
+    } else if ( type == svkLookupTable::GREEN_SCALE ) {
+        static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::GREEN_SCALE );
+        static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::GREEN_SCALE );
+    } else if ( type == svkLookupTable::RED_SCALE ) {
+        static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::RED_SCALE );
+        static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::RED_SCALE );
     }
 	this->imageViewWidget->UpdateThreshold();
 }

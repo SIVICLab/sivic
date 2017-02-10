@@ -107,7 +107,7 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
             // Check for MR Image Storage (and for now CTImageStorage and PETImageStorage too )
             if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" 
                 || SOPClassUID == "1.2.840.10008.5.1.4.1.1.2" 
-                || SOPClassUID == "1.2.840.10008.5.1.4.1.1.128" ) { 
+            ) {
                 this->SetFileName(fname);
                 isDcmMri = true; 
             }
