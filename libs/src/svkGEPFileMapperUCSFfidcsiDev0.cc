@@ -561,6 +561,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
         }
 
     }
+    cout << "SVKGEPFileMapperUCSFfidcsiDev0: flip lobe: " << lobeToFlip << endl;
     
     this->FlipAxis( data, epsiAxis, lobeToFlip - 1);     //original
 
