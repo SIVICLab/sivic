@@ -465,7 +465,7 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     unsigned int numberOfParticles = 200;
     itkOptimizer->SetNumberOfParticles( numberOfParticles );
 
-    unsigned int maxIterations = 30000;
+    unsigned int maxIterations = 20000;
     itkOptimizer->SetMaximalNumberOfIterations( maxIterations );
 
     double xTolerance = 0.000001;
