@@ -465,7 +465,7 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     unsigned int numberOfParticles = 200;
     itkOptimizer->SetNumberOfParticles( numberOfParticles );
 
-    unsigned int maxIterations = 30000;
+    unsigned int maxIterations = 20000;
     itkOptimizer->SetMaximalNumberOfIterations( maxIterations );
 
     double xTolerance = 0.000001;
@@ -568,7 +568,7 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
         int mapIndex = index + numSignalsInModel;    
         this->GetOutput(mapIndex)->GetPointData()->GetArray(0)->SetTuple1( voxelID, finalPosition[index]); 
         string paramName = this->modelOutputDescriptionVector[ numSignalsInModel + index]; 
-        cout << "VOXEL FIT(" << voxelID << ")[" << paramName << "] = " << finalPosition[index] << endl; 
+        //cout << "VOXEL FIT(" << voxelID << ")[" << paramName << "] = " << finalPosition[index] << endl; 
     }
 
     return;
