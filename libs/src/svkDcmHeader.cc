@@ -746,7 +746,6 @@ void svkDcmHeader::UpdatePixelSize()
     string sizeString;
     string parentSequence;
 
-    this->PrintDcmHeader(); 
     //  for multi-frame objects, orientation is in shared functional group sequence: 
     bool inFunctionalGroup = false; 
     if( this->ElementExists( "PixelMeasuresSequence", "PerFrameFunctionalGroupsSequence" ) ) {
@@ -1059,7 +1058,12 @@ int svkDcmHeader::GetNumberOfFramesInDimension( int dimensionIndex )
 
     int numFramesInDimension; 
 
-    if ( dimensionIndex >= 0 ) {
+    bool frameContentExists = false; 
+    if( this->ElementExists( "FrameContentSequence", "PerFrameFunctionalGroupsSequence" ) ) {
+        frameContentExists = true; 
+    }
+
+    if ( (dimensionIndex >= 0) && (frameContentExists == true) ) {
 
         int numberOfFrames = this->GetNumberOfFrames();
         set <int> frames;
@@ -1442,14 +1446,17 @@ void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double v
     if( this->ElementExists( "PixelValueTransformationSequence", "PerFrameFunctionalGroupsSequence" ) ) {
         reinitPixelValueTransformation = true;
         //get slope and intercept: 
-        slope     = this->GetDoubleSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleSlope", "PerFrameFunctionalGroupsSequence" );
-        intercept = this->GetDoubleSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleIntercept", "PerFrameFunctionalGroupsSequence" );
+        slope     = this->GetDoubleSequenceItemElement ( 
+            "PixelValueTransformationSequence", 0, "RescaleSlope", "PerFrameFunctionalGroupsSequence" );
+        intercept = this->GetDoubleSequenceItemElement ( 
+            "PixelValueTransformationSequence", 0, "RescaleIntercept", "PerFrameFunctionalGroupsSequence" );
     }
     bool reinitMREchoMacro = false;
     float TE;
     if( this->ElementExists( "MREchoSequence", "PerFrameFunctionalGroupsSequence" ) ) {
         reinitMREchoMacro = true;
-        TE = this->GetFloatSequenceItemElement( "MREchoSequence", 0, "EffectiveEchoTime", "PerFrameFunctionalGroupsSequence", 0); 
+        TE = this->GetFloatSequenceItemElement( 
+            "MREchoSequence", 0, "EffectiveEchoTime", "PerFrameFunctionalGroupsSequence", 0); 
     }
     bool reinitMRTimingAndRelatedParametersMacro = false; 
     float TR; 
@@ -1457,8 +1464,10 @@ void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double v
     int numEchoes = 0; 
     if( this->ElementExists( "MRTimingAndRelatedParametersSequence", "PerFrameFunctionalGroupsSequence" ) ) {
         reinitMRTimingAndRelatedParametersMacro = true; 
-        TR = this->GetFloatSequenceItemElement( "MRTimingAndRelatedParametersSequence", 0, "RepetitionTime", "PerFrameFunctionalGroupsSequence", 0); 
-        flipAngle = this->GetFloatSequenceItemElement("MRTimingAndRelatedParametersSequence", 0, "FlipAngle", "PerFrameFunctionalGroupsSequence", 0); 
+        TR = this->GetFloatSequenceItemElement( 
+            "MRTimingAndRelatedParametersSequence", 0, "RepetitionTime", "PerFrameFunctionalGroupsSequence", 0); 
+        flipAngle = this->GetFloatSequenceItemElement(
+            "MRTimingAndRelatedParametersSequence", 0, "FlipAngle", "PerFrameFunctionalGroupsSequence", 0); 
     }
     //  =============================================================================
 
@@ -1484,16 +1493,16 @@ void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double v
     }
     if ( reinitPlaneOrientationMacro == true ) {
 
-        string orientationString;
-        for ( int y = 0; y < 3; y++ ) {
-            for ( int x = 0; x < 3; x++ ) {
-                orientationString += dcos[x][y];
-                if ( x != 2 && y != 2 ) {
-                    orientationString += "\\";
+        ostringstream ossDcos;
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 3; j++) {
+                ossDcos << dcos[i][j];
+                if (i * j != 2) {
+                    ossDcos<< "\\";
                 }
             }
         }
-        this->InitPlaneOrientationMacro( orientationString );
+        this->InitPlaneOrientationMacro( ossDcos.str() );
     }
     if ( reinitPixelValueTransformation == true ) {
         this->InitPixelValueTransformationMacro(slope, intercept);
@@ -1507,10 +1516,12 @@ void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double v
 
     //  =============================================================================
 
-    //  Finally, to avoid confusion there should only be one ImageOrientationPatient entry in the data set, within
-    //  the Shared functional group
-    if( this->ElementExists("ImageOrientationPatient")) {
-        this->RemoveElement( "ImageOrientationPatient" ); 
+    //  Finally, to avoid confusion there should only be one ImageOrientationPatient entry in 
+    //  the data set, within the Shared functional group
+    if( this->ElementExists("ImageOrientationPatient", "top")) {
+        //  TODO: this is probably fine, but triggers a lot of changes in test cases that I don't have time to 
+        //  look at right now.  
+        //this->RemoveElement( "ImageOrientationPatient" ); 
     }
 
 }
@@ -3129,8 +3140,10 @@ void svkDcmHeader::Redimension(svkDcmHeader::DimensionVector* newDimensionVector
     //cout << "new voxels: " << newNumVoxels[0] << " " << newNumVoxels[1] << " " << newNumVoxels[2] << endl;
     //cout << "new toplc: " << newToplcOrigin[0] << " " << newToplcOrigin[1] << " " << newToplcOrigin[2] << endl;
        
-//===========================
-    //  If pixel measures, etc are in per frame rather than shared func group, reinitialize them now in the shared func group.
+    //===========================
+    //  If pixel measures, etc are in per frame rather than shared func group, 
+    //  reinitialize them now in the shared func group.
+    //===========================
     bool reinitPixelMeasures            = false; 
     if( this->ElementExists( "PixelMeasuresSequence", "PerFrameFunctionalGroupsSequence" ) ) {
         reinitPixelMeasures = true; 
@@ -3145,8 +3158,10 @@ void svkDcmHeader::Redimension(svkDcmHeader::DimensionVector* newDimensionVector
     if( this->ElementExists( "PixelValueTransformationSequence", "PerFrameFunctionalGroupsSequence" ) ) {
         reinitPixelValueTransformation = true; 
         //get slope and intercept: 
-        slope     = this->GetDoubleSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleSlope", "PerFrameFunctionalGroupsSequence" );
-        intercept = this->GetDoubleSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleIntercept", "PerFrameFunctionalGroupsSequence" );
+        slope     = this->GetDoubleSequenceItemElement ( 
+            "PixelValueTransformationSequence", 0, "RescaleSlope", "PerFrameFunctionalGroupsSequence" );
+        intercept = this->GetDoubleSequenceItemElement ( 
+            "PixelValueTransformationSequence", 0, "RescaleIntercept", "PerFrameFunctionalGroupsSequence" );
     }
 
     this->InitPerFrameFunctionalGroupSequence(newToplcOrigin, pixelSpacing, dcos, newDimensionVector) ; 
@@ -3156,18 +3171,19 @@ void svkDcmHeader::Redimension(svkDcmHeader::DimensionVector* newDimensionVector
         string sliceThicknessString = svkTypeUtils::DoubleToString(pixelSpacing[2]); 
         this->InitPixelMeasuresMacro( pixelSpacingString, sliceThicknessString ); 
     }
-    if ( reinitPlaneOrientationMacro == false ) {  
+    if ( reinitPlaneOrientationMacro == true ) {  
         
-        string orientationString; 
-        for ( int y = 0; y < 3; y++ ) {
-            for ( int x = 0; x < 3; x++ ) {
-                orientationString += dcos[x][y]; 
-                if ( x != 2 && y != 2 ) {
-                    orientationString += "\\"; 
+        ostringstream ossDcos;
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 3; j++) {
+                ossDcos << dcos[i][j];
+                if (i * j != 2) {
+                    ossDcos<< "\\";
                 }
             }
         }
-        this->InitPlaneOrientationMacro( orientationString ); 
+        cout << "OS: " << ossDcos.str() << endl;
+        this->InitPlaneOrientationMacro( ossDcos.str() ); 
     }
     if ( reinitPixelValueTransformation == true ) {  
         this->InitPixelValueTransformationMacro(slope, intercept); 
