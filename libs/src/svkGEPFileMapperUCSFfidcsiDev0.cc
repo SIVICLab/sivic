@@ -122,9 +122,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetSelBoxSize( float selBoxSize[3] )
 {
 
     cout << "THIS IS NOT ENCODED CORRECTLY.  THE EPSI-AXIS Slab selection should be correctly encoded here" << endl;
-    selBoxSize[ 0 ] = this->GetHeaderValueAsFloat( "rhr.rh_user24" );
-    selBoxSize[ 1 ] = this->GetHeaderValueAsFloat( "rhr.rh_user25" );
-    selBoxSize[ 2 ] = this->GetHeaderValueAsFloat( "rhr.rh_user26" );
+    selBoxSize[ 0 ] = this->GetHeaderValueAsFloat( "rhr.rh_user24" );  // RL FOV
+    selBoxSize[ 1 ] = this->GetHeaderValueAsFloat( "rhr.rh_user25" );  // AP FOV
+    selBoxSize[ 2 ] = this->GetHeaderValueAsFloat( "rhr.rh_user26" );  // SI FOV
 
 }
 
@@ -179,8 +179,11 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
         this->progress = (float)timePt/numTimePts; 
         this->UpdateProgress( this->progress );
 
-        //  Separate out EPSI sampled data into time and k-space dimensions:
-        this->ReorderEPSIData( tmpImage );
+	// Detect symmetric EPSI based on equal positive and negative gradient lobe lengths (stored in rhuser 13 and 16)
+	if (this->GetHeaderValueAsInt( "rhr.rh_user13" ) == this->GetHeaderValueAsInt( "rhr.rh_user16" )) { 
+        	//  Separate out EPSI sampled data into time and k-space dimensions:
+        	this->ReorderEPSIData( tmpImage );
+	}
         //data->DeepCopy( tmpImage ); 
 
         //  copy data to tmpImageDynamic and add appropriate arrays
