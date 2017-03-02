@@ -289,7 +289,7 @@ class svkDcmHeader: public vtkObject
          *  Method to get a DICOM tag by specifying it's name and value. The name should be 
          *  the string representation of the field in the DICOM dictionary being used. 
          */
-        virtual double  GetDoubleValue(const char *name) = 0;
+        virtual double  GetDoubleValue(const char *name, bool searchInto = false) = 0;
 
         /*! 
          *  Method to get a DICOM tag by specifying it's name and value. The name should be 

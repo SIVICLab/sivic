@@ -789,7 +789,8 @@ void svkDcmHeader::UpdatePixelSize()
         );
     } else if( this->ElementExists( "SliceThickness") ) {
         //  in case it lives elsewhere
-        this->pixelSize[2] = this->GetDoubleValue("SliceThickness"); 
+        bool searchInto = true; 
+        this->pixelSize[2] = this->GetDoubleValue("SliceThickness", searchInto); 
     } else {
         this->pixelSize[2] = 0;
         
