@@ -114,7 +114,10 @@ class svkGEPFileReader : public svkImageReader2
                                 svkEPSIReorder::EPSIAxis axis, 
                                 int first, 
                                 int numLobes, 
-                                int numSkip ); 
+                                int numSkip,
+                                int epsiFlipLobe
+                            );
+        void                SetEPSIParams( int flipLobe );
         void                Deidentify( ); 
         void                ModifyRawField( string rawField, string value); 
         void                SetPSDLogic( string psdName ); 

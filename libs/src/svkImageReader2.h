@@ -68,6 +68,7 @@ class svkImageReader2 : public vtkImageReader2
             UNDEFINED = -1,
             DICOM_MRS=0,
             DICOM_MRI,
+            DICOM_PET,
             DICOM_ENHANCED_MRI,
             DICOM_SEGMENTATION,
             DICOM_RAW,

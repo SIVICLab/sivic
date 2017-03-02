@@ -192,6 +192,7 @@ ADD_LIBRARY(
     svkDcmVolumeReader.cc
     svkDcmMrsVolumeReader.cc
     svkDcmMriVolumeReader.cc
+    svkDcmPETVolumeReader.cc
     svkDcmEnhancedVolumeReader.cc
     svkDcmSegmentationVolumeReader.cc
     svkDcmRawDataReader.cc
