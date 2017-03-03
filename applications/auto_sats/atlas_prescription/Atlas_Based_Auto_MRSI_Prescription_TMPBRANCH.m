@@ -25,7 +25,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
     OF SUCH DAMAGE.
 %}
-function varargout = Atlas_Based_Auto_MRSI_Prescription(varargin)
+function varargout = Atlas_Based_Auto_MRSI_Prescription_TMPBRANCH(varargin)
 % ATLAS_BASED_AUTO_MRSI_PRESCRIPTION MATLAB code for Atlas_Based_Auto_MRSI_Prescription.fig
 %      ATLAS_BASED_AUTO_MRSI_PRESCRIPTION, by itself, creates a new ATLAS_BASED_AUTO_MRSI_PRESCRIPTION or raises the existing
 %      singleton*.

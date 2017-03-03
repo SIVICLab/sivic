@@ -55,7 +55,7 @@ GetOptions(
 
 my $matlab_dir = "$ENV{HOME}/svk/console/lib/matlab/v717"; 
 
-my $pkg = "Atlas_Based_Auto_MRSI_Prescription"; 
+my $pkg = "Atlas_Based_Auto_MRSI_Prescription_TMPBRANCH"; 
 my $auto_sats_pkg_dir = "$ENV{HOME}/svk/console/packages/${pkg}/"; 
 my $matlab_pkg_dir = "${auto_sats_pkg_dir}/${pkg}_matlab"; 
 my $atlas_dir = "${auto_sats_pkg_dir}/atlas_prescription"; 
@@ -64,7 +64,7 @@ my $output_dir = "/usr/g/research/mrs";
 # get series directory: 
 my $regist_dir = glob("${scanner_work_dir}/$exam_dir/*"); 
 
-my $cmd  = "${matlab_pkg_dir}/run_Atlas_Based_Auto_MRSI_Prescription.sh ${matlab_dir} "; 
+my $cmd  = "${matlab_pkg_dir}/run_Atlas_Based_Auto_MRSI_Prescription_TMPBRANCH.sh ${matlab_dir} "; 
 $cmd    .= "'atlas_dir' '${atlas_dir}' ";
 $cmd    .= "'regist_dir' '${regist_dir}' ";
 $cmd    .= "'output_dir' '${output_dir}' ";

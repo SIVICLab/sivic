@@ -40,7 +40,7 @@
 #
 
 #   should be initiated from more_software via the following entry in /opt/local/etc/more_software.cfg
-#   7T MRSI ATLAS SAT Placement | /export/home/sdc/svk/console/bin/svk_Atlas_Based_Auto_MRSI_Prescription/svk_atlas_auto_mrsi_start 
+#   7T MRSI ATLAS SAT Placement | /export/home/sdc/svk/console/bin/svk_Atlas_Based_Auto_MRSI_Prescription_TMPBRANCH/svk_atlas_auto_mrsi_start 
 
 
 use strict;
@@ -52,7 +52,7 @@ Getopt::Long::config("bundling");
 
 sub clean_local();
 
-my $auto_sats_bin_dir = "$ENV{HOME}/svk/console/packages/Atlas_Based_Auto_MRSI_Prescription";
+my $auto_sats_bin_dir = "$ENV{HOME}/svk/console/packages/Atlas_Based_Auto_MRSI_Prescription_TMPBRANCH";
 my $config_file = "${auto_sats_bin_dir}/svk_atlas_auto_mrsi_start.cfg";
 
 GetOptions(
