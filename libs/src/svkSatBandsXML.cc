@@ -100,6 +100,9 @@ int svkSatBandsXML::SetXMLFileName( string xmlFileName )
 }
 
 
+/*
+ *  Tries to parse an XML RX file. 
+ */
 int svkSatBandsXML::ParseXML( vtkXMLDataElement* satBandsElement )
 {
     // Now we have to remove the old xml file
@@ -218,7 +221,6 @@ int svkSatBandsXML::ConvertDatToXML( string rootName )
 }
 
 // Use press_box.dat to obtain the PRESS parameters for XML 2
-
 int svkSatBandsXML::InitPressBoxFromDat2( string rootName ) 
 {
 

@@ -89,7 +89,6 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
 
             //  Find time to peak pyrvaute/urea
             int arrivalTime = GetArrivalTime( this->GetSignal(0) );
-
   
             //  Use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
             //  each time point

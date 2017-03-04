@@ -419,6 +419,11 @@ int main (int argc, char** argv)
             epsiFlipLobe
         );
     }
+    if ( epsiType == svkEPSIReorder::UNDEFINED_EPSI_TYPE && epsiFlipLobe != 0 ) { 
+        reader->SetEPSIParams( 
+            epsiFlipLobe
+        );
+    }
 
     //  if necessary, set the logic to override the default PSD determined logic in the Reader. 
     if ( isUCSFMNS7T ) { 

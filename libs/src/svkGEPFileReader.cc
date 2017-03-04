@@ -493,6 +493,15 @@ void svkGEPFileReader::SetEPSIParams( svkEPSIReorder::EPSIType type, svkEPSIReor
 
 }
 
+/*!
+ */
+void svkGEPFileReader::SetEPSIParams( int flipLobe )
+{
+
+    int* epsiFlipLobe = new int (flipLobe);
+    this->inputArgs.insert( pair<string, void*>( "epsiFlipLobe", static_cast<void*>( epsiFlipLobe) ) );
+
+}
 
 /*!
  *  Sets mapper's data deidentification behavior.  All PHI fields will be replaced with 
