@@ -46,6 +46,7 @@
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
 #include <svkEPSIReorder.h>
+#include <svkEPSIPhaseCorrect.h>
 
 #include <svkDcmVolumeReader.h>
 #include <svkImageWriterFactory.h>
@@ -80,6 +81,7 @@ int main (int argc, char** argv)
     usemsg += "                  --axis                  axis                                   \n";
     usemsg += "                  --type                  type                                   \n";
     usemsg += "                [ --combine                   ]                                  \n";
+    usemsg += "                [ --phase                     ]                                  \n";
     usemsg += "                                                                                 \n";  
     usemsg += "   -i        name    Name of file to convert.                                    \n"; 
     usemsg += "   -o        name    Name of outputfile.                                         \n";
@@ -97,15 +99,36 @@ int main (int argc, char** argv)
     usemsg += "                     default first is set to 1, so no initial offset.            \n"; 
     usemsg += "   --axis    axis    EPSI axis 1, 2, 3                                           \n"; 
     usemsg += "   --type    type    Specify 1 (flyback), 2(symmetric), 3(interleaved).          \n";
-    usemsg += "   --combine         Just combine lobes using sum of squares from existing EPSI  \n";
-    usemsg += "                     data set.                                                   \n";
-    usemsg += "   -h                Print this help mesage.                                     \n";  
+    usemsg += "   --reorder bool    Reorder the data (true or false, default = true). Can be set\n";
+    usemsg += "                     to fasle if only phasing or combination is required.        \n";
+    usemsg += "   --phase           Phase correct EPSI samples in each lobe.                    \n";
+    usemsg += "   --combine         Combine lobes using sum of squares from existing EPSI       \n";
+    usemsg += "                     data set (only for type = 2 (symmetric))                    \n";
+    usemsg += "   --single          Only operates on the single specified file if         \n";
+    usemsg += "   -h                Print this help mesage.                                     \n";
     usemsg += "\n";  
-    usemsg += "Reorderes an EPSI data set into a regular array of k,t ordered data. separating out the\n"; 
-    usemsg += "spec and k-space samples from the EPSI waveform. Recomputes the FOV and volume TLC     \n"; 
-    usemsg += "based on the reordered spatial dimensions.  Note, this does NOT apply phase correction \n"; 
-    usemsg += "offset the time delay between k-space samples in gradient.                             \n"; 
-    usemsg += "\n";  
+    usemsg += "Reorderes an EPSI data set into a regular array of k,t ordered data separating   \n";
+    usemsg += "out the spec and k-space samples from the EPSI waveform. Recomputes the FOV and  \n";  
+    usemsg += "volume TLC based on the reordered spatial dimensions.  Optionally applies        \n";
+    usemsg += "phase correction offset for the time delay between k-space samples in gradient.  \n"; 
+    usemsg += "\n";
+    usemsg += "=================================================================================\n";
+    usemsg += "Example (reorder):                                                               \n";
+    usemsg += "     svk_reorder_epsi -i input.dcm -o out_root                                   \n";
+    usemsg += "                      --axis 3 --samples 16 --skip 1 --first 2                   \n";
+    usemsg += "                      --lobes 53 --type 1                                        \n";
+    usemsg += "\n";
+    usemsg += "Example (phase only): Assumes data has already been reordered into kx,ky,kz,kt   \n";
+    usemsg += "     svk_reorder_epsi -i input.dcm -o out_root --reorder false --phase           \n";
+    usemsg += "                      --axis 3 --samples 16                                      \n";
+    usemsg += "\n";
+    usemsg += "Example (reorder and phase):                                                     \n";
+    usemsg += "     svk_reorder_epsi -i input.dcm -o out_root --reorder true --phase            \n";
+    usemsg += "                      --axis 3 --samples 16 --skip 1 --first 2                   \n";
+    usemsg += "                      --lobes 53 --type 1                                        \n";
+    usemsg += "\n";
+    usemsg += "Example (combine lobes only):                                                    \n";
+    usemsg += " svk_reorder_epsi -i input.dcm -o out_root --reorder false --combine             \n";
 
 
     string inputFileName; 
@@ -116,9 +139,12 @@ int main (int argc, char** argv)
     int numSamplesPerLobe   = UNDEFINED; 
     int skip                = UNDEFINED; 
     int first               = 0; 
-    int axis                = UNDEFINED; 
-    bool combineLobes       = false; 
-    svkEPSIReorder::EPSIType type  = svkEPSIReorder::UNDEFINED_EPSI_TYPE; 
+    int epsiAxis            = UNDEFINED;
+    bool onlyLoadSingleFile = false;
+    bool reorder            = true; // default
+    bool phaseCorrect       = false;
+    bool combineLobes       = false;
+    svkEPSIReorder::EPSIType type  = svkEPSIReorder::UNDEFINED_EPSI_TYPE;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
@@ -129,8 +155,11 @@ int main (int argc, char** argv)
         FLAG_FIRST,  
         FLAG_AXIS, 
         FLAG_TYPE, 
-        FLAG_COMBINE_LOBES
-    }; 
+        FLAG_COMBINE_LOBES, 
+        FLAG_PHASE,
+        FLAG_REORDER,
+        FLAG_SINGLE
+    };
 
 
     static struct option long_options[] =
@@ -143,46 +172,62 @@ int main (int argc, char** argv)
         {"axis",                    required_argument, NULL,  FLAG_AXIS},
         {"type",                    required_argument, NULL,  FLAG_TYPE},
         {"combine",                 no_argument,       NULL,  FLAG_COMBINE_LOBES},
+        {"phase",                   no_argument,       NULL,  FLAG_PHASE},
+        {"reorder",                 required_argument, NULL,  FLAG_REORDER},
+        {"single",                  no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
 
     // ===============================================  
     //  Process flags and arguments
     // ===============================================  
+    string reorderBoolString;
     int i;
     int option_index = 0; 
     while ( ( i = getopt_long(argc, argv, "i:o:t:h", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
-                inputFileName.assign( optarg );
+                inputFileName.assign(optarg);
                 break;
             case 'o':
                 outputFileName.assign(optarg);
                 break;
             case 't':
-                dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
+                dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg));
                 break;
             case FLAG_NUM_LOBES:
-                numLobes = atoi(optarg); 
+                numLobes = atoi(optarg);
                 break;
             case FLAG_NUM_SAMPLES_PER_LOBE:
-                numSamplesPerLobe = atoi(optarg); 
+                numSamplesPerLobe = atoi(optarg);
                 break;
             case FLAG_SKIP:
-                skip = atoi(optarg); 
+                skip = atoi(optarg);
                 break;
             case FLAG_FIRST:
-                first = atoi(optarg) - 1; 
+                first = atoi(optarg) - 1;
                 break;
             case FLAG_AXIS:
                 //  axis ordering starts at 0
-                axis = atoi( optarg ) - 1; 
+                epsiAxis = atoi(optarg) - 1;
                 break;
             case FLAG_TYPE:
-                type = static_cast<svkEPSIReorder::EPSIType>(atoi(optarg)); 
+                type = static_cast<svkEPSIReorder::EPSIType>(atoi(optarg));
                 break;
             case FLAG_COMBINE_LOBES:
-                combineLobes = true; 
+                combineLobes = true;
+                break;
+            case FLAG_PHASE:
+                phaseCorrect = true;
+                break;
+            case FLAG_REORDER:
+                reorderBoolString.assign(optarg);
+                if (reorderBoolString.compare("false") == 0) {
+                    reorder = false;
+                }
+                break;
+            case FLAG_SINGLE:
+                onlyLoadSingleFile = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -201,23 +246,16 @@ int main (int argc, char** argv)
     //  validate input: 
     // ===============================================  
 
-    if ( combineLobes == true ) {
-        if ( 
-            outputFileName.length() == 0 ||
-            inputFileName.length() == 0  ||
-            ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) ||
-            argc != 0 
-        ) {
-            cout << "USAGE: " << usemsg << endl;
-            exit(1); 
-        }
-    } else {
+    cout << "REORDER: " << reorder << endl;
+    cout << "PHASE  : " << phaseCorrect << endl;
+    cout << "COMBINE: " << combineLobes << endl;
+    if ( reorder == true ) {
 
         if ( 
             numLobes == UNDEFINED ||
             skip == UNDEFINED ||
             first < 0 ||
-            axis < 0 || axis > 2 ||
+            epsiAxis < 0 || epsiAxis > 2 ||
             type == svkEPSIReorder::UNDEFINED_EPSI_TYPE ||
             outputFileName.length() == 0 ||
             inputFileName.length() == 0  ||
@@ -227,6 +265,39 @@ int main (int argc, char** argv)
                 cout << usemsg << endl;
                 exit(1); 
         }
+    }
+
+    if ( phaseCorrect == true ) {
+        if (
+                outputFileName.length() == 0 ||
+                inputFileName.length() == 0  ||
+                ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) ||
+                argc != 0
+                ) {
+            cout << "ARGC: " << argc << endl;
+            for (int x=0; x < argc; x++) {
+                cout << "arg: " << argv[x] << endl;
+            }
+            cout << "USAGE: " << usemsg << endl;
+            exit(1);
+        }
+    }
+
+    if ( combineLobes == true ) {
+        if (
+                outputFileName.length() == 0 ||
+                inputFileName.length() == 0  ||
+                ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) ||
+                argc != 0
+                ) {
+            cout << "USAGE: " << usemsg << endl;
+            exit(1);
+        }
+    }
+
+    if( ! svkUtils::FilePathExists( inputFileName.c_str() ) ) {
+        cerr << "Input file can not be loaded (may not exist) " << inputFileName << endl;
+        exit(1);
     }
 
     cout << "file name: " << inputFileName << endl;
@@ -243,6 +314,9 @@ int main (int argc, char** argv)
         exit(1);
     }
 
+    if ( onlyLoadSingleFile == true ) {
+        reader->OnlyReadOneInputFile();
+    }
     reader->SetFileName( inputFileName.c_str() );
     reader->Update(); 
 
@@ -260,49 +334,64 @@ int main (int argc, char** argv)
     }
     writer->SetFileName( outputFileName.c_str() );
 
-    if ( combineLobes == true ) {
-        svkEPSIReorder::CombineLobes(reader->GetOutput() ); 
-        writer->SetInputData( reader->GetOutput() );
-        writer->Write();
-    } else {
+    svkImageData* currentImage = svkMrsImageData::SafeDownCast( reader->GetOutput() );
 
-        
+    svkEPSIReorder* reorderAlgo = NULL;
+    if ( reorder == true ) {
+
         //  Reorder/sample EPSI data: 
-        svkEPSIReorder* reorder = svkEPSIReorder::New();
-        reorder->SetInputData( reader->GetOutput() ); 
-        reorder->SetEPSIType( type );
-        reorder->SetNumSamplesToSkip( skip );
-        reorder->SetNumEPSILobes( numLobes );
-        reorder->SetFirstSample( first );
-        reorder->SetEPSIAxis( static_cast<svkEPSIReorder::EPSIAxis>( axis ) );
-        //int numVoxels[3]; 
-        //reader->GetOutput()->GetNumberOfVoxels( numVoxels);
-        //reorder->SetNumVoxelsOriginal( numVoxels ); 
+        reorderAlgo = svkEPSIReorder::New();
+        reorderAlgo->SetInputData( currentImage );
+        reorderAlgo->SetEPSIType( type );
+        reorderAlgo->SetNumSamplesToSkip( skip );
+        reorderAlgo->SetNumEPSILobes( numLobes );
+        reorderAlgo->SetFirstSample( first );
+        reorderAlgo->SetEPSIAxis( static_cast<svkEPSIReorder::EPSIAxis>( epsiAxis ) );
         
         if ( numSamplesPerLobe != UNDEFINED ) { 
-            reorder->SetNumSamplesPerLobe( numSamplesPerLobe ); 
+            reorderAlgo->SetNumSamplesPerLobe( numSamplesPerLobe );
         }
 
-        reorder->Update();
+        reorderAlgo->Update();
 
-        writer->SetInputData( reorder->GetOutput() );
+        currentImage = svkMrsImageData::SafeDownCast( reorderAlgo->GetOutput() );
 
-        // ===============================================  
-        //  Set the input command line into the data set 
-        //  provenance: 
-        // ===============================================  
-        reorder->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
-
-        // ===============================================  
-        //  Write data to file: 
-        // ===============================================  
-        writer->Write();
-        reorder->Delete(); 
     }
 
-    // ===============================================  
+    svkEPSIPhaseCorrect* epsiPhase = NULL;
+    if ( phaseCorrect == true ) {
+
+        // TODO: verify that input data exists
+        // TODO: verify that algorithm checks for the correct domain (spectral freq?)
+        epsiPhase = svkEPSIPhaseCorrect::New();
+        epsiPhase->SetNumEPSIkRead( numSamplesPerLobe );
+        epsiPhase->SetEPSIAxis( epsiAxis );
+        epsiPhase->SetInputData( currentImage );
+        epsiPhase->Update();
+        epsiPhase->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+        currentImage = svkMrsImageData::SafeDownCast( epsiPhase->GetOutput() );
+
+    }
+
+    if ( combineLobes == true ) {
+        svkEPSIReorder::CombineLobes( currentImage );
+    }
+
+    // ===============================================
+    //  Write data to file:
+    // ===============================================
+    writer->SetInputData( currentImage );
+    writer->Write();
+
+    // ===============================================
     //  Clean up: 
     // ===============================================  
+    if ( reorderAlgo != NULL ) {
+        reorderAlgo->Delete();
+    }
+    if ( epsiPhase != NULL ) {
+        epsiPhase->Delete();
+    }
     writer->Delete();
     reader->Delete();
 

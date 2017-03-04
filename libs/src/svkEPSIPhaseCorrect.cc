@@ -173,8 +173,15 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     vtkImageComplex* ktCorrection = new vtkImageComplex[2]; 
 
     //  Inverse Fourier Transform spectral data to frequency domain to 
-    //  apply linear phase shift: 
-    this->SpectralFFT( svkMrsImageFFT::FORWARD); 
+    //  apply linear phase shift:
+    string specDomain = hdr->GetStringValue( "SignalDomainColumns");
+    bool applySpecFFTs = false;
+    if ( specDomain.compare("TIME") == 0 ) {
+        applySpecFFTs = true;
+    }
+    if ( applySpecFFTs == true ) {
+        this->SpectralFFT(svkMrsImageFFT::FORWARD);
+    }
 
      //  Get the Dimension Index and index values  
     svkDcmHeader::DimensionVector dimensionVector = hdr->GetDimensionIndexVector();
@@ -221,7 +228,9 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     }
 
     //  Forward Fourier Transform spectral data to back to time domain, should now be shifted.   
-    this->SpectralFFT( svkMrsImageFFT::REVERSE); 
+    if ( applySpecFFTs == true ) {
+        this->SpectralFFT(svkMrsImageFFT::REVERSE);
+    }
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
@@ -279,14 +288,23 @@ void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** ep
     cout <<  "num k pts read: " << numEPSIkRead << endl;
     cout << " EPSI ORIGIN: " << kOrigin << endl;
     cout << " FREQ ORIGIN: " << fOrigin << endl;
+    double dtBs = 1./static_cast<float>(this->numEPSIkRead);
+    //  certainly need a factor of 2 for interleaved, but a factor of 4?  Not sure
+    dtBs *= 4;
+    cout << "DTBS: " << dtBs << endl;
     //cout << "DENOM " << numSpecPts * numKPts * 2 << endl;
     for( int k = 0; k < numKPts ; k++ ) {
         for( int f = 0; f <  numSpecPts; f++ ) {
-            kIncrement = ( k - kOrigin )/( numKPts * 2);
-            freqIncrement = ( f - fOrigin )/( numSpecPts );
-            mult = 2 * Pi * kIncrement * freqIncrement; 
+            //kIncrement = ( k - kOrigin ) / ( numKPts );
+            kIncrement = ( k - kOrigin ) ;
+            freqIncrement = ( f - fOrigin ) / ( numSpecPts );
+            mult = 2 * Pi * dtBs * kIncrement * freqIncrement ;
             epsiPhaseArray[k][f].Real = cos( mult );
             epsiPhaseArray[k][f].Imag = sin( mult );
+
+            cout << "KI: " << kIncrement << endl;
+            cout << "fI: " << freqIncrement << endl;
+            cout << "FACTOR: " << mult << " " <<  epsiPhaseArray[k][f].Real << endl;
         }
     }
 
