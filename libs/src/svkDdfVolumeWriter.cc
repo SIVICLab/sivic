@@ -636,6 +636,11 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
                                                                 << endl;  
 
     }
+
+    float freqOffset = 0; 
+    if ( hdr->ElementExists( "SVK_FrequencyOffset" ) ) {
+        freqOffset = hdr->GetFloatValue( "SVK_FrequencyOffset" ); 
+    }
                                    
     *out << "===================================================" << endl; 
     *out << "Spectroscopy Parameters" << endl; 
@@ -645,13 +650,13 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << "ppm reference: " << fixed << setprecision(6) << hdr->GetFloatValue( "ChemicalShiftReference" ) << endl;
     *out << "sweepwidth(Hz): " << fixed << setprecision(6) << hdr->GetFloatValue( "SpectralWidth" ) << endl;
     *out << "dwelltime(ms): " << fixed << setprecision(6) << 1000/( hdr->GetFloatValue( "SpectralWidth" ) ) << endl;
-    *out << "frequency offset(Hz): " << fixed << setprecision(6) << hdr->GetFloatValue( "SVK_FrequencyOffset" ) << endl;
+    *out << "frequency offset(Hz): " << fixed << setprecision(6) << freqOffset  << endl;
     vtkstd::string onH20 = "yes"; 
     //  if this is not H1, then set to no:
     if ( hdr->GetStringValue( "ResonantNucleus" ).compare("1H") != 0 ) {
         onH20.assign( "" ); 
     }
-    if (hdr->GetFloatValue( "SVK_FrequencyOffset" ) != 0 ) {
+    if ( freqOffset != 0 ) {
         onH20.assign( "no" ); 
     }
     *out << "centered on water: " << onH20 << endl;
@@ -795,7 +800,9 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
 
     if( hdr->ElementExists( "VolumeLocalizationSequence" ) ) {
 
-        for (int i = 0; i < 3; i++) {
+        int numberOfItems = hdr->GetNumberOfItemsInSequence("VolumeLocalizationSequence");
+
+        for (int i = 0; i < numberOfItems; i++) {
     
             selBoxSize[i] = hdr->GetFloatSequenceItemElement(
                 "VolumeLocalizationSequence",
@@ -835,8 +842,19 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
 
 
     float selBoxOrientation[3][3]; 
+    selBoxOrientation[0][0] = 0; 
+    selBoxOrientation[0][1] = 0; 
+    selBoxOrientation[0][2] = 0; 
+    selBoxOrientation[1][0] = 0; 
+    selBoxOrientation[1][1] = 0; 
+    selBoxOrientation[1][2] = 0; 
+    selBoxOrientation[2][0] = 0; 
+    selBoxOrientation[2][1] = 0; 
+    selBoxOrientation[2][2] = 0; 
     if( hdr->ElementExists( "VolumeLocalizationSequence" ) ) {
-        for (int i = 0; i < 3; i++) {
+
+        int numberOfItems = hdr->GetNumberOfItemsInSequence("VolumeLocalizationSequence");
+        for (int i = 0; i < numberOfItems; i++) {
             for (int j = 0; j < 3; j++) {
 
                 selBoxOrientation[i][j] = hdr->GetFloatSequenceItemElement(
@@ -849,16 +867,6 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
                 );
             }
         }
-    } else {
-        selBoxOrientation[0][0] = 0; 
-        selBoxOrientation[0][1] = 0; 
-        selBoxOrientation[0][2] = 0; 
-        selBoxOrientation[1][0] = 0; 
-        selBoxOrientation[1][1] = 0; 
-        selBoxOrientation[1][2] = 0; 
-        selBoxOrientation[2][0] = 0; 
-        selBoxOrientation[2][1] = 0; 
-        selBoxOrientation[2][2] = 0; 
     }
 
     *out << "selection dcos1: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][0] 
