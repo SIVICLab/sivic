@@ -656,6 +656,15 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_freq_correct
+    svk_freq_correct.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_freq_correct
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_dcm_deid   
     svk_dcm_deid.cc
 )
