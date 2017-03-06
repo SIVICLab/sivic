@@ -63,6 +63,8 @@ using namespace std;
 
 /*! 
  *  Class to apply zero and (eventually) first order phase to spectra
+ *  if an svkImageData is provided as an input connection, then the values from the input map are 
+ *  used to correct the phase on a voxel by voxel basis.  Otherwise a global correction is applied. 
  */
 class svkPhaseSpec : public svkImageInPlaceFilter
 {
