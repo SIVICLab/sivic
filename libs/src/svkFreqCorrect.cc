@@ -184,7 +184,7 @@ int svkFreqCorrect::ApplyGlobalCorrection( )
 
         for (int i = 0; i < numFrequencyPoints; i++) {
 
-            int shiftedIndex = i + this->globalShift; 
+            int shiftedIndex = i - this->globalShift; 
             if ( shiftedIndex > 0 && shiftedIndex < numFrequencyPoints ) {
                 newRe = origSpecPtr[ 2*shiftedIndex ]; 
                 newIm = origSpecPtr[ 2*shiftedIndex + 1];
