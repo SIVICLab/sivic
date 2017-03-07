@@ -50,6 +50,7 @@
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
 #include <svkDcmHeader.h>
+#include <svkFreqCorrect.h>
 
 
 #ifdef WIN32
@@ -238,48 +239,17 @@ int main (int argc, char** argv)
     // ===============================================  
     //  Freq correct the data.: 
     // ===============================================  
-/*
     svkFreqCorrect* freqCorrect = svkFreqCorrect::New();
-    int* start = new int[3];
-    int* end = new int[3];
-    start[0] = -1;
-    start[1] = -1;
-    start[2] = -1;
-    end[0] = -1;
-    end[1] = -1;
-    end[2] = -1;
-*/
-    svkMrsImageData* mrsData = svkMrsImageData::New();
-/*
-    mrsData->DeepCopy( svkMrsImageData::SafeDownCast(reader->GetOutput()) );
-    freqCorrect->SetInputData( mrsData );
-    freqCorrect->SetChannel( 0 );
-    freqCorrect->SetUpdateExtent(start, end );
+    //svkMrsImageData* mrsData = svkMrsImageData::New();
+    //mrsData->DeepCopy( svkMrsImageData::SafeDownCast(reader->GetOutput()) );
+    freqCorrect->SetInputData( reader->GetOutput() );
 
-    if ( usePhaseMap0 ) {
-
-        // to break the pipeline and avoid vtk issues with conflicting extents in the output port, 
-        // a copy of the mri data object:     
-        freqCorrect->SetInputConnection( 1, map0Reader->GetOutputPort() ); 
-        freqCorrect->Update();
-
-    } else {
-
-        int numSpecPoints = reader->GetOutput()->GetCellData()->GetNumberOfTuples();
-        if( pivotPoint < 0 ) {
-            pivotPoint = numSpecPoints / 2;
-        } else if ( pivotPoint >= numSpecPoints ) {
-            cerr << "ERROR: Pivot point greater than the number of frequency points!" << endl;
-        }
-        freqCorrect->SetLinearPhasePivot( pivotPoint );
-        freqCorrect->Update();
-        freqCorrect->SetPhase0( zeroPhase );
-        freqCorrect->Update();
-        freqCorrect->SetLinearPhase( linearPhase );
-        freqCorrect->Update();
-
+    if ( shift != 0 ) {
+        freqCorrect->SetGlobalFrequencyShift( shift  ); 
+    } else if ( mapFileName.length() != 0 ) {
+        freqCorrect->SetInputConnection( 1, mapReader->GetOutputPort() ); 
     }
-*/
+    freqCorrect->Update();
 
     // ===============================================  
     //  Write the data out to the specified file type.  
@@ -294,13 +264,13 @@ int main (int argc, char** argv)
     }
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInputData( mrsData );
+    writer->SetInputData( freqCorrect->GetOutput() );
 
     // ===============================================  
     //  Set the input command line into the data set 
     //  provenance: 
     // ===============================================  
-    //freqCorrect->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+    freqCorrect->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
 
     // ===============================================  
     //  Write data to file: 
@@ -312,8 +282,7 @@ int main (int argc, char** argv)
     // ===============================================  
     writer->Delete();
     reader->Delete();
-    //freqCorrect->Delete(); 
-    mrsData->Delete();
+    freqCorrect->Delete(); 
 
     return 0; 
 }

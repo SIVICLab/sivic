@@ -145,6 +145,7 @@ int svkFreqCorrect::ApplyFrequencyCorrectionMap( )
 }
 
 
+
 /*! 
  *  Apply global shift
  */
