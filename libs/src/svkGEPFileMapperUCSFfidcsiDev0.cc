@@ -466,9 +466,18 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     cout << "reorder: FirstSample: " <<  this->GetHeaderValueAsInt( "rhr.rh_user22" ) + 1  << endl;
     reorder->SetFirstSample( this->GetHeaderValueAsInt( "rhr.rh_user22" ) + 1 );
 
-    //  EPSI Axis (user9) defines which axis is epsi encoded.  Swap the value of 
+    //  EPSI Axis (user20) defines which axis is epsi encoded.  Swap the value of 
     //  epsi k-space encodes into this field: 
-    reorder->SetEPSIAxis( static_cast<svkEPSIReorder::EPSIAxis>( this->GetHeaderValueAsInt( "rhr.rh_user20" ) - 1 ) );
+    int epsiAxis_init = this->GetHeaderValueAsInt( "rhr.rh_user20" ) - 1 ;
+
+    //  Swap X/Y dimensions if swap on and if epsi is on X or Y
+    if ( this->IsSwapOn()  && epsiAxis_init == 0) {
+	epsiAxis_init = 1;
+    } else if ( this->IsSwapOn()  && epsiAxis_init == 1) {
+	epsiAxis_init = 0;
+    }
+
+    reorder->SetEPSIAxis( static_cast<svkEPSIReorder::EPSIAxis>(epsiAxis_init)  );
 
 
     //  set the original input dimensionality:
