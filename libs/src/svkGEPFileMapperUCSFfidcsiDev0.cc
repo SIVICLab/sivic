@@ -122,9 +122,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetSelBoxSize( float selBoxSize[3] )
 {
 
     cout << "THIS IS NOT ENCODED CORRECTLY.  THE EPSI-AXIS Slab selection should be correctly encoded here" << endl;
-    selBoxSize[ 0 ] = this->GetHeaderValueAsFloat( "rhr.rh_user24" );
-    selBoxSize[ 1 ] = this->GetHeaderValueAsFloat( "rhr.rh_user25" );
-    selBoxSize[ 2 ] = this->GetHeaderValueAsFloat( "rhr.rh_user26" );
+    selBoxSize[ 0 ] = this->GetHeaderValueAsFloat( "rhr.rh_user24" );  // RL FOV
+    selBoxSize[ 1 ] = this->GetHeaderValueAsFloat( "rhr.rh_user25" );  // AP FOV
+    selBoxSize[ 2 ] = this->GetHeaderValueAsFloat( "rhr.rh_user26" );  // SI FOV
 
 }
 
@@ -179,8 +179,11 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
         this->progress = (float)timePt/numTimePts; 
         this->UpdateProgress( this->progress );
 
-        //  Separate out EPSI sampled data into time and k-space dimensions:
-        this->ReorderEPSIData( tmpImage );
+	// Detect symmetric EPSI based on equal positive and negative gradient lobe lengths (stored in rhuser 13 and 16)
+	if (this->GetHeaderValueAsInt( "rhr.rh_user13" ) == this->GetHeaderValueAsInt( "rhr.rh_user16" )) { 
+        	//  Separate out EPSI sampled data into time and k-space dimensions:
+        	this->ReorderEPSIData( tmpImage );
+	}
         //data->DeepCopy( tmpImage ); 
 
         //  copy data to tmpImageDynamic and add appropriate arrays
@@ -545,13 +548,25 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  flip first lobe along epsiAxis
     //  first gradient is negative in this sequence:
     //  This should get encoded in the DAD file
-    float pfileVersion = this->GetHeaderValueAsFloat( "rhr.rh_rdbm_rev" );
-    if ( pfileVersion < 25 ) {
-        //this->FlipAxis( data, epsiAxis, 0);     //original
-        this->FlipAxis( data, epsiAxis, 1);     //  new 2016    
-    } else {
-        this->FlipAxis( data, epsiAxis, 1);     //  new 2016    
+    map < string, void* >::iterator  it;
+    it = this->inputArgs.find( "epsiFlipLobe" );
+    int lobeToFlip = 0;
+    if ( it != this->inputArgs.end() ) {
+        lobeToFlip = *(static_cast<int*>( ( this->inputArgs[ it->first ] )));
     }
+    
+    if ( lobeToFlip == 0 ) {
+        float pfileVersion = this->GetHeaderValueAsFloat( "rhr.rh_rdbm_rev" );
+        if ( pfileVersion < 25 ) {
+            lobeToFlip = 1;
+        } else {
+            lobeToFlip = 2;
+        }
+
+    }
+    cout << "SVKGEPFileMapperUCSFfidcsiDev0: flip lobe: " << lobeToFlip << endl;
+    
+    this->FlipAxis( data, epsiAxis, lobeToFlip - 1);     //original
 
     //data->GetDcmHeader()->PrintDcmHeader(); 
     //data->GetDcmHeader()->GetDimensionIndexVector(); 

@@ -196,7 +196,7 @@ class svkGEPFileMapper : public vtkObject
         int*                                    specData; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         int                                     chopVal; 
-        map < string, void* >   inputArgs; 
+        map < string, void* >                   inputArgs;
         int                                     swapBytes;
         svkMRSIOD*                              iod;
         double                                  progress; 

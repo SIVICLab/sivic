@@ -289,6 +289,14 @@ void sivicImageViewWidget::CreateWidget()
     invocation << "SetLUTCallback " << svkLookupTable::CBF_FIXED << endl;
     lutMenu->AddRadioButton("Fixed CBF LUT", this->sivicController, invocation.str().c_str());
 
+    invocation.str("");
+    invocation << "SetLUTCallback " << svkLookupTable::GREEN_SCALE << endl;
+    lutMenu->AddRadioButton("Green LUT", this->sivicController, invocation.str().c_str());
+
+    invocation.str("");
+    invocation << "SetLUTCallback " << svkLookupTable::RED_SCALE << endl;
+    lutMenu->AddRadioButton("Red LUT", this->sivicController, invocation.str().c_str());
+
     this->lutBox->GetWidget()->SetValue( "Color LUT" );
 
     this->thresholdType = vtkKWMenuButtonWithLabel::New();   

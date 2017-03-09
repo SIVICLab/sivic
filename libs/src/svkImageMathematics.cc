@@ -415,6 +415,7 @@ int svkImageMathematics::RequestData( vtkInformation* request,
         string description = this->GetPortMapper()->GetStringInputPortValue( OUTPUT_SERIES_DESCRIPTION )->GetValue();
         svkMriImageData::SafeDownCast(this->GetOutput())->GetDcmHeader()->SetValue("SeriesDescription", description );
     }
+    return 1;
 }
 
 

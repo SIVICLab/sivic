@@ -69,6 +69,8 @@ class svkLookupTable : public vtkLookupTable
             FIRE,
             CNI_FIXED,
             CBF_FIXED,
+            GREEN_SCALE,
+            RED_SCALE,
             NONE
         } svkLookupTableType;
 
@@ -106,7 +108,7 @@ class svkLookupTable : public vtkLookupTable
         void               ConfigureAlphaThreshold();
         bool               reverseThreshold;
 
-        static const int NUM_COLORS;    
+        static const int NUM_COLORS;
 
 };
 

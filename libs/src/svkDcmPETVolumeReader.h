@@ -40,69 +40,63 @@
  */
 
 
-#ifndef SVK_DCMTK_IOD_H
-#define	SVK_DCMTK_IOD_H
+#ifndef SVK_DCM_PET_VOLUME_READER_H
+#define SVK_DCM_PET_VOLUME_READER_H
 
-#include <dcmtk/dcmdata/dctk.h>
 
-#include <stdexcept>
-#include <float.h>
-#include <sstream>
-
-#include <svkDcmtkUtils.h>
-#include <svkDcmtkException.h>
+#include <svkDcmMriVolumeReader.h>
+#include <vector>
+#include <string>
 
 
 namespace svk {
 
 
-using namespace std;
-
-
 /*! 
+ *  Reads a DICOM PET file and initializes a DICOM Enhanced MRI file with BW SUV weighted pixel values.
+ *  In memory the data is represented as a DICOM E MRI instance. 
+ *
+ *  Read the pixels and scale to PET SUV (bw scaled).
+ *  Use vendor agnostic approach from QIBA website:
+ *  http://qibawiki.rsna.org/index.php/Standardized_Uptake_Value_(SUV)
+ *  http://qibawiki.rsna.org/images/6/60/SUV_vendorneutral_pseudocode_happypathonly_20121015_DAC.doc
  */
-class svkDcmtkIod : public DcmFileFormat
+class svkDcmPETVolumeReader : public svkDcmMriVolumeReader
 {
 
     public:
 
-        //  Constructor
-        svkDcmtkIod();
-        ~svkDcmtkIod();
+        static svkDcmPETVolumeReader* New();
+        vtkTypeMacro( svkDcmPETVolumeReader, svkDcmMriVolumeReader );
 
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "DICOM PET File";
+        }
+
+        virtual svkImageReader2::ReaderType GetReaderType()
+        {
+            return svkImageReader2::DICOM_PET;
+        }
 
         //  Methods:
-
-        void     setValue(const DcmTag &tag, const int value)
-                    throw (overflow_error, svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
-        void     setValue(const DcmTag &tag, const float value)
-                    throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
-        void     setValue(const DcmTag &tag, const double value)
-                    throw (overflow_error, svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
-        void     setValue(const DcmTag &tag, const string value, bool meta_header_value = 0)
-                    throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
-
-        int      getIntValue(const DcmTagKey &tag) 
-                    throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
-        float    getFloatValue(const DcmTagKey &tag, int pos = 0)
-                    throw (overflow_error, svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
-        double   getDoubleValue(const DcmTagKey &tag, bool searchInto = false )          
-                    throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
-        string   getStringValue(const DcmTagKey &tag, int pos) 
-                    throw (svkDicomRunTimeError, svkTagNotFound);
-        string   getStringValue(const DcmTagKey &tag)          
-                    throw (svkDicomRunTimeError, svkTagNotFound);
-
-        DcmItem* getItem(bool meta_header_value = 0);
-
+        virtual int CanReadFile(const char* fname);
 
     protected:
 
-        //  Methods:
-        //string getModality();
+        svkDcmPETVolumeReader();
+        ~svkDcmPETVolumeReader();
+        void                                        GetSUVScaledPixels( 
+                                                        float* floatPixels, 
+                                                        unsigned short* shortPixels, 
+                                                        int numberOfPixels,
+                                                        vector < float> rescaleSlopeVector );
+        virtual svkDcmHeader::DcmPixelDataFormat    GetFileType();
 
-        //  Variables:
-        //static const string MODALITY;
+    private:
+
+        virtual void    LoadData(svkImageData* data); 
 
 };
 
@@ -110,5 +104,5 @@ class svkDcmtkIod : public DcmFileFormat
 }   //svk
 
 
-#endif	/* SVK_DCMTK_IOD_H */
+#endif //SVK_DCM_PET_VOLUME_READER_H
 

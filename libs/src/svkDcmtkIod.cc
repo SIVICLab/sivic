@@ -142,10 +142,10 @@ float svkDcmtkIod::getFloatValue(const DcmTagKey &tag, int pos)
  *  @throws svkTagNotFound
  *  @throws svkIncompatibleVR
  */
-double svkDcmtkIod::getDoubleValue(const DcmTagKey &tag) 
+double svkDcmtkIod::getDoubleValue(const DcmTagKey &tag, bool searchInto) 
     throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR)
 {
-    return svkDcmtkUtils::getDoubleValue(this->getItem(), tag);
+    return svkDcmtkUtils::getDoubleValue(this->getItem(), tag, searchInto);
 }
 
 

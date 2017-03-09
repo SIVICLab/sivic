@@ -471,7 +471,8 @@ void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type)
 
 /*!
  */
-void svkGEPFileReader::SetEPSIParams( svkEPSIReorder::EPSIType type, svkEPSIReorder::EPSIAxis axis, int first, int numLobes, int numSkip ) 
+void svkGEPFileReader::SetEPSIParams( svkEPSIReorder::EPSIType type, svkEPSIReorder::EPSIAxis axis, int first,
+                                      int numLobes, int numSkip, int flipLobe )
 {
 
     int* epsiType     = new int (type);
@@ -479,17 +480,28 @@ void svkGEPFileReader::SetEPSIParams( svkEPSIReorder::EPSIType type, svkEPSIReor
     int* epsiFirst    = new int (first);
     int* epsiNumLobes = new int (numLobes);
     int* epsiNumSkip  = new int (numSkip);
+    int* epsiFlipLobe = new int (flipLobe);
 
     this->inputArgs.insert( pair<string, void*>( "epsiType",     static_cast<void*>( epsiType ) ) );
     this->inputArgs.insert( pair<string, void*>( "epsiAxis",     static_cast<void*>( epsiAxis ) ) );
     this->inputArgs.insert( pair<string, void*>( "epsiFirst",    static_cast<void*>( epsiFirst ) ) );
     this->inputArgs.insert( pair<string, void*>( "epsiNumLobes", static_cast<void*>( epsiNumLobes ) ) );
     this->inputArgs.insert( pair<string, void*>( "epsiNumSkip",  static_cast<void*>( epsiNumSkip ) ) );
+    this->inputArgs.insert( pair<string, void*>( "epsiFlipLobe", static_cast<void*>( epsiFlipLobe) ) );
 
     this->SetMapperBehavior( svkGEPFileMapper::LOAD_EPSI );
 
 }
 
+/*!
+ */
+void svkGEPFileReader::SetEPSIParams( int flipLobe )
+{
+
+    int* epsiFlipLobe = new int (flipLobe);
+    this->inputArgs.insert( pair<string, void*>( "epsiFlipLobe", static_cast<void*>( epsiFlipLobe) ) );
+
+}
 
 /*!
  *  Sets mapper's data deidentification behavior.  All PHI fields will be replaced with 

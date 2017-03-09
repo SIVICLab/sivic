@@ -32,7 +32,7 @@ CMAKE_PREFIX_PATH 	= ${VTK_DIR}
 ifeq ($(OSTYPE),Darwin)
 	CMAKE_DIR               := /opt/local/bin
 	DCMTK_DIR               := /usr/local/dicom
-	CLAPACK_DIR             := /Users/jasonc/freeware/clapack-3.2.1-CMAKE
+	CLAPACK_DIR             := /usr/local/clapack-3.2.1-CMAKE
 	VTK6_DIR_DBG            := /usr/local/vtk6.3/lib/cmake/vtk-6.3
 	VTK6_DIR_DIST           := /usr/local/vtk6.3/lib/cmake/vtk-6.3
 	KWWidgets_DIR           := /usr/local/kwwidgets_vtk6/lib/KWWidgets
