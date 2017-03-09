@@ -38,6 +38,7 @@ ifeq ($(OSTYPE),Darwin)
 	KWWidgets_DIR           := /usr/local/kwwidgets_vtk6/lib/KWWidgets
 	KWW_DIR                 := /usr/local/kwwidgets_vtk6/lib/KWWidgets
 	KWW6_DIR_DIST           := /usr/local/kwwidgets_vtk6/lib/KWWidgets
+	KWW6_DIR_DBG            := /usr/local/kwwidgets_vtk6/lib/KWWidgets
 	ITK_DIR                 := /usr/local/ITK4.9/lib/cmake/ITK-4.9
 	ADD_LINK_DIRS           := -DADD_LINK_DIRS=/opt/local/lib
 	CMAKE_CXX_FLAGS         := -I/usr/X11R6/include
@@ -124,6 +125,10 @@ CONFIG_BASE_VTK6_EPIC32	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_EPIC32}
 CONFIG_BASE_GE_VTK6_DIST = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_VTK6_DIST}
 ifeq ($(OSTYPE),Darwin)
 	CONFIG_BASE_VTK6_DIST += -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
+                             -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	      \
+                             -DOPENGL_gl_LIBRARY="${OPENGL_gl_LIBRARY}"           \
+                             -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
+	CONFIG_BASE_VTK6_DBG  += -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
                              -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	      \
                              -DOPENGL_gl_LIBRARY="${OPENGL_gl_LIBRARY}"           \
                              -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
