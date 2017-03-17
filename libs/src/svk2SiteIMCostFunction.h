@@ -118,18 +118,13 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             int LAC = 1; 
             for ( int t = 0; t < this->numTimePoints; t++ ) {
 
-                //if ( t < Tarrival ) {
-                if ( t < 10) {
+                if ( t < Tarrival ) {
                     this->GetModelSignal(PYR)[t] = 0; //this->GetSignalAtTime(PYR, t);
                     this->GetModelSignal(LAC)[t] = 0; //this->GetSignalAtTime(LAC, t);
-                    //cout << " ZEROS: " << t << " " << this->GetModelSignal(PYR)[t] << endl;
+                    //cout << " sig1: " << t << " " << this->GetModelSignal(PYR)[t] << endl;
                 }
-            else { 
-                    this->GetModelSignal(PYR)[t] = 100; 
-                    this->GetModelSignal(LAC)[t] = 100; 
-            }
-/*
-                if ( Tarrival <= t < Tend) {
+
+                if ( (Tarrival <= t) && (t < Tend) ) {
 
                     // PYRUVATE 
                     this->GetModelSignal(PYR)[t] = (Rinj/Kpyr) * (1 - exp( -1 * Kpyr * (t - Tarrival)) ) + dc; 
@@ -140,6 +135,7 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
                                 ( ( 1 - exp( -1 * Klac * ( t - Tarrival)) )/Klac ) 
                               - ( ( 1 - exp( -1 * Kpyr * ( t - Tarrival)) )/Kpyr )
                               ) + dc;    
+                    //cout << " sig2: " << t << " " << this->GetModelSignal(PYR)[t] << endl;
                 }
 
                 if (t >= Tend) {      
@@ -151,9 +147,9 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
                     this->GetModelSignal(LAC)[t] = ( ( this->GetSignalAtTime(LAC, Tend) * Kpl ) / ( Kpyr - Klac ) ) 
                             * ( exp( -1 * Klac * (t-Tend)) - exp( -1 * Kpyr * (t-Tend)) ) 
                             + this->GetSignalAtTime(LAC, Tend) *  exp ( -1 * Klac * ( t - Tend)) + dc; 
+                    //cout << " sig3: " << t << " " << this->GetModelSignal(PYR)[t] << endl;
 
                 }
-*/
 
             }
 
@@ -208,33 +204,51 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
         virtual void InitParamBounds( float* lowerBounds, float* upperBounds, 
             vector<vtkFloatArray*>* averageSigVector ) 
         {
-            int vecLength        = (*averageSigVector)[0]->GetNumberOfTuples(); 
+
+            //  Rinj: 
+            //      try to estimate a range for Rinj as the change in 
+            //      intensity on the rising curve of hte pyr signal: 
+            //  Tarrival: 
+            //      shold be less than the maximum point in Pyr curve. 
+            //  inj_dur: 
+            //      estimate from the rise time
+            int PYR = 0; 
+            int vecLength        = (*averageSigVector)[PYR]->GetNumberOfTuples(); 
             double maxValue      = VTK_FLOAT_MIN;  
+            int    maxValuePt    = 0;  
+            int    maxValueTime  = 0;  
+            double startValue    = (*averageSigVector)[PYR]->GetTuple1( 0 );
             for ( int i = 0; i < vecLength; i++ ) {
-                double value = (*averageSigVector)[0]->GetTuple1( i ); 
+                double value = (*averageSigVector)[PYR]->GetTuple1( i ); 
                 if ( value > maxValue ) {
                     maxValue = value; 
+                    maxValuePt = i; 
+                    maxValueTime = maxValuePt * this->TR; 
                 } 
             }
+            
+            double rinjEstimate = maxValue - startValue;   
+            if ( maxValuePt > 0 ) {
+                rinjEstimate /= maxValuePt; 
+            }  
+                
 
             //  These are the params from equation 1 of Zierhut:
-            upperBounds[0] =  4    * maxValue * this->TR;     //  Rinj (arbitrary unit signal rise)
-            lowerBounds[0] =  0.01 * maxValue * this->TR;     //  Rinj
-            //upperBounds[0] =  4000  * this->TR;     //  Rinj (arbitrary unit signal rise)
-            //lowerBounds[0] =  3000  * this->TR;     //  Rinj
+            upperBounds[0] =  2    * rinjEstimate * this->TR;     //  Rinj (arbitrary unit signal rise)
+            lowerBounds[0] =  0.1  * rinjEstimate * this->TR;     //  Rinj
         
-            upperBounds[1] = 0.20           * this->TR;     //  Kpyr
-            lowerBounds[1] = 0.0001         * this->TR;     //  Kpyr
+            upperBounds[1] = 0.10           * this->TR;     //  Kpyr
+            lowerBounds[1] = 0.04           * this->TR;     //  Kpyr
 
-            upperBounds[2] =  20             / this->TR;     //  Tarrival
-            lowerBounds[2] = -20.00          / this->TR;     //  Tarrival
+            upperBounds[2] =  maxValueTime                                  / this->TR; //  Tarrival
+            lowerBounds[2] =  (maxValueTime - maxValue/(.5 * rinjEstimate)) / this->TR; //  Tarrival
 
             //  These are the params from equation 2 of Zierhut:
             upperBounds[3] = 0.08           * this->TR;     //  Kpl
             lowerBounds[3] = 0.0001         * this->TR;     //  Kpl
 
-            upperBounds[4] = 0.20           * this->TR;     //  Klac
-            lowerBounds[4] = 0.0001         * this->TR;     //  Klac
+            upperBounds[4] = 0.10           * this->TR;     //  Klac
+            lowerBounds[4] = 0.04           * this->TR;     //  Klac
 
             //  baseline
             double baselineValue = (*averageSigVector)[0]->GetTuple1( vecLength - 1 ); 
@@ -242,8 +256,8 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             lowerBounds[5] = -4 * baselineValue;            //  Baseline
 
             //  injection duration 
-            upperBounds[6] = 20             / this->TR;     //  injection duration 
-            lowerBounds[6] = 0              / this->TR;     //  injection duration 
+            upperBounds[6] = (maxValue/(.5*rinjEstimate))  / this->TR;     //  injection duration 
+            lowerBounds[6] = (maxValue/(2 *rinjEstimate))  / this->TR;     //  injection duration 
         }   
 
 
@@ -265,7 +279,8 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             //  These are the params from equation 2 of Zierhut:
             //(*initialPosition)[3] =  0.01       * this->TR;    // Kpl     (1/s)  
             //(*initialPosition)[4] =  0.05       * this->TR;    // Klac    (1/s)  
-            //(*initialPosition)[5] =  70000;                    // Baseilne (a.u.)  
+            //(*initialPosition)[5] =  70000;                    // DC Baseilne (a.u.)  
+            //(*initialPosition)[5] =  x;                        // injection duratin (s)  
 
             for ( int param = 0; param < this->GetNumberOfParameters(); param++ ) { 
                 (*initialPosition)[param] =  ( upperBounds[param] + lowerBounds[param]) / 2. ;
