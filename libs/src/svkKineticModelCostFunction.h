@@ -290,13 +290,21 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         /*!
          *  Initialize the parameter uppler and lower bounds for this model. 
          */
-        virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) = 0; 
+        virtual void InitParamBounds( 
+            float* lowerBounds, 
+            float* upperBounds, 
+            vector<vtkFloatArray*>* averageSigVector = NULL
+        ) = 0; 
 
 
         /*!
          *  Initialize the parameter initial values (unitless)
          */
-        virtual void InitParamInitialPosition( ParametersType* initialPosition ) = 0; 
+        virtual void InitParamInitialPosition( 
+            ParametersType* initialPosition, 
+            float* lowerBounds, 
+            float* upperBounds
+        ) = 0; 
 
 
         /*!

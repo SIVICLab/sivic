@@ -55,7 +55,7 @@ using namespace svk;
 
 /*
  *  Cost function for ITK optimizer: 
- *  This represents a piecewise 2-site exchange model for conversion of pyr->lactate
+ *  This represents a piecewise 2-site (I)ntegrated exchange (M)odel (IM) for conversion of pyr->lactate
  *  Implementation of model from:
  *      Zierhut, M. L. et al. 
  *      Kinetic modeling of hyperpolarized 13C1-pyruvate metabolism in normal rats and TRAMP mice. 
@@ -92,13 +92,24 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             float  Kpl      = parameters[3];    //  Kpl conversion rate
             float  Klac     = parameters[4];    //  Klac, signal decay from T1 and excitation
             float  dc       = parameters[5];    //  dc baseline offset                                
+            float  injDur   = parameters[6];    //  dc baseline offset                                
 
-            float injectionDuration = 10/3;         //  X seconds normalized by TR into time point space
+            //cout << "FINAL: Rinj     " << Rinj << endl;    
+            //cout << "FINAL: Kpyr     " << Kpyr << endl;    
+            //cout << "FINAL: Tarrival " << Tarrival << endl;    
+            //cout << "FINAL: Kpl      " << Kpl << endl;    
+            //cout << "FINAL: Klac     " << Klac << endl;    
+            //cout << "FINAL: dc       " << dc << endl;    
+            //cout << "FINAL: injDur   " << injDur << endl;    
+
+            //float injectionDuration = 10/3;         //  X seconds normalized by TR into time point space
+            float injectionDuration = injDur;         //  X seconds normalized by TR into time point space
             int Tend = static_cast<int>( vtkMath::Round(Tarrival + injectionDuration) );
             Tarrival = static_cast<int>( vtkMath::Round(Tarrival) );
 
             //cout << "Tarrival: " << Tarrival << endl;
-            //cout << "TEND:     " << Tend << endl;
+            //cout << "Tend:     " << Tend << endl;
+            //cout << "NTP:      " << this->numTimePoints << endl;
 
             //  ==============================================================
             //  DEFINE COST FUNCTION 
@@ -107,11 +118,17 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             int LAC = 1; 
             for ( int t = 0; t < this->numTimePoints; t++ ) {
 
-                if ( t < Tarrival ) {
+                //if ( t < Tarrival ) {
+                if ( t < 10) {
                     this->GetModelSignal(PYR)[t] = 0; //this->GetSignalAtTime(PYR, t);
                     this->GetModelSignal(LAC)[t] = 0; //this->GetSignalAtTime(LAC, t);
+                    //cout << " ZEROS: " << t << " " << this->GetModelSignal(PYR)[t] << endl;
                 }
-
+            else { 
+                    this->GetModelSignal(PYR)[t] = 100; 
+                    this->GetModelSignal(LAC)[t] = 100; 
+            }
+/*
                 if ( Tarrival <= t < Tend) {
 
                     // PYRUVATE 
@@ -136,6 +153,7 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
                             + this->GetSignalAtTime(LAC, Tend) *  exp ( -1 * Klac * ( t - Tend)) + dc; 
 
                 }
+*/
 
             }
 
@@ -148,7 +166,7 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
          */   
         virtual unsigned int GetNumberOfParameters(void) const
         {
-            int numParameters = 6;
+            int numParameters = 7;
             return numParameters;
         }
 
@@ -179,6 +197,7 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             (*outputDescriptionVector)[5] = "Kpl";
             (*outputDescriptionVector)[6] = "Klac";
             (*outputDescriptionVector)[7] = "dcoffset";
+            (*outputDescriptionVector)[8] = "inj_dur";
         }
 
 
@@ -186,18 +205,29 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
          *  Initialize the parameter uppler and lower bounds for this model. 
          *  All params are dimensionless and scaled by TR
          */     
-        virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) 
+        virtual void InitParamBounds( float* lowerBounds, float* upperBounds, 
+            vector<vtkFloatArray*>* averageSigVector ) 
         {
+            int vecLength        = (*averageSigVector)[0]->GetNumberOfTuples(); 
+            double maxValue      = VTK_FLOAT_MIN;  
+            for ( int i = 0; i < vecLength; i++ ) {
+                double value = (*averageSigVector)[0]->GetTuple1( i ); 
+                if ( value > maxValue ) {
+                    maxValue = value; 
+                } 
+            }
 
             //  These are the params from equation 1 of Zierhut:
-            upperBounds[0] =  100000000     * this->TR;     //  Rinj (arbitrary unit signal rise)
-            lowerBounds[0] =  1000          * this->TR;     //  Rinj
+            upperBounds[0] =  4    * maxValue * this->TR;     //  Rinj (arbitrary unit signal rise)
+            lowerBounds[0] =  0.01 * maxValue * this->TR;     //  Rinj
+            //upperBounds[0] =  4000  * this->TR;     //  Rinj (arbitrary unit signal rise)
+            //lowerBounds[0] =  3000  * this->TR;     //  Rinj
         
             upperBounds[1] = 0.20           * this->TR;     //  Kpyr
             lowerBounds[1] = 0.0001         * this->TR;     //  Kpyr
 
-            upperBounds[2] =  0             / this->TR;     //  Tarrival
-            lowerBounds[2] = -4.00          / this->TR;     //  Tarrival
+            upperBounds[2] =  20             / this->TR;     //  Tarrival
+            lowerBounds[2] = -20.00          / this->TR;     //  Tarrival
 
             //  These are the params from equation 2 of Zierhut:
             upperBounds[3] = 0.08           * this->TR;     //  Kpl
@@ -207,29 +237,66 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             lowerBounds[4] = 0.0001         * this->TR;     //  Klac
 
             //  baseline
-            upperBounds[5] =  100000000;                    //  Baseline
-            lowerBounds[5] = -100000000;                    //  Baseline
+            double baselineValue = (*averageSigVector)[0]->GetTuple1( vecLength - 1 ); 
+            upperBounds[5] =  4 * baselineValue;            //  Baseline
+            lowerBounds[5] = -4 * baselineValue;            //  Baseline
+
+            //  injection duration 
+            upperBounds[6] = 20             / this->TR;     //  injection duration 
+            lowerBounds[6] = 0              / this->TR;     //  injection duration 
         }   
 
 
-       /*!
-        *   Initialize the parameter initial values (dimensionless, scaled by TR)
-        */
-        virtual void InitParamInitialPosition( ParametersType* initialPosition )
+        /*!
+         *  Initialize the parameter initial values (dimensionless, scaled by TR)
+         */
+        virtual void InitParamInitialPosition( ParametersType* initialPosition, 
+            float* lowerBounds, float* upperBounds) 
         {
             if (this->TR == 0 )  {
                 cout << "ERROR: TR Must be set before initializing parameters" << endl;
                 exit(1); 
             }
             //  These are the params from equation 1 of Zierhut:
-            (*initialPosition)[0] =  50000      * this->TR;    // Rinj    (1/s)
-            (*initialPosition)[1] =  0.15       * this->TR;    // Kpyr    (1/s)  
-            (*initialPosition)[2] =   -3        / this->TR;    // Tarrival (s)  
+            //(*initialPosition)[0] =  50000      * this->TR;    // Rinj    (1/s)
+            //(*initialPosition)[1] =  0.15       * this->TR;    // Kpyr    (1/s)  
+            //(*initialPosition)[2] =   -3        / this->TR;    // Tarrival (s)  
 
             //  These are the params from equation 2 of Zierhut:
-            (*initialPosition)[3] =  0.01       * this->TR;    // Kpl     (1/s)  
-            (*initialPosition)[4] =  0.05       * this->TR;    // Klac    (1/s)  
-            (*initialPosition)[5] =  70000;                    // Baseilne (a.u.)  
+            //(*initialPosition)[3] =  0.01       * this->TR;    // Kpl     (1/s)  
+            //(*initialPosition)[4] =  0.05       * this->TR;    // Klac    (1/s)  
+            //(*initialPosition)[5] =  70000;                    // Baseilne (a.u.)  
+
+            for ( int param = 0; param < this->GetNumberOfParameters(); param++ ) { 
+                (*initialPosition)[param] =  ( upperBounds[param] + lowerBounds[param]) / 2. ;
+            }
+            
+            cout << "INITIAL: " << (*initialPosition)[0] / this->TR << endl;
+            cout << "INITIAL: " << (*initialPosition)[1] / this->TR<< endl;
+            cout << "INITIAL: " << (*initialPosition)[2] * this->TR<< endl;
+            cout << "INITIAL: " << (*initialPosition)[3] / this->TR<< endl;
+            cout << "INITIAL: " << (*initialPosition)[4] / this->TR<< endl;
+            cout << "INITIAL: " << (*initialPosition)[5] << endl;
+            cout << "INITIAL: " << (*initialPosition)[6] * this->TR<< endl;
+            cout << "RANGE:  " << upperBounds[0] / this->TR << " " <<  lowerBounds[0] / this->TR << endl;
+            cout << "RANGE:  " << upperBounds[1] / this->TR << " " <<  lowerBounds[1] / this->TR << endl;
+            cout << "RANGE:  " << upperBounds[2] * this->TR << " " <<  lowerBounds[2] * this->TR << endl;
+            cout << "RANGE:  " << upperBounds[3] / this->TR << " " <<  lowerBounds[3] / this->TR << endl;
+            cout << "RANGE:  " << upperBounds[4] / this->TR << " " <<  lowerBounds[4] / this->TR << endl;
+            cout << "RANGE:  " << upperBounds[5]            << " " <<  lowerBounds[5]  << endl;
+            cout << "RANGE:  " << upperBounds[6] * this->TR << " " <<  lowerBounds[6] * this->TR << endl;
+            //(*initialPosition)[0] *=  this->TR;    // Rinj    (1/s)
+            //(*initialPosition)[1] *=  this->TR;    // Kpyr    (1/s)  
+            //(*initialPosition)[2] /=  this->TR;    // Tarrival (s)  
+
+            //  These are the params from equation 2 of Zierhut:
+            //(*initialPosition)[3] *=  this->TR;    // Kpl     (1/s)  
+            //(*initialPosition)[4] *=  this->TR;    // Klac    (1/s)  
+            //(*initialPosition)[5] *=  1;           // Baseilne (a.u.)  
+
+            //for ( int param = 0; param < this->GetNumberOfParameters(); param++ ) { 
+                //cout << "INITIAL: " << (*initialPosition)[param] << endl;
+            //}
         } 
 
 
@@ -251,6 +318,9 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             //  These are the params from equation 2 of Zierhut:
             (*finalPosition)[3] /= this->TR;    // Kpl      (1/s)  
             (*finalPosition)[4] /= this->TR;    // Klac     (1/s)  
+
+            //  inj duration
+            (*finalPosition)[6] *= this->TR;    // Klac     (s)  
         } 
 
 

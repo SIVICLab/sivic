@@ -201,7 +201,7 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
         /*!
          *  Initialize the parameter uppler and lower bounds for this model. 
          */
-        virtual void InitParamBounds( float* lowerBounds, float* upperBounds )
+        virtual void InitParamBounds( float* lowerBounds, float* upperBounds, vector<vtkFloatArray*>* averageSigVector  )
         {
             upperBounds[0] = 28/this->TR;          //  T1all
             lowerBounds[0] = 8/this->TR;           //  T1all
@@ -221,7 +221,8 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
        /*!
         *   Initialize the parameter initial values
         */
-        virtual void InitParamInitialPosition( ParametersType* initialPosition )
+        virtual void InitParamInitialPosition( ParametersType* initialPosition, 
+            float* lowerBounds, float* upperBounds )
         {
             if (this->TR == 0 )  {
                 cout << "ERROR: TR Must be set before initializing parameters" << endl;

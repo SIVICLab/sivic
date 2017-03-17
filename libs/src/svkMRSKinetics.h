@@ -137,6 +137,8 @@ class svkMRSKinetics: public svkImageAlgorithm
 
     private:
         void                    GenerateKineticParamMap();
+        void                    InitAverageDynamics(bool hasMask, int totalVoxels, unsigned short* mask); 
+
         void                    FitVoxelKinetics( int voxelID ); 
 
         void                    InitOptimizer(  itk::ParticleSwarmOptimizer::Pointer itkOptimizer, int voxelID ); 
@@ -160,6 +162,7 @@ class svkMRSKinetics: public svkImageAlgorithm
         vtkDataArray*               mapArrayKtrans; 
         svkMRSKinetics::MODEL_TYPE  modelType; 
         vector<string>              modelOutputDescriptionVector;
+        vector<vtkFloatArray*>      averageSignalVector;
         float                       TR; 
 
 };

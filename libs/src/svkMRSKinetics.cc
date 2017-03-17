@@ -307,6 +307,7 @@ void svkMRSKinetics::GenerateKineticParamMap()
         hasMask = true; 
     } 
 
+    this->InitAverageDynamics(hasMask, totalVoxels, mask);
 
     for (int voxelID = 0; voxelID < totalVoxels; voxelID++ ) {
 
@@ -324,6 +325,74 @@ void svkMRSKinetics::GenerateKineticParamMap()
     this->SyncPointsFromCells(); 
 
 }
+
+
+/*!
+ *  Creates an average dynamic trace that can be used to estimate initial param values
+ *  for fitting.
+ *      @param hasMask  true or false
+ *      @totalVoxels    total number of voxels in data set.
+ */
+void svkMRSKinetics::InitAverageDynamics(bool hasMask, int totalVoxels, unsigned short* mask)
+{
+
+    //  Initialize an array for the average dynamic trace
+    float cellValueAtTime[1];
+    cellValueAtTime[0] = 0;
+
+    int numSignalsInModel = this->GetNumberOfModelSignals();
+    for ( int sigNum = 0; sigNum < numSignalsInModel; sigNum++ ) {
+        vtkFloatArray* averageSignal;
+        averageSignal = vtkFloatArray::New();
+        averageSignal->DeepCopy(
+            vtkFloatArray::SafeDownCast(
+                svkMriImageData::SafeDownCast(
+                    this->GetImageDataInput(sigNum))->GetCellDataRepresentation()->GetArray(0)
+            )
+        );
+        for ( int time = 0; time < this->numTimePoints; time++ ) {
+            averageSignal->SetTuple(time, cellValueAtTime);
+        }
+        this->averageSignalVector.push_back(averageSignal); 
+    }
+
+
+    //  average signals over all voxels
+    double averageValue;  
+    float averageCell[1]; 
+    for ( int sigNum = 0; sigNum < numSignalsInModel; sigNum++ ) {
+        cout << "signal : " << sigNum << endl;
+        for ( int time = 0; time < this->numTimePoints; time++ ) {
+
+            int numVoxelsInMask = 0; 
+
+            for (int voxelID = 0; voxelID < totalVoxels; voxelID++ ) {
+
+                if (((hasMask == true) && (mask[voxelID] != 0)) || (hasMask == false)) {
+
+                    numVoxelsInMask += 1; 
+
+                    vtkFloatArray* kineticSignal = vtkFloatArray::SafeDownCast(
+                        svkMriImageData::SafeDownCast(
+                            this->GetImageDataInput(sigNum))->GetCellDataRepresentation()->GetArray(voxelID)
+                    );
+                    averageValue = this->averageSignalVector[sigNum]->GetTuple1( time );
+                    averageValue += kineticSignal->GetTuple1( time ); 
+                    averageCell[0] = averageValue; 
+                    this->averageSignalVector[sigNum]->SetTuple( time, averageCell );
+                }
+            }
+
+            averageValue = this->averageSignalVector[sigNum]->GetTuple1( time );
+            averageValue /= numVoxelsInMask; 
+            averageCell[0] = averageValue; 
+            //cout << "average: " << averageValue << endl;
+            this->averageSignalVector[sigNum]->SetTuple( time, averageCell );
+        }
+    }
+
+}
+
 
 
 /*!
@@ -349,7 +418,7 @@ void svkMRSKinetics::InitCostFunction(  svkKineticModelCostFunction::Pointer& co
 
 
 /*!
- *  Factory to get the correct the cost function. 
+ *  Factory to get the correct cost function.
  */
 void svkMRSKinetics::GetCostFunction( svkKineticModelCostFunction::Pointer& costFunction)
 {
@@ -358,6 +427,7 @@ void svkMRSKinetics::GetCostFunction( svkKineticModelCostFunction::Pointer& cost
     } else if ( this->modelType == svkMRSKinetics::TWO_SITE_EXCHANGE_PERF ) {
         costFunction = svk2SitePerfCostFunction::New();
     } else if ( this->modelType == svkMRSKinetics::TWO_SITE_IM) {
+        //  2 site piecewise Integrated Model
         costFunction = svk2SiteIMCostFunction::New();
     } else if ( this->modelType == svkMRSKinetics::TWO_SITE_IM_PYR) {
         costFunction = svk2SiteIMPyrCostFunction::New();
@@ -449,7 +519,7 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     this->GetCostFunction( costFunction ); 
     this->SetTR( TR ); 
     costFunction->SetTR( this->GetTR() ); 
-    costFunction->InitParamBounds( lowerBounds, upperBounds); 
+    costFunction->InitParamBounds( lowerBounds, upperBounds, &(this->averageSignalVector) ); 
 
     for (int paramNum  = 0; paramNum < numParams; paramNum++ ) {
         //cout << "BOUNDS: " << lowerBounds[paramNum] << " " << upperBounds[paramNum] << endl;
@@ -458,14 +528,14 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     itkOptimizer->SetParameterBounds( bounds );
 
     //  Set initial guesses
-    costFunction->InitParamInitialPosition( &initialPosition ); 
+    costFunction->InitParamInitialPosition( &initialPosition, lowerBounds, upperBounds ); 
 
     itk::ParticleSwarmOptimizer::ParametersType initialParameters( paramSpaceDimensionality), finalParameters;
            
     unsigned int numberOfParticles = 200;
     itkOptimizer->SetNumberOfParticles( numberOfParticles );
 
-    unsigned int maxIterations = 30000;
+    unsigned int maxIterations = 3000;
     itkOptimizer->SetMaximalNumberOfIterations( maxIterations );
 
     double xTolerance = 0.000001;
@@ -539,6 +609,7 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
     svkKineticModelCostFunction::Pointer costFunction;
     this->InitCostFunction( costFunction, voxelID ); 
     costFunction->SetTR( this->GetTR() ); 
+    cout << "FINAL VALUES: " << voxelID << endl;
     costFunction->GetKineticModel(  finalPosition ); 
 
     //  ==================================================================

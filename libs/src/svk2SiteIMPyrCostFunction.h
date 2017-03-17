@@ -169,7 +169,8 @@ class svk2SiteIMPyrCostFunction : public svkKineticModelCostFunction
          *  Initialize the parameter uppler and lower bounds for this model. 
          *  All params are dimensionless and scaled by TR
          */     
-        virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) 
+        virtual void InitParamBounds( float* lowerBounds, float* upperBounds, 
+            vector<vtkFloatArray*>* averageSigVector  ) 
         {
             //  These are the params from equation 1 of Zierhut:
             upperBounds[0] =  100000000     * this->TR;     //  Rinj (arbitrary unit signal rise)
@@ -186,7 +187,9 @@ class svk2SiteIMPyrCostFunction : public svkKineticModelCostFunction
        /*!
         *   Initialize the parameter initial values (dimensionless, scaled by TR)
         */
-        virtual void InitParamInitialPosition( ParametersType* initialPosition )
+        virtual void InitParamInitialPosition( ParametersType* initialPosition, 
+            float* lowerBounds, float* upperBounds )
+
         {
             if (this->TR == 0 )  {
                 cout << "ERROR: TR Must be set before initializing parameters" << endl;

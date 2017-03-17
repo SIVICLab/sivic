@@ -80,7 +80,7 @@ class svkDdfVolumeWriter : public svkImageWriter
         ~svkDdfVolumeWriter();
 
         virtual int     FillInputPortInformation(int port, vtkInformation* info);
-        virtual void    SetProvenance(); 
+        virtual void    SetProvenance();
 
 
     private:

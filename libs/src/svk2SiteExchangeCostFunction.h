@@ -170,7 +170,7 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
          *  Initialize the parameter uppler and lower bounds for this model. 
          *  All params are dimensionless and scaled by TR
          */     
-        virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) 
+        virtual void InitParamBounds( float* lowerBounds, float* upperBounds, vector<vtkFloatArray*>* averageSigVector ) 
         {
             upperBounds[0] = 50./this->TR;      //  T1all
             lowerBounds[0] = 1. /this->TR;      //  T1all
@@ -186,7 +186,8 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
        /*!
         *   Initialize the parameter initial values (dimensionless, scaled by TR)
         */
-        virtual void InitParamInitialPosition( ParametersType* initialPosition )
+        virtual void InitParamInitialPosition( ParametersType* initialPosition, 
+            float* lowerBounds, float* upperBounds)
         {
             if (this->TR == 0 )  {
                 cout << "ERROR: TR Must be set before initializing parameters" << endl;
