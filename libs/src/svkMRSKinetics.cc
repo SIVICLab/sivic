@@ -448,17 +448,23 @@ int svkMRSKinetics::GetNumberOfModelSignals()
 
 /*!
  *  Get the number of otuput ports for the const function
+ *  This is the sum of the :
+ *      number of signals
+ *      number of parameters
+ *      +1 for the cost function map 
  */
 int svkMRSKinetics::GetNumberOfModelOutputPorts()
 {
     svkKineticModelCostFunction::Pointer costFunction;
     this->GetCostFunction( costFunction ); 
-    return costFunction->GetNumberOfOutputPorts(); 
+    return costFunction->GetNumberOfOutputPorts() + 1; 
 }
 
 
 /*!
  *  Get the number of otuput parameters (parameter maps)
+ *  This is the sum of the :
+ *      number of parameters
  */
 int svkMRSKinetics::GetNumberOfModelParameters()
 {
@@ -476,6 +482,11 @@ void svkMRSKinetics::InitModelOutputDescriptionVector()
     svkKineticModelCostFunction::Pointer costFunction;
     this->GetCostFunction( costFunction ); 
     costFunction->InitOutputDescriptionVector( &this->modelOutputDescriptionVector ); 
+   
+    //  finally add one for the cost function output map 
+    //int numPorts = this->GetNumberOfModelOutputPorts(); 
+    this->modelOutputDescriptionVector.push_back("residual");
+
 }
 
 
@@ -621,7 +632,7 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
         );
 
         for ( int t = 0; t < this->numTimePoints; t++ ) {
-            //cout << "Fitted Pyruvate(" << t << "): " <<  kineticModel0[t] << " " << signal0[t] << endl; 
+            //cout << "Fitted Pyruvate(" << t << "): " <<  costFunction->GetModelSignalAtTime(sigNum, t) <<  endl; 
             outputDynamics->SetTuple1(t, costFunction->GetModelSignalAtTime(sigNum, t) ); 
         }
     }
@@ -631,9 +642,19 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
     //  the signals and model are in unitless space (point space).  only scale the paramets as a 
     //  final step to write them out in physical units.      
     //  ==================================================================
-    costFunction->GetParamFinalScaledPosition( &finalPosition ); 
+
     const unsigned int paramSpaceDimensionality = this->GetNumberOfModelParameters(); 
     int num3DOutputMaps = paramSpaceDimensionality; 
+
+    //  And write out the cost function map as well 
+    cout << "RESIDUAL ================================" << endl;
+    double residual = costFunction->GetValue( finalPosition ); 
+    cout << "RESIDUAL: " << residual << endl;
+    int residualMapIndex = num3DOutputMaps + numSignalsInModel;    
+    this->GetOutput(residualMapIndex)->GetPointData()->GetArray(0)->SetTuple1( voxelID, residual); 
+
+    //  Now write out individual param maps for the specified model
+    costFunction->GetParamFinalScaledPosition( &finalPosition ); 
     for (int index = 0; index < num3DOutputMaps; index++ ) {
         //  the maps are the last set of outputs after the fitted signals: 
         int mapIndex = index + numSignalsInModel;    
@@ -641,6 +662,8 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
         string paramName = this->modelOutputDescriptionVector[ numSignalsInModel + index]; 
         cout << "VOXEL FIT(" << voxelID << ")[" << paramName << "] = " << finalPosition[index] << endl; 
     }
+
+
 
     return;
 }
@@ -660,6 +683,7 @@ void svkMRSKinetics::ZeroData()
 
     const unsigned int paramSpaceDimensionality = this->GetNumberOfModelParameters(); 
     int num3DOutputMaps = paramSpaceDimensionality; 
+    num3DOutputMaps += 1; //    for the cost function map
     //cout << "NUM3D: " << num3DOutputMaps << endl;
 
     double zeroValue = 0.;

@@ -178,8 +178,8 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
             upperBounds[1] = 0.20 * this->TR;   //  Kpl
             lowerBounds[1] = 0.00 * this->TR;   //  Kpl
 
-            upperBounds[2] =  100000;                       //  Baseline
-            lowerBounds[2] = -100000;                       //  Baseline
+            upperBounds[2] =  100000;           //  Baseline
+            lowerBounds[2] = -100000;           //  Baseline
         }   
 
 

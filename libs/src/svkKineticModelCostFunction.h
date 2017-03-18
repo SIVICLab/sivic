@@ -240,6 +240,7 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
 
         /*!
          *  Get the number of outputs
+         *  defined in sub class, but for example: 
          *  This is fitted signals (first), them parameter maps, e.g.:
          *      Outputports:  0 for fitted pyruvate kinetics
          *      Outputports:  1 for fitted lactate kinetics
@@ -334,6 +335,12 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
                 }
             }
             MeasureType measure = residual ;
+            //cout << "MEASURE" << measure << endl;
+            //for ( int t = 0; t < 8; t++ ) {
+                //for  (int sigNumber = 0; sigNumber < this->GetNumberOfSignals(); sigNumber++ ) {
+                    //cout << "DIFF( " << sigNumber << "): " << this->GetSignalAtTime(sigNumber, t)  << " - " <<  this->GetModelSignal(sigNumber)[t]  << " = " << ( this->GetSignalAtTime(sigNumber, t) - this->GetModelSignal(sigNumber)[t] ) << endl;   
+                //}
+            //}
             return measure;
         }
 

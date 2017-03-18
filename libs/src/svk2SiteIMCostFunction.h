@@ -252,8 +252,8 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
 
             //  baseline
             double baselineValue = (*averageSigVector)[0]->GetTuple1( vecLength - 1 ); 
-            upperBounds[5] =  4 * baselineValue;            //  Baseline
-            lowerBounds[5] = -4 * baselineValue;            //  Baseline
+            upperBounds[5] =  4 * baselineValue;            //  Baseline DC Offset
+            lowerBounds[5] =  0;                            //  Baseline DC Offset
 
             //  injection duration 
             upperBounds[6] = (maxValue/(.5*rinjEstimate))  / this->TR;     //  injection duration 
