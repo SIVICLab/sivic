@@ -157,8 +157,7 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
 
 
         /*!
-         *  T1all
-         *  Kpl
+         *  Get the number of parameters in the model. 
          */   
         virtual unsigned int GetNumberOfParameters(void) const
         {
@@ -198,10 +197,10 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
 
 
         /*!
-         *  Initialize the parameter uppler and lower bounds for this model. 
+         *  Initialize the parameter upper and lower bounds for this model. 
          *  All params are dimensionless and scaled by TR
          */     
-        virtual void InitParamBounds( float* lowerBounds, float* upperBounds, 
+        virtual void InitParamBounds( vector<float>* lowerBounds, vector<float>* upperBounds, 
             vector<vtkFloatArray*>* averageSigVector ) 
         {
 
@@ -232,112 +231,70 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
                 rinjEstimate /= maxValuePt; 
             }  
                 
-
+            //  Rinj (s-1) 
             //  These are the params from equation 1 of Zierhut:
-            upperBounds[0] =  2    * rinjEstimate * this->TR;     //  Rinj (arbitrary unit signal rise)
-            lowerBounds[0] =  0.1  * rinjEstimate * this->TR;     //  Rinj
+            (*upperBounds)[0] =  2    * rinjEstimate;   //  Rinj (units of signal rise per second )
+            (*lowerBounds)[0] =  0.1  * rinjEstimate;   //  Rinj
         
-            upperBounds[1] = 0.10           * this->TR;     //  Kpyr
-            lowerBounds[1] = 0.04           * this->TR;     //  Kpyr
-
-            upperBounds[2] =  maxValueTime                                  / this->TR; //  Tarrival
-            lowerBounds[2] =  (maxValueTime - maxValue/(.5 * rinjEstimate)) / this->TR; //  Tarrival
-
+            //  Kpyr (s-1)  
             //  These are the params from equation 2 of Zierhut:
-            upperBounds[3] = 0.08           * this->TR;     //  Kpl
-            lowerBounds[3] = 0.0001         * this->TR;     //  Kpl
+            (*upperBounds)[1] = 0.10;         //  Kpyr
+            (*lowerBounds)[1] = 0.04;         //  Kpyr
 
-            upperBounds[4] = 0.10           * this->TR;     //  Klac
-            lowerBounds[4] = 0.04           * this->TR;     //  Klac
+            //  Arrival time of bolus ( seconds )
+            (*upperBounds)[2] =  maxValueTime;                          
+            (*lowerBounds)[2] =  (maxValueTime - maxValue/(.5 * rinjEstimate)); 
 
-            //  baseline
+            //  Kpl (s-1)
+            //  These are the params from equation 2 of Zierhut:
+            (*upperBounds)[3] = 0.08;     //  Kpl
+            (*lowerBounds)[3] = 0.0001;   //  Kpl
+
+            //  Klac (s-1).  
+            //  These are the params from equation 2 of Zierhut:
+            (*upperBounds)[4] = 0.10;     //  Klac
+            (*lowerBounds)[4] = 0.04;     //  Klac
+
+            //  baseline offset (unitless)
             double baselineValue = (*averageSigVector)[0]->GetTuple1( vecLength - 1 ); 
-            upperBounds[5] =  4 * baselineValue;            //  Baseline DC Offset
-            lowerBounds[5] =  0;                            //  Baseline DC Offset
+            (*upperBounds)[5] =  4 * baselineValue;            //  Baseline DC Offset
+            (*lowerBounds)[5] =  0;                            //  Baseline DC Offset
 
-            //  injection duration 
-            upperBounds[6] = (maxValue/(.5*rinjEstimate))  / this->TR;     //  injection duration 
-            lowerBounds[6] = (maxValue/(2 *rinjEstimate))  / this->TR;     //  injection duration 
-        }   
+            //  injection duration ( seconds ) 
+            (*upperBounds)[6] = (maxValue/(.5*rinjEstimate));     //  injection duration 
+            (*lowerBounds)[6] = (maxValue/(2 *rinjEstimate));     //  injection duration 
+        }
 
 
         /*!
-         *  Initialize the parameter initial values (dimensionless, scaled by TR)
+         *  Define the scale factors required to make the params dimensionless
+         *  (scaled for point rather than time domain)   
          */
-        virtual void InitParamInitialPosition( ParametersType* initialPosition, 
-            float* lowerBounds, float* upperBounds) 
+        virtual void InitParamScaleFactors()
         {
-            if (this->TR == 0 )  {
-                cout << "ERROR: TR Must be set before initializing parameters" << endl;
-                exit(1); 
-            }
-            //  These are the params from equation 1 of Zierhut:
-            //(*initialPosition)[0] =  50000      * this->TR;    // Rinj    (1/s)
-            //(*initialPosition)[1] =  0.15       * this->TR;    // Kpyr    (1/s)  
-            //(*initialPosition)[2] =   -3        / this->TR;    // Tarrival (s)  
+            //  Rinj (rate), mult by TR
+            this->paramScaleFactors[0] = this->TR;   
 
-            //  These are the params from equation 2 of Zierhut:
-            //(*initialPosition)[3] =  0.01       * this->TR;    // Kpl     (1/s)  
-            //(*initialPosition)[4] =  0.05       * this->TR;    // Klac    (1/s)  
-            //(*initialPosition)[5] =  70000;                    // DC Baseilne (a.u.)  
-            //(*initialPosition)[5] =  x;                        // injection duratin (s)  
+            //  Kpyr (rate), mult by TR
+            this->paramScaleFactors[1] = this->TR;   
 
-            for ( int param = 0; param < this->GetNumberOfParameters(); param++ ) { 
-                (*initialPosition)[param] =  ( upperBounds[param] + lowerBounds[param]) / 2. ;
-            }
+            //  arrival_time (time), divide by TR
+            this->paramScaleFactors[2] = 1./this->TR;   
+
+            //  Kpl (rate), mult by TR 
+            this->paramScaleFactors[3] = this->TR;   
+
+            //  Klac (rate), mult by TR 
+            this->paramScaleFactors[4] = this->TR;   
+
+            //  baseline (dimensionless), do not scale
+            this->paramScaleFactors[5] = 1.; 
+
+            //  injection duration (time), divie by TR 
+            this->paramScaleFactors[6] = 1./this->TR;   
+        }
+
             
-            cout << "INITIAL: " << (*initialPosition)[0] / this->TR << endl;
-            cout << "INITIAL: " << (*initialPosition)[1] / this->TR<< endl;
-            cout << "INITIAL: " << (*initialPosition)[2] * this->TR<< endl;
-            cout << "INITIAL: " << (*initialPosition)[3] / this->TR<< endl;
-            cout << "INITIAL: " << (*initialPosition)[4] / this->TR<< endl;
-            cout << "INITIAL: " << (*initialPosition)[5] << endl;
-            cout << "INITIAL: " << (*initialPosition)[6] * this->TR<< endl;
-            cout << "RANGE:  " << upperBounds[0] / this->TR << " " <<  lowerBounds[0] / this->TR << endl;
-            cout << "RANGE:  " << upperBounds[1] / this->TR << " " <<  lowerBounds[1] / this->TR << endl;
-            cout << "RANGE:  " << upperBounds[2] * this->TR << " " <<  lowerBounds[2] * this->TR << endl;
-            cout << "RANGE:  " << upperBounds[3] / this->TR << " " <<  lowerBounds[3] / this->TR << endl;
-            cout << "RANGE:  " << upperBounds[4] / this->TR << " " <<  lowerBounds[4] / this->TR << endl;
-            cout << "RANGE:  " << upperBounds[5]            << " " <<  lowerBounds[5]  << endl;
-            cout << "RANGE:  " << upperBounds[6] * this->TR << " " <<  lowerBounds[6] * this->TR << endl;
-            //(*initialPosition)[0] *=  this->TR;    // Rinj    (1/s)
-            //(*initialPosition)[1] *=  this->TR;    // Kpyr    (1/s)  
-            //(*initialPosition)[2] /=  this->TR;    // Tarrival (s)  
-
-            //  These are the params from equation 2 of Zierhut:
-            //(*initialPosition)[3] *=  this->TR;    // Kpl     (1/s)  
-            //(*initialPosition)[4] *=  this->TR;    // Klac    (1/s)  
-            //(*initialPosition)[5] *=  1;           // Baseilne (a.u.)  
-
-            //for ( int param = 0; param < this->GetNumberOfParameters(); param++ ) { 
-                //cout << "INITIAL: " << (*initialPosition)[param] << endl;
-            //}
-        } 
-
-
-       /*!
-        *   Get the scaled (with time units) final fitted param values. 
-        */
-        virtual void GetParamFinalScaledPosition( ParametersType* finalPosition )
-        {
-            if (this->TR == 0 )  {
-                cout << "ERROR: TR Must be set before scaling final parameters" << endl;
-                exit(1); 
-            }
-
-            //  These are the params from equation 1 of Zierhut:
-            (*finalPosition)[0] /= this->TR;    // Rinj     (1/s)
-            (*finalPosition)[1] /= this->TR;    // Kpyr     (1/s)  
-            (*finalPosition)[2] *= this->TR;    // Tarrival (s)  
-
-            //  These are the params from equation 2 of Zierhut:
-            (*finalPosition)[3] /= this->TR;    // Kpl      (1/s)  
-            (*finalPosition)[4] /= this->TR;    // Klac     (1/s)  
-
-            //  inj duration
-            (*finalPosition)[6] *= this->TR;    // Klac     (s)  
-        } 
-
 
     private: 
 

@@ -103,6 +103,10 @@ class svkMRSKinetics: public svkImageAlgorithm
         int                     GetNumberOfModelOutputPorts(); 
         int                     GetNumberOfModelSignals(); 
         string                  GetModelOutputDescription( int outputIndex ); 
+        void                    SetCustomParamSearchBounds(
+                                    vector<int>* customBoundsParamNumbers, 
+                                    vector<float>* customLowerBounds, 
+                                    vector<float>* customUpperBounds);
 
 
     protected:
@@ -149,6 +153,7 @@ class svkMRSKinetics: public svkImageAlgorithm
         void                    GetCostFunction( svkKineticModelCostFunction::Pointer& costFunction); 
         int                     GetNumberOfModelParameters(); 
         void                    InitModelOutputDescriptionVector(); 
+        void                    PrintInitialParamBounds(); 
 
 
         float*                      metKinetics0;
@@ -164,6 +169,9 @@ class svkMRSKinetics: public svkImageAlgorithm
         vector<string>              modelOutputDescriptionVector;
         vector<vtkFloatArray*>      averageSignalVector;
         float                       TR; 
+        vector<int>*                customBoundsParamNumbers; 
+        vector<float>*              customLowerBounds; 
+        vector<float>*              customUpperBounds; 
 
 };
 

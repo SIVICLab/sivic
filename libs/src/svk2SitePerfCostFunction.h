@@ -199,57 +199,44 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
 
 
         /*!
-         *  Initialize the parameter uppler and lower bounds for this model. 
+         *  Initialize the parameter upper and lower bounds for this model. 
          */
-        virtual void InitParamBounds( float* lowerBounds, float* upperBounds, vector<vtkFloatArray*>* averageSigVector  )
+        virtual void InitParamBounds( vector<float>* lowerBounds, vector<float>* upperBounds,
+            vector<vtkFloatArray*>* averageSigVector )
         {
-            upperBounds[0] = 28/this->TR;          //  T1all
-            lowerBounds[0] = 8/this->TR;           //  T1all
 
-            upperBounds[1] = .05 * this->TR;       //  Kpl
-            lowerBounds[1] = 0.000 * this->TR;     //  Kpl
+            (*upperBounds)[0] = 28;     //  T1all
+            (*lowerBounds)[0] =  8;     //  T1all
 
-            upperBounds[2] = 0 * this->TR;       //  ktrans 
-            lowerBounds[2] = 0 * this->TR;       //  ktrans 
+            (*upperBounds)[1] = .05;    //  Kpl
+            (*lowerBounds)[1] = 0.000;  //  Kpl
 
-            upperBounds[3] = 1;              //  k2 
-            lowerBounds[3] = 0;              //  k2
+            (*upperBounds)[2] = 0;      //  ktrans 
+            (*lowerBounds)[2] = 0;      //  ktrans 
+
+            (*upperBounds)[3] = 1;      //  k2 
+            (*lowerBounds)[3] = 0;      //  k2
 
         }
 
 
-       /*!
-        *   Initialize the parameter initial values
-        */
-        virtual void InitParamInitialPosition( ParametersType* initialPosition, 
-            float* lowerBounds, float* upperBounds )
+        /*!
+         *  Define the scale factors required to make the params dimensionless
+         *  (scaled for point rather than time domain)   
+         */
+        virtual void InitParamScaleFactors()
         {
-            if (this->TR == 0 )  {
-                cout << "ERROR: TR Must be set before initializing parameters" << endl;
-                exit(1); 
-            }
+            //  T1 all ( time ), divide by TR
+            this->paramScaleFactors[0] = 1./this->TR;
 
-            (*initialPosition)[0] =  (1./35) / this->TR;     // T1all  (s)
-            (*initialPosition)[1] =  0.01    * this->TR;     // Kpl    (1/s)  
-            (*initialPosition)[2] =  1       * this->TR;     // ktrans (1/s)
-            (*initialPosition)[3] =  (1./40) * this->TR;     // k2     (1/s)
-        }
+            //  Kpl (rate), mult by TR
+            this->paramScaleFactors[1] = this->TR;
 
+            //  Ktrans (rate), mult by TR
+            this->paramScaleFactors[2] = this->TR;
 
-       /*!
-        *   Get the scaled (with time units) final fitted param values. 
-        */
-        virtual void GetParamFinalScaledPosition( ParametersType* finalPosition )
-        {
-            if (this->TR == 0 )  {
-                cout << "ERROR: TR Must be set before scaling final parameters" << endl;
-                exit(1); 
-            }
-
-            (*finalPosition)[0] *= this->TR;    // T1all  (s)
-            (*finalPosition)[1] /= this->TR;    // Kpl    (1/s)  
-            (*finalPosition)[2] /= this->TR;    // ktrans (1/s)
-            (*finalPosition)[2] /= this->TR;    // k2     (1/s)
+            //  K2 (rate), mult by TR
+            this->paramScaleFactors[3] = this->TR;
         }
 
 

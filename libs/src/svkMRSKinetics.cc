@@ -309,6 +309,8 @@ void svkMRSKinetics::GenerateKineticParamMap()
 
     this->InitAverageDynamics(hasMask, totalVoxels, mask);
 
+    this->PrintInitialParamBounds(); 
+
     for (int voxelID = 0; voxelID < totalVoxels; voxelID++ ) {
 
         //cout << "VOXEL NUMBER: " << voxelID << endl;
@@ -316,7 +318,8 @@ void svkMRSKinetics::GenerateKineticParamMap()
 
         //  If there is a mask check it.  If no mask provided, the compute all voxels. 
         if ( ((hasMask == true) && (mask[voxelID] != 0 )) || ( hasMask == false )  ) {
-            cout << "Fit Voxel " << voxelID << endl;
+            cout << endl;
+            //cout << "Fit Voxel " << voxelID << endl;
             this->FitVoxelKinetics( voxelID );
         }
     }
@@ -361,7 +364,6 @@ void svkMRSKinetics::InitAverageDynamics(bool hasMask, int totalVoxels, unsigned
     double averageValue;  
     float averageCell[1]; 
     for ( int sigNum = 0; sigNum < numSignalsInModel; sigNum++ ) {
-        cout << "signal : " << sigNum << endl;
         for ( int time = 0; time < this->numTimePoints; time++ ) {
 
             int numVoxelsInMask = 0; 
@@ -394,9 +396,8 @@ void svkMRSKinetics::InitAverageDynamics(bool hasMask, int totalVoxels, unsigned
 }
 
 
-
 /*!
- *  Initial the cost function with the input signals for the given number of sites.  
+ *  Initialize the cost function with the input signals 
  */
 void svkMRSKinetics::InitCostFunction(  svkKineticModelCostFunction::Pointer& costFunction,  int voxelID )
 {
@@ -485,7 +486,7 @@ void svkMRSKinetics::InitModelOutputDescriptionVector()
    
     //  finally add one for the cost function output map 
     //int numPorts = this->GetNumberOfModelOutputPorts(); 
-    this->modelOutputDescriptionVector.push_back("residual");
+    this->modelOutputDescriptionVector.push_back("rss");
 
 }
 
@@ -496,6 +497,35 @@ void svkMRSKinetics::InitModelOutputDescriptionVector()
 string svkMRSKinetics::GetModelOutputDescription( int outputIndex )
 {
     return this->modelOutputDescriptionVector[outputIndex]; 
+}
+
+
+void svkMRSKinetics::PrintInitialParamBounds()
+{   
+
+    svkKineticModelCostFunction::Pointer costFunction;
+    this->InitCostFunction( costFunction, 0);
+
+    const unsigned int paramSpaceDimensionality = costFunction->GetNumberOfParameters();
+    typedef svkKineticModelCostFunction::ParametersType ParametersType;
+    ParametersType  initialPosition( paramSpaceDimensionality );
+
+    int numParams = this->GetNumberOfModelParameters();
+    vector<float> lowerBounds(numParams);
+    vector<float> upperBounds(numParams);
+
+    costFunction->SetTR( this->GetTR() );
+    costFunction->InitScaledParamBounds( &lowerBounds, &upperBounds, &(this->averageSignalVector) );
+    costFunction->SetCustomizedScaledParamBounds( 
+            &lowerBounds, 
+            &upperBounds, 
+            *this->customBoundsParamNumbers, 
+            *this->customLowerBounds, 
+            *this->customUpperBounds  
+    ); 
+    costFunction->InitParamInitialPosition( &initialPosition, &lowerBounds, &upperBounds ); 
+    costFunction->PrintParmBounds( &initialPosition, &lowerBounds, &upperBounds, &this->modelOutputDescriptionVector ); 
+
 }
 
 
@@ -519,18 +549,26 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     typedef svkKineticModelCostFunction::ParametersType ParametersType;
     ParametersType  initialPosition( paramSpaceDimensionality );
 
-    //  Set bounds
+    //  ============================================================
+    //  Set model's parameters search bounds
+    //  ============================================================
     itk::ParticleSwarmOptimizer::ParameterBoundsType bounds;
 
     //  Set bounds in dimensionless units (each time point is a TR)
     int numParams = this->GetNumberOfModelParameters(); 
-    float* upperBounds = new float[numParams]; 
-    float* lowerBounds = new float[numParams]; 
+    vector<float> lowerBounds(numParams); 
+    vector<float> upperBounds(numParams); 
 
-    this->GetCostFunction( costFunction ); 
-    this->SetTR( TR ); 
+    //  Set the temporal resolution of the data
     costFunction->SetTR( this->GetTR() ); 
-    costFunction->InitParamBounds( lowerBounds, upperBounds, &(this->averageSignalVector) ); 
+    costFunction->InitScaledParamBounds( &lowerBounds, &upperBounds, &(this->averageSignalVector) ); 
+    costFunction->SetCustomizedScaledParamBounds( 
+            &lowerBounds, 
+            &upperBounds, 
+            *this->customBoundsParamNumbers, 
+            *this->customLowerBounds, 
+            *this->customUpperBounds  
+    ); 
 
     for (int paramNum  = 0; paramNum < numParams; paramNum++ ) {
         //cout << "BOUNDS: " << lowerBounds[paramNum] << " " << upperBounds[paramNum] << endl;
@@ -538,9 +576,16 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     }
     itkOptimizer->SetParameterBounds( bounds );
 
-    //  Set initial guesses
-    costFunction->InitParamInitialPosition( &initialPosition, lowerBounds, upperBounds ); 
 
+    //  ============================================================
+    //  Set initial guesses
+    //  ============================================================
+    costFunction->InitParamInitialPosition( &initialPosition, &lowerBounds, &upperBounds ); 
+
+
+    //  ============================================================
+    //  Set optimizer convergence parameters
+    //  ============================================================
     itk::ParticleSwarmOptimizer::ParametersType initialParameters( paramSpaceDimensionality), finalParameters;
            
     unsigned int numberOfParticles = 200;
@@ -561,9 +606,6 @@ void svkMRSKinetics::InitOptimizer( itk::ParticleSwarmOptimizer::Pointer itkOpti
     //  to get reproducible results for testing, use fixed seed. 
     itkOptimizer->SetUseSeed( true ); // use uniform distribution
     itkOptimizer->SetSeed( 0 ); // use uniform distribution
-
-    delete [] upperBounds; 
-    delete [] lowerBounds; 
 
 }
 
@@ -620,7 +662,8 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
     svkKineticModelCostFunction::Pointer costFunction;
     this->InitCostFunction( costFunction, voxelID ); 
     costFunction->SetTR( this->GetTR() ); 
-    cout << "FINAL VALUES: " << voxelID << endl;
+    cout << "=========================================" << endl;
+    cout << "FINAL VALUES VOXEL = " << voxelID << endl;
     costFunction->GetKineticModel(  finalPosition ); 
 
     //  ==================================================================
@@ -647,9 +690,9 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
     int num3DOutputMaps = paramSpaceDimensionality; 
 
     //  And write out the cost function map as well 
-    cout << "RESIDUAL ================================" << endl;
     double residual = costFunction->GetValue( finalPosition ); 
-    cout << "RESIDUAL: " << residual << endl;
+    cout << setw(10) << left << "RESIDUAL: " << " = " << residual << endl;
+    cout << "===========================" << endl;
     int residualMapIndex = num3DOutputMaps + numSignalsInModel;    
     this->GetOutput(residualMapIndex)->GetPointData()->GetArray(0)->SetTuple1( voxelID, residual); 
 
@@ -660,10 +703,9 @@ void svkMRSKinetics::FitVoxelKinetics( int voxelID )
         int mapIndex = index + numSignalsInModel;    
         this->GetOutput(mapIndex)->GetPointData()->GetArray(0)->SetTuple1( voxelID, finalPosition[index]); 
         string paramName = this->modelOutputDescriptionVector[ numSignalsInModel + index]; 
-        cout << "VOXEL FIT(" << voxelID << ")[" << paramName << "] = " << finalPosition[index] << endl; 
+        cout <<  setw(10) << left << paramName << " = " << finalPosition[index] << endl; 
     }
-
-
+    cout << "===========================" << endl;
 
     return;
 }
@@ -743,6 +785,18 @@ void svkMRSKinetics::SyncPointsFromCells()
         }
     }
 }
+
+
+/*
+ *  Initialize custom param search bounds for specific parameters 
+ */
+void svkMRSKinetics::SetCustomParamSearchBounds(vector<int>* customBoundsParamNumbers, vector<float>* customLowerBounds, vector<float>* customUpperBounds)
+{
+    this->customBoundsParamNumbers  = customBoundsParamNumbers;
+    this->customLowerBounds         = customLowerBounds;
+    this->customUpperBounds         = customUpperBounds ;
+}
+
 
 
 
