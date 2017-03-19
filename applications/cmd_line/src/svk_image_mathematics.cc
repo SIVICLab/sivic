@@ -67,6 +67,7 @@ int main (int argc, char** argv)
     usemsg += "svk_image_mathematics --i1 input_file_name [ --i2 input_file_name ]          \n";  
     usemsg += "                      -o output_file_root -p operation                       \n";
     usemsg += "                      [-s scale_factor] [--output_type typeID]               \n"; 
+    usemsg += "                      [ -vh ]                                                \n"; 
     usemsg += "                                                                             \n";  
     usemsg += "   --i1          input_file_name     Name of input file 1                    \n"; 
     usemsg += "   --i2          input_file_name     Name of input file 2 (binary operation) \n"; 
