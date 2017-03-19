@@ -361,7 +361,7 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         {
             cout << endl;
             cout << "======================================================" << endl;
-            cout << "Model Parameter Bounds (lower -> upper (initial value)" << endl;
+            cout << "Model Parameter Bounds => lower: upper (initial value)" << endl;
             cout << "======================================================" << endl;
             float scaleFactor;
             float startGuess;
@@ -374,8 +374,8 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
                 lowerBound = (*lowerBounds)[i] / scaleFactor; 
                 upperBound = (*upperBounds)[i] / scaleFactor; 
                 cout << setw(3) << right << i << ". " << setw(10) << left 
-                    <<  (*outputDescriptionVector)[i + numSigs] << " => " << setw(10) << lowerBound << " :  " 
-                    << setw(10) << upperBound <<  " (" << startGuess << ")" << endl;
+                    <<  (*outputDescriptionVector)[i + numSigs] << " => " << setw(12) << lowerBound << " :  " 
+                    << setw(12) << upperBound <<  " (" << startGuess << ")" << endl;
             }   
             cout << "======================================================" << endl;
             cout << endl;
