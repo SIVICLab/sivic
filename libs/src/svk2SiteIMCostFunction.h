@@ -94,22 +94,9 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             float  dc       = parameters[5];    //  dc baseline offset                                
             float  injDur   = parameters[6];    //  dc baseline offset                                
 
-            //cout << "FINAL: Rinj     " << Rinj << endl;    
-            //cout << "FINAL: Kpyr     " << Kpyr << endl;    
-            //cout << "FINAL: Tarrival " << Tarrival << endl;    
-            //cout << "FINAL: Kpl      " << Kpl << endl;    
-            //cout << "FINAL: Klac     " << Klac << endl;    
-            //cout << "FINAL: dc       " << dc << endl;    
-            //cout << "FINAL: injDur   " << injDur << endl;    
-
-            //float injectionDuration = 10/3;         //  X seconds normalized by TR into time point space
             float injectionDuration = injDur;         //  X seconds normalized by TR into time point space
             int Tend = static_cast<int>( vtkMath::Round(Tarrival + injectionDuration) );
             Tarrival = static_cast<int>( vtkMath::Round(Tarrival) );
-
-            //cout << "Tarrival: " << Tarrival << endl;
-            //cout << "Tend:     " << Tend << endl;
-            //cout << "NTP:      " << this->numTimePoints << endl;
 
             //  ==============================================================
             //  DEFINE COST FUNCTION 
@@ -121,7 +108,6 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
                 if ( t < Tarrival ) {
                     this->GetModelSignal(PYR)[t] = 0; //this->GetSignalAtTime(PYR, t);
                     this->GetModelSignal(LAC)[t] = 0; //this->GetSignalAtTime(LAC, t);
-                    //cout << " sig1: " << t << " " << this->GetModelSignal(PYR)[t] << endl;
                 }
 
                 if ( (Tarrival <= t) && (t < Tend) ) {
@@ -135,7 +121,6 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
                                 ( ( 1 - exp( -1 * Klac * ( t - Tarrival)) )/Klac ) 
                               - ( ( 1 - exp( -1 * Kpyr * ( t - Tarrival)) )/Kpyr )
                               ) + dc;    
-                    //cout << " sig2: " << t << " " << this->GetModelSignal(PYR)[t] << endl;
                 }
 
                 if (t >= Tend) {      
@@ -147,8 +132,6 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
                     this->GetModelSignal(LAC)[t] = ( ( this->GetSignalAtTime(LAC, Tend) * Kpl ) / ( Kpyr - Klac ) ) 
                             * ( exp( -1 * Klac * (t-Tend)) - exp( -1 * Kpyr * (t-Tend)) ) 
                             + this->GetSignalAtTime(LAC, Tend) *  exp ( -1 * Klac * ( t - Tend)) + dc; 
-                    //cout << " sig3: " << t << " " << this->GetModelSignal(PYR)[t] << endl;
-
                 }
 
             }
@@ -157,12 +140,25 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
 
 
         /*!
-         *  Get the number of parameters in the model. 
-         */   
-        virtual unsigned int GetNumberOfParameters(void) const
+         *  Get the vector that contains the string identifier for each output port
+         */
+        virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const
         {
-            int numParameters = 7;
-            return numParameters;
+            outputDescriptionVector->resize( this->GetNumberOfOutputPorts() );
+
+            //  signals
+            (*outputDescriptionVector)[0] = "pyr";
+            (*outputDescriptionVector)[1] = "lac";
+
+            //  Params: These are from equation 1 and 2 of Zierhut:
+            (*outputDescriptionVector)[2] = "Rinj";
+            (*outputDescriptionVector)[3] = "Kpyr";
+            (*outputDescriptionVector)[4] = "Tarrival";
+            (*outputDescriptionVector)[5] = "Kpl";
+            (*outputDescriptionVector)[6] = "Klac";
+            //  extra params that can be fixed 
+            (*outputDescriptionVector)[7] = "dcoffset";
+            (*outputDescriptionVector)[8] = "inj_dur";
         }
 
 
@@ -177,22 +173,12 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
 
 
         /*!
-         *  Get the vector that contains the string identifier for each output port
-         */
-        virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const
+         *  Get the number of parameters in the model. 
+         */   
+        virtual unsigned int GetNumberOfParameters(void) const
         {
-            outputDescriptionVector->resize( this->GetNumberOfOutputPorts() );
-            (*outputDescriptionVector)[0] = "pyr";
-            (*outputDescriptionVector)[1] = "lac";
-            //  These are the params from equation 1 of Zierhut:
-            (*outputDescriptionVector)[2] = "Rinj";
-            (*outputDescriptionVector)[3] = "Kpyr";
-            (*outputDescriptionVector)[4] = "Tarrival";
-            //  These are the params from equation 2 of Zierhut:
-            (*outputDescriptionVector)[5] = "Kpl";
-            (*outputDescriptionVector)[6] = "Klac";
-            (*outputDescriptionVector)[7] = "dcoffset";
-            (*outputDescriptionVector)[8] = "inj_dur";
+            int numParameters = 7;
+            return numParameters;
         }
 
 
@@ -232,37 +218,33 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             }  
                 
             //  Rinj (s-1) 
-            //  These are the params from equation 1 of Zierhut:
-            (*upperBounds)[0] =  2    * rinjEstimate;   //  Rinj (units of signal rise per second )
-            (*lowerBounds)[0] =  0.1  * rinjEstimate;   //  Rinj
+            (*upperBounds)[0] =  2    * rinjEstimate;   
+            (*lowerBounds)[0] =  0.1  * rinjEstimate;  
         
             //  Kpyr (s-1)  
-            //  These are the params from equation 2 of Zierhut:
-            (*upperBounds)[1] = 0.10;         //  Kpyr
-            (*lowerBounds)[1] = 0.04;         //  Kpyr
+            (*upperBounds)[1] = 0.10;         
+            (*lowerBounds)[1] = 0.04;        
 
             //  Arrival time of bolus ( seconds )
             (*upperBounds)[2] =  maxValueTime;                          
             (*lowerBounds)[2] =  (maxValueTime - maxValue/(.5 * rinjEstimate)); 
 
             //  Kpl (s-1)
-            //  These are the params from equation 2 of Zierhut:
-            (*upperBounds)[3] = 0.08;     //  Kpl
-            (*lowerBounds)[3] = 0.0001;   //  Kpl
+            (*upperBounds)[3] = 0.08;     
+            (*lowerBounds)[3] = 0.0001;  
 
             //  Klac (s-1).  
-            //  These are the params from equation 2 of Zierhut:
-            (*upperBounds)[4] = 0.10;     //  Klac
-            (*lowerBounds)[4] = 0.04;     //  Klac
+            (*upperBounds)[4] = 0.10;     
+            (*lowerBounds)[4] = 0.04;    
 
             //  baseline offset (unitless)
             double baselineValue = (*averageSigVector)[0]->GetTuple1( vecLength - 1 ); 
-            (*upperBounds)[5] =  4 * baselineValue;            //  Baseline DC Offset
-            (*lowerBounds)[5] =  0;                            //  Baseline DC Offset
+            (*upperBounds)[5] =  4 * baselineValue;            
+            (*lowerBounds)[5] =  0;                           
 
             //  injection duration ( seconds ) 
-            (*upperBounds)[6] = (maxValue/(.5*rinjEstimate));     //  injection duration 
-            (*lowerBounds)[6] = (maxValue/(2 *rinjEstimate));     //  injection duration 
+            (*upperBounds)[6] = (maxValue/(.5*rinjEstimate));     
+            (*lowerBounds)[6] = (maxValue/(2 *rinjEstimate));    
         }
 
 
@@ -272,28 +254,27 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
          */
         virtual void InitParamScaleFactors()
         {
-            //  Rinj (rate), mult by TR
+            //  rate, mult by TR
             this->paramScaleFactors[0] = this->TR;   
 
-            //  Kpyr (rate), mult by TR
+            //  rate, mult by TR
             this->paramScaleFactors[1] = this->TR;   
 
-            //  arrival_time (time), divide by TR
+            //  time, divide by TR
             this->paramScaleFactors[2] = 1./this->TR;   
 
-            //  Kpl (rate), mult by TR 
+            //  rate, mult by TR
             this->paramScaleFactors[3] = this->TR;   
 
-            //  Klac (rate), mult by TR 
+            //  rate, mult by TR
             this->paramScaleFactors[4] = this->TR;   
 
-            //  baseline (dimensionless), do not scale
+            //  dimensionless, do not scale
             this->paramScaleFactors[5] = 1.; 
 
-            //  injection duration (time), divie by TR 
+            //  time, divide by TR
             this->paramScaleFactors[6] = 1./this->TR;   
         }
-
             
 
     private: 
