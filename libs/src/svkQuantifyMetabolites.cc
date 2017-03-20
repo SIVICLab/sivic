@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -848,7 +848,7 @@ void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clob
 
         xmlOut << ""
         << "<!-- " << endl
-        << "   Copyright © 2009-2014 The Regents of the University of California." << endl
+        << "   Copyright © 2009-2017 The Regents of the University of California." << endl
         << "   All Rights Reserved." << endl
         << " " << endl
         << "   Redistribution and use in source and binary forms, with or without" << endl

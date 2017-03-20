@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2016 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -166,55 +166,44 @@ class svk2SiteIMPyrCostFunction : public svkKineticModelCostFunction
 
 
         /*!
-         *  Initialize the parameter uppler and lower bounds for this model. 
-         *  All params are dimensionless and scaled by TR
-         */     
-        virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) 
+         *  Initialize the parameter upper and lower bounds for this model. 
+         */
+        virtual void InitParamBounds( vector<float>* lowerBounds, vector<float>* upperBounds,
+            vector<vtkFloatArray*>* averageSigVector )
         {
-            //  These are the params from equation 1 of Zierhut:
-            upperBounds[0] =  100000000     * this->TR;     //  Rinj (arbitrary unit signal rise)
-            lowerBounds[0] =  10000         * this->TR;     //  Rinj
-        
-            upperBounds[1] = 0.20           * this->TR;     //  Kpyr
-            lowerBounds[1] = 0.0001         * this->TR;     //  Kpyr
 
-            upperBounds[2] =  0             / this->TR;     //  Tarrival
-            lowerBounds[2] = -4.00          / this->TR;     //  Tarrival
+            //  These are the params from equation 1 of Zierhut:
+            (*upperBounds)[0] =  100000000;     //  Rinj (arbitrary unit signal rise)
+            (*lowerBounds)[0] =  10000;         //  Rinj
+        
+            (*upperBounds)[1] = 0.20;           //  Kpyr
+            (*lowerBounds)[1] = 0.0001;         //  Kpyr
+
+            (*upperBounds)[2] =  0;             //  Tarrival
+            (*lowerBounds)[2] = -4.00;          //  Tarrival
+
+            //  ================================
+            //  Make dimensionless: Do not edit/remove this
+            //  ================================
+            this->MakeBoundsDimensionless( lowerBounds, upperBounds);
         }   
 
 
-       /*!
-        *   Initialize the parameter initial values (dimensionless, scaled by TR)
-        */
-        virtual void InitParamInitialPosition( ParametersType* initialPosition )
+        /*!
+         *  Define the scale factors required to make the params dimensionless
+         *  (scaled for point rather than time domain)   
+         */
+        virtual void InitParamScaleFactors()
         {
-            if (this->TR == 0 )  {
-                cout << "ERROR: TR Must be set before initializing parameters" << endl;
-                exit(1); 
-            }
-            //  These are the params from equation 1 of Zierhut:
-            (*initialPosition)[0] =  50000      * this->TR;    // Rinj    (1/s)
-            (*initialPosition)[1] =  0.05       * this->TR;    // Kpyr    (1/s)  
-            (*initialPosition)[2] =   -3        / this->TR;    // Tarrival (s)  
-        } 
+            //  Rinj (rate), mult by TR
+            this->paramScaleFactors[0] = this->TR;
 
+            //  Kpyr (rate), mult by TR
+            this->paramScaleFactors[1] = this->TR;
 
-       /*!
-        *   Get the scaled (with time units) final fitted param values. 
-        */
-        virtual void GetParamFinalScaledPosition( ParametersType* finalPosition )
-        {
-            if (this->TR == 0 )  {
-                cout << "ERROR: TR Must be set before scaling final parameters" << endl;
-                exit(1); 
-            }
-
-            //  These are the params from equation 1 of Zierhut:
-            (*finalPosition)[0] /= this->TR;    // Rinj     (1/s)
-            (*finalPosition)[1] /= this->TR;    // Kpyr     (1/s)  
-            (*finalPosition)[2] *= this->TR;    // Tarrival (s)  
-
-        } 
+            //  Tarrival (time ), divide by TR
+            this->paramScaleFactors[2] = 1./this->TR;
+        }
 
 
     private: 
