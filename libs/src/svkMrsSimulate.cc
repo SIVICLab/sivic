@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -113,42 +113,37 @@ int svkMrsSimulate::RequestData( vtkInformation* request, vtkInformationVector**
             svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID )
         );
 
-        int type ; 
-        //type = 0;  //DC (single k-space point)
-        type = 1;  //square met image squre in image space
-
-        if ( type == 1 ) {
-
-            if (( colIndex > 4 && colIndex <= 7 ) &&  (rowIndex > 4 && rowIndex <= 7 )) { 
-
-                for ( int w = 0; w < numPoints; w++ ) {
-                    float wmwres1 = (w - wres1); 
-                    float wmwres2 = (w - wres2); 
-                    spec[0] = T / ( T * T + wmwres1 *wmwres1 ) + T / ( T * T + wmwres2 *wmwres2 ); 
-                    spec[1] = wmwres1 / (T * T + wmwres1 * wmwres1)  +  wmwres2 / (T * T + wmwres2 * wmwres2); 
-                    spectrum->SetTuple2( w, spec[0], spec[1] ); 
-                }
-            } else {
-                for ( int w = 0; w < numPoints; w++ ) {
-                    spec[0] = 0;
-                    spec[1] = 0; 
-                    spectrum->SetTuple2( w, spec[0], spec[1] ); 
-                }
-            }
-
-        } else if ( type == 0 ) { 
+        //  square image: 
+        //if (( colIndex > 4 && colIndex <= 7 ) &&  (rowIndex > 4 && rowIndex <= 7 )) { 
+        //  DC: 
+        int type; 
+        //type = 0; // 2 lorentzian frequency domain peaks at wres1 and wres2 in every spatial voxel. 
+        type = 1; // 1 lorentzian time domain peaks at 0 frequency.  FT should produce peakcentered at 0 frequency
+        
+        if ( type == 0 ) { 
             // kludge to create "k=0 DC k-space for FORTRAN . symmetric sampling 10x10
             //if (( colIndex > 3 && colIndex < 6 ) &&  (rowIndex > 3 && rowIndex < 6 )) { 
             //  simulate complex frequency spectrum
-            if ( 1 ) {
-                for ( int w = 0; w < numPoints; w++ ) {
-                    float wmwres1 = (w - wres1); 
-                    float wmwres2 = (w - wres2); 
-                    spec[0] = T / ( T * T + wmwres1 *wmwres1 ) + T / ( T * T + wmwres2 *wmwres2 ); 
-                    spec[1] = wmwres1 / (T * T + wmwres1 * wmwres1)  +  wmwres2 / (T * T + wmwres2 * wmwres2); 
-                    spectrum->SetTuple2( w, spec[0], spec[1] ); 
-                }
-            } 
+            for ( int w = 0; w < numPoints; w++ ) {
+                float wmwres1 = (w - wres1); 
+                float wmwres2 = (w - wres2); 
+                spec[0] = T / ( T * T + wmwres1 *wmwres1 ) + T / ( T * T + wmwres2 *wmwres2 ); 
+                spec[1] = wmwres1 / (T * T + wmwres1 * wmwres1)  +  wmwres2 / (T * T + wmwres2 * wmwres2); 
+                spectrum->SetTuple2( w, spec[0], spec[1] ); 
+            }
+        } else if ( type == 1 ) { 
+            cout << "===========" << endl;
+            for ( int w = 0; w < numPoints; w++ ) {
+                spec[0] = 1000 * exp(-1 * (T/100) * w); 
+                spec[1] = 0; 
+                spectrum->SetTuple2( w, spec[0], spec[1] ); 
+            }
+        } else {
+            for ( int w = 0; w < numPoints; w++ ) {
+                spec[0] = 0;
+                spec[1] = 0; 
+                spectrum->SetTuple2( w, spec[0], spec[1] ); 
+            }
         }
     }
 

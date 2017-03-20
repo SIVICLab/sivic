@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -62,6 +62,7 @@ svkImageReaderFactory::svkImageReaderFactory()
 #endif
 
     this->dcmMriVolReader           = svkDcmMriVolumeReader::New();
+    this->dcmPETVolReader           = svkDcmPETVolumeReader::New();
     this->dcmMrsVolReader           = svkDcmMrsVolumeReader::New();
     this->dcmEnhancedVolReader      = svkDcmEnhancedVolumeReader::New();
     this->idfVolReader              = svkIdfVolumeReader::New();
@@ -82,6 +83,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->lcmodelTableReader        = svkLCModelTableReader::New();
 
     vtkImageReader2Factory::RegisterReader( this->dcmMriVolReader );
+    vtkImageReader2Factory::RegisterReader( this->dcmPETVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmMrsVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmEnhancedVolReader );
     vtkImageReader2Factory::RegisterReader( this->idfVolReader );
@@ -127,6 +129,11 @@ svkImageReaderFactory::~svkImageReaderFactory()
     if (this->dcmMriVolReader != NULL) {
         this->dcmMriVolReader->Delete();
         this->dcmMriVolReader = NULL;
+    }
+
+    if (this->dcmPETVolReader != NULL) {
+        this->dcmPETVolReader->Delete();
+        this->dcmPETVolReader = NULL;
     }
 
     if (this->dcmMrsVolReader != NULL) {
@@ -252,7 +259,9 @@ svkImageReader2* svkImageReaderFactory::CreateImageReader2( svkImageReader2::Rea
     if ( readerType == svkImageReader2::DICOM_MRS) {
         return svkDcmMrsVolumeReader::New(); 
     } else if ( readerType == svkImageReader2::DICOM_MRI) {
-        return svkDcmMriVolumeReader::New(); 
+        return svkDcmMriVolumeReader::New();
+    } else if ( readerType == svkImageReader2::DICOM_PET) {
+        return svkDcmPETVolumeReader::New();
     } else if ( readerType == svkImageReader2::DICOM_ENHANCED_MRI) {
         return svkDcmEnhancedVolumeReader::New(); 
     } else if ( readerType == svkImageReader2::DICOM_SEGMENTATION) {

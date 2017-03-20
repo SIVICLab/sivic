@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2016 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -68,7 +68,7 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";   
     usemsg += "svk_simulate -i input_file_name -o output_root                                   \n"; 
-    usemsg += "                 -f filter_type --width [-vh]                                    \n";
+    usemsg += "                 -f filter_type         [-vh]                                    \n";
     usemsg += "                                                                                 \n";  
     usemsg += "   -i        input_file_name   Name of file to convert.                          \n"; 
     usemsg += "   -o        output_root       Root name of outputfile.                          \n";  
@@ -77,35 +77,26 @@ int main (int argc, char** argv)
     usemsg += "                                     4 = DICOM_MRS (default)                     \n";
     usemsg += "   -f        filter_type       Type of apodization .  Options:                   \n";
     usemsg += "                                     1 = Lorentzian                              \n";
-    usemsg += "   --width   width             Width of filter in Hz (FWHH)                      \n";
-    usemsg += "   --single                    Only apodize specified file if multiple in series \n"; 
     usemsg += "   -v                          Verbose output.                                   \n";
     usemsg += "   -h                          Print help mesage.                                \n";  
     usemsg += "                                                                                 \n";  
-    usemsg += "Applies an apodization filter to the innput data.                                \n"; 
+    usemsg += "Cretes a simulated data set with the same dimensions as the input data template. \n"; 
     usemsg += "                                                                                 \n";  
 
     string inputFileName; 
     string outputFileName; 
     int    filterType = -1; 
-    float  width = -1;  
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS; 
-    bool onlyApodizeSingle = false; 
-
     bool   verbose = false;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
-        FLAG_WIDTH = 0, 
-        FLAG_SINGLE
     };
 
 
     static struct option long_options[] =
     {
-        {"width",    required_argument, NULL,  FLAG_WIDTH},
-        {"single",    no_argument,      NULL,  FLAG_SINGLE}, 
         {0, 0, 0, 0}
     };
 
@@ -126,12 +117,6 @@ int main (int argc, char** argv)
                 break;
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
-                break;
-            case FLAG_WIDTH:
-                width = atof( optarg);
-                break;
-            case FLAG_SINGLE: 
-                onlyApodizeSingle = true;
                 break;
             case 'f': 
                 filterType = atoi( optarg);
@@ -173,7 +158,6 @@ int main (int argc, char** argv)
         cout << "Input File:   " << inputFileName << endl;
         cout << "Output File:  " << outputFileName << endl;
         cout << "FilterType:   " << filterType << endl;
-        cout << "width:        " << width << endl;
     }
 
 
@@ -186,9 +170,6 @@ int main (int argc, char** argv)
         exit(1);
     }
     reader->SetFileName( inputFileName.c_str() );
-    if ( onlyApodizeSingle == true ) {
-        reader->OnlyReadOneInputFile();
-    }
     reader->Update(); 
 
     //  ===============================================

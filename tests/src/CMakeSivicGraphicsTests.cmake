@@ -42,11 +42,7 @@
 #############################################################
 #   Paths to binary applications and scripts
 #############################################################
-if(CLION_BUILD)
-    SET( DEDICATED_TEST_BIN_PATH ${CMAKE_BINARY_DIR}/tests/src)
-else(CLION_BUILD)
-    SET( DEDICATED_TEST_BIN_PATH ${CMAKE_BINARY_DIR}/tests/${PLATFORM})
-endif(CLION_BUILD)
+SET( DEDICATED_TEST_BIN_PATH ${CMAKE_BINARY_DIR}/tests/${PLATFORM})
 SET( TEST_PLATFORM "${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}" )
 
 

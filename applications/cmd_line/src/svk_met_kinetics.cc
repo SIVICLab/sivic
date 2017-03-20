@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@
 #include <svkImageReader2.h>
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
+#include <svkImageMathematics.h>
 
 //  Insert your algorithm here in place of "AlgoTemplate":
 //#include <svkDynamicMRIAlgoTemplate.h>
@@ -72,6 +73,7 @@ int main (int argc, char** argv)
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";
     usemsg += "svk_met_kinetics   --i1 name --i2 name [ --i3 name ]                     \n";
     usemsg += "                 [ --mask name ] -o root [ -t output_data_type ]         \n";
+    usemsg += "                 [ --param num --lb value --ub value]                    \n";
     usemsg += "                 [ --model type ] [ -h ]                                 \n";
     usemsg += "                                                                         \n";
     usemsg += "   --i1               name   Name of dynamic pyr signal file             \n";
@@ -92,11 +94,30 @@ int main (int argc, char** argv)
     usemsg += "                                 5 = DICOM_MRI                           \n";
     usemsg += "                                 6 = DICOM_ENHANCED_MRI (default)        \n";
     usemsg += "   --tr               tr    TR,  time in seconds between kinetic samples \n";
+    usemsg += "   --------------------------------------------------------------------- \n"; 
+    usemsg += "   --param            num   Param number to set fitting bounds for       \n";
+    usemsg += "   --lb               value Lower bound for parameter search             \n";
+    usemsg += "   --ub               upper Lower bound for parameter search             \n";
+    usemsg += "   --------------------------------------------------------------------- \n"; 
     usemsg += "   -h                       Print this help mesage.                      \n";
     usemsg += "                                                                         \n";
-    usemsg += "Fit dynamic MRSI to metabolism kinetics model                            \n";
+    usemsg += "Fit dynamic MRSI to kinetic metabolism model                             \n";
+    usemsg += "                                                                         \n";
+    usemsg += "To constrain the search space for a particular param set the set of      \n"; 
+    usemsg += "3 flags (--param num --lb lowerBound --ub upperBound). The model param   \n"; 
+    usemsg += "numbers are printed to stdout at run time.                               \n"; 
+    usemsg += "                                                                         \n";
+    usemsg += "Output Volumes:                                                          \n"; 
+    usemsg += "   *_fit       = fittited signals                                        \n";
+    usemsg += "   *_paramName = 3D Maps of fittedm model param                          \n";
+    usemsg += "   *_rss       = 3D Map  of residual sum of squares from fitted model    \n";
+    usemsg += "   *_residual  = residual of input signals and fitted signals            \n";
+    usemsg += "                                                                         \n";
+    usemsg += "Example, fit model 3 and constrain the 3rd param to the range 0-5:       \n";
+    usemsg += "    svk_met_kinetics  --i1 pyr.dcm --i2 lac.dcm --mask mask.dcm          \n"; 
+    usemsg += "                      -o model3 -t 6 --tr 2 --model 3                    \n"; 
+    usemsg += "                      --param 3 --lb 0 --ub 5                            \n"; 
     usemsg += "\n";
-
 
     vector <string> inputFileNames(10);
     string maskFileName;
@@ -106,6 +127,12 @@ int main (int argc, char** argv)
     int    modelTypeInt = 1;
     float  tr = 0.; 
 
+    //  bounds are sepcified by triplets, paramNum, lowerBound upperBound.  Parse each individually 
+    //  from comand line and just verify that the same number if elements is present for each.  
+    vector <int>  customBoundsParamNumbers; 
+    vector <float> customLowerBounds; 
+    vector <float> customUpperBounds; 
+
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
@@ -114,7 +141,10 @@ int main (int argc, char** argv)
         FLAG_IM_3, 
         FLAG_MASK, 
         FLAG_MODEL, 
-        FLAG_TR   
+        FLAG_TR,    
+        FLAG_PARAM_NUM,    
+        FLAG_LOWER_BOUND,    
+        FLAG_UPPER_BOUND    
     };
 
 
@@ -127,6 +157,9 @@ int main (int argc, char** argv)
         {"mask",    required_argument, NULL,  FLAG_MASK},
         {"model",   required_argument, NULL,  FLAG_MODEL},
         {"tr",      required_argument, NULL,  FLAG_TR},
+        {"param",   required_argument, NULL,  FLAG_PARAM_NUM},
+        {"lb",      required_argument, NULL,  FLAG_LOWER_BOUND},
+        {"ub",      required_argument, NULL,  FLAG_UPPER_BOUND},
         {0, 0, 0, 0}
     };
 
@@ -171,6 +204,15 @@ int main (int argc, char** argv)
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
                 break;
+            case FLAG_PARAM_NUM:
+                customBoundsParamNumbers.push_back(atoi( optarg ));
+                break;
+            case FLAG_LOWER_BOUND:
+                customLowerBounds.push_back(atof( optarg ));
+                break;
+            case FLAG_UPPER_BOUND:
+                customUpperBounds.push_back(atof( optarg ));
+                break;
             case 'h':
                 cout << usemsg << endl;
                 exit(1);
@@ -186,16 +228,18 @@ int main (int argc, char** argv)
     if (
         argc != 0 
         || outputFileName.length() == 0
+        || tr == 0
         || ( 
             dataTypeOut != svkImageWriterFactory::DICOM_MRI 
             && dataTypeOut != svkImageWriterFactory::IDF 
             && dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI 
            )
+        || ( customBoundsParamNumbers.size() != customUpperBounds.size() ) 
+        || ( customBoundsParamNumbers.size() != customLowerBounds.size() ) 
     ) {
             cout << usemsg << endl;
             exit(1); 
     }
-
 
     cout << "Mask: " << maskFileName << endl;
     cout << "output root: " << outputFileName << endl;
@@ -213,6 +257,9 @@ int main (int argc, char** argv)
     for (int sig = 0; sig < numberOfModelSignals; sig++) {
         cout << "SIGNAL(" << sig << ") = " << dynamics->GetModelOutputDescription(sig) << endl; 
     }
+
+    //  set user defined param bounds: 
+    dynamics->SetCustomParamSearchBounds(&customBoundsParamNumbers, &customLowerBounds, &customUpperBounds); 
 
     // ===============================================
     //  Use a reader factory to create a data reader 
@@ -283,8 +330,78 @@ int main (int argc, char** argv)
         outWriter->Write(); 
         outWriter->Delete(); 
     }
-    writerFactory->Delete();
 
+    //  residuals
+    for (int sig = 0; sig < numberOfModelSignals; sig++) {
+
+        cout << "Generating residual sig: " << sig << endl; 
+        svkImageMathematics* math = svkImageMathematics::New();
+        math->SetInput1Data( dynamics->GetImageDataInput( sig ) );
+        math->SetInput2Data( dynamics->GetOutput( sig ) );
+        math->SetOperationToSubtract();
+        //  set output type to 2:     
+        math->SetOutputType(2);
+        math->Update();
+
+        svkImageWriter* outWriter    = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+        
+        if ( outWriter == NULL ) {
+            cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_ENHANCED_MRI << endl;
+            exit(1);
+        }
+    
+        string outFile = outputFileName; 
+        outFile.append("_"); 
+        outFile.append( dynamics->GetModelOutputDescription( sig ) ); 
+        outFile.append("_residual"); 
+    
+        outWriter->SetFileName (outFile.c_str() ); 
+        outWriter->SetInputData( math->GetOutput() ); 
+        outWriter->Write(); 
+        outWriter->Delete(); 
+        math->Delete(); 
+    }
+
+
+    //  print out command line to visualize data: 
+    string sivicCmd = "sivic"; 
+    for ( int i = 0; i < numOutputs; i++ ) {
+
+        string outFile = outputFileName; 
+        outFile.append("_"); 
+        outFile.append( dynamics->GetModelOutputDescription(i) ); 
+
+        if ( i < numberOfModelSignals ) {
+
+            string outFileResidual = outFile; 
+            sivicCmd.append(" --id "); 
+            sivicCmd.append( inputFileNames[i] ); 
+            sivicCmd.append(" --id "); 
+            outFile.append("_fit.dcm"); 
+            sivicCmd.append( outFile ); 
+            sivicCmd.append(" --id "); 
+            outFileResidual.append("_residual.dcm"); 
+            sivicCmd.append( outFileResidual ); 
+        }
+
+        if ( ( i == 0) && (maskFileName.size() > 0 ) ) {
+            sivicCmd.append(" -i "); 
+            sivicCmd.append( maskFileName ); 
+        }
+
+        if ( i >= numberOfModelSignals ) {
+            sivicCmd.append(" -i "); 
+            sivicCmd.append( outFile); 
+            sivicCmd.append( ".dcm" ); 
+        }
+    }
+    cout << endl;
+    cout << "Visualize the results with the following command: " << endl; 
+    cout << sivicCmd << endl;
+    cout << endl;
+
+    writerFactory->Delete();
+    dynamics->Delete(); 
 
     return 0; 
 }

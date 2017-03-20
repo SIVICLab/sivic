@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -68,6 +68,7 @@ class svkImageReader2 : public vtkImageReader2
             UNDEFINED = -1,
             DICOM_MRS=0,
             DICOM_MRI,
+            DICOM_PET,
             DICOM_ENHANCED_MRI,
             DICOM_SEGMENTATION,
             DICOM_RAW,

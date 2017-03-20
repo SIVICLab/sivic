@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -49,6 +49,7 @@
 
 #include <svkIdfVolumeReader.h>
 #include <svkDcmMriVolumeReader.h>
+#include <svkDcmPETVolumeReader.h>
 #include <svkDcmMrsVolumeReader.h>
 #include <svkDcmEnhancedVolumeReader.h>
 #include <svkDdfVolumeReader.h>
@@ -106,6 +107,7 @@ class svkImageReaderFactory : public vtkImageReader2Factory
 
         //  Members:
         svkDcmMriVolumeReader*          dcmMriVolReader;
+        svkDcmPETVolumeReader*          dcmPETVolReader;
         svkDcmMrsVolumeReader*          dcmMrsVolReader;
         svkDcmEnhancedVolumeReader*     dcmEnhancedVolReader;
         svkIdfVolumeReader*             idfVolReader;

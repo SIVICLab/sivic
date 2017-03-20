@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -623,7 +623,8 @@ void svkDcmVolumeReader::SetSliceSpacing( svkDcmHeader* hdr, int numSlices, vect
             svkDcmVolumeReader::GetFloatValAttribute7( dcmSeriesAttributes[ index1 ] ) - svkDcmVolumeReader::GetFloatValAttribute7( dcmSeriesAttributes[ 0 ]) 
         ); 
     } else {
-        this->sliceSpacing = hdr->GetFloatValue("SliceThickness"); 
+        //  doing this to take advantage of the searchInto option for the double version 
+        this->sliceSpacing = static_cast<float>( hdr->GetDoubleValue("SliceThickness", true) ); 
     }
 }
 

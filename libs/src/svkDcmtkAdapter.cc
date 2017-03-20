@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -951,9 +951,13 @@ unsigned short svkDcmtkAdapter::GetPixelValue( long unsigned int position )
  *
  * \return the double value of the tag
  */
-double svkDcmtkAdapter::GetDoubleValue(const char* name)
+double svkDcmtkAdapter::GetDoubleValue(const char* name, bool searchInto)
 {
-    return this->dcmFile->getDoubleValue( GetDcmTagKey(name) ); 
+    if ( searchInto == true ) {
+        return this->dcmFile->getDoubleValue( GetDcmTagKey(name), searchInto ); 
+    } else {    
+        return this->dcmFile->getDoubleValue( GetDcmTagKey(name) ); 
+    }
 }
 
 
