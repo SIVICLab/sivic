@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -80,7 +80,7 @@ class svkDdfVolumeWriter : public svkImageWriter
         ~svkDdfVolumeWriter();
 
         virtual int     FillInputPortInformation(int port, vtkInformation* info);
-        virtual void    SetProvenance(); 
+        virtual void    SetProvenance();
 
 
     private:

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -103,6 +103,10 @@ class svkMRSKinetics: public svkImageAlgorithm
         int                     GetNumberOfModelOutputPorts(); 
         int                     GetNumberOfModelSignals(); 
         string                  GetModelOutputDescription( int outputIndex ); 
+        void                    SetCustomParamSearchBounds(
+                                    vector<int>* customBoundsParamNumbers, 
+                                    vector<float>* customLowerBounds, 
+                                    vector<float>* customUpperBounds);
 
 
     protected:
@@ -137,6 +141,8 @@ class svkMRSKinetics: public svkImageAlgorithm
 
     private:
         void                    GenerateKineticParamMap();
+        void                    InitAverageDynamics(bool hasMask, int totalVoxels, unsigned short* mask); 
+
         void                    FitVoxelKinetics( int voxelID ); 
 
         void                    InitOptimizer(  itk::ParticleSwarmOptimizer::Pointer itkOptimizer, int voxelID ); 
@@ -147,6 +153,7 @@ class svkMRSKinetics: public svkImageAlgorithm
         void                    GetCostFunction( svkKineticModelCostFunction::Pointer& costFunction); 
         int                     GetNumberOfModelParameters(); 
         void                    InitModelOutputDescriptionVector(); 
+        void                    PrintInitialParamBounds(); 
 
 
         float*                      metKinetics0;
@@ -160,7 +167,11 @@ class svkMRSKinetics: public svkImageAlgorithm
         vtkDataArray*               mapArrayKtrans; 
         svkMRSKinetics::MODEL_TYPE  modelType; 
         vector<string>              modelOutputDescriptionVector;
+        vector<vtkFloatArray*>      averageSignalVector;
         float                       TR; 
+        vector<int>*                customBoundsParamNumbers; 
+        vector<float>*              customLowerBounds; 
+        vector<float>*              customUpperBounds; 
 
 };
 
