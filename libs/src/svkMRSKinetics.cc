@@ -231,9 +231,12 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
 
     //  create a template array for output kinetics: 
     this->numTimePoints = data->GetDcmHeader()->GetNumberOfTimePoints();
-    vtkFloatArray* templateArray = vtkFloatArray::SafeDownCast(
-            svkMriImageData::SafeDownCast(this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(0)
-    );
+    vtkFloatArray* templateArray = vtkFloatArray::New(); 
+    templateArray->DeepCopy(
+        vtkFloatArray::SafeDownCast(
+                svkMriImageData::SafeDownCast(this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(0)
+        )
+    ); 
     for ( int time = 0; time < this->numTimePoints; time++ ) {
         templateArray->SetTuple1(time, 0); 
     }
