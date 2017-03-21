@@ -233,6 +233,13 @@ vtkSivicController* sivicApp::GetView()
  */
 int sivicApp::Build( int argc, char* argv[] )
 {
+    // Kludge to avoid Tcl/TK initialization error when requesting help message.
+    if( argc == 2) {
+        string firstArgument = argv[1];
+        if( firstArgument.compare("-h") == 0){
+            return 1;
+        }
+    }
     // First we have to initialize the tcl interpreter...
     Tcl_Interp *interp = vtkKWApplication::InitializeTcl(argc, argv, &cerr);
     if (!interp)

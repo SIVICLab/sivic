@@ -796,14 +796,19 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
          << acqDcos[7] << setw(14) << acqDcos[8] << endl;
 
     float selBoxSize[3]; 
-    float selBoxCenter[3]; 
+    float selBoxCenter[3];
+    selBoxSize[0] = 0.;
+    selBoxSize[1] = 0.;
+    selBoxSize[2] = 0.;
+    selBoxCenter[0] = 0.;
+    selBoxCenter[1] = 0.;
+    selBoxCenter[2] = 0.;
 
     if( hdr->ElementExists( "VolumeLocalizationSequence" ) ) {
 
         int numberOfItems = hdr->GetNumberOfItemsInSequence("VolumeLocalizationSequence");
 
         for (int i = 0; i < numberOfItems; i++) {
-    
             selBoxSize[i] = hdr->GetFloatSequenceItemElement(
                 "VolumeLocalizationSequence",
                 i,
@@ -820,14 +825,6 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
             );
 
         }
-    } else {
-
-        selBoxSize[0] = 0.; 
-        selBoxSize[1] = 0.; 
-        selBoxSize[2] = 0.; 
-        selBoxCenter[0] = 0.; 
-        selBoxCenter[1] = 0.; 
-        selBoxCenter[2] = 0.; 
     }
 
     *out << "selection center(lps, mm): " << fixed << setw(14) << setprecision(5) << selBoxCenter[0] 
