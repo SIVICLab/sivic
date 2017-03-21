@@ -550,7 +550,7 @@ void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
                     this->GetRenderer(svkPlotGridView::PRIMARY)->AddViewProp( this->GetProp( VOL_SELECTION ) );
                 }
             }
-            if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( OVERLAY_IMAGE ) ) ) {
+            if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( OVERLAY_IMAGE ) ) && this->dataVector[MET]!= NULL) {
                 this->GetRenderer(svkPlotGridView::PRIMARY)->AddViewProp( this->GetProp( OVERLAY_IMAGE ) );
             }
             if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( OVERLAY_TEXT ) )
