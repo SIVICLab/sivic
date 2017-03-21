@@ -85,6 +85,7 @@ int main (int argc, char** argv)
     usemsg += "                                         5 = DICOM_MRI                           \n";  
     usemsg += "                                         6 = DICOM_Enhanced MRI                  \n";  
     usemsg += "   -v            mask_value          The integer output pixel value.             \n";
+    usemsg += "   -r            mask_volume         Restrict the mask to the given volume.      \n";
     usemsg += "   -l            lower_bound         The lower bound for thresholding.           \n";
     usemsg += "   -u            upper_bound         The upper bound for thresholding.           \n";
     usemsg += "   --pm          percent             threshold is 'percent' of intensity range   \n"; 
@@ -107,6 +108,7 @@ int main (int argc, char** argv)
     int     outputValue = 1;
     bool    verbose = false;
     bool    onlyLoadSingleFile = false;
+    int     volume = -1;
 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
@@ -129,7 +131,7 @@ int main (int argc, char** argv)
      */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:o:t:v:l:u:bhV", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:o:t:v:l:u:r:bhV", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -148,6 +150,9 @@ int main (int argc, char** argv)
                 break;
             case 'u':
                 upperValue = svkTypeUtils::StringToDouble(optarg);
+                break;            
+            case 'r':
+                volume = svkTypeUtils::StringToInt(optarg) - 1;
                 break;
             case FLAG_SINGLE:
                 onlyLoadSingleFile = true;
@@ -227,6 +232,9 @@ int main (int argc, char** argv)
 		writer->SetFileName( outputFileName.c_str() );
         svkImageThreshold* thresholder = svkImageThreshold::New();
         thresholder->SetInputData(currentImage);
+        if( volume >= 0 ) {
+            thresholder->SetVolume( volume );
+        }
         if( convertToByteMask ) {
             thresholder->SetOutputScalarType( VTK_UNSIGNED_CHAR );
         }

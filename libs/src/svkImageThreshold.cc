@@ -62,12 +62,13 @@ svkImageThreshold::svkImageThreshold()
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
     // We have to call this in the constructor.
-    this->SetNumberOfInputPorts(14);
+    this->SetNumberOfInputPorts(15);
     bool required = true;
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, !required);
     this->GetPortMapper()->InitializeInputPort( OUTPUT_SERIES_DESCRIPTION, "OUTPUT_SERIES_DESCRIPTION", svkAlgorithmPortMapper::SVK_STRING, !required);
     this->GetPortMapper()->InitializeInputPort( MASK_OUTPUT_VALUE, "MASK_OUTPUT_VALUE", svkAlgorithmPortMapper::SVK_INT, !required);
+    this->GetPortMapper()->InitializeInputPort( VOLUME, "VOLUME", svkAlgorithmPortMapper::SVK_INT, !required);
     this->GetPortMapper()->InitializeInputPort( THRESHOLD_MIN, "THRESHOLD_MIN", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
     this->GetPortMapper()->InitializeInputPort( THRESHOLD_MAX, "THRESHOLD_MAX", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
     this->GetPortMapper()->InitializeInputPort( THRESHOLD_BY_MODE_IMAGE, "THRESHOLD_BY_MODE_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, !required);
@@ -145,6 +146,23 @@ svkInt* svkImageThreshold::GetMaskOutputValue( )
     return this->GetPortMapper()->GetIntInputPortValue( MASK_OUTPUT_VALUE );
 }
 
+/*!
+ * Utility setter for input port .
+ */
+void svkImageThreshold::SetVolume( int volume )
+{
+    this->GetPortMapper()->SetIntInputPortValue( VOLUME, volume);
+}
+
+
+/*!
+ * Utility getter for input port .
+ */
+svkInt* svkImageThreshold::GetVolume( )
+{
+    return this->GetPortMapper()->GetIntInputPortValue( VOLUME );
+}
+
 
 /*!
  * Utility setter for input port .
@@ -207,11 +225,7 @@ int svkImageThreshold::RequestData( vtkInformation* request,
         description = this->GetMaskSeriesDescription()->GetValue();
     }
 
-    vtkImageThreshold* threshold = vtkImageThreshold::New();
-    if( this->GetOutputScalarType() != NULL ) {
-        threshold->SetOutputScalarType( this->GetOutputScalarType()->GetValue() );
-    }
-    threshold->SetOutValue(0);
+
 
     // The MASK_OUTPUT_VALUE is optional so check to see if its set
 
@@ -268,28 +282,54 @@ int svkImageThreshold::RequestData( vtkInformation* request,
         }
     }
 
-
-    if(this->GetMaskOutputValue() != NULL ) {
-        threshold->SetInValue(this->GetMaskOutputValue()->GetValue());
+    this->GetOutput()->ZeroCopy(this->GetImageDataInput(0));
+    int numVolumes = this->GetImageDataInput(0)->GetPointData()->GetNumberOfArrays();
+    for( int vol = 0; vol < numVolumes; vol++) {
+        this->GetOutput()->GetPointData()->RemoveArray(0);
     }
-    threshold->ThresholdBetween( min, max );
+    string activeScalarName = this->GetImageDataInput(0)->GetPointData()->GetScalars()->GetName();
+    int startVolume = 0;
+    int finalVolume = numVolumes - 1;
+    if( this->GetVolume() != NULL) {
+        startVolume = this->GetVolume()->GetValue();
+        finalVolume = this->GetVolume()->GetValue();
+        svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+        svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::TIME_INDEX, 0);
+        svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::CHANNEL_INDEX, 0);
+        this->GetOutput()->GetDcmHeader()->Redimension(&dimensionVector);
+    }
+    for( int vol = startVolume; vol <= finalVolume; vol++) {
+        vtkImageThreshold* threshold = vtkImageThreshold::New();
+        if( this->GetOutputScalarType() != NULL ) {
+            threshold->SetOutputScalarType( this->GetOutputScalarType()->GetValue() );
+        }
+        if(this->GetMaskOutputValue() != NULL ) {
+            threshold->SetInValue(this->GetMaskOutputValue()->GetValue());
+        }
+        threshold->ThresholdBetween( min, max );
+        threshold->SetOutValue(0);
+        string arrayName = this->GetImageDataInput(0)->GetPointData()->GetArray(vol)->GetName();
+        this->GetImageDataInput(0)->GetPointData()->SetActiveScalars( arrayName.c_str());
 
-    svkImageAlgorithmExecuter* executer = svkImageAlgorithmExecuter::New();
-    executer->SetAlgorithm( threshold );
+        svkImageAlgorithmExecuter *executer = svkImageAlgorithmExecuter::New();
+        executer->SetAlgorithm(threshold);
 
-    // Set the input of the vtk algorithm to be the input of the executer
-    executer->SetInputData(this->GetImageDataInput(0));
+        // Set the input of the vtk algorithm to be the input of the executer
+        executer->SetInputData(this->GetImageDataInput(0));
 
-    // Update the vtk algorithm
-    executer->Update();
+        // Update the vtk algorithm
+        executer->Update();
 
-    // Copy the output of the vtk algorithm
-    this->GetOutput()->DeepCopy( executer->GetOutput() );
+        // Copy the output of the vtk algorithm
+        this->GetOutput()->GetPointData()->AddArray(executer->GetOutput()->GetPointData()->GetScalars() );
+        executer->Delete();
+        threshold->Delete();
+    }
+    this->GetOutput()->GetPointData()->SetActiveScalars(activeScalarName.c_str());
     this->GetOutput()->GetDcmHeader()->SetValue("SeriesDescription", description );
     if( this->GetOutputScalarType() != NULL ) {
         this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::GetVtkDataTypeFromSvkDataType( this->GetOutputScalarType()->GetValue() ));
     }
-    threshold->Delete();
-    executer->Delete();
+
     return 1; 
 }
