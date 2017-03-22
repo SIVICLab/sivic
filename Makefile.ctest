@@ -20,7 +20,7 @@ SIVIC_ROOT      	= $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 SVK_TEST_ROOT   	= ${SIVIC_ROOT}/test_data
 OUTPUT_LOG      	= ${PWD}/ctest_logs/atom 
 CMAKE_DIR       	= /usr/bin
-CMAKE_DIR_GE    	= /usr/local/bin
+CMAKE_DIR_GE    	= /usr/bin
 XVFB_RUN        	= ${SIVIC_ROOT}/tests/scripts/xvfb-run
 SVN_COMMAND     	= /netopt/bin/svn 
 CLAPACK_DIR     	= /opt/src/freeware/clapack/clapack-3.2.1-CMAKE
@@ -121,7 +121,7 @@ CONFIG_BASE_GE         	 = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_DIST}
 CONFIG_BASE_VTK6_DBG   	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_DBG}
 CONFIG_BASE_VTK6_DIST  	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_DIST}
 CONFIG_BASE_VTK6_EPIC32	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_EPIC32}
-CONFIG_BASE_GE_VTK6_DIST = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_VTK6_DIST}
+CONFIG_BASE_GE_VTK6_DIST = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_DIST}
 ifeq ($(OSTYPE),Darwin)
 	CONFIG_BASE_VTK6_DIST += -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
                              -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	      \
@@ -210,7 +210,7 @@ configure_epic32: clean_results
 # configure and build on ESE host
 #
 configure_GE_dist: clean_results 
-	(${RM_CACHE} ${CONFIG_BASE_GE_VTK6} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_GE_CONSOLE} ${CONFIG_RELEASE} ${SIVIC_ROOT}/) 
+	(${RM_CACHE} ${CONFIG_BASE_GE_VTK6_DIST} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_GE_CONSOLE} ${CONFIG_RELEASE} ${SIVIC_ROOT}/) 
 
 
 
