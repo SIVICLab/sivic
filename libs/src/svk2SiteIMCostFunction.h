@@ -81,65 +81,6 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
 
 
         /*!
-         *  For a given set of parameter values, compute the model kinetics
-         */   
-        virtual void GetKineticModel( const ParametersType& parameters ) const
-        {
-
-            float  Rinj     = parameters[0];    //  injection rate
-            float  Kpyr     = parameters[1];    //  Kpyr, signal decay from T1 and excitation
-            float  Tarrival = parameters[2];    //  arrival time    
-            float  Kpl      = parameters[3];    //  Kpl conversion rate
-            float  Klac     = parameters[4];    //  Klac, signal decay from T1 and excitation
-            float  dc       = parameters[5];    //  dc baseline offset                                
-            float  injDur   = parameters[6];    //  dc baseline offset                                
-
-            float injectionDuration = injDur;         //  X seconds normalized by TR into time point space
-            int Tend = static_cast<int>( vtkMath::Round(Tarrival + injectionDuration) );
-            Tarrival = static_cast<int>( vtkMath::Round(Tarrival) );
-
-            //  ==============================================================
-            //  DEFINE COST FUNCTION 
-            //  ==============================================================
-            int PYR = 0; 
-            int LAC = 1; 
-            for ( int t = 0; t < this->numTimePoints; t++ ) {
-
-                if ( t < Tarrival ) {
-                    this->GetModelSignal(PYR)[t] = 0; //this->GetSignalAtTime(PYR, t);
-                    this->GetModelSignal(LAC)[t] = 0; //this->GetSignalAtTime(LAC, t);
-                }
-
-                if ( (Tarrival <= t) && (t < Tend) ) {
-
-                    // PYRUVATE 
-                    this->GetModelSignal(PYR)[t] = (Rinj/Kpyr) * (1 - exp( -1 * Kpyr * (t - Tarrival)) ) + dc; 
-
-                    // LACTATE  
-                    this->GetModelSignal(LAC)[t] = ( (Kpl * Rinj)/(Kpyr - Klac) ) 
-                            * (
-                                ( ( 1 - exp( -1 * Klac * ( t - Tarrival)) )/Klac ) 
-                              - ( ( 1 - exp( -1 * Kpyr * ( t - Tarrival)) )/Kpyr )
-                              ) + dc;    
-                }
-
-                if (t >= Tend) {      
-
-                    // PYRUVATE 
-                    this->GetModelSignal(PYR)[t] = this->GetSignalAtTime(PYR, Tend) * (exp( -1 * Kpyr * ( t - Tend) ) ) + dc; 
-
-                    // LACTATE 
-                    this->GetModelSignal(LAC)[t] = ( ( this->GetSignalAtTime(LAC, Tend) * Kpl ) / ( Kpyr - Klac ) ) 
-                            * ( exp( -1 * Klac * (t-Tend)) - exp( -1 * Kpyr * (t-Tend)) ) 
-                            + this->GetSignalAtTime(LAC, Tend) *  exp ( -1 * Klac * ( t - Tend)) + dc; 
-                }
-
-            }
-
-        }
-
-
-        /*!
          *  Get the vector that contains the string identifier for each output port
          */
         virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const
@@ -275,6 +216,66 @@ class svk2SiteIMCostFunction : public svkKineticModelCostFunction
             //  time, divide by TR
             this->paramScaleFactors[6] = 1./this->TR;   
         }
+
+
+        /*!
+         *  For a given set of parameter values, compute the model kinetics
+         */   
+        virtual void GetKineticModel( const ParametersType& parameters ) const
+        {
+
+            float  Rinj     = parameters[0];    //  injection rate
+            float  Kpyr     = parameters[1];    //  Kpyr, signal decay from T1 and excitation
+            float  Tarrival = parameters[2];    //  arrival time    
+            float  Kpl      = parameters[3];    //  Kpl conversion rate
+            float  Klac     = parameters[4];    //  Klac, signal decay from T1 and excitation
+            float  dc       = parameters[5];    //  dc baseline offset                                
+            float  injDur   = parameters[6];    //  dc baseline offset                                
+
+            float injectionDuration = injDur;   //  X seconds normalized by TR into time point space
+            int Tend = static_cast<int>( vtkMath::Round(Tarrival + injectionDuration) );
+            Tarrival = static_cast<int>( vtkMath::Round(Tarrival) );
+
+            //  ==============================================================
+            //  DEFINE MODEL FOR COST FUNCTION 
+            //  ==============================================================
+            int PYR = 0; 
+            int LAC = 1; 
+            for ( int t = 0; t < this->numTimePoints; t++ ) {
+
+                if ( t < Tarrival ) {
+                    this->GetModelSignal(PYR)[t] = 0; 
+                    this->GetModelSignal(LAC)[t] = 0;
+                }
+
+                if ( (Tarrival <= t) && (t < Tend) ) {
+
+                    // PYRUVATE 
+                    this->GetModelSignal(PYR)[t] = (Rinj/Kpyr) * (1 - exp( -1 * Kpyr * (t - Tarrival)) ) + dc; 
+
+                    // LACTATE  
+                    this->GetModelSignal(LAC)[t] = ( (Kpl * Rinj)/(Kpyr - Klac) ) 
+                            * (
+                                ( ( 1 - exp( -1 * Klac * ( t - Tarrival)) )/Klac ) 
+                              - ( ( 1 - exp( -1 * Kpyr * ( t - Tarrival)) )/Kpyr )
+                              ) + dc;    
+                }
+
+                if (t >= Tend) {      
+
+                    // PYRUVATE 
+                    this->GetModelSignal(PYR)[t] = this->GetSignalAtTime(PYR, Tend) * (exp( -1 * Kpyr * ( t - Tend) ) ) + dc; 
+
+                    // LACTATE 
+                    this->GetModelSignal(LAC)[t] = ( ( this->GetSignalAtTime(LAC, Tend) * Kpl ) / ( Kpyr - Klac ) ) 
+                            * ( exp( -1 * Klac * (t-Tend)) - exp( -1 * Kpyr * (t-Tend)) ) 
+                            + this->GetSignalAtTime(LAC, Tend) *  exp ( -1 * Klac * ( t - Tend)) + dc; 
+                }
+
+            }
+
+        }
+
             
 
     private: 
