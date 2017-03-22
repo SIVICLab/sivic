@@ -7,7 +7,7 @@
 
 OSTYPE := $(shell uname -s)
 
-XSEDE_TEST_DIR = /vol1
+XSEDE_TEST_DIR = /vol1/xsede_volume/library
 
 VTK_DIR             = /netopt/lib/vtk-5.6
 VTK6_DIR_DIST       = ${XSEDE_TEST_DIR}/VTK/VTK-6.3.0/lib/cmake/vtk-6.3/
