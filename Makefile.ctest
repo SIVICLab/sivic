@@ -7,32 +7,35 @@
 
 OSTYPE := $(shell uname -s)
 
-VTK_DIR         	= /netopt/lib/vtk-5.6
-VTK6_DIR_DIST   	= /netopt/VTK/VTK-6.3.0/lib/cmake/vtk-6.3/
-VTK6_DIR_DBG    	= /netopt/VTK/VTK-6.3.0_debug/lib/cmake/vtk-6.3/
-VTK6_DIR_M32_EPIC	= /netopt/VTK/VTK-6.3.0_m32_epic/lib/cmake/vtk-6.3/
-KWW_DIR     		= /netopt/kwwidgets_2.0_56/lib/KWWidgets/
-KWW6_DIR_DIST		= /netopt/kwwidgets_vtk6/
-KWW6_DIR_DBG 		= /netopt/kwwidgets_vtk6_debug/
-DCMTK_DIR       	= /netopt/dicom
+XSEDE_TEST_DIR = /vol1
+
+VTK_DIR             = /netopt/lib/vtk-5.6
+VTK6_DIR_DIST       = ${XSEDE_TEST_DIR}/VTK/VTK-6.3.0/lib/cmake/vtk-6.3/
+VTK6_DIR_DBG        = /netopt/VTK/VTK-6.3.0_debug/lib/cmake/vtk-6.3/
+VTK6_DIR_M32_EPIC   = /netopt/VTK/VTK-6.3.0_m32_epic/lib/cmake/vtk-6.3/
+KWW_DIR             = /netopt/kwwidgets_2.0_56/lib/KWWidgets/
+KWW6_DIR_DIST       = ${XSEDE_TEST_DIR}/kwwidgets_vtk6/
+KWW6_DIR_DBG        = /netopt/kwwidgets_vtk6_debug/
+DCMTK_DIR           = ${XSEDE_TEST_DIR}/dicom
 # check test_data out of radiology trac into test_data
-SIVIC_ROOT      	= $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
-SVK_TEST_ROOT   	= ${SIVIC_ROOT}/test_data
-OUTPUT_LOG      	= ${PWD}/ctest_logs/atom 
-CMAKE_DIR       	= /usr/bin
-CMAKE_DIR_GE    	= /usr/bin
-XVFB_RUN        	= ${SIVIC_ROOT}/tests/scripts/xvfb-run
-SVN_COMMAND     	= /netopt/bin/svn 
-CLAPACK_DIR     	= /opt/src/freeware/clapack/clapack-3.2.1-CMAKE
-ITK_DIR         	= /netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4
-ADD_LINK_DIRS   	= 
-CMAKE_PREFIX_PATH 	= ${VTK_DIR}
+SIVIC_ROOT          = $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+SVK_TEST_ROOT       = ${SIVIC_ROOT}/test_data
+OUTPUT_LOG          = ${PWD}/ctest_logs/atom
+CMAKE_DIR           = /usr/bin
+CMAKE_DIR_GE        = /usr/local/bin
+XVFB_RUN            = ${SIVIC_ROOT}/tests/scripts/xvfb-run
+SVN_COMMAND         = /netopt/bin/svn
+CLAPACK_DIR         = ${XSEDE_TEST_DIR}/clapack-3.2.1-CMAKE
+ITK_DIR             = ${XSEDE_TEST_DIR}/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4
+ADD_LINK_DIRS       =
+CMAKE_PREFIX_PATH   = ${VTK_DIR}
+
 	
 #   Mac OS X
 ifeq ($(OSTYPE),Darwin)
 	CMAKE_DIR               := /opt/local/bin
 	DCMTK_DIR               := /usr/local/dicom
-	CLAPACK_DIR             := /usr/local/clapack-3.2.1-CMAKE
+	CLAPACK_DIR             := /Users/jasonc/freeware/clapack-3.2.1-CMAKE
 	VTK6_DIR_DBG            := /usr/local/vtk6.3/lib/cmake/vtk-6.3
 	VTK6_DIR_DIST           := /usr/local/vtk6.3/lib/cmake/vtk-6.3
 	KWWidgets_DIR           := /usr/local/kwwidgets_vtk6/lib/KWWidgets
@@ -121,7 +124,7 @@ CONFIG_BASE_GE         	 = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_DIST}
 CONFIG_BASE_VTK6_DBG   	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_DBG}
 CONFIG_BASE_VTK6_DIST  	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_DIST}
 CONFIG_BASE_VTK6_EPIC32	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_EPIC32}
-CONFIG_BASE_GE_VTK6_DIST = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_DIST}
+CONFIG_BASE_GE_VTK6_DIST = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_VTK6_DIST}
 ifeq ($(OSTYPE),Darwin)
 	CONFIG_BASE_VTK6_DIST += -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
                              -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	      \
@@ -151,8 +154,8 @@ CONFIG_DEBUG        = -DCMAKE_BUILD_TYPE=Debug
 CONFIG_EPIC         = -DBUILD_EPIC=ON
 TEST_ROOT 			= ${SVK_TEST_ROOT}/results_tmp
 
-CLION_OPTS_DBG      = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_OPTS_DBG}  ${CONFIG_DEBUG}   ${CONFIG_TEST_ON}  ${CONFIG_UCSF_ON}
-CLION_OPTS_REL      = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_OPTS_DIST} ${CONFIG_RELEASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON}
+CLION_OPTS_DBG      = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_OPTS_DBG} ${CONFIG_DEBUG} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON}
+CLION_OPTS_REL      = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_OPTS_DIST} ${CONFIG_RELEASE} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON}
 
 clean_results:
 	${RM} -rf ${TEST_ROOT}/
@@ -170,7 +173,7 @@ update_test_cases:
 #   Configure build for Experimental / Nightly
 #
 configure_testing_vtk5: clean_results
-	(${RM_CACHE} ${CONFIG_BASE_VTK5}     ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
+	(${RM_CACHE} ${CONFIG_BASE_VTK5}      ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 configure_testing: clean_results
 	(${RM_CACHE} ${CONFIG_BASE_VTK6_DBG} ${CONFIG_TEST_ON} ${CONFIG_UCSF_ON} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
@@ -210,7 +213,7 @@ configure_epic32: clean_results
 # configure and build on ESE host
 #
 configure_GE_dist: clean_results 
-	(${RM_CACHE} ${CONFIG_BASE_GE_VTK6_DIST} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_GE_CONSOLE} ${CONFIG_RELEASE} ${SIVIC_ROOT}/) 
+	(${RM_CACHE} ${CONFIG_BASE_GE_VTK6} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_GE_CONSOLE} ${CONFIG_RELEASE} ${SIVIC_ROOT}/) 
 
 
 
