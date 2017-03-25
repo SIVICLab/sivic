@@ -64,5 +64,5 @@ create_modified_libs_for_plugin.sh
 
 
 6. upload via scp: 
-scp -r ~/SIVIC.dmg jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.49/
+scp -r ./SIVIC.dmg jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.49/
 
