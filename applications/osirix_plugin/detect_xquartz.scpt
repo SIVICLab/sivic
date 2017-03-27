@@ -45,7 +45,7 @@ on error errmsg
 end try
 
 if APPVersion is null then
-    display alert "SIVIC INFO" message "XQuartz must be installed to run SIVIC.\n\nIf SIVIC still doesn't run after installing XQuartz, please submit a ticket https://sourceforge.net/projects/sivic/" as critical buttons {"Cancel", "Download XQuartz"} default button "Download XQuartz" 
+    display alert "SIVIC INFO" message "XQuartz must be installed to run SIVIC.\n\nAfter installing XQuartz you may need to log out and back in.\n\nIf SIVIC still doesn't run after installing XQuartz, please submit a ticket https://sourceforge.net/projects/sivic/" as critical buttons {"Cancel", "Download XQuartz"} default button "Download XQuartz" 
     set response to button returned of the result 
     if response is "Download XQuartz" then open location "https://www.xquartz.org"
     error 22
