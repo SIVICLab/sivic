@@ -52,6 +52,7 @@
 #include <svkPlotGridViewController.h>
 #include <svkImageReader2.h>
 #include <svkImageReaderFactory.h>
+#include <svkImageWriterFactory.h>
 #include <svkUtils.h>
 #include <svkTypeUtils.h>
 #include <svkVizUtils.h>
@@ -115,10 +116,11 @@ struct globalVariables {
     string justCapture;
     double threshold;
     bool thresholdSet;
+    svkImageWriterFactory::WriterType dataTypeOut;
 } globalVars;
 
 // For getopt
-static const char *optString = "s:o:w:hdu:l:b:e:t:c:p:j:i:r:";
+static const char *optString = "s:o:w:hdu:l:b:e:t:c:p:j:i:r:x:";
 
 
 /*!
@@ -146,6 +148,9 @@ void Usage( void )
     cout << "                   -i slice       Slice (index starting at 1) to display. Refers to image slice if present." << endl;
     cout << "                   -j captureRoot Just load the data and take screen captures. Results saved with root captureRoot." << endl;
     cout << "                   -r threshold   Overlay threshold by percentage of window (0-1)." << endl;
+    cout << "                   -x type        Output data format:" << endl;
+    cout << "                                         0 = JPEG" << endl;
+    cout << "                                         1 = TIFF" << endl;
     cout << "DESCRIPTION" << endl;
     cout << "    svk_multi_view is a quick way of seeing an arbitrary number of images synced by slice number." << endl;
     cout << "    If multiple overlays are specified then the first will appear on the spectra, the next on the first image etc." << endl;
@@ -183,6 +188,7 @@ int main ( int argc, char** argv )
     globalVars.spectraController = NULL;
     globalVars.orientation = svkDcmHeader::UNKNOWN_ORIENTATION;
     bool startSliceSet = false;
+    globalVars.dataTypeOut = svkImageWriterFactory::TIFF;
 
     int opt = 0;
     opt = getopt( argc, argv, optString);
@@ -238,6 +244,9 @@ int main ( int argc, char** argv )
                 break;
             case 'o':
                 overlayFileNames.push_back( optarg );
+                break;
+            case 'x':
+                globalVars.dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
                 break;
             default:
                 cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
@@ -625,11 +634,17 @@ void SelectionCallback(vtkObject* subject, unsigned long eid, void* thisObject, 
  */
 void CaptureWindows()
 {
+    string extension = "tiff"; 
+    if (globalVars.dataTypeOut == svkImageWriterFactory::TIFF) {
+        extension = "tiff"; 
+    } else if (globalVars.dataTypeOut == svkImageWriterFactory::JPEG) {
+        extension = "jpeg"; 
+    }
 
     if(globalVars.spectraWindow != NULL ) {
         stringstream filename;
         filename << globalVars.justCapture;
-        filename << "_traces.tiff" ;
+        filename << "_traces." << extension;
         globalVars.spectraController->GetView()->Refresh();
         globalVars.spectraWindow->Render();
         svkVizUtils::SaveWindow( globalVars.spectraWindow, filename.str());
@@ -639,7 +654,7 @@ void CaptureWindows()
         globalVars.viewers[i]->GetRWInteractor()->GetRenderWindow()->Render();
         stringstream filename;
         filename << globalVars.justCapture;
-        filename << "_image_" << i << ".tiff" ;
+        filename << "_image_" << i << "." << extension; 
         svkVizUtils::SaveWindow(globalVars.viewers[i]->GetRWInteractor()->GetRenderWindow(), filename.str());
     }
 }
