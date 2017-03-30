@@ -240,7 +240,7 @@ double svkDynamicImageMap::GetNormalizationFactor()
     this->GetOutput()->GetNumberOfVoxels(numVoxels);
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
 
-    double* mapVals = vtkDoubleArray::SafeDownCast(this->GetOutput()->GetPointData()->GetScalars())->GetPointer(0);
+    float* mapVals = vtkFloatArray::SafeDownCast(this->GetOutput()->GetPointData()->GetScalars())->GetPointer(0);
 
     for (int i = 0; i < totalVoxels; i++ ) {
         double val = mapVals[i]; 
