@@ -88,7 +88,8 @@ class svkImageReader2 : public vtkImageReader2
             PHILIPS_S,
             DDF,
             IDF,
-            LAST_TYPE = IDF
+            MR_SOLUTIONS_MRD, 
+            LAST_TYPE = MR_SOLUTIONS_MRD,  
         } ReaderType;
 
 

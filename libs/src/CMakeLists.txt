@@ -207,6 +207,8 @@ ADD_LIBRARY(
     svkVarianUCSF2DcsiMapper.cc
     svkVarianUCSFEPSI2DMapper.cc
     svkVarianFidMapper.cc
+    svkMRSolutionsMRDReader.cc
+    svkMRSolutionsMRDMapper.cc
     svkGESigna5XReader.cc
     svkGESignaLX2Reader.cc
     svkPACSInterface.cc
