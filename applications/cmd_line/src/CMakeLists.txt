@@ -371,6 +371,8 @@ IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         Xt
         Xss 
         Xft
+        pthread
+        icuuc
     )
 ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin) 
     SET(SVK_LIBS
@@ -388,6 +390,8 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin)
         ofstd 
         ${ITK_LIBS_PRE}
         ${PLATFORM_LIBS}
+        pthread
+        icuuc
     )
 ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin) 
 
