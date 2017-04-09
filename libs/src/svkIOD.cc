@@ -260,7 +260,7 @@ void svkIOD::InitFrameAnatomyMacro()
         "FrameAnatomySequence",
         0,
         "FrameLaterality",
-        vtkstd::string("U"),
+        std::string("U"),
         "SharedFunctionalGroupsSequence",
         0
     );

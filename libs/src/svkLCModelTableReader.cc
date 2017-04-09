@@ -95,7 +95,7 @@ svkLCModelTableReader::~svkLCModelTableReader() {
  */
 int svkLCModelTableReader::CanReadFile(const char* fname) {
 
-    vtkstd::string fileToCheck(fname);
+    std::string fileToCheck(fname);
 
     if (fileToCheck.size() > 4) {
 

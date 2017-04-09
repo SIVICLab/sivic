@@ -232,7 +232,7 @@ void sivicQuantificationWidget::ExecuteQuantification()
 
         this->mrsQuant->Update();
 
-        vtkstd::vector< svkMriImageData* >* metMaps = this->mrsQuant->GetMetMaps(); 
+        std::vector< svkMriImageData* >* metMaps = this->mrsQuant->GetMetMaps(); 
         this->modelMetNames.clear();
         for (int i = 0; i < metMaps->size(); i ++ ) {
 
@@ -241,7 +241,7 @@ void sivicQuantificationWidget::ExecuteQuantification()
             //  The names should appear in the same order in the vector as they do 
             //  in the view selector 
             //
-            vtkstd::string modelDataName = (*metMaps)[i]->GetDcmHeader()->GetStringValue("SeriesDescription"); 
+            std::string modelDataName = (*metMaps)[i]->GetDcmHeader()->GetStringValue("SeriesDescription"); 
             this->modelMetNames.push_back( modelDataName ); 
 
             if( this->model->DataExists( this->modelMetNames[i] ) ) {
@@ -284,7 +284,7 @@ void sivicQuantificationWidget::ExecuteQuantification()
  *  Called by parent controller to enable this panel and initialize values
  *  modelObjectName is the series description of the map
  */
-void sivicQuantificationWidget::SetOverlay( vtkstd::string modelObjectName)
+void sivicQuantificationWidget::SetOverlay( std::string modelObjectName)
 {
 	this->sivicController->OpenOverlayFromModel( modelObjectName.c_str() );
 }
@@ -373,7 +373,7 @@ void sivicQuantificationWidget::RefreshQuantFile()
         // We'll clear the old data so it gets re-read
         this->mrsQuant->ClearXMLFile();
     }
-    vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = this->mrsQuant->GetRegionNameVector();
+    std::vector< std::vector< std::string > > regionNameVector = this->mrsQuant->GetRegionNameVector();
     this->numMets = regionNameVector.size();
     this->metNames.clear();
     this->metQuantMap.clear();

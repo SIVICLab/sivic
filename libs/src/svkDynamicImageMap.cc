@@ -84,7 +84,7 @@ svkDynamicImageMap::~svkDynamicImageMap()
 /*!
  *  Set the series description for the DICOM header of the copy.  
  */
-void svkDynamicImageMap::SetSeriesDescription( vtkstd::string newSeriesDescription )
+void svkDynamicImageMap::SetSeriesDescription( std::string newSeriesDescription )
 {
     this->newSeriesDescription = newSeriesDescription;
     this->Modified(); 
@@ -228,7 +228,7 @@ double svkDynamicImageMap::GetNormalizationFactor()
     double binSize = ( max - min ) / 100;
     acc->Delete();
 
-    vtkstd::map< double, int> histo; 
+    std::map< double, int> histo; 
     double bin = min;     
     //  initialize the histogram bins
     while ( bin < max ) {

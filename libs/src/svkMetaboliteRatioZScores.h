@@ -87,7 +87,7 @@ class svkMetaboliteRatioZScores: public svkImageAlgorithm
         static svkMetaboliteRatioZScores* New();
         vtkTypeMacro( svkMetaboliteRatioZScores, svkImageAlgorithm);
 
-        void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
+        void                    SetSeriesDescription(std::string newSeriesDescription);
         void                    SetVerbose( bool isVerbose );     
         void                    LimitToSelectedVolume(float fraction = 0.5001);
         void                    LimitToSelectedVolume( short* selectedVolumeMask);
@@ -142,7 +142,7 @@ class svkMetaboliteRatioZScores: public svkImageAlgorithm
 
 
         //  Members:
-        vtkstd::string          newSeriesDescription; 
+        std::string          newSeriesDescription; 
         bool                    isVerbose; 
         float                   useSelectedVolumeFraction;
         short*                  quantificationMask;

@@ -480,7 +480,7 @@ void svkMriImageData::InitializeCellDataArrays()
     int numTimePts = this->GetDcmHeader()->GetNumberOfTimePoints();
     int* extent = this->GetExtent();
     int* dims = this->GetDimensions();
-    vtkstd::string representation = this->GetDcmHeader()->GetStringSequenceItemElement(
+    std::string representation = this->GetDcmHeader()->GetStringSequenceItemElement(
                                         "MRImageFrameTypeSequence",
                                         0,
                                         "ComplexImageComponent",

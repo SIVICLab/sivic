@@ -113,7 +113,7 @@ void svkQuantifyMetabolites::Quantify()
 /*
  *  Retruns a pointer to the metabolite map vector
  */
-vtkstd::vector< svkMriImageData* >* svkQuantifyMetabolites::GetMetMaps()
+std::vector< svkMriImageData* >* svkQuantifyMetabolites::GetMetMaps()
 {
     return &(this->metMapVector);        
 }
@@ -143,7 +143,7 @@ void svkQuantifyMetabolites::GenerateRegionMaps()
     while ( parseQuants ) {
         ostringstream ossIndex;
         ossIndex << quantIndex;
-        vtkstd::string quantIndexString(ossIndex.str());
+        std::string quantIndexString(ossIndex.str());
 
         quantXML = this->mrsXML->FindNestedElementWithNameAndId("QUANT", quantIndexString.c_str());
 
@@ -155,14 +155,14 @@ void svkQuantifyMetabolites::GenerateRegionMaps()
         	}
 
             //  Get region and algo to quantify.  peak range is defied already in regionVector;  
-            //  image to store in a vtkstd::vector of svkMriImageData objects. 
+            //  image to store in a std::vector of svkMriImageData objects. 
             int regionID; 
             quantXML->GetScalarAttribute("region", regionID); 
             algoXML = quantXML->FindNestedElementWithName("ALGO");
-            vtkstd::string algoName( algoXML->GetAttributeValue( 0 ) );
+            std::string algoName( algoXML->GetAttributeValue( 0 ) );
             algoName = this->ReplaceSlashesAndWhiteSpace( algoName );
 
-            vtkstd::string regionName = this->regionVector[regionID][0];  
+            std::string regionName = this->regionVector[regionID][0];  
             float peakPPM  =  GetFloatFromString( this->regionVector[regionID][1] ); 
             float widthPPM =  GetFloatFromString( this->regionVector[regionID][2] ); 
 
@@ -213,7 +213,7 @@ void svkQuantifyMetabolites::GenerateRegionMaps()
 /*
  *
  */
-int svkQuantifyMetabolites::GetIntFromString(vtkstd::string stringVal ) 
+int svkQuantifyMetabolites::GetIntFromString(std::string stringVal ) 
 {
  
     istringstream* iss = new istringstream();
@@ -228,7 +228,7 @@ int svkQuantifyMetabolites::GetIntFromString(vtkstd::string stringVal )
 /*
  *
  */
-float svkQuantifyMetabolites::GetFloatFromString(vtkstd::string stringVal ) 
+float svkQuantifyMetabolites::GetFloatFromString(std::string stringVal ) 
 {
  
     istringstream* iss = new istringstream();
@@ -262,7 +262,7 @@ void svkQuantifyMetabolites::GenerateRatioMaps()
 
         ostringstream ossIndex;
         ossIndex << ratioIndex;
-        vtkstd::string ratioIndexString(ossIndex.str());
+        std::string ratioIndexString(ossIndex.str());
 
         ratioXML = this->mrsXML->FindNestedElementWithNameAndId("RATIO", ratioIndexString.c_str());
 
@@ -271,7 +271,7 @@ void svkQuantifyMetabolites::GenerateRatioMaps()
             //  Get images contributing to numerator and  denominator for this ratio
              
             //cout << "RXML: " << ratioXML->GetAttributeValue( 1 ) << endl;; 
-            vtkstd::string ratioName( ratioXML->GetAttributeValue( 1 ) ); 
+            std::string ratioName( ratioXML->GetAttributeValue( 1 ) ); 
             ratioName = this->ReplaceSlashesAndWhiteSpace( ratioName ); 
             //cout << "RATIO NAME : " << ratioName << endl;
             
@@ -311,7 +311,7 @@ void svkQuantifyMetabolites::GenerateRatioMaps()
             ratioImage->DeepCopy( mathR->GetOutput() );
 
             //  set the header fields
-            vtkstd::string seriesDescription( ratioName );
+            std::string seriesDescription( ratioName );
             svkDcmHeader* hdr = ratioImage->GetDcmHeader();
             hdr->SetValue("SeriesDescription", ratioName );
 
@@ -363,8 +363,8 @@ void svkQuantifyMetabolites::GetNumeratorAndDenominatorImages( vtkXMLDataElement
         if ( nestedXML != NULL ) {
 
             //  Is it part of numerator or denominator?
-            vtkstd::string quantType (nestedXML->GetName() ); 
-            vtkstd::string quantNumString = nestedXML->GetAttributeValue(0);
+            std::string quantType (nestedXML->GetName() ); 
+            std::string quantNumString = nestedXML->GetAttributeValue(0);
             istringstream* iss = new istringstream();
             int quantNum;
             iss->str( quantNumString ); 
@@ -432,7 +432,7 @@ void svkQuantifyMetabolites::GenerateZScoreMaps()
 
         ostringstream ossIndex;
         ossIndex << zscoreIndex;
-        vtkstd::string zscoreIndexString(ossIndex.str());
+        std::string zscoreIndexString(ossIndex.str());
 
         zscoreXML = this->mrsXML->FindNestedElementWithNameAndId("ZSCORE", zscoreIndexString.c_str());
 
@@ -441,7 +441,7 @@ void svkQuantifyMetabolites::GenerateZScoreMaps()
             //  Get images contributing to numerator and  denominator for this index 
              
             //cout << "ZSXML: " << zscoreXML->GetAttributeValue( 1 ) << endl;; 
-            vtkstd::string zscoreName( zscoreXML->GetAttributeValue( 1 ) ); 
+            std::string zscoreName( zscoreXML->GetAttributeValue( 1 ) ); 
             zscoreName = this->ReplaceSlashesAndWhiteSpace( zscoreName ); 
             //cout << "ZSCORE NAME : " << zscoreName << endl;
             
@@ -472,7 +472,7 @@ void svkQuantifyMetabolites::GenerateZScoreMaps()
             zscoreImage->DeepCopy( zscore->GetOutput() );
 
             //  set the header fields
-            vtkstd::string seriesDescription( zscoreName );
+            std::string seriesDescription( zscoreName );
             svkDcmHeader* hdr = zscoreImage->GetDcmHeader();
             hdr->SetValue("SeriesDescription", zscoreName );
 
@@ -531,15 +531,15 @@ int svkQuantifyMetabolites::RequestData( vtkInformation* request, vtkInformation
  *  Replace ('/') slash character and white space in name attributes with "_div_" 
  *  and "_" respectively so we end up with valid file names. 
  */
-string svkQuantifyMetabolites::ReplaceSlashesAndWhiteSpace( vtkstd::string inString)
+string svkQuantifyMetabolites::ReplaceSlashesAndWhiteSpace( std::string inString)
 {
    
-    vtkstd::string outString( inString ) ;
+    std::string outString( inString ) ;
 
     size_t slashPos;
     slashPos = outString.find_first_of("/");
 
-    while ( slashPos != vtkstd::string::npos ) {
+    while ( slashPos != std::string::npos ) {
         outString.assign( outString.replace(slashPos, 1, "_div_") );
         slashPos = outString.find_first_of("/");
     }
@@ -548,7 +548,7 @@ string svkQuantifyMetabolites::ReplaceSlashesAndWhiteSpace( vtkstd::string inStr
     size_t whitePos;
     whitePos = outString.find_first_of(" ");
 
-    while ( whitePos != vtkstd::string::npos ) {
+    while ( whitePos != std::string::npos ) {
         outString.assign( outString.replace(whitePos, 1, "_") );
         whitePos = outString.find_first_of(" ");
     }
@@ -563,7 +563,7 @@ string svkQuantifyMetabolites::ReplaceSlashesAndWhiteSpace( vtkstd::string inStr
  *  that store the region peak ppm and width in ppm.  All info parsed from the 
  *  xml config file.
  */
-vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetRegionNameVector()
+std::vector< std::vector< std::string > >  svkQuantifyMetabolites::GetRegionNameVector()
 {
 
     this->regionVector.clear();
@@ -650,13 +650,13 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
 
         ostringstream ossIndex;
         ossIndex << regionIndex;
-        vtkstd::string regionIndexString(ossIndex.str());
+        std::string regionIndexString(ossIndex.str());
 
         regionXML = this->mrsXML->FindNestedElementWithNameAndId("REGION", regionIndexString.c_str());
 
         if (regionXML != NULL ) {
 
-            vtkstd::string regionName( regionXML->GetAttributeValue( 1 ) );
+            std::string regionName( regionXML->GetAttributeValue( 1 ) );
             regionName = this->ReplaceSlashesAndWhiteSpace( regionName );
             string peakPPM( regionXML->GetAttribute("peak_ppm") );
             string widthPPM( regionXML->GetAttribute("width_ppm") );
@@ -664,7 +664,7 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
             //cout << "XX peak pos  : " << peakPPM << endl;
             //cout << "XX peak width: " << widthPPM << endl;
 
-            vtkstd::vector < vtkstd::string > peak;
+            std::vector < std::string > peak;
             peak.push_back(regionName); 
             peak.push_back(peakPPM); 
             peak.push_back(widthPPM); 
@@ -713,7 +713,7 @@ void svkQuantifyMetabolites::ModifyRegion( int regionID, float peakPPM, float wi
 
     ostringstream ossIndex;
     ossIndex << regionID;
-    vtkstd::string regionIndexString(ossIndex.str());
+    std::string regionIndexString(ossIndex.str());
 
     regionXML = this->mrsXML->FindNestedElementWithNameAndId("REGION", regionIndexString.c_str());
 

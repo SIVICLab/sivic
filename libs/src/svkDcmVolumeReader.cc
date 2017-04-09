@@ -780,9 +780,9 @@ void svkDcmVolumeReader::SortFilesByImagePositionPatient(
 {
 
     if ( ascending ) {
-        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortAscendAttribute7 ); 
+        std::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortAscendAttribute7 ); 
     } else {
-        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortDescendAttribute7 ); 
+        std::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortDescendAttribute7 ); 
     }
 
     return;
@@ -815,9 +815,9 @@ void svkDcmVolumeReader::SortFilesByInstanceNumber(
         }
 
         if ( ascending ) {
-            vtkstd::sort( dcmSliceAttributes.begin(), dcmSliceAttributes.end(), SortAscendAttribute8 ); 
+            std::sort( dcmSliceAttributes.begin(), dcmSliceAttributes.end(), SortAscendAttribute8 ); 
         } else {
-            vtkstd::sort( dcmSliceAttributes.begin(), dcmSliceAttributes.end(), SortDescendAttribute8 ); 
+            std::sort( dcmSliceAttributes.begin(), dcmSliceAttributes.end(), SortDescendAttribute8 ); 
         }
 
         //  Not put the images back in the correc order:

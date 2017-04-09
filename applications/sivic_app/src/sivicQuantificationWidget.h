@@ -71,7 +71,7 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
         void                                EnableWidgets(); 
         void                                RefreshQuantFile();
         void								SetSpecUnits( svkSpecPoint::UnitType units );
-        vtkstd::vector < vtkstd::string >   modelMetNames;
+        std::vector < std::string >   modelMetNames;
 
 
 
@@ -83,10 +83,10 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
         vtkKWPushButton*                                        quantButton;
         vtkKWPushButton*                                        openQuantFileButton;
         vtkKWPushButton*                                        refreshQuantFileButton;
-        vtkstd::vector < vtkKWRange* >                          metRangeVector;         
-        vtkstd::vector < vtkKWLabel* >                          metLabelVector;  
+        std::vector < vtkKWRange* >                          metRangeVector;         
+        std::vector < vtkKWLabel* >                          metLabelVector;  
 
-        vtkstd::map <vtkstd::string, vtkstd::vector< float > >  metQuantMap;
+        std::map <std::string, std::vector< float > >  metQuantMap;
 
 
         // Description:
@@ -94,7 +94,7 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
         virtual void    CreateWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
         void            ResetRange();
-        void            SetOverlay( vtkstd::string modelObjectName ); 
+        void            SetOverlay( std::string modelObjectName ); 
 
     private:
 
@@ -111,7 +111,7 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
 
         vtkCallbackCommand*                 progressCallback;
         svkQuantifyMetabolites*             mrsQuant;
-        vtkstd::vector < vtkstd::string >   metNames;
+        std::vector < std::string >   metNames;
         int                                 numMets; 
         bool                                isEnabled; 
         svkSpecPoint::UnitType              units;

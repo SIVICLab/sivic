@@ -106,9 +106,9 @@ void svkGEPFileMapperUCSFfidcsi::GetCenterFromRawFile( double* center )
 /*
  *  Returns the volume localization type = NONE. 
  */
-vtkstd::string  svkGEPFileMapperUCSFfidcsi::GetVolumeLocalizationTechnique()
+std::string  svkGEPFileMapperUCSFfidcsi::GetVolumeLocalizationTechnique()
 {
-    vtkstd::string localizationType("NONE");
+    std::string localizationType("NONE");
     return localizationType;
 }
 

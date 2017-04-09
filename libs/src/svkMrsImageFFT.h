@@ -153,7 +153,7 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         FFTMode         mode; 
 
         void            UpdateOrigin(); 
-        void            PrintSpectrum( vtkImageComplex* data, int numPoints, vtkstd::string msg ); 
+        void            PrintSpectrum( vtkImageComplex* data, int numPoints, std::string msg ); 
         void            NormalizePhaseShift( double shift[3] );
         void            ValidateRequest(); 
 

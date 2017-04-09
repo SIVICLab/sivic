@@ -104,7 +104,7 @@ svkDataAcquisitionDescriptionXML::~svkDataAcquisitionDescriptionXML()
  * \param type the desired contents of the encoding/trajectory element
  *
  */
-void svkDataAcquisitionDescriptionXML::SetTrajectoryType( vtkstd::string type )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryType( std::string type )
 {
     this->SetDataWithPath("encoding/trajectory", type.c_str() );
 }
@@ -114,7 +114,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryType( vtkstd::string type )
  * Get the contents of the encoding/trajectory element.
  * \return the contents of the encoding/trajectory element
  */
-vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryType( )
+std::string svkDataAcquisitionDescriptionXML::GetTrajectoryType( )
 {
     return this->GetDataWithPath( "encoding/trajectory" );
 }
@@ -125,7 +125,7 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryType( )
  * \param ID the desired contents of the encoding/trajectoryDescription/identifier element
  *
  */
-void svkDataAcquisitionDescriptionXML::SetTrajectoryID( vtkstd::string ID )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryID( std::string ID )
 {
     this->SetDataWithPath("encoding/trajectoryDescription/identifier", ID.c_str());
 }
@@ -135,7 +135,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryID( vtkstd::string ID )
  * Get the contents of the encoding/trajectoryDescription/identifier element.
  * \return the contents of the encoding/trajectoryDescription/identifier element
  */
-vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryID( )
+std::string svkDataAcquisitionDescriptionXML::GetTrajectoryID( )
 {
     return this->GetDataWithPath( "encoding/trajectoryDescription/identifier" );
 }
@@ -146,7 +146,7 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryID( )
  * \param comment the desired contents of the encoding/trajectoryDescription/comment element
  *
  */
-void svkDataAcquisitionDescriptionXML::SetTrajectoryComment( vtkstd::string comment )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryComment( std::string comment )
 {
     this->SetDataWithPath("encoding/trajectoryDescription/comment", comment.c_str());
 }
@@ -156,7 +156,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryComment( vtkstd::string comm
  * Get the contents of the encoding/trajectoryDescription/comment element.
  * \return the contents of the encoding/trajectoryDescription/comment element
  */
-vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryComment( )
+std::string svkDataAcquisitionDescriptionXML::GetTrajectoryComment( )
 {
     return this->GetDataWithPath( "encoding/trajectoryDescription/comment" );
 }
@@ -169,9 +169,9 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryComment( )
  * \param value the value of the new user parameter
  *
  */
-void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string name, long value  )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( std::string name, long value  )
 {
-    vtkstd::string valueString = svkTypeUtils::IntToString(value);
+    std::string valueString = svkTypeUtils::IntToString(value);
     this->SetTrajectoryParameter("userParameterLong", name, valueString );
 }
 
@@ -181,9 +181,9 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string na
  * \param name the name of the user parameter
  * \return the value of the user parameter
  */
-long svkDataAcquisitionDescriptionXML::GetTrajectoryLongParameter( vtkstd::string name  )
+long svkDataAcquisitionDescriptionXML::GetTrajectoryLongParameter( std::string name  )
 {
-    vtkstd::string parameterString = this->GetTrajectoryParameter("userParameterLong", name );
+    std::string parameterString = this->GetTrajectoryParameter("userParameterLong", name );
     return svkTypeUtils::StringToLInt( parameterString );
 }
 
@@ -193,9 +193,9 @@ long svkDataAcquisitionDescriptionXML::GetTrajectoryLongParameter( vtkstd::strin
  * \param name the name of the user parameter
  * \return the value of the user parameter
  */
-double svkDataAcquisitionDescriptionXML::GetTrajectoryDoubleParameter( vtkstd::string name  )
+double svkDataAcquisitionDescriptionXML::GetTrajectoryDoubleParameter( std::string name  )
 {
-    vtkstd::string parameterString = this->GetTrajectoryParameter("userParameterDouble", name );
+    std::string parameterString = this->GetTrajectoryParameter("userParameterDouble", name );
     return svkTypeUtils::StringToDouble( parameterString );
 }
 
@@ -207,9 +207,9 @@ double svkDataAcquisitionDescriptionXML::GetTrajectoryDoubleParameter( vtkstd::s
  * \param value the value of the new user parameter
  *
  */
-void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string name, double value  )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( std::string name, double value  )
 {
-    vtkstd::string valueString = svkTypeUtils::DoubleToString(value);
+    std::string valueString = svkTypeUtils::DoubleToString(value);
     this->SetTrajectoryParameter("userParameterDouble", name, valueString );
 }
 
@@ -403,7 +403,7 @@ int svkDataAcquisitionDescriptionXML::WriteXMLFile( string xmlFileName )
  * \param value the value of the new user parameter
  *
  */
-void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string type, vtkstd::string name, vtkstd::string value  )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( std::string type, std::string name, std::string value  )
 {
     // Assume failure
     bool errorFound = true;
@@ -459,9 +459,9 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string ty
  * \param name the name of the user parameter
  * \return the value of the user parameter
  */
-vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryParameter( vtkstd::string type, vtkstd::string name )
+std::string svkDataAcquisitionDescriptionXML::GetTrajectoryParameter( std::string type, std::string name )
 {
-    vtkstd::string parameterValue = "";
+    std::string parameterValue = "";
     vtkXMLDataElement* userParamElem = this->GetTrajectoryParameterElement(type, name);
     vtkXMLDataElement* valueElem =  svkXMLUtils::FindNestedElementWithPath(userParamElem, "value");
     if( valueElem != NULL ) {
@@ -479,20 +479,20 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryParameter( vtkstd:
  * \param name the name of the user parameter
  * \return the vtkXMLDataElement of the user parameter. NULL is returned if the parameter is not found.
  */
-vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetTrajectoryParameterElement( vtkstd::string type, vtkstd::string name )
+vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetTrajectoryParameterElement( std::string type, std::string name )
 {
     vtkXMLDataElement* userParamElem = NULL;
     vtkXMLDataElement* trajDescElem  = this->FindNestedElementWithPath("encoding/trajectoryDescription");
     if(trajDescElem != NULL ) {
         for( int i = 0; i < trajDescElem->GetNumberOfNestedElements(); i++ ) {
             vtkXMLDataElement* paramElem = trajDescElem->GetNestedElement(i);
-            vtkstd::string paramElemName = "";
+            std::string paramElemName = "";
             if( paramElem != NULL ) {
                 paramElemName = paramElem->GetName();
             }
             if( !paramElemName.empty() && paramElemName == type ) {
                 vtkXMLDataElement* nameElem =  svkXMLUtils::FindNestedElementWithPath(paramElem, "name");
-                vtkstd::string paramName = "";
+                std::string paramName = "";
                 if( nameElem != NULL ) {
                     paramName = nameElem->GetCharacterData();
                 }

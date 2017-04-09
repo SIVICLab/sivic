@@ -88,7 +88,7 @@ class svkMrsImageData: public svk4DImageData
                             int timePoint,
                             int channel,
                             int component,
-                            vtkstd::string seriesDescription, 
+                            std::string seriesDescription, 
                             int vtkDataType = VTK_VOID
                        );
 

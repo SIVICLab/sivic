@@ -90,7 +90,7 @@ void svkDICOMMRIWriter::Write()
         this->GetImageDataInput(0)->GetDcmHeader()->SetValue( "SeriesNumber", this->seriesNumber );
     }
     if (! this->FileName ) {
-        vtkstd::string prefix = 
+        std::string prefix = 
                 this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue( "StudyID" ) + 
                 this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue( "SeriesNumber" ) +
                 "I";
@@ -169,7 +169,7 @@ void svkDICOMMRIWriter::Write()
             mriHeader->SetValue( "InstanceNumber", this->FileNumber ); 
             mriHeader->InsertUniqueUID( "SOPInstanceUID" );
 
-            vtkstd::string imagePositionPatient = this->GetImageDataInput(0)->GetDcmHeader()->GetStringSequenceItemElement(
+            std::string imagePositionPatient = this->GetImageDataInput(0)->GetDcmHeader()->GetStringSequenceItemElement(
                 "PlanePositionSequence",
                 0,
                 "ImagePositionPatient",
@@ -281,7 +281,7 @@ void svkDICOMMRIWriter::InitPixelData( svkDcmHeader* dcmHeader, int sliceNumber,
             double inputRangeMin;
             double inputRangeMax;
             this->GetPixelRange(inputRangeMin, inputRangeMax, volNumber);
-            vtkstd::string SOPClassUID = dcmHeader->GetStringValue( "SOPClassUID" ) ;
+            std::string SOPClassUID = dcmHeader->GetStringValue( "SOPClassUID" ) ;
             if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {
 
                 //  MR Image Storage: 

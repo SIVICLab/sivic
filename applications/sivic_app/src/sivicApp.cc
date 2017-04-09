@@ -1039,7 +1039,7 @@ int sivicApp::Start( int argc, char* argv[] )
     }
 
     //  Overlay is always the last to load: 
-    vtkstd::vector< int >   loadOrder; 
+    std::vector< int >   loadOrder; 
     for (int i = 0 ; i < this->inputFiles.size(); i++) {
         if ( i != overlayImageIndex ) {
             loadOrder.push_back(i);

@@ -86,15 +86,15 @@ class svkDdfVolumeWriter : public svkImageWriter
     private:
         void             InitImageData();
         void             WriteFiles();
-        void             GetDDFCenter(float center[3], vtkstd::string centerType = "current" );
+        void             GetDDFCenter(float center[3], std::string centerType = "current" );
         void             GetDDFOrientation(float orientation[6]);
-        vtkstd::string   GetDimensionDomain( vtkstd::string dimensionDomainString ); 
-        vtkstd::string   GetDDFPatientName(vtkstd::string PatientName);
-        vtkstd::string   GetFileRootName(vtkstd::string fileRoot, svkDcmHeader::DimensionVector* dimensionVector, int frame); 
+        std::string   GetDimensionDomain( std::string dimensionDomainString ); 
+        std::string   GetDDFPatientName(std::string PatientName);
+        std::string   GetFileRootName(std::string fileRoot, svkDcmHeader::DimensionVector* dimensionVector, int frame); 
         void             SetNumberTimePointsPerFile(int numTimePts);
         bool             AllTimePointsInEachFile(); 
         void             InitSpecData(float* specData, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* indexVector); 
-        void             InitHeader(ofstream* out, vtkstd::string fileName);
+        void             InitHeader(ofstream* out, std::string fileName);
 
         int              numTimePtsPerFile; 
         static const int ALL_TIME_PTS_IN_FILE; 

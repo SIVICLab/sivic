@@ -110,8 +110,8 @@ class svkPlotLineGrid : public vtkObject
         void                    AlignCamera( bool invertView = 1 );
         void                    SetComponent( svkPlotLine::PlotComponent component );
         svkPlotLine::PlotComponent                     GetComponent( );
-        vtkstd::vector<int>     GetVolumeIndexVector( );
-        void                    SetVolumeIndexVector( vtkstd::vector<int> );
+        std::vector<int>     GetVolumeIndexVector( );
+        void                    SetVolumeIndexVector( std::vector<int> );
         void                    SetVolumeIndex( int index, int volumeIndex = 0 );
         int                     GetVolumeIndex( int volumeIndex = 0 );
         void                    UpdateDataArrays(int tlc, int brc);
@@ -127,16 +127,16 @@ class svkPlotLineGrid : public vtkObject
 
         //! The current slice
         int                         slice;
-        vtkstd::vector< int >      volumeIndexVector;
+        std::vector< int >      volumeIndexVector;
 
         //! The ID's of the top left corner, and bottom right corner cells 
         int                         tlcBrc[2];
 
         //! dcos to be passed as a pointer
-        vtkstd::vector< vtkstd::vector<double> > dcos;
+        std::vector< std::vector<double> > dcos;
 
         //! Represents the current slice of plot lines
-        vtkstd::vector<svkPlotLine*>  xyPlots;
+        std::vector<svkPlotLine*>  xyPlots;
 
         //! The actor that holds the plot grid
         vtkActor*                plotGridActor;
@@ -171,7 +171,7 @@ class svkPlotLineGrid : public vtkObject
         int                         ampSelectionUpToDate[2];
 
         // Defines if the given volume for a given slice is up to date
-        vtkstd::vector< vtkstd::vector<bool> >  volumeUpToDate;
+        std::vector< std::vector<bool> >  volumeUpToDate;
 
         //! The data
         svk4DImageData*               data;

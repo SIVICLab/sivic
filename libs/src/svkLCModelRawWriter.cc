@@ -252,7 +252,7 @@ void svkLCModelRawWriter::WriteGridSubmissionFile( string fileRoot )
 
     string submitScriptName = fileRoot + ".grid"; 
     if( this->submitScript.is_open() == false) {
-        cout << this->submitScript << endl;
+        //cout << this->submitScript << endl;
         this->submitScript.open( submitScriptName.c_str() );
     }
 

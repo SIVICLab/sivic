@@ -216,7 +216,7 @@ class svkPlotGridView : public svkDataView
         svkDetailedPlotDirector* detailedPlotDirector;
         svkSpecPoint::UnitType   plotUnitType;
         svkImageMapToColors*     windowLevel;
-        vtkstd::vector<int>      volumeIndexVector;
+        std::vector<int>      volumeIndexVector;
         int                      overlayTextDigits;
         bool                     alignCamera; 
 

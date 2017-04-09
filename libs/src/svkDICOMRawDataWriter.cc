@@ -128,7 +128,7 @@ void svkDICOMRawDataWriter::SetFileName (const char* fileName)
 /*
  *  Use the specified seriesInstanceUID, rather than the uid from the raw file. 
  */
-void svkDICOMRawDataWriter::SetSeriesUID( vtkstd::string UID )
+void svkDICOMRawDataWriter::SetSeriesUID( std::string UID )
 {
     this->seriesInstanceUID = UID;
     this->reuseSeriesUID = false;
@@ -138,7 +138,7 @@ void svkDICOMRawDataWriter::SetSeriesUID( vtkstd::string UID )
 /*
  *  Use the specified sopInstanceUID, rather than the image_uid from the raw file. 
  */
-void svkDICOMRawDataWriter::SetInstanceUID( vtkstd::string UID )
+void svkDICOMRawDataWriter::SetInstanceUID( std::string UID )
 {
     this->sopInstanceUID = UID;
     this->reuseInstanceUID = false;
@@ -353,7 +353,7 @@ void svkDICOMRawDataWriter::InitPatientModule()
 
     int patsex = this->GetHeaderValueAsInt("rhe.patsex");
 
-    vtkstd::string gender("O");
+    std::string gender("O");
     if ( patsex == 1 ) {
         gender.assign("M");
     } else if ( patsex == 2 ) {
@@ -376,7 +376,7 @@ void svkDICOMRawDataWriter::InitPatientModule()
 void svkDICOMRawDataWriter::InitGeneralStudyModule()
 {
 
-    vtkstd::string dcmDate = svkGEPFileMapper::ConvertGEDateToDICOM( this->pfMap["rhr.rh_scan_date"][3] ); 
+    std::string dcmDate = svkGEPFileMapper::ConvertGEDateToDICOM( this->pfMap["rhr.rh_scan_date"][3] ); 
 
     this->dcmHeader->InitGeneralStudyModule(
         svkImageReader2::RemoveDelimFromDate( &dcmDate ),
@@ -396,7 +396,7 @@ void svkDICOMRawDataWriter::InitGeneralStudyModule()
 void svkDICOMRawDataWriter::InitGeneralSeriesModule()
 {
 
-    vtkstd::string patientEntryPos;
+    std::string patientEntryPos;
     int patientEntry( this->GetHeaderValueAsInt( "rhs.entry" ) );
     if ( patientEntry == 0) {
         patientEntryPos = "Unknown";
@@ -455,7 +455,7 @@ void svkDICOMRawDataWriter::InitGeneralSeriesModule()
         string(timeBuf)
     );
 
-    vtkstd::string dcmDate = svkGEPFileMapper::ConvertGEDateToDICOM( this->pfMap["rhr.rh_scan_date"][3] );
+    std::string dcmDate = svkGEPFileMapper::ConvertGEDateToDICOM( this->pfMap["rhr.rh_scan_date"][3] );
 
     this->dcmHeader->SetValue(
         "SeriesDate",
@@ -530,7 +530,7 @@ void svkDICOMRawDataWriter::InitRawDataModule()
         1 
     );
 
-    vtkstd::string dcmDate = svkGEPFileMapper::ConvertGEDateToDICOM( this->pfMap["rhr.rh_scan_date"][3] ); 
+    std::string dcmDate = svkGEPFileMapper::ConvertGEDateToDICOM( this->pfMap["rhr.rh_scan_date"][3] ); 
 
     this->dcmHeader->SetValue(
         "ContentDate",
@@ -756,7 +756,7 @@ void svkDICOMRawDataWriter::SetSHA1Digest( string sha1Digest )
 /*!
  *  returns the value for the specified key as an int.
  */
-int svkDICOMRawDataWriter::GetHeaderValueAsInt(vtkstd::string key)
+int svkDICOMRawDataWriter::GetHeaderValueAsInt(std::string key)
 {
 
     istringstream* iss = new istringstream();
@@ -772,7 +772,7 @@ int svkDICOMRawDataWriter::GetHeaderValueAsInt(vtkstd::string key)
 /*!
  *  returns the value for the specified key as an int.
  */
-long int svkDICOMRawDataWriter::GetHeaderValueAsLongInt(vtkstd::string key)
+long int svkDICOMRawDataWriter::GetHeaderValueAsLongInt(std::string key)
 {
     istringstream* iss = new istringstream();
     long int value;

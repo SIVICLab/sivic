@@ -105,7 +105,7 @@ ENDIF(WIN32)
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE )
+FIND_PACKAGE(VTK 7.0 REQUIRED NO_MODULE )
 INCLUDE(${VTK_USE_FILE})
 
 

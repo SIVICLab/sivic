@@ -585,7 +585,7 @@ float sivicPreprocessingWidget::GetApodizationFWHH()
 
     //  Initiall try to use a default with based on the nucleus (field strength): 
     fwhh = 4.0f;
-    vtkstd::string nucleus = data->GetDcmHeader()->GetStringValue( "ResonantNucleus" );
+    std::string nucleus = data->GetDcmHeader()->GetStringValue( "ResonantNucleus" );
     if( nucleus.compare("13C") == 0 ) {
         fwhh = 9.0f;
     }

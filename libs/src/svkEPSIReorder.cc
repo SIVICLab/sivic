@@ -301,7 +301,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
 
     //  Allocate arrays for spectra at each phase encode:
     svkDcmHeader* hdr = data->GetDcmHeader();
-    vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
+    std::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
 
     int numComponents;
     if ( dataRepresentation == "COMPLEX" ) {

@@ -62,7 +62,7 @@ class sivicDSCWidget : public sivicKWCompositeWidget
 
         static sivicDSCWidget *New();
         vtkTypeMacro(sivicDSCWidget,sivicKWCompositeWidget);
-        vtkstd::vector < vtkstd::string >   modelDSCNames;
+        std::vector < std::string >   modelDSCNames;
 
 
     protected:
@@ -83,7 +83,7 @@ class sivicDSCWidget : public sivicKWCompositeWidget
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
         void            ResetRange();
         void            SetDSCRepresentationCallback( svkDSCDeltaR2::representation representation); 
-        void            SetOverlay( vtkstd::string modelObjectName); 
+        void            SetOverlay( std::string modelObjectName); 
 
 
     private:
@@ -95,7 +95,7 @@ class sivicDSCWidget : public sivicKWCompositeWidget
         static void                         UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
 
         svkDSCQuantify*                     dscQuant;
-        vtkstd::vector < vtkstd::string >   dscNames;
+        std::vector < std::string >   dscNames;
 
 
 

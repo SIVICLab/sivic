@@ -405,7 +405,7 @@ bool svkUtils::UncompressFiles( vtkStringArray *filenames )
 /*!
  * Uncompress a file. Platform dependent, currently not supported on windows.
  */
-bool svkUtils::UncompressFile( vtkstd::string filename )
+bool svkUtils::UncompressFile( std::string filename )
 {
     bool success = true;
 #ifndef WIN32
@@ -432,7 +432,7 @@ bool svkUtils::UncompressFile( vtkstd::string filename )
 /*!
  *  Check to see if a file is compressed. Platform dependent, currently not supported on windows.
  */
-bool svkUtils::IsFileCompressed( vtkstd::string filename )
+bool svkUtils::IsFileCompressed( std::string filename )
 {
     bool isCompressed = false;
 #ifndef WIN32
@@ -455,7 +455,7 @@ bool svkUtils::IsFileCompressed( vtkstd::string filename )
  *  use a string as a variable in this way then the spaces must be
  *  extracted.
  */
-string svkUtils::SpacesTo_( vtkstd::string inputString )
+string svkUtils::SpacesTo_( std::string inputString )
 {
         size_t pos = inputString.find( " " );
         while( pos!= string::npos ) {

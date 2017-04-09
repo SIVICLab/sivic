@@ -70,6 +70,8 @@ IF (CMAKE_SYSTEM_NAME MATCHES Linux)
                       Xt
                       Xss 
                       Xft
+                      pthread
+                      icuuc
 	)
 ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
     IF (CMAKE_SYSTEM_NAME MATCHES Darwin)

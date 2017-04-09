@@ -103,7 +103,7 @@ svkMetaboliteRatioZScores::~svkMetaboliteRatioZScores()
 /*!
  *  Set the series description for the DICOM header of the output image.  
  */
-void svkMetaboliteRatioZScores::SetSeriesDescription( vtkstd::string newSeriesDescription )
+void svkMetaboliteRatioZScores::SetSeriesDescription( std::string newSeriesDescription )
 {
     this->newSeriesDescription = newSeriesDescription;
     this->Modified(); 

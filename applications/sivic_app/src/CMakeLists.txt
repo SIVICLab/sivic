@@ -115,7 +115,7 @@ endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.li
 ###################################
 #   VTK
 ###################################
-#FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE)
+#FIND_PACKAGE(VTK 7.0 REQUIRED NO_MODULE)
 #INCLUDE(${VTK_USE_FILE})
 
 
@@ -212,6 +212,8 @@ ELSE(WIN32)
                       Xt
                       Xss 
                       Xft
+                      pthread
+                      icuuc
     )
 ENDIF(WIN32)
 

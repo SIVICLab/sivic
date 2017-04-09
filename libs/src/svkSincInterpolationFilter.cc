@@ -229,7 +229,7 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
     svkMriImageData* target = svkMriImageData::New();
     target->DeepCopy( data );
     double *range;
-    vtkstd::string representation = data->GetDcmHeader()->GetStringSequenceItemElement(
+    std::string representation = data->GetDcmHeader()->GetStringSequenceItemElement(
                                         "MRImageFrameTypeSequence",
                                         0,
                                         "ComplexImageComponent",

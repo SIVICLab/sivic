@@ -97,7 +97,7 @@ void svkDSCPeakHeight::GenerateMaps()
     dscMapArray = this->GetOutput()->GetPointData()->GetArray(0); 
 
     //  Add the output volume array to the correct array in the svkMriImageData object
-    vtkstd::string arrayNameString("pixels");
+    std::string arrayNameString("pixels");
 
     dscMapArray->SetName( arrayNameString.c_str() );
 

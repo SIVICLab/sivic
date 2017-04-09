@@ -141,7 +141,7 @@ void sivicDSCWidget::CreateWidget()
 
 
     //  Set default value
-    vtkstd::string mapSelectLabel = this->dscNames[0];
+    std::string mapSelectLabel = this->dscNames[0];
     this->mapViewSelector->GetWidget()->SetValue( mapSelectLabel.c_str() );
     this->mapViewSelector->GetWidget()->IndicatorVisibilityOn();
 
@@ -277,7 +277,7 @@ void sivicDSCWidget::ExecuteQuantification()
         this->dscQuant = svkDSCQuantify::New();
         this->dscQuant->SetInputData( data );
         this->dscQuant->Update();
-        vtkstd::vector< svkMriImageData* >* dscMaps = this->dscQuant->GetDSCMaps();
+        std::vector< svkMriImageData* >* dscMaps = this->dscQuant->GetDSCMaps();
 
         for (int i = 0; i < dscMaps->size(); i ++ ) {
 
@@ -286,7 +286,7 @@ void sivicDSCWidget::ExecuteQuantification()
             //  The names should appear in the same order in the vector as they do
             //  in the view selector
             //
-            vtkstd::string modelDataName = svkUtils::SpacesTo_((*dscMaps)[i]->GetDcmHeader()->GetStringValue("SeriesDescription"));
+            std::string modelDataName = svkUtils::SpacesTo_((*dscMaps)[i]->GetDcmHeader()->GetStringValue("SeriesDescription"));
             this->modelDSCNames.push_back( modelDataName );
  
             if( this->model->DataExists( this->modelDSCNames[i] ) ) {
@@ -314,7 +314,7 @@ void sivicDSCWidget::ExecuteQuantification()
             this->SetOverlay( this->modelDSCNames[0] );
         }  else {
             vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
-            vtkstd::string menuValue = this->mapViewSelector->GetWidget()->GetValue();
+            std::string menuValue = this->mapViewSelector->GetWidget()->GetValue();
             if( this->model->DataExists( menuValue )) {
                 this->SetOverlay(  this->mapViewSelector->GetWidget()->GetValue()  );
             } else {
@@ -338,7 +338,7 @@ void sivicDSCWidget::ExecuteQuantification()
  *  Called by parent controller to enable this panel and initialize values
  *  modelObjectName is the series description of the map
  */
-void sivicDSCWidget::SetOverlay( vtkstd::string modelObjectName)
+void sivicDSCWidget::SetOverlay( std::string modelObjectName)
 {
 	this->sivicController->OverlayTextOff();
     //  Initialize the overlay with the NAA met map

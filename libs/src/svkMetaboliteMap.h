@@ -85,7 +85,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
         }algorithm;
 
 
-        void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
+        void                    SetSeriesDescription(std::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         void                    SetZeroCopy(bool zeroCopy); 
         void                    SetPeakPosPPM( float peak_center_ppm );     
@@ -96,7 +96,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
         void                    SetAlgorithmToLineWidth();
         void                    SetAlgorithmToMagLineWidth();
         void                    SetAlgorithmToMagIntegrate();
-        void                    SetAlgorithm( vtkstd::string algo );     
+        void                    SetAlgorithm( std::string algo );     
         void                    SetVerbose( bool isVerbose );     
         void                    LimitToSelectedVolume(float fraction = 0.5001);
         short*                  GetSelectedVolumeMask();
@@ -143,7 +143,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
 
 
         //  Members:
-        vtkstd::string              newSeriesDescription; 
+        std::string              newSeriesDescription; 
         float                       peakCenterPPM;
         float                       peakWidthPPM;
         svkMetaboliteMap::algorithm quantificationAlgorithm;  

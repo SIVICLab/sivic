@@ -161,7 +161,7 @@ int svkBurnResearchPixels::FillInputPortInformation( int vtkNotUsed(port), vtkIn
 //! Get Pixel Header for 256 or 512 pixel image
 char* svkBurnResearchPixels::GetPixelHeader() 
 {
-
+/*
     svkImageData* data = this->GetImageDataInput(0); 
     svkDcmHeader* hdr = data->GetDcmHeader(); 
     int imageSize = hdr->GetIntValue("Rows"); 
@@ -4230,5 +4230,7 @@ char* svkBurnResearchPixels::GetPixelHeader()
     }
 
     return headerPixels; 
+*/
+return NULL;
 }
 

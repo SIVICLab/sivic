@@ -75,10 +75,10 @@ class svkDSCQuantify: public svkImageAlgorithm
         static svkDSCQuantify* New();
         vtkTypeMacro( svkDSCQuantify, svkImageAlgorithm);
 
-        vtkstd::vector< svkMriImageData* >*                 GetDSCMaps();
-        vtkstd::vector< vtkstd::vector< vtkstd::string > >  GetRegionNameVector();
-        int                                                 GetIntFromString(vtkstd::string stringVal ); 
-        float                                               GetFloatFromString(vtkstd::string stringVal ); 
+        std::vector< svkMriImageData* >*                 GetDSCMaps();
+        std::vector< std::vector< std::string > >  GetRegionNameVector();
+        int                                                 GetIntFromString(std::string stringVal ); 
+        float                                               GetFloatFromString(std::string stringVal ); 
 
     protected:
 
@@ -108,7 +108,7 @@ class svkDSCQuantify: public svkImageAlgorithm
         void                                Quantify();
         void                                GenerateDSCMaps();
         void                                GenerateNormalizedMaps(); 
-        string                              ReplaceSlashesAndWhiteSpace( vtkstd::string inString); 
+        string                              ReplaceSlashesAndWhiteSpace( std::string inString); 
         void                                GetNumeratorAndDenominatorImages( 
                                                 vtkXMLDataElement* ratioXML, 
                                                 svkImageData* numeratorImage, 
@@ -118,11 +118,11 @@ class svkDSCQuantify: public svkImageAlgorithm
 
         //  Members:
         bool                                isVerbose; 
-        vtkstd::vector< svkMriImageData* >  dscMapVector; 
+        std::vector< svkMriImageData* >  dscMapVector; 
 
 
         //  map of regions: region name, peak (ppm) and peak width (ppm)
-        vtkstd::vector < vtkstd::vector< vtkstd::string > >  regionVector;
+        std::vector < std::vector< std::string > >  regionVector;
 
 };
 

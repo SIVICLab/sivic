@@ -98,7 +98,7 @@ void svkDSCQuantify::Quantify()
 /*
  *  Retruns a pointer to the metabolite map vector
  */
-vtkstd::vector< svkMriImageData* >* svkDSCQuantify::GetDSCMaps()
+std::vector< svkMriImageData* >* svkDSCQuantify::GetDSCMaps()
 {
     return &(this->dscMapVector);        
 }
@@ -141,7 +141,7 @@ void svkDSCQuantify::GenerateDSCMaps()
 /*
  *
  */
-int svkDSCQuantify::GetIntFromString(vtkstd::string stringVal ) 
+int svkDSCQuantify::GetIntFromString(std::string stringVal ) 
 {
  
     istringstream* iss = new istringstream();
@@ -156,7 +156,7 @@ int svkDSCQuantify::GetIntFromString(vtkstd::string stringVal )
 /*
  *
  */
-float svkDSCQuantify::GetFloatFromString(vtkstd::string stringVal ) 
+float svkDSCQuantify::GetFloatFromString(std::string stringVal ) 
 {
  
     istringstream* iss = new istringstream();
@@ -219,15 +219,15 @@ int svkDSCQuantify::RequestData( vtkInformation* request, vtkInformationVector**
  *  Replace ('/') slash character and white space in name attributes with "_div_" 
  *  and "_" respectively so we end up with valid file names. 
  */
-string svkDSCQuantify::ReplaceSlashesAndWhiteSpace( vtkstd::string inString)
+string svkDSCQuantify::ReplaceSlashesAndWhiteSpace( std::string inString)
 {
    
-    vtkstd::string outString( inString ) ;
+    std::string outString( inString ) ;
 
     size_t slashPos;
     slashPos = outString.find_first_of("/");
 
-    while ( slashPos != vtkstd::string::npos ) {
+    while ( slashPos != std::string::npos ) {
         outString.assign( outString.replace(slashPos, 1, "_div_") );
         slashPos = outString.find_first_of("/");
     }
@@ -236,7 +236,7 @@ string svkDSCQuantify::ReplaceSlashesAndWhiteSpace( vtkstd::string inString)
     size_t whitePos;
     whitePos = outString.find_first_of(" ");
 
-    while ( whitePos != vtkstd::string::npos ) {
+    while ( whitePos != std::string::npos ) {
         outString.assign( outString.replace(whitePos, 1, "_") );
         whitePos = outString.find_first_of(" ");
     }

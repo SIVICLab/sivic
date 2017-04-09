@@ -846,8 +846,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     float* dk = new float[ gridSize ]; 
     for ( int i = 0; i < numEPSIVoxels; i++ ) {
 
-        vtkstd::vector <int> iGrid; 
-        vtkstd::vector <float> iGridDK; 
+        std::vector <int> iGrid; 
+        std::vector <float> iGridDK; 
 
         for ( int j = 0; j < gridSize; j++ ) {
             dk[j] = fabs( knNorm[j] - waveFormIntegralNorm[i] );  
@@ -865,7 +865,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
 
 
         //  get Kaiser Bessel Values: 
-        vtkstd::vector<float> kbVals; 
+        std::vector<float> kbVals; 
         this->GetKaiserBesselValues( &iGridDK , kWidth, beta, &kbVals); 
 
         // Initialize non-zero grid elements:  
@@ -1191,12 +1191,12 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetRolloffCorrection( int gridSize, float w
  *      IEEE TRANSACTIONS ON MEDICAL IMAGING. VOL. IO. NO. 3 , SEPTEMBER 1991
  *  
  */
-void svkGEPFileMapperUCSFfidcsiDev0::GetKaiserBesselValues( vtkstd::vector<float>* u, float width, float beta, vtkstd::vector<float>* kbVals )
+void svkGEPFileMapperUCSFfidcsiDev0::GetKaiserBesselValues( std::vector<float>* u, float width, float beta, std::vector<float>* kbVals )
 {
 
     //  vector to hold indices for computing bessel coefficients. 
-    vtkstd::vector <int> uz; 
-    //vtkstd::vector<float> kb_vals; 
+    std::vector <int> uz; 
+    //std::vector<float> kb_vals; 
     // Indices where u < w/2.
     for ( int i = 0; i < u->size(); i++ ) {
         if ( fabs ( (*u)[i] ) < (width/2) ) {

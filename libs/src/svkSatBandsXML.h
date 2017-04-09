@@ -83,9 +83,9 @@ class svkSatBandsXML: public vtkObject
         static svkSatBandsXML* New();
         vtkTypeMacro( svkSatBandsXML, vtkObject);
 
-        int                         SetXMLFileName( vtkstd::string xmlFileName );     
+        int                         SetXMLFileName( std::string xmlFileName );     
         int                         ParseXML( vtkXMLDataElement* satBandsElement );
-        vtkstd::string              GetXMLFileName( );
+        std::string              GetXMLFileName( );
         void                        ClearXMLFile( );
         void                        SetVerbose( bool isVerbose );     
         int                         GetNumberOfPressBoxSats(); 
@@ -186,7 +186,7 @@ class svkSatBandsXML: public vtkObject
         //  Members:
         float                       versionNumber;
         bool                        isVerbose; 
-        vtkstd::string              xmlFileName; 
+        std::string              xmlFileName; 
         vtkXMLDataElement*          satBandsXML;
         vtkXMLDataElement*          versionElement;
         vtkXMLDataElement*          pressBoxElement;

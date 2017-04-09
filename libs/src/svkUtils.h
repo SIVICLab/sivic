@@ -113,8 +113,8 @@ class svkUtils : public vtkObject
         static string             GetFilenameFromFullPath( string fullPath );
         static int                NearestInt(double x);
         static bool               UncompressFiles( vtkStringArray *filenames );
-        static bool               UncompressFile( vtkstd::string filename );
-        static bool               IsFileCompressed( vtkstd::string filename );
+        static bool               UncompressFile( std::string filename );
+        static bool               IsFileCompressed( std::string filename );
         static string             SpacesTo_( string inputString );
         static bool               AreValuesClose(double x, double y, double maxRatio = 0.01 );
         static bool               AreValuesClose(double x[3], double y[3], double maxRatio = 0.01 );

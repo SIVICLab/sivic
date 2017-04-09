@@ -177,11 +177,11 @@ void svkDdfVolumeWriter::WriteFiles()
 {
     vtkDebugMacro( << this->GetClassName() << "::WriteData()" );
 
-    vtkstd::string dataExtension = ".cmplx"; 
-    vtkstd::string hdrExtension = ".ddf"; 
+    std::string dataExtension = ".cmplx"; 
+    std::string hdrExtension = ".ddf"; 
 
-    vtkstd::string fileRoot = 
-        vtkstd::string(this->InternalFileName).substr( 0, vtkstd::string(this->InternalFileName).rfind(".") );
+    std::string fileRoot = 
+        std::string(this->InternalFileName).substr( 0, std::string(this->InternalFileName).rfind(".") );
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
     int dataWordSize = 4; 
@@ -191,7 +191,7 @@ void svkDdfVolumeWriter::WriteFiles()
     int numCoils   = hdr->GetNumberOfCoils();
     int numTimePts = hdr->GetNumberOfTimePoints();  
     int specPts    = hdr->GetIntValue( "DataPointColumns" );
-    vtkstd::string representation = hdr->GetStringValue( "DataRepresentation" );
+    std::string representation = hdr->GetStringValue( "DataRepresentation" );
 
     int numComponents = 1;
     if (representation.compare("COMPLEX") == 0) {
@@ -207,7 +207,7 @@ void svkDdfVolumeWriter::WriteFiles()
     // write out one coil per ddf file
     float* specData = new float [ dataLengthPerFile ];
 
-    vtkstd::string fileName;
+    std::string fileName;
 
     svkDcmHeader::DimensionVector origDimensionVector = hdr->GetDimensionIndexVector(); 
     svkDcmHeader::DimensionVector dimensionVector = origDimensionVector; 
@@ -316,7 +316,7 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, svkDcmHeader::DimensionVe
     int timePt     = svkDcmHeader::GetDimensionVectorValue(indexVector, svkDcmHeader::TIME_INDEX);
 
     int numComponents = 1;
-    vtkstd::string representation = hdr->GetStringValue( "DataRepresentation" );
+    std::string representation = hdr->GetStringValue( "DataRepresentation" );
     if (representation.compare("COMPLEX") == 0) {
         numComponents = 2;
     }
@@ -379,12 +379,12 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, svkDcmHeader::DimensionVe
 /*!
  *  initializes the ofstream header content for the DDF header.
  */
-void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
+void svkDdfVolumeWriter::InitHeader(ofstream* out, std::string fileName)
 {
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
 
-    vtkstd::string deidMethod = hdr->GetStringValue( "DeidentificationMethod" );
+    std::string deidMethod = hdr->GetStringValue( "DeidentificationMethod" );
     bool deidentified = false; 
     if (  deidMethod.compare("DEIDENTIFIED") == 0 ){ 
         deidentified = true; 
@@ -398,7 +398,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << "patient code: " << endl;
 
 
-    vtkstd::string dob = hdr->GetStringValue( "PatientBirthDate" ); 
+    std::string dob = hdr->GetStringValue( "PatientBirthDate" ); 
 
     if ( deidentified ) { 
         *out << "date of birth: " << dob << endl; 
@@ -415,7 +415,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << "study id: " << hdr->GetStringValue( "StudyID" ) <<  endl;
     *out << "study code: " << "" <<  endl;
 
-    vtkstd::string date = hdr->GetStringValue( "StudyDate" );
+    std::string date = hdr->GetStringValue( "StudyDate" );
     if (  deidentified ) { 
         *out << "study date: " << date << endl;
     } else {
@@ -434,10 +434,10 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << "comment: " << " " << endl;
 
     *out << "patient entry: ";
-    vtkstd::string position_string = hdr->GetStringValue( "PatientPosition" );
-    if ( position_string.substr(0,2) == vtkstd::string( "HF" ) ){
+    std::string position_string = hdr->GetStringValue( "PatientPosition" );
+    if ( position_string.substr(0,2) == std::string( "HF" ) ){
         *out << "head first";
-    } else if ( position_string.substr(0,2) == vtkstd::string( "FF" ) ) {
+    } else if ( position_string.substr(0,2) == std::string( "FF" ) ) {
         *out << "feet first";
     } else {
         *out << "UNKNOWN";
@@ -445,13 +445,13 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << endl;
 
     *out << "patient position: ";
-    if ( position_string.substr(2) == vtkstd::string( "S" ) ) {
+    if ( position_string.substr(2) == std::string( "S" ) ) {
         *out << "supine" << endl;
-    } else if ( position_string.substr(2) == vtkstd::string( "P" ) ) {
+    } else if ( position_string.substr(2) == std::string( "P" ) ) {
         *out << "prone" << endl;
-    } else if ( position_string.substr(2) == vtkstd::string( "DL" ) ) {
+    } else if ( position_string.substr(2) == std::string( "DL" ) ) {
         *out << "decubitus left" << endl;
-    } else if ( position_string.substr(2) == vtkstd::string( "DR" ) ) {
+    } else if ( position_string.substr(2) == std::string( "DR" ) ) {
         *out << "decubitus right" << endl;
     } else {
         *out << "UNKNOWN" << endl;
@@ -459,7 +459,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
 
     double orientation[2][3];
     hdr->GetOrientation(orientation);
-    vtkstd::string orientationString; 
+    std::string orientationString; 
 
     if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][1] ) == 1 ) ||
         ( fabs(orientation[0][1]) ==1 && fabs( orientation[1][0] ) == 1 ) ) {
@@ -497,9 +497,9 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     }
     *out << "number of dimensions: " << numDims << endl; 
 
-    vtkstd::string specDomain = this->GetDimensionDomain( hdr->GetStringValue( "SignalDomainColumns") ); 
+    std::string specDomain = this->GetDimensionDomain( hdr->GetStringValue( "SignalDomainColumns") ); 
 
-    vtkstd::string spatialDomains[3];  
+    std::string spatialDomains[3];  
     spatialDomains[0] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_ColumnsDomain") ); 
     spatialDomains[1] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_RowsDomain") ); 
     spatialDomains[2] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_SliceDomain") ); 
@@ -550,7 +550,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << "===================================================" << endl; 
     *out << "MR Parameters" << endl; 
 
-    vtkstd::string coilName = hdr->GetStringSequenceItemElement(
+    std::string coilName = hdr->GetStringSequenceItemElement(
         "MRReceiveCoilSequence",
         0,
         "ReceiveCoilName",
@@ -651,7 +651,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << "sweepwidth(Hz): " << fixed << setprecision(6) << hdr->GetFloatValue( "SpectralWidth" ) << endl;
     *out << "dwelltime(ms): " << fixed << setprecision(6) << 1000/( hdr->GetFloatValue( "SpectralWidth" ) ) << endl;
     *out << "frequency offset(Hz): " << fixed << setprecision(6) << freqOffset  << endl;
-    vtkstd::string onH20 = "yes"; 
+    std::string onH20 = "yes"; 
     //  if this is not H1, then set to no:
     if ( hdr->GetStringValue( "ResonantNucleus" ).compare("1H") != 0 ) {
         onH20.assign( "" ); 
@@ -671,7 +671,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     ); 
     *out << "number of acquisitions: " << numAcqs << endl; 
 
-    vtkstd::string chop = hdr->GetStringValue( "SVK_AcquisitionChop" );
+    std::string chop = hdr->GetStringValue( "SVK_AcquisitionChop" );
     if ( chop.compare( "YES" ) == 0 ) {
         chop = "yes"; 
     } else {
@@ -680,9 +680,9 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << "chop: " << chop << endl;
 
 
-    vtkstd::string evenSymmetry = ""; 
+    std::string evenSymmetry = ""; 
     if ( hdr->ElementExists( "SVK_K0Sampled" ) ) {
-        vtkstd::string k0Sampled = hdr->GetStringValue( "SVK_K0Sampled" );
+        std::string k0Sampled = hdr->GetStringValue( "SVK_K0Sampled" );
         if ( k0Sampled.compare( "YES" ) == 0 ) {
             //  if odd dims
             if (  (numVoxels[0] > 1 && numVoxels[0] % 2 )
@@ -990,7 +990,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
 /*!
  *   
  */
-void svkDdfVolumeWriter::GetDDFCenter(float center[3], vtkstd::string centerType)
+void svkDdfVolumeWriter::GetDDFCenter(float center[3], std::string centerType)
 {
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
@@ -1052,7 +1052,7 @@ void svkDdfVolumeWriter::GetDDFCenter(float center[3], vtkstd::string centerType
 /*!
  *   
  */
-vtkstd::string svkDdfVolumeWriter::GetDDFPatientName(vtkstd::string PatientName)
+std::string svkDdfVolumeWriter::GetDDFPatientName(std::string PatientName)
 {
 
     //  Remove DICOM delimiters:
@@ -1064,7 +1064,7 @@ vtkstd::string svkDdfVolumeWriter::GetDDFPatientName(vtkstd::string PatientName)
 
     //  Remove multiple spaces:
     size_t pos; 
-    while ( (pos = PatientName.find("  ")) != vtkstd::string::npos) {
+    while ( (pos = PatientName.find("  ")) != std::string::npos) {
         PatientName.erase(pos, 1);     
     }
 
@@ -1075,9 +1075,9 @@ vtkstd::string svkDdfVolumeWriter::GetDDFPatientName(vtkstd::string PatientName)
 /*!
  *  Converts the DICOM dimension domain type to a ddf dimension type string:
  */
-vtkstd::string svkDdfVolumeWriter::GetDimensionDomain( vtkstd::string dimensionDomainString )
+std::string svkDdfVolumeWriter::GetDimensionDomain( std::string dimensionDomainString )
 {
-    vtkstd::string domain;
+    std::string domain;
     if ( dimensionDomainString.compare("TIME") == 0 )  {
         domain.assign("time");
     } else if ( dimensionDomainString.compare("FREQUENCY") == 0 )  {
@@ -1105,15 +1105,15 @@ void svkDdfVolumeWriter::UseDescriptiveFileNames()
  *  indicate time_pt or coil number for multi-file output of dataset, e.g. 
  *  each coil written to a separate ddf/cmplx file pair. 
  */
-vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, svkDcmHeader::DimensionVector* dimensionVector, int frame ) 
+std::string svkDdfVolumeWriter::GetFileRootName(std::string fileRoot, svkDcmHeader::DimensionVector* dimensionVector, int frame ) 
 {
 
     svkDcmHeader::DimensionVector loopVector = *dimensionVector;     
     svkDcmHeader::GetDimensionVectorIndexFromFrame(dimensionVector, &loopVector, frame);
 
     //  See if any non time dimension has length > 1: 
-    vtkstd::string dimLabel = ""; 
-    vtkstd::string extraDimLabel = ""; 
+    std::string dimLabel = ""; 
+    std::string extraDimLabel = ""; 
     int numDimsToRepresent = 0; 
     int implicitDimensionIndex = 1; 
 
@@ -1130,7 +1130,7 @@ vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, svkD
 
                 if ( numDimsToRepresent > 1 ) {
                     extraDimLabel.append("_"); 
-                    vtkstd::string type = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexLabel(i-2);
+                    std::string type = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexLabel(i-2);
                     //cout << "TYPE: " << type << endl;
                     extraDimLabel.append(type); 
                     int dimValue = svkDcmHeader::GetDimensionVectorValue(&loopVector, i) + 1; 

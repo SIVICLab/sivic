@@ -222,7 +222,7 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
         }
         ostringstream volNumber;
         volNumber << vol;
-        vtkstd::string arrayNameString("pixels");
+        std::string arrayNameString("pixels");
         arrayNameString.append(volNumber.str());
         array->SetName( arrayNameString.c_str() );
         if( this->numVolumes > 1 ) {

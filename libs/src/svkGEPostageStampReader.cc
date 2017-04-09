@@ -88,14 +88,14 @@ svkGEPostageStampReader::~svkGEPostageStampReader()
 int svkGEPostageStampReader::CanReadFile(const char* fname)
 {
 
-    vtkstd::string fileToCheck(fname);
+    std::string fileToCheck(fname);
     bool isGEPostage = false; 
 
     if ( svkDcmHeader::IsFileDICOM( fname ) ) {
  
         svkImageData* tmp = svkMrsImageData::New(); 
         tmp->GetDcmHeader()->ReadDcmFile( fname ); 
-        vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
+        std::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
 
         // Check for MR Image Storage
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {
@@ -158,7 +158,7 @@ void svkGEPostageStampReader::InitDcmHeader()
     iod->InitDcmHeader();
     iod->Delete();
 
-    vtkstd::string studyInstanceUID( this->GetOutput()->GetDcmHeader()->GetStringValue("StudyInstanceUID"));
+    std::string studyInstanceUID( this->GetOutput()->GetDcmHeader()->GetStringValue("StudyInstanceUID"));
     this->GetOutput()->GetDcmHeader()->SetValue( "StudyInstanceUID", studyInstanceUID.c_str() );
 
     //  Now move info from original MRImageStorage header elements to flesh out enhanced
@@ -298,7 +298,7 @@ void svkGEPostageStampReader::InitPixelMeasuresMacro()
 
     ostringstream ossCol;
     ossCol << diameter/numCols;
-    vtkstd::string pixelSizeString(ossCol.str());
+    std::string pixelSizeString(ossCol.str());
 
     pixelSizeString.append("\\"); 
 
@@ -373,12 +373,12 @@ void svkGEPostageStampReader::InitMRReceiveCoilMacro()
         "MRReceiveCoilSequence",
         0,
         "ReceiveCoilManufacturerName",
-        vtkstd::string("GE"),
+        std::string("GE"),
         "SharedFunctionalGroupsSequence",
         0
     );
 
-    vtkstd::string coilType("VOLUME");
+    std::string coilType("VOLUME");
     if ( rcvCoilName.compare("8HRBRAIN") == 0 ) {
         coilType.assign("MULTICOIL");
     }
@@ -396,7 +396,7 @@ void svkGEPostageStampReader::InitMRReceiveCoilMacro()
         "MRReceiveCoilSequence",
         0,
         "QuadratureReceiveCoil",
-        vtkstd::string("YES"),
+        std::string("YES"),
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -453,7 +453,7 @@ void svkGEPostageStampReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ImageType",
-        vtkstd::string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE")
+        std::string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE")
     );
 
 
@@ -462,17 +462,17 @@ void svkGEPostageStampReader::InitMRSpectroscopyModule()
      *  ======================================= */
     this->GetOutput()->GetDcmHeader()->SetValue(
         "VolumetricProperties",
-        vtkstd::string("VOLUME")
+        std::string("VOLUME")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "VolumeBasedCalculationTechnique",
-        vtkstd::string("NONE")
+        std::string("NONE")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ComplexImageComponent",
-        vtkstd::string("COMPLEX")
+        std::string("COMPLEX")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -537,7 +537,7 @@ void svkGEPostageStampReader::InitMRSpectroscopyModule()
     
     this->GetOutput()->GetDcmHeader()->SetValue(
         "BaselineCorrection", 
-        vtkstd::string("NONE")
+        std::string("NONE")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -547,12 +547,12 @@ void svkGEPostageStampReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "FirstOrderPhaseCorrection",
-        vtkstd::string("NO")
+        std::string("NO")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "WaterReferencedPhaseCorrection",
-        vtkstd::string("NO")
+        std::string("NO")
     );
 }
 
@@ -726,7 +726,7 @@ void svkGEPostageStampReader::InitSatBand( float satRAS[3], float translation, i
         0
     );
 
-    vtkstd::string slabOrientation;
+    std::string slabOrientation;
     for (int j = 0; j < 3; j++) {
         ostringstream ossOrientation;
         ossOrientation << orientation[j];
@@ -745,7 +745,7 @@ void svkGEPostageStampReader::InitSatBand( float satRAS[3], float translation, i
         0
     );
 
-    vtkstd::string slabPosition;
+    std::string slabPosition;
     for (int j = 0; j < 3; j++) {
         ostringstream ossPosition;
         ossPosition << position[j];
@@ -1011,7 +1011,7 @@ void svkGEPostageStampReader::InitMRSpectroscopyDataModule()
     );
 
     int numComponents =  2; 
-    vtkstd::string representation;
+    std::string representation;
     if (numComponents == 1) {
         representation = "REAL";
     } else if (numComponents == 2) {
@@ -1055,7 +1055,7 @@ void svkGEPostageStampReader::InitMRSpectroscopyDataModule()
 void svkGEPostageStampReader::LoadData( svkImageData* data )
 {
 
-    vtkstd::string dataRepresentation = this->GetOutput()->GetDcmHeader()->GetStringValue( "DataRepresentation" ); 
+    std::string dataRepresentation = this->GetOutput()->GetDcmHeader()->GetStringValue( "DataRepresentation" ); 
     int numComponents; 
     if ( dataRepresentation == "COMPLEX" ) {
         numComponents = 2; 

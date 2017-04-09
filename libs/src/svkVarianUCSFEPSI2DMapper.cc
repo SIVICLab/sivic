@@ -118,7 +118,7 @@ void svkVarianUCSFEPSI2DMapper::InitPixelMeasuresMacro()
     pixelSize[1] = this->GetHeaderValueAsFloat("lro", 0) / numPixels[1];
     pixelSize[2] = this->GetHeaderValueAsFloat("thk", 0) / numPixels[2];
 
-    vtkstd::string pixelSizeString[3];
+    std::string pixelSizeString[3];
 
     for (int i = 0; i < 3; i++) {
         ostringstream oss;
@@ -376,7 +376,7 @@ void svkVarianUCSFEPSI2DMapper::InitMRSpectroscopyModule()
  *  This method reads data from the pfile and puts the data into the CellData arrays.
  *  Non-uniform k-space sampling requires regridding to rectaliniear k-space array here. 
  */
-void svkVarianUCSFEPSI2DMapper::ReadFidFile( vtkstd::string fidFileName, svkImageData* data )
+void svkVarianUCSFEPSI2DMapper::ReadFidFile( std::string fidFileName, svkImageData* data )
 {
 
     svkImageData* tmpImage = svkMrsImageData::New();
@@ -466,7 +466,7 @@ void svkVarianUCSFEPSI2DMapper::ReorderEPSIData( svkImageData* data)
     svkDcmHeader* hdr = data->GetDcmHeader();
 
 
-    vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
+    std::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
     int numComponents;
     if ( dataRepresentation == "COMPLEX" ) {
         numComponents = 2;
@@ -759,7 +759,7 @@ void svkVarianUCSFEPSI2DMapper::SetCellSpectrum(vtkImageData* data, int x, int y
 {
 
     int numComponents = 1;
-    vtkstd::string representation =  this->dcmHeader->GetStringValue( "DataRepresentation" );
+    std::string representation =  this->dcmHeader->GetStringValue( "DataRepresentation" );
     if (representation.compare( "COMPLEX" ) == 0 ) {
         numComponents = 2;
     }

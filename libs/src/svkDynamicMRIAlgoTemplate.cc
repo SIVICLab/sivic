@@ -104,7 +104,7 @@ svkDynamicMRIAlgoTemplate::~svkDynamicMRIAlgoTemplate()
 /*!
  *  Set the series description for the DICOM header of the copy.  
  */
-void svkDynamicMRIAlgoTemplate::SetSeriesDescription( vtkstd::string newSeriesDescription )
+void svkDynamicMRIAlgoTemplate::SetSeriesDescription( std::string newSeriesDescription )
 {
     this->newSeriesDescription = newSeriesDescription;
     this->Modified(); 
@@ -206,7 +206,7 @@ void svkDynamicMRIAlgoTemplate::GenerateKineticParamMap()
     kineticsMapArray = this->GetOutput()->GetPointData()->GetArray(0);
 
     //  Add the output volume array to the correct array in the svkMriImageData object
-    vtkstd::string arrayNameString("pixels");
+    std::string arrayNameString("pixels");
 
     kineticsMapArray->SetName( arrayNameString.c_str() );
 

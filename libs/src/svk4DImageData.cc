@@ -646,8 +646,8 @@ void svk4DImageData::EstimateDataRange( double range[2], int minPt, int maxPt, i
         double rangeAverage[2] = {0,0};
         double stdDeviation[2] = {0,0};
         int numVoxels = (max[0]-min[0]+1)*(max[1]-min[1]+1)*(max[2]-min[2]+1);
-        vtkstd::vector<double> maxValues;
-        vtkstd::vector<double> minValues;
+        std::vector<double> maxValues;
+        std::vector<double> minValues;
 
         // Find the average and the max/min for each voxel
 		double value = 0;

@@ -129,7 +129,7 @@ class svkDetailedPlotDirector : public vtkObject
         void                           GenerateMagnitudeArray( vtkDataArray* complexArray, vtkDataArray* magnitudeArray);
         void                           RegenerateMagnitudeArrays();
 
-        vtkstd::vector<vtkDataObject*> dataVector;
+        std::vector<vtkDataObject*> dataVector;
         svkXYPlotActor*                xyPlotActor;
         double                         xMin;
         double                         yMin;

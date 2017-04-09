@@ -90,7 +90,7 @@ svkVarianCSFidMapper::~svkVarianCSFidMapper()
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
 
     if ( this->paddedData != NULL ) {
-        vtkstd::vector<int> blipVector = this->GetBlips(); 
+        std::vector<int> blipVector = this->GetBlips(); 
         int lengthX  = blipVector[0]; 
         int lengthY  = blipVector[1];
         int lengthF  = blipVector[2]; 
@@ -974,7 +974,7 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
 
     //  I think everything is ok up to here.  Not positive about the padding yet.
 
-    vtkstd::vector<int> blipVector = this->GetBlips(); 
+    std::vector<int> blipVector = this->GetBlips(); 
 
     int lengthX  = blipVector[0]; 
     int lengthY  = blipVector[1];
@@ -1379,13 +1379,13 @@ void svkVarianCSFidMapper::ReOrderFlyback( )
 /*!
  *
  */
-vtkstd::vector<int> svkVarianCSFidMapper::GetBlips()
+std::vector<int> svkVarianCSFidMapper::GetBlips()
 {
 
     string blipString; 
     this->GetBlipString( &blipString ); 
     
-    vtkstd::vector<int> blipVector; 
+    std::vector<int> blipVector; 
     istringstream* iss = new istringstream();
     int intVal; 
 

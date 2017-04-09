@@ -98,8 +98,8 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         static svkDataAcquisitionDescriptionXML* New();
         vtkTypeMacro( svkDataAcquisitionDescriptionXML, vtkObject);
 
-        int                         SetXMLFileName( vtkstd::string xmlFileName );     
-        vtkstd::string              GetXMLFileName( );
+        int                         SetXMLFileName( std::string xmlFileName );     
+        std::string              GetXMLFileName( );
         void                        ClearXMLFile( );
         void                        InitializeEmptyXMLFile( );
         void                        SetVerbose( bool isVerbose );     
@@ -115,20 +115,20 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         void                        GetEncodedSpace( int matrixSize[3], float fov[3] );
         svkSatBandsXML*             GetSatBandsXML();
 
-        void                        SetTrajectoryType( vtkstd::string type );
-        vtkstd::string              GetTrajectoryType( );
+        void                        SetTrajectoryType( std::string type );
+        std::string              GetTrajectoryType( );
 
-        void                        SetTrajectoryID( vtkstd::string ID );
-        vtkstd::string              GetTrajectoryID( );
+        void                        SetTrajectoryID( std::string ID );
+        std::string              GetTrajectoryID( );
 
-        void                        SetTrajectoryComment( vtkstd::string comment );
-        vtkstd::string              GetTrajectoryComment( );
+        void                        SetTrajectoryComment( std::string comment );
+        std::string              GetTrajectoryComment( );
 
-        void                        SetTrajectoryParameter( vtkstd::string name, long value  );
-        long                        GetTrajectoryLongParameter( vtkstd::string name );
+        void                        SetTrajectoryParameter( std::string name, long value  );
+        long                        GetTrajectoryLongParameter( std::string name );
 
-        void                        SetTrajectoryParameter( vtkstd::string name, double value  );
-        double                      GetTrajectoryDoubleParameter( vtkstd::string name );
+        void                        SetTrajectoryParameter( std::string name, double value  );
+        double                      GetTrajectoryDoubleParameter( std::string name );
 
 
         int                         WriteXMLFile( string xmlFileName );
@@ -142,14 +142,14 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
 
     private:
 
-        void                        SetTrajectoryParameter( vtkstd::string type, vtkstd::string name, vtkstd::string value  );
-        vtkstd::string              GetTrajectoryParameter( vtkstd::string type, vtkstd::string name );
-        vtkXMLDataElement*          GetTrajectoryParameterElement( vtkstd::string type, vtkstd::string name );
+        void                        SetTrajectoryParameter( std::string type, std::string name, std::string value  );
+        std::string              GetTrajectoryParameter( std::string type, std::string name );
+        vtkXMLDataElement*          GetTrajectoryParameterElement( std::string type, std::string name );
         
         //  Members:
         float                       versionNumber;
         bool                        isVerbose; 
-        vtkstd::string              xmlFileName; 
+        std::string              xmlFileName; 
         vtkXMLDataElement*          dataAcquisitionDescriptionXML;
         vtkXMLDataElement*          versionElement;
         vtkXMLDataElement*          satBandsElement;

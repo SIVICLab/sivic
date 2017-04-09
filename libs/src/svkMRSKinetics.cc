@@ -94,7 +94,7 @@ svkMRSKinetics::~svkMRSKinetics()
 /*!
  *  Set the series description for the DICOM header of the copy.  
  */
-void svkMRSKinetics::SetSeriesDescription( vtkstd::string newSeriesDescription )
+void svkMRSKinetics::SetSeriesDescription( std::string newSeriesDescription )
 {
     this->newSeriesDescription = newSeriesDescription;
     this->Modified(); 

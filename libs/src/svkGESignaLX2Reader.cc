@@ -399,7 +399,7 @@ GESignaHeader* svkGESignaLX2Reader::ReadHeader(const char *FileNameToRead)
     buffer = NULL;
     
     // Check if this is a MR file.  If not exit!
-    vtkstd::string examType(signaHeader->Exam_Type);
+    std::string examType(signaHeader->Exam_Type);
     if ( examType != "MR" ) {
         fclose(fp);
         delete signaHeader;

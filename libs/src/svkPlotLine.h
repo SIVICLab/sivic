@@ -51,7 +51,7 @@
 
 namespace svk {
 
-using namespace vtkstd;
+using namespace std;
 
 /*!
  * svkPlotLine is a utility class that manipulates values in an array

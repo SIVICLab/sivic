@@ -71,7 +71,7 @@ class svkDynamicImageMap: public svkImageAlgorithm
 
         vtkTypeMacro( svkDynamicImageMap, svkImageAlgorithm);
 
-        void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
+        void                    SetSeriesDescription(std::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         // TODO: Make private API
         void                    SetZeroCopy(bool zeroCopy); 
@@ -108,7 +108,7 @@ class svkDynamicImageMap: public svkImageAlgorithm
 
 
         //  Members:
-        vtkstd::string          newSeriesDescription; 
+        std::string          newSeriesDescription; 
         bool                    normalize; 
 
 

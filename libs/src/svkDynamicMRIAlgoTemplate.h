@@ -79,7 +79,7 @@ class svkDynamicMRIAlgoTemplate: public svkImageAlgorithm
         static                  svkDynamicMRIAlgoTemplate* New();
 
 
-        void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
+        void                    SetSeriesDescription(std::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         void                    SetZeroCopy(bool zeroCopy); 
 
@@ -111,7 +111,7 @@ class svkDynamicMRIAlgoTemplate: public svkImageAlgorithm
 
 
         //  Members:
-        vtkstd::string          newSeriesDescription; 
+        std::string          newSeriesDescription; 
 
 
     private:
