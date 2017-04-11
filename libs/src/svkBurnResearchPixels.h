@@ -90,7 +90,7 @@ class svkBurnResearchPixels : public svkImageInPlaceFilter
     private:
         
         //  Members:
-        char*   GetPixelHeader();
+        unsigned char*   GetPixelHeader();
         int     GetNumHeaderPixels();
         double  GetBurnValue();
 
