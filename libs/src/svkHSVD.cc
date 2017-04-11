@@ -186,8 +186,9 @@ void svkHSVD::SetErrorHandlingSignalToZeroOn()
 
 
 /*!
- *  Sets the error handling behavior such that if a fitting error is detected, the filter for that voxel is 
- *  set to zero and the output spectrum is set to the original input data.  In other words if an error is 
+ *  Sets the error handling behavior such that if a fitting error is detected, 
+ *  the filter for that voxel is set to zero and the output spectrum is set to 
+ *  the original input data.  In other words if an error is 
  *  detected, then no filter is applied to that voxel. 
  */
 void svkHSVD::SetErrorHandlingFilterToZeroOn()
@@ -197,9 +198,9 @@ void svkHSVD::SetErrorHandlingFilterToZeroOn()
 
 
 /*!
- *  Sets the error handling behavior such that if a fitting error is detected, the filter is still subtracted even though 
- *  the quality may be poor.  This may be useuful to study the quality of the filter. 
- *
+ *  Sets the error handling behavior such that if a fitting error is detected, 
+ *  the filter is still subtracted even though the quality may be poor.  This 
+ *  may be useuful to study the quality of the filter. 
  */
 void svkHSVD::SetErrorHandlingIgnoreError()
 {
@@ -1412,7 +1413,7 @@ void svkHSVD::svkHSVDExecute(int ext[6], int id)
 
 
 /*! 
- *  This method is passed a input and output Datas, and executes the filter
+ *  This method is passed an input and output Datas, and executes the filter
  *  algorithm to fill the output from the inputs.
  *  It just executes a switch statement to call the correct function for
  *  the Datas data types.
