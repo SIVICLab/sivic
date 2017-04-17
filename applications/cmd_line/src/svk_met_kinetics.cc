@@ -173,15 +173,31 @@ int main (int argc, char** argv)
         switch (i) {
             case FLAG_IM_1:
                 inputFileNames[0] = optarg;
+                if( ! svkUtils::FilePathExists( inputFileNames[0].c_str() ) ) {
+                    cerr << endl << "Input file can not be loaded (may not exist) " << inputFileNames[0] << endl << endl;
+                    exit(1);
+                }
                 break;
             case FLAG_IM_2:
                 inputFileNames[1] = optarg;
+                if( ! svkUtils::FilePathExists( inputFileNames[1].c_str() ) ) {
+                    cerr << endl << "Input file can not be loaded (may not exist) " << inputFileNames[1] << endl << endl;
+                    exit(1);
+                }
                 break;
             case FLAG_IM_3:
                 inputFileNames[2] = optarg;
+                if( ! svkUtils::FilePathExists( inputFileNames[2].c_str() ) ) {
+                    cerr << endl << "Input file can not be loaded (may not exist) " << inputFileNames[2] << endl << endl;
+                    exit(1);
+                }
                 break;
             case FLAG_MASK:
                 maskFileName.assign( optarg );
+                if( ! svkUtils::FilePathExists( maskFileName.c_str() ) ) {
+                    cerr << endl << "Input file can not be loaded (may not exist) " << maskFileName << endl << endl;
+                    exit(1);
+                }
                 break;
             case FLAG_MODEL:
                 modelTypeInt = atoi( optarg );
