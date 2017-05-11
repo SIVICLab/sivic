@@ -52,7 +52,7 @@
 using namespace svk;
 
 
-//vtkCxxRevisionMacro(svkBrukerRawMRSReader, "$Rev$");
+vtkStandardNewMacro(svkBrukerRawMRSReader);
 
 
 /*!
@@ -116,7 +116,7 @@ int svkBrukerRawMRSReader::CanReadFile(const char* fname)
                     this->mapper = NULL;
                 }
                 //  should be a mapper factory to get psd specific instance:
-                this->mapper = this->GetFidMapper();
+                this->mapper = this->GetBrukerRawMRSMapper();
                 if ( this->mapper == NULL ) {
                     cout  << " Not a know Bruker MRS sequnce.  Can not read file."   << endl;
                     return 0;
@@ -288,7 +288,7 @@ void svkBrukerRawMRSReader::ReadLine(ifstream* fs, istringstream* iss)
  *  mapFor values that are space delimited lists, put each element into the value 
  *  vector. 
  */
-void svkBrukerRawMRSReader::ParseAndSetProcparStringElements(string key, string valueArray1, string valueArray2) 
+void svkBrukerRawMRSReader::ParseAndSetParamStringElements(string key, string valueArray ) 
 {
 /*
     vector <string> vector1;
@@ -308,7 +308,7 @@ void svkBrukerRawMRSReader::ParseAndSetProcparStringElements(string key, string 
  *  Utility method to determine how many space delimited elements 
  *  are in current propcar string. 
  */
-int svkBrukerRawMRSReader::GetNumberOfProcparElements( string* valueString )
+int svkBrukerRawMRSReader::GetNumberOfParamElements( string* valueString )
 {
     int numElementsParsed = 0; 
     size_t  position; 
@@ -352,7 +352,7 @@ int svkBrukerRawMRSReader::GetNumberOfProcparElements( string* valueString )
 /*!
  *  Read lines from propcar until all elements of value have been parsed. 
  */
-void svkBrukerRawMRSReader::GetProcparValueArray( string* valueString )
+void svkBrukerRawMRSReader::GetParamValueArray( string* valueString )
 {
 /*
     istringstream* iss = new istringstream();
@@ -388,22 +388,11 @@ void svkBrukerRawMRSReader::GetProcparValueArray( string* valueString )
 }
 
 
-/*!
- *  Remove any quotation marks from the string
- */
-void svkBrukerRawMRSReader::RemoveStringQuotes(string* input) 
-{
-    size_t  position; 
-    while ( ( position = input->find('"') ) != string::npos) {
-        input->erase( position, 1 );
-    }
-}
-    
 
 /*!
  * 
  */
-void svkBrukerRawMRSReader::AssignProcparVectorElements(vector<string>* procparVector, string valueArray)
+void svkBrukerRawMRSReader::AssignParamVectorElements(vector<string>* procparVector, string valueArray)
 {        
 /*
     size_t pos = 0;
@@ -419,7 +408,6 @@ void svkBrukerRawMRSReader::AssignProcparVectorElements(vector<string>* procparV
             endQuote *= -1; 
             if (endQuote == 1) {
                 tmpString.assign( valueArray.substr(0, pos) );
-                this->RemoveStringQuotes(&tmpString);
                 procparVector->push_back(tmpString); 
                 valueArray.assign( valueArray.substr(pos + 1) ); 
                 pos = string::npos; 
@@ -432,7 +420,6 @@ void svkBrukerRawMRSReader::AssignProcparVectorElements(vector<string>* procparV
     
             iss->str( valueArray.substr(0, pos) );
             *iss >> tmpString;
-            this->RemoveStringQuotes(&tmpString);
             procparVector->push_back(tmpString); 
             iss->clear();
     
@@ -440,7 +427,6 @@ void svkBrukerRawMRSReader::AssignProcparVectorElements(vector<string>* procparV
         }
         iss->str( valueArray);
         *iss >> tmpString;
-        this->RemoveStringQuotes(&tmpString);
         procparVector->push_back(tmpString); 
     }
 
@@ -452,7 +438,7 @@ void svkBrukerRawMRSReader::AssignProcparVectorElements(vector<string>* procparV
 /*!
  *  Prints the key value pairs parsed from the header. 
  */
-void svkBrukerRawMRSReader::PrintProcparKeyValuePairs()
+void svkBrukerRawMRSReader::PrintParamKeyValuePairs()
 {
 /*
     //  Print out key value pairs parsed from header:
@@ -478,15 +464,43 @@ void svkBrukerRawMRSReader::PrintProcparKeyValuePairs()
 }
 
 
-/*
- *  Utility method to convert from the Varian user frame to the magnet XYZ frame: 
+
+/*!
+ *  Create an svkBrukerRawMRS mapper of the appropriate type for the present sequence.  
  */
-void svkBrukerRawMRSReader::UserToMagnet(double* user, double* magnet, double dcos[3][3])
-{  
-    for (int i = 0; i < 3; i++) {
-        magnet[i] = 0.;     
-        for (int j = 0; j < 3; j++) {
-            magnet[i] += dcos[j][i] * user[j];
-        }
+svkBrukerRawMRSMapper* svkBrukerRawMRSReader::GetBrukerRawMRSMapper()
+{
+    svkBrukerRawMRSMapper* aMapper = NULL;
+/*
+    string seqfil = this->procparMap["seqfil"][0][0];
+
+    //convert to lower case:
+    string::iterator it;
+    for ( it = seqfil.begin(); it < seqfil.end(); it++ ) {
+        *it = (char)tolower(*it);
     }
+
+    if ( ( seqfil.compare("csi2d") == 0 ) || ( seqfil.compare("c13_csi2d") == 0 ) || ( seqfil.compare("c13_csi2d_nlr") == 0 ) ) {
+
+        // UCSF 2DCSI :  
+        //  TODO:  this may be generalizable for product csi2d.  It was tested against the 
+        //  product sequence csi2d from an agilent scanner and appears to be correct. 
+        aMapper = svkVarianUCSF2DcsiMapper::New();
+
+    } else if ( seqfil.compare("epsi2d") == 0) {
+
+        // UCSF 2DCSI :
+        aMapper =  svkVarianUCSFEPSI2DMapper::New();
+
+    } else if ( seqfil.compare("episense_ce") == 0) {
+
+        aMapper = svkVarianCSFidMapper::New();
+
+    } else {
+        cout << "Not a supported Varian sequence" << endl;
+    }
+*/
+
+    return aMapper;
 }
+

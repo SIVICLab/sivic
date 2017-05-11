@@ -51,7 +51,6 @@
 using namespace svk;
 
 
-//vtkCxxRevisionMacro(svkVarianFidReader, "$Rev$");
 vtkStandardNewMacro(svkVarianFidReader);
 
 

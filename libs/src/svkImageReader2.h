@@ -85,6 +85,7 @@ class svkImageReader2 : public vtkImageReader2
             LC_MODEL_TABLE, 
             VARIABLE_FLIP_DAT, 
             BRUKER_MRS,
+            BRUKER_RAW_MRS,
             PHILIPS_S,
             DDF,
             IDF,

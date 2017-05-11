@@ -39,8 +39,8 @@
  *      Beck Olson
  */
 
-#ifndef SVK_VARIAN_FID_MAPPER_H
-#define SVK_VARIAN_FID_MAPPER_H
+#ifndef SVK_BRUKER_RAW_MRS_MAPPER_H
+#define SVK_BRUKER_RAW_MRS_MAPPER_H
 
 
 #include <vtkImageData.h>
@@ -59,24 +59,24 @@ namespace svk {
 
 /*! 
  *  Mapper base class for converting from Varian FID Procpar header format to DICOM MR Spectrosocpy IOD/SOP 
- *  Class instance.  The mapper receives the procpar fields from the svkVarianFidReader.  The procpar fields are 
+ *  Class instance.  The mapper receives the procpar fields from the svkBrukerRawMRSReader.  The procpar fields are 
  *  in the form of a map of of key value pairs (procparMap). 
  *  Map values are vectors of strings and can be accessed by key string name and value index (GetHeaderValueAsType 
  *  methods).  
  *
  *  Concrete mappers need to be implemented to map sequence specific content from Varian acquisitions to DICOM MR
- *  Spectroscopy.  It is the svkVarianFidReader's responsibility to select the appropriate svkVarianFidMapper 
+ *  Spectroscopy.  It is the svkBrukerRawMRSReader's responsibility to select the appropriate svkBrukerRawMRSMapper 
  *  instance for any give data set. 
  *  
  *  Thanks to Dr. Sukumar Subramaniam (UCSF NMR Lab) for help understanding the Varian data format and for his 
  *  assistance validating SIVIC's Varian data reading functionality.  
  */
-class svkVarianFidMapper : public vtkObject 
+class svkBrukerRawMRSMapper : public vtkObject 
 {
 
     public:
 
-        vtkTypeMacro( svkVarianFidMapper, vtkObject );
+        vtkTypeMacro( svkBrukerRawMRSMapper, vtkObject );
 
         virtual void    InitializeDcmHeader(
                             map <string, vector < vector<string> > >    procparMap,
@@ -90,8 +90,8 @@ class svkVarianFidMapper : public vtkObject
         
     protected:
 
-        svkVarianFidMapper();
-        ~svkVarianFidMapper();
+        svkBrukerRawMRSMapper();
+        ~svkBrukerRawMRSMapper();
   
         void            InitPatientModule();
         void            InitGeneralStudyModule();
@@ -151,5 +151,5 @@ class svkVarianFidMapper : public vtkObject
 
 }   //svk
 
-#endif //SVK_VARIAN_FID_MAPPER_H
+#endif //SVK_BRUKER_RAW_MRS_MAPPER_H
 

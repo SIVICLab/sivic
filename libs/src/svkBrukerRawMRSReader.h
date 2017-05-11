@@ -87,22 +87,38 @@ class svkBrukerRawMRSReader : public svkImageReader2
 
 
         //  Methods:
-        int                              GetNumPixelsInVol();
-        int                              GetNumSlices();
-	    void                             ParseParamFiles( );
-        int                              GetProcparKeyValuePair();
-        void                             ReadLine(ifstream* fs, istringstream* iss);
-        void                             ParseAndSetParamStringElements(
+        virtual int     FillOutputPortInformation(int port, vtkInformation* info);
+        virtual void    ExecuteInformation();
+        virtual void    ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo);
+
+        void            SetProgressText( string progressText );
+
+        int             GetNumPixelsInVol();
+        int             GetNumSlices();
+	    void            ParseParamFiles( );
+        int             GetProcparKeyValuePair();
+        void            ReadLine(ifstream* fs, istringstream* iss);
+        void            ParseAndSetParamStringElements(
                                              string key, 
                                              string valueArray 
-                                         );
-        void                             PrintParamKeyValuePairs();
-        int                              GetNumberOfParamElements( string* valueString );
-        void                             GetParamValueArray( string* valueString );
-        void                             AssignParamVectorElements(
+                        );
+        void            PrintParamKeyValuePairs();
+        int             GetNumberOfParamElements( string* valueString );
+        void            GetParamValueArray( string* valueString );
+        void            AssignParamVectorElements(
                                             vector<string>* paramVector,
                                             string valueArray
-                                        );
+                        );
+
+
+    private:
+
+        //  Methods:
+        svkBrukerRawMRSMapper*  GetBrukerRawMRSMapper();
+        virtual void            InitDcmHeader();
+
+        svkDcmHeader::DcmPixelDataFormat GetFileType();
+
 
         //  Members:
         ifstream*                                   subjectFile;

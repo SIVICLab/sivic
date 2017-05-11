@@ -40,7 +40,7 @@
  */
 
 
-#include <svkVarianFidMapper.h>
+#include <svkBrukerRawMRSMapper.h>
 #include <svkVarianReader.h>
 
 #include <vtkDebugLeaks.h>
@@ -53,18 +53,18 @@
 using namespace svk;
 
 
-//vtkCxxRevisionMacro(svkVarianFidMapper, "$Rev$");
+//vtkCxxRevisionMacro(svkBrukerRawMRSMapper, "$Rev$");
 
 
 /*!
  *
  */
-svkVarianFidMapper::svkVarianFidMapper()
+svkBrukerRawMRSMapper::svkBrukerRawMRSMapper()
 {
 
 #if VTK_DEBUG_ON
     this->DebugOn();
-    vtkDebugLeaks::ConstructClass("svkVarianFidMapper");
+    vtkDebugLeaks::ConstructClass("svkBrukerRawMRSMapper");
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
@@ -78,7 +78,7 @@ svkVarianFidMapper::svkVarianFidMapper()
 /*!
  *
  */
-svkVarianFidMapper::~svkVarianFidMapper()
+svkBrukerRawMRSMapper::~svkBrukerRawMRSMapper()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
 
@@ -95,7 +95,7 @@ svkVarianFidMapper::~svkVarianFidMapper()
  *  and initizlizes the svkDcmHeader member of the svkImageData 
  *  object.    
  */
-void svkVarianFidMapper::InitializeDcmHeader(map <string, vector < vector<string> > >  procparMap, 
+void svkBrukerRawMRSMapper::InitializeDcmHeader(map <string, vector < vector<string> > >  procparMap, 
     svkDcmHeader* header, svkMRSIOD* iod, int swapBytes) 
 {
     this->procparMap = procparMap; 
@@ -126,7 +126,7 @@ void svkVarianFidMapper::InitializeDcmHeader(map <string, vector < vector<string
 /*!
  *
  */
-void svkVarianFidMapper::InitPatientModule()
+void svkBrukerRawMRSMapper::InitPatientModule()
 {
 
     this->dcmHeader->InitPatientModule(
@@ -142,7 +142,7 @@ void svkVarianFidMapper::InitPatientModule()
 /*!
  *
  */
-void svkVarianFidMapper::InitGeneralStudyModule()
+void svkBrukerRawMRSMapper::InitGeneralStudyModule()
 {
     string timeDate = this->GetHeaderValueAsString( "time_svfdate" ); 
     size_t delim = timeDate.find("T"); 
@@ -163,7 +163,7 @@ void svkVarianFidMapper::InitGeneralStudyModule()
 /*!
  *
  */
-void svkVarianFidMapper::InitGeneralSeriesModule()
+void svkBrukerRawMRSMapper::InitGeneralSeriesModule()
 {
     this->dcmHeader->InitGeneralSeriesModule(
         "0", 
@@ -175,9 +175,9 @@ void svkVarianFidMapper::InitGeneralSeriesModule()
 
 /*!
  *  DDF is historically the UCSF representation of a GE raw file so
- *  initialize to svkVarianFidMapper::MFG_STRING.
+ *  initialize to svkBrukerRawMRSMapper::MFG_STRING.
  */
-void svkVarianFidMapper::InitGeneralEquipmentModule()
+void svkBrukerRawMRSMapper::InitGeneralEquipmentModule()
 {
     this->dcmHeader->SetValue(
         "Manufacturer",
@@ -189,7 +189,7 @@ void svkVarianFidMapper::InitGeneralEquipmentModule()
 /*!
  *
  */
-void svkVarianFidMapper::InitMultiFrameFunctionalGroupsModule()
+void svkBrukerRawMRSMapper::InitMultiFrameFunctionalGroupsModule()
 {
 
     this->InitSharedFunctionalGroupMacros();
@@ -221,7 +221,7 @@ void svkVarianFidMapper::InitMultiFrameFunctionalGroupsModule()
 /*!
  *
  */
-void svkVarianFidMapper::InitSharedFunctionalGroupMacros()
+void svkBrukerRawMRSMapper::InitSharedFunctionalGroupMacros()
 {
 
     this->InitPixelMeasuresMacro();
@@ -246,7 +246,7 @@ void svkVarianFidMapper::InitSharedFunctionalGroupMacros()
 /*!
  *  The FID toplc is the center of the first voxel.
  */
-void svkVarianFidMapper::InitPerFrameFunctionalGroupMacros()
+void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
 {
 
     double dcos[3][3];
@@ -363,7 +363,7 @@ void svkVarianFidMapper::InitPerFrameFunctionalGroupMacros()
  *      sag  (phi, psi, theta) => 0, 90, 90
  *
  */
-void svkVarianFidMapper::InitPlaneOrientationMacro()
+void svkBrukerRawMRSMapper::InitPlaneOrientationMacro()
 {
 
     this->dcmHeader->AddSequenceItemElement(
@@ -448,7 +448,7 @@ void svkVarianFidMapper::InitPlaneOrientationMacro()
 /*!
  *
  */
-void svkVarianFidMapper::InitMRTimingAndRelatedParametersMacro()
+void svkBrukerRawMRSMapper::InitMRTimingAndRelatedParametersMacro()
 {
     this->dcmHeader->InitMRTimingAndRelatedParametersMacro(
         this->GetHeaderValueAsFloat( "tr" ),
@@ -460,7 +460,7 @@ void svkVarianFidMapper::InitMRTimingAndRelatedParametersMacro()
 /*!
  *
  */
-void svkVarianFidMapper::InitMRSpectroscopyFOVGeometryMacro()
+void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
 {
 
     this->dcmHeader->AddSequenceItemElement(
@@ -632,7 +632,7 @@ void svkVarianFidMapper::InitMRSpectroscopyFOVGeometryMacro()
 /*!
  *
  */
-void svkVarianFidMapper::InitMREchoMacro()
+void svkBrukerRawMRSMapper::InitMREchoMacro()
 {
     this->dcmHeader->InitMREchoMacro( this->GetHeaderValueAsFloat( "te" ) * 1000. );
 }
@@ -641,7 +641,7 @@ void svkVarianFidMapper::InitMREchoMacro()
 /*!
  *  Override in concrete mapper for specific acquisitino
  */
-void svkVarianFidMapper::InitMRModifierMacro()
+void svkBrukerRawMRSMapper::InitMRModifierMacro()
 {
     float inversionTime = 0; 
     this->dcmHeader->InitMRModifierMacro( inversionTime );
@@ -651,7 +651,7 @@ void svkVarianFidMapper::InitMRModifierMacro()
 /*!
  *
  */
-void svkVarianFidMapper::InitMRTransmitCoilMacro()
+void svkBrukerRawMRSMapper::InitMRTransmitCoilMacro()
 {
     this->dcmHeader->InitMRTransmitCoilMacro("Varian", "UNKNOWN", "BODY");
 }
@@ -660,7 +660,7 @@ void svkVarianFidMapper::InitMRTransmitCoilMacro()
 /*! 
  *  Receive Coil:
  */
-void svkVarianFidMapper::InitMRReceiveCoilMacro()
+void svkBrukerRawMRSMapper::InitMRReceiveCoilMacro()
 {
 
     this->dcmHeader->AddSequenceItemElement(
@@ -684,7 +684,7 @@ void svkVarianFidMapper::InitMRReceiveCoilMacro()
 /*!
  *
  */
-void svkVarianFidMapper::InitMRAveragesMacro()
+void svkBrukerRawMRSMapper::InitMRAveragesMacro()
 {
     int numAverages = 1; 
     this->dcmHeader->InitMRAveragesMacro(numAverages);
@@ -694,7 +694,7 @@ void svkVarianFidMapper::InitMRAveragesMacro()
 /*!
  *
  */
-void svkVarianFidMapper::InitMultiFrameDimensionModule()
+void svkBrukerRawMRSMapper::InitMultiFrameDimensionModule()
 {
     int indexCount = 0; 
     this->dcmHeader->AddSequenceItemElement(
@@ -747,7 +747,7 @@ void svkVarianFidMapper::InitMultiFrameDimensionModule()
 /*!
  *
  */
-void svkVarianFidMapper::InitAcquisitionContextModule()
+void svkBrukerRawMRSMapper::InitAcquisitionContextModule()
 {
 }
 
@@ -755,7 +755,7 @@ void svkVarianFidMapper::InitAcquisitionContextModule()
 /*!
  *
  */
-void svkVarianFidMapper::InitMRSpectroscopyModule()
+void svkBrukerRawMRSMapper::InitMRSpectroscopyModule()
 {
 
     /*  =======================================
@@ -911,7 +911,7 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
 /*!
  *
  */
-void svkVarianFidMapper::InitMRSpectroscopyDataModule()
+void svkBrukerRawMRSMapper::InitMRSpectroscopyDataModule()
 {
     this->dcmHeader->SetValue( "Columns", this->GetHeaderValueAsInt("nv", 0) );
     this->dcmHeader->SetValue( "Rows", this->GetHeaderValueAsInt("nv2", 0) );
@@ -928,7 +928,7 @@ void svkVarianFidMapper::InitMRSpectroscopyDataModule()
 /*!
  *  Reads spec data from fid file.
  */
-void svkVarianFidMapper::ReadFidFile( string fidFileName, svkImageData* data )
+void svkBrukerRawMRSMapper::ReadFidFile( string fidFileName, svkImageData* data )
 {
     
     vtkDebugMacro( << this->GetClassName() << "::ReadFidFile()" );
@@ -1007,7 +1007,7 @@ void svkVarianFidMapper::ReadFidFile( string fidFileName, svkImageData* data )
 /*!
  *
  */
-void svkVarianFidMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z, int timePt, int coilNum)
+void svkBrukerRawMRSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z, int timePt, int coilNum)
 {
 
     int numComponents = 1;
@@ -1062,7 +1062,7 @@ void svkVarianFidMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z
 /*!
  *  Convert FID (Procpar) spatial values from cm to mm: FOV, Center, etc. 
  */
-void svkVarianFidMapper::ConvertCmToMm()
+void svkBrukerRawMRSMapper::ConvertCmToMm()
 {
 
     float cmToMm = 10.;
@@ -1107,7 +1107,7 @@ void svkVarianFidMapper::ConvertCmToMm()
 /*!
  *  Use the Procpar patient position string to set the DCM_PatientPosition data element.
  */
-string svkVarianFidMapper::GetDcmPatientPositionString()
+string svkBrukerRawMRSMapper::GetDcmPatientPositionString()
 {
     string dcmPatientPosition;
 
@@ -1140,7 +1140,7 @@ string svkVarianFidMapper::GetDcmPatientPositionString()
 /*!
  *
  */
-int svkVarianFidMapper::GetHeaderValueAsInt(string keyString, int valueIndex, int procparRow)
+int svkBrukerRawMRSMapper::GetHeaderValueAsInt(string keyString, int valueIndex, int procparRow)
 {
 
     istringstream* iss = new istringstream();
@@ -1158,7 +1158,7 @@ int svkVarianFidMapper::GetHeaderValueAsInt(string keyString, int valueIndex, in
 /*!
  *
  */
-float svkVarianFidMapper::GetHeaderValueAsFloat(string keyString, int valueIndex, int procparRow)
+float svkBrukerRawMRSMapper::GetHeaderValueAsFloat(string keyString, int valueIndex, int procparRow)
 {
 
     istringstream* iss = new istringstream();
@@ -1175,7 +1175,7 @@ float svkVarianFidMapper::GetHeaderValueAsFloat(string keyString, int valueIndex
 /*!
  *
  */
-string svkVarianFidMapper::GetHeaderValueAsString(string keyString, int valueIndex, int procparRow)
+string svkBrukerRawMRSMapper::GetHeaderValueAsString(string keyString, int valueIndex, int procparRow)
 {
     return (this->procparMap[keyString])[procparRow][valueIndex];
 }
@@ -1185,7 +1185,7 @@ string svkVarianFidMapper::GetHeaderValueAsString(string keyString, int valueInd
 /*!
  *  Pixel Spacing:
  */
-void svkVarianFidMapper::InitPixelMeasuresMacro()
+void svkBrukerRawMRSMapper::InitPixelMeasuresMacro()
 {
     float numPixels[3];
     numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
