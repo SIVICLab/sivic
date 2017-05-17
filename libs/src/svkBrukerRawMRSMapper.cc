@@ -928,7 +928,7 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyDataModule()
 /*!
  *  Reads spec data from fid file.
  */
-void svkBrukerRawMRSMapper::ReadFidFile( string fidFileName, svkImageData* data )
+void svkBrukerRawMRSMapper::ReadSerFile( string fidFileName, svkImageData* data )
 {
     
     vtkDebugMacro( << this->GetClassName() << "::ReadFidFile()" );

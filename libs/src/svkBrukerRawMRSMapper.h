@@ -79,13 +79,13 @@ class svkBrukerRawMRSMapper : public vtkObject
         vtkTypeMacro( svkBrukerRawMRSMapper, vtkObject );
 
         virtual void    InitializeDcmHeader(
-                            map <string, vector < vector<string> > >    procparMap,
+                            map <string, vector < string> >    procparMap,
                             svkDcmHeader* header,
                             svkMRSIOD* iod,
                             int        swapBytes  
                         );
 
-        virtual void    ReadFidFile( string fidFileName, svkImageData* data );
+        virtual void    ReadSerFile( string fidFileName, svkImageData* data );
 
         
     protected:

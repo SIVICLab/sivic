@@ -41,6 +41,7 @@
 
 
 #include <svkBrukerRawMRSReader.h>
+#include <svkTypeUtils.h>
 #include <vtkGlobFileNames.h>
 #include <vtkSortFileNames.h>
 #include <vtkStringArray.h>
@@ -168,92 +169,165 @@ int svkBrukerRawMRSReader::GetNumSlices()
  */
 void svkBrukerRawMRSReader::ParseParamFiles( )    
 {
-return; 
-/*
-    //  If ONE procpar file is present, parse it as well:
-    vtkGlobFileNames* procparGlob = vtkGlobFileNames::New();
-    procparGlob->AddFileNames( string( path + "/procpar" ).c_str() );
 
-    if ( procparGlob->GetFileNames()->GetNumberOfValues() == 1 ) {
+    //  If ONE procpar file is present, parse it as well:
+    vtkGlobFileNames* subjectGlob = vtkGlobFileNames::New();
+    string path = svkImageReader2::GetFilePath( this->GetFileName() );
+    string paramFilePath = path + "/method"; 
+    //string paramFilePath = path + "/../subject"; 
+    subjectGlob->AddFileNames( paramFilePath.c_str() );
+
+    if ( subjectGlob->GetFileNames()->GetNumberOfValues() == 1 ) {
 
         try { 
 
-            this->procparFile = new ifstream();
-            this->procparFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+            this->paramFile = new ifstream();
+            this->paramFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
-            string procparFileName( path + "/procpar" ); 
+            string paramFileName( subjectGlob->GetNthFileName(0) ); 
 
-            this->procparFile->open( procparFileName.c_str(), ifstream::in );
-            if ( ! this->procparFile->is_open() ) {
-                throw runtime_error( "Could not open procpar file: " + procparFileName);
+            this->paramFile->open( paramFileName.c_str(), ifstream::in );
+            if ( ! this->paramFile->is_open() ) {
+                throw runtime_error( "Could not open Bruker param file: " + paramFileName);
             } 
 
-            this->procparFileSize = this->GetFileSize( this->procparFile );
-            while (! this->procparFile->eof() ) {
-                if (this->GetProcparKeyValuePair() != 0 ) {
+            this->paramFileSize = this->GetFileSize( this->paramFile );
+            while (! this->paramFile->eof() ) {
+                if (this->GetParamKeyValuePair() != 0 ) {
                     break;
                 }
             }
 
-            this->procparFile->close();
+            this->paramFile->close();
 
         } catch (const exception& e) {
-            cerr << "ERROR opening or reading Varian procpar file: " << e.what() << endl;
+            cerr << "ERROR opening or reading Bruker param file: " << e.what() << endl;
         }
 
 
     } else {
-        cout << "WARNING: " << this->GetClassName() << " Can't parse procpar file" << endl; 
-        cout << "         found " << procparGlob->GetFileNames()->GetNumberOfValues();
-        cout << " procpar files in " << path << endl;
+        cout << "WARNING: " << this->GetClassName() << " Can't parse Bruker param file" << endl; 
+        cout << "         found " << subjectGlob->GetFileNames()->GetNumberOfValues();
+        cout << " param files in " << path << endl;
     }
-    procparGlob->Delete();
-*/
+    subjectGlob->Delete();
+
+    return; 
 }
 
 
 /*! 
- *  Utility function to read key/values from procpar file 
+ *  Utility function to read key/values meta data pairs from Bruker param files 
  *  and set the delimited key/value pair into the stl map.  
  *  Returns -1 if can't parse line. 
  */
-int svkBrukerRawMRSReader::GetProcparKeyValuePair( )    
+int svkBrukerRawMRSReader::GetParamKeyValuePair( )    
 {
     int status = 0; 
 
-/*
     istringstream* iss = new istringstream();
 
     string keyString;
-    string* valueString1 = new string("");
-    string* valueString2 = new string("");
+    string* valueString = new string("");
 
     try {
 
-        this->ReadLine(this->procparFile, iss); 
+        this->ReadLine(this->paramFile, iss); 
 
+        size_t  delimPosition; 
         size_t  position; 
+        size_t  commentPosition; 
+        size_t  commaPosition; 
+        size_t  parenthesisPosition; 
+        size_t  braPosition; 
+        size_t  ketPosition; 
         string  tmp; 
 
-        if ( this->procparFile->tellg() < this->procparFileSize - 1 ) {
+        if ( this->paramFile->tellg() < this->paramFileSize - 1 ) {
+
+            //  check for comment line: $$ at start: 
+            commentPosition = iss->str().find_first_of("$$");
+            if ( commentPosition == 0 ) {
+                return status; 
+            }
 
             //  find first white space position before "key" string: 
-            position = iss->str().find_first_of(' ');
-            if (position != string::npos) {
-                keyString.assign( iss->str().substr(0, position) );
+            delimPosition = iss->str().find_first_of('=');
+            if (delimPosition != string::npos) {
+                keyString.assign( iss->str().substr(0, delimPosition) );
             } 
-            //cout << "PROCPAR KEY: " << keyString << endl;
+            cout << "PARAM KEY: " << keyString << endl;
 
-            //  Now determine how many elements array 1 contains:
+            //  Now check if the value is scalar or an array of values: 
+            //  If it's an array of values, the array size will be encoded in parenthesis. 
+            //  Parse the following lines for the value 
+            //  Heuristically, it looks like: 
+            //       =( val ) indicates the size of the array on following lines
+            //       =(vals) indicates the a value (no space after parenthesis).   
+            parenthesisPosition = iss->str().find("( ");
+            if ( parenthesisPosition != string::npos) {
 
-            this->GetProcparValueArray( valueString1 );
-            this->GetProcparValueArray( valueString2 );
+                string tmpString; 
+                string numElementsString = "1";
+                string sizeOfElementsString;
+                //  is there a comma
+                tmpString.assign( iss->str().substr( parenthesisPosition + 2 ) );
+                commaPosition = tmpString.find_first_of(','); 
+                if ( commaPosition != string::npos ) { 
+                    numElementsString.assign( tmpString.substr( 0, commaPosition ) ); 
+                    tmpString.assign( tmpString.substr(commaPosition + 1) ); 
+                }     
+                position = tmpString.find_last_of(' ');
+                sizeOfElementsString.assign( tmpString.substr( 0, position ) );
+                //cout << "NUM, SIZE: " << numElementsString << " " <<  sizeOfElementsString << endl;
+                this->ReadLine(this->paramFile, iss); 
+
+                //  Is it a string ( in side angle brackets <>)?
+                //  This can be a multi line string
+                braPosition = iss->str().find_first_of('<');    
+                if ( braPosition != string::npos) {
+                    valueString->assign(""); 
+                    ketPosition = string::npos; 
+                    int numElements = 0; 
+                    while ( ketPosition == string::npos || numElements < svkTypeUtils::StringToInt(numElementsString)) {
+                        ketPosition = iss->str().find_last_of('>');    
+                        valueString->append( iss->str() ); 
+                        if ( ketPosition == string::npos || numElements < svkTypeUtils::StringToInt(numElementsString) ) {
+                            this->ReadLine(this->paramFile, iss); 
+                        } 
+                        if (ketPosition != string::npos) { 
+                            numElements += 1; 
+                            //cout << "NUM ELEMENTS: " << numElements << endl;
+                        } 
+                        //cout << "LINE: " << iss->str() << endl;
+                    } 
+                }
+                cout << "VALUE: " << *valueString << endl;
+
+            } else { 
+                //  if the value is in parenthesis, read until end of parenthesis: 
+                parenthesisPosition = iss->str().find('(');
+                if ( parenthesisPosition == string::npos ) {
+                    valueString->assign(iss->str().substr(delimPosition + 1)); 
+                } else { 
+                    valueString->assign(iss->str().substr(delimPosition + 1)); 
+                    parenthesisPosition = iss->str().find(')');
+                    while ( parenthesisPosition == string::npos ) {  
+                        this->ReadLine(this->paramFile, iss); 
+                        valueString->append( iss->str() ); 
+                        parenthesisPosition = iss->str().find(')');
+                    } 
+                }  
+                cout << "VALUE: " << *valueString << endl;
+            }
+
+            //this->GetParamValueArray( valueString );
 
             //  Assign elements to map vectors: 
-            this->ParseAndSetProcparStringElements(keyString, *valueString1, *valueString2);
+            //this->ParseAndSetParamStringElements(keyString, *valueString);
 
         } else { 
-            this->procparFile->seekg(0, ios::end);     
+            this->paramFile->seekg(0, ios::end);     
         }
 
     } catch (const exception& e) {
@@ -263,10 +337,9 @@ int svkBrukerRawMRSReader::GetProcparKeyValuePair( )
         status = -1;  
     }
 
-    delete valueString1; 
-    delete valueString2; 
+    delete valueString; 
     delete iss; 
-*/
+
     return status; 
 }
 
@@ -502,5 +575,155 @@ svkBrukerRawMRSMapper* svkBrukerRawMRSReader::GetBrukerRawMRSMapper()
 */
 
     return aMapper;
+}
+
+
+/*!
+ *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
+ *  Called after ExecuteInformation()
+ */
+void svkBrukerRawMRSReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
+{
+
+    vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
+    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
+
+    if ( this->FileName ) {
+        this->mapper->ReadSerFile( this->FileName, data );
+    }
+
+    double dcos[3][3];
+    this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
+    this->GetOutput()->SetDcos(dcos);
+
+    //  SetNumberOfIncrements is supposed to call this, but only works if the data has already
+    //  been allocated. but that requires the number of components to be specified.
+    this->GetOutput()->GetIncrements();
+
+    if (this->GetDebug()) {
+        this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+    }
+
+}
+
+
+/*!
+ *  Side effect of Update() method.  Used to initialize the svkDcmHeader member of 
+ *  the target svkImageData object and uses the header to set up the Output Informatin.
+ *  Called before ExecuteData()
+ */
+void svkBrukerRawMRSReader::ExecuteInformation()
+{
+    vtkDebugMacro( << this->GetClassName() << "::ExecuteInformation()" );
+
+    if (this->FileName == NULL) {
+        return;
+    }
+
+    if ( this->FileName ) {
+        vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
+
+        struct stat fs;
+        if ( stat(this->FileName, &fs) ) {
+            vtkErrorMacro("Unable to open file " << this->FileName );
+            return;
+        }
+
+        this->InitDcmHeader();
+        this->SetupOutputInformation();
+    }
+
+}
+
+
+/*!
+ *  Initializes the svkDcmHeader adapter to a specific IOD type
+ *  and initizlizes the svkDcmHeader member of the svkImageData
+ *  object.
+ */
+void svkBrukerRawMRSReader::InitDcmHeader()
+{
+
+    vtkDebugMacro( << this->GetClassName() << "::InitDcmHeader()" );
+
+    svkMRSIOD* iod = svkMRSIOD::New();
+    iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
+    iod->InitDcmHeader();
+
+    //  Read the fid header into a map of values used to initialize the
+    //  DICOM header. 
+    this->ParseParamFiles();
+
+    //  should be a mapper factory to get psd specific instance:
+    if ( this->mapper != NULL )  {
+        mapper->Delete();
+        this->mapper = NULL;
+    }
+    this->mapper = this->GetBrukerRawMRSMapper();
+    this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+
+    //  all the IE initialization modules would be contained within the mapper
+    this->mapper->InitializeDcmHeader(
+        paramMap,
+        this->GetOutput()->GetDcmHeader(),
+        iod,
+        this->GetSwapBytes()
+    );
+    this->RemoveObserver(progressCallback);
+
+
+    if (this->GetDebug()) {
+        this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+    }
+
+    iod->Delete();
+}
+
+
+/*!
+ *  Returns the file type enum 
+ */
+svkDcmHeader::DcmPixelDataFormat svkBrukerRawMRSReader::GetFileType()
+{
+    svkDcmHeader::DcmPixelDataFormat format = svkDcmHeader::SIGNED_FLOAT_4;
+
+    return format;
+}
+
+
+/*!
+ *
+ */
+int svkBrukerRawMRSReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+{
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMrsImageData");
+    return 1;
+}
+
+
+/*!
+ * 
+ */
+void svkBrukerRawMRSReader::SetProgressText( string progressText )
+{
+    this->progressText = progressText;
+}
+
+
+/*!
+ * 
+ */
+void svkBrukerRawMRSReader::UpdateProgress(double amount)
+{
+    this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&amount));
+}
+
+
+/*!
+ * 
+ */
+void svkBrukerRawMRSReader::UpdateProgressCallback(vtkObject* subject, unsigned long, void* thisObject, void* callData)
+{
+    static_cast<svkBrukerRawMRSReader*>(thisObject)->UpdateProgress(*(double*)(callData));
 }
 

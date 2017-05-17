@@ -45,6 +45,7 @@
 
 #include <svkImageReader2.h>
 #include <svkBrukerRawMRSMapper.h>
+#include <vtkInformation.h>
 
 #include <map>
 #include <vector>
@@ -96,7 +97,7 @@ class svkBrukerRawMRSReader : public svkImageReader2
         int             GetNumPixelsInVol();
         int             GetNumSlices();
 	    void            ParseParamFiles( );
-        int             GetProcparKeyValuePair();
+        int             GetParamKeyValuePair();
         void            ReadLine(ifstream* fs, istringstream* iss);
         void            ParseAndSetParamStringElements(
                                              string key, 
@@ -114,19 +115,28 @@ class svkBrukerRawMRSReader : public svkImageReader2
     private:
 
         //  Methods:
-        svkBrukerRawMRSMapper*  GetBrukerRawMRSMapper();
-        virtual void            InitDcmHeader();
+        svkBrukerRawMRSMapper*              GetBrukerRawMRSMapper();
+        virtual void                        InitDcmHeader();
 
-        svkDcmHeader::DcmPixelDataFormat GetFileType();
+        svkDcmHeader::DcmPixelDataFormat    GetFileType();
+        static void                         UpdateProgressCallback(
+                                                vtkObject* subject,
+                                                unsigned long,
+                                                void* thisObject,
+                                                void* callData
+                                            );
+        void                                UpdateProgress(double amount);
 
 
         //  Members:
-        ifstream*                                   subjectFile;
-        ifstream*                                   methodFile;
-        ifstream*                                   acqpFile;
+        ifstream*                                   paramFile;
+        long                                        paramFileSize;
         map <string, vector < string>  >            paramMap;  
         svkBrukerRawMRSMapper*                      mapper;
         svkDcmHeader::DcmDataOrderingDirection      dataSliceOrder;
+        string                                      progressText;
+        vtkCallbackCommand*                         progressCallback;
+
 
 };
 
