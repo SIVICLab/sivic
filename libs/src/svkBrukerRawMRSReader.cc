@@ -69,7 +69,11 @@ svkBrukerRawMRSReader::svkBrukerRawMRSReader()
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
-    //this->procparFile = NULL;
+    this->mapper = NULL;
+    this->progressCallback = vtkCallbackCommand::New();
+    this->progressCallback->SetCallback( UpdateProgressCallback );
+    this->progressCallback->SetClientData( (void*)this );
+
 }
 
 
@@ -169,22 +173,41 @@ int svkBrukerRawMRSReader::GetNumSlices()
  */
 void svkBrukerRawMRSReader::ParseParamFiles( )    
 {
-
-    //  If ONE procpar file is present, parse it as well:
-    vtkGlobFileNames* subjectGlob = vtkGlobFileNames::New();
     string path = svkImageReader2::GetFilePath( this->GetFileName() );
-    string paramFilePath = path + "/method"; 
-    //string paramFilePath = path + "/../subject"; 
-    subjectGlob->AddFileNames( paramFilePath.c_str() );
+    string paramFilePath;
 
-    if ( subjectGlob->GetFileNames()->GetNumberOfValues() == 1 ) {
+    paramFilePath = path + "/../subject"; 
+    this->ParseParamFileToMap( paramFilePath ); 
+
+    paramFilePath = path + "/method"; 
+    this->ParseParamFileToMap( paramFilePath ); 
+
+    paramFilePath = path + "/acqp"; 
+    this->ParseParamFileToMap( paramFilePath ); 
+
+
+    this->PrintParamKeyValuePairs(); 
+}
+
+
+/*!
+ *
+ */
+void svkBrukerRawMRSReader::ParseParamFileToMap( string paramFileName )    
+{
+    
+    //  If ONE procpar file is present, parse it as well:
+    vtkGlobFileNames* paramFileGlob = vtkGlobFileNames::New();
+    paramFileGlob->AddFileNames( paramFileName.c_str() );
+
+    if ( paramFileGlob->GetFileNames()->GetNumberOfValues() == 1 ) {
 
         try { 
 
             this->paramFile = new ifstream();
             this->paramFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
-            string paramFileName( subjectGlob->GetNthFileName(0) ); 
+            string paramFileName( paramFileGlob->GetNthFileName(0) ); 
 
             this->paramFile->open( paramFileName.c_str(), ifstream::in );
             if ( ! this->paramFile->is_open() ) {
@@ -207,10 +230,9 @@ void svkBrukerRawMRSReader::ParseParamFiles( )
 
     } else {
         cout << "WARNING: " << this->GetClassName() << " Can't parse Bruker param file" << endl; 
-        cout << "         found " << subjectGlob->GetFileNames()->GetNumberOfValues();
-        cout << " param files in " << path << endl;
+        cout << "         found " << paramFileGlob->GetFileNames()->GetNumberOfValues();
     }
-    subjectGlob->Delete();
+    paramFileGlob->Delete();
 
     return; 
 }
@@ -253,10 +275,15 @@ int svkBrukerRawMRSReader::GetParamKeyValuePair( )
 
             //  find first white space position before "key" string: 
             delimPosition = iss->str().find_first_of('=');
-            if (delimPosition != string::npos) {
-                keyString.assign( iss->str().substr(0, delimPosition) );
+            if (delimPosition != string::npos ) {
+                //  skip two to get rid of leading ##
+                keyString.assign( iss->str().substr(2, delimPosition-2) );
+                position = iss->str().find_first_of('$');
+                if ( position != string::npos ) {
+                    keyString.assign( keyString.substr(1, delimPosition-3) );
+                }
             } 
-            cout << "PARAM KEY: " << keyString << endl;
+            //cout << "PARAM KEY: " << keyString << endl;
 
             //  Now check if the value is scalar or an array of values: 
             //  If it's an array of values, the array size will be encoded in parenthesis. 
@@ -302,7 +329,6 @@ int svkBrukerRawMRSReader::GetParamKeyValuePair( )
                         //cout << "LINE: " << iss->str() << endl;
                     } 
                 }
-                cout << "VALUE: " << *valueString << endl;
 
             } else { 
                 //  if the value is in parenthesis, read until end of parenthesis: 
@@ -318,13 +344,15 @@ int svkBrukerRawMRSReader::GetParamKeyValuePair( )
                         parenthesisPosition = iss->str().find(')');
                     } 
                 }  
-                cout << "VALUE: " << *valueString << endl;
+            
             }
+
+            //cout << "VALUE: " << *valueString << endl;
 
             //this->GetParamValueArray( valueString );
 
             //  Assign elements to map vectors: 
-            //this->ParseAndSetParamStringElements(keyString, *valueString);
+            this->ParseAndSetParamStringElements(keyString, *valueString);
 
         } else { 
             this->paramFile->seekg(0, ios::end);     
@@ -363,17 +391,12 @@ void svkBrukerRawMRSReader::ReadLine(ifstream* fs, istringstream* iss)
  */
 void svkBrukerRawMRSReader::ParseAndSetParamStringElements(string key, string valueArray ) 
 {
-/*
-    vector <string> vector1;
-    vector <string> vector2;
 
-    this->AssignProcparVectorElements(&vector1, valueArray1);
-    this->AssignProcparVectorElements(&vector2, valueArray2);
+    vector <string> paramVector;
 
-    procparMap[key].push_back(vector1);
-    procparMap[key].push_back(vector2);
-*/
+    this->AssignParamVectorElements(&paramVector, valueArray);
 
+    this->paramMap[key] = paramVector;
 }
 
 
@@ -463,77 +486,30 @@ void svkBrukerRawMRSReader::GetParamValueArray( string* valueString )
 
 
 /*!
- * 
- */
-void svkBrukerRawMRSReader::AssignParamVectorElements(vector<string>* procparVector, string valueArray)
-{        
-/*
-    size_t pos = 0;
-    istringstream* iss = new istringstream();
-    string tmpString;     
-
-    int endQuote = 1;
-    //  Parse quoted strings separately from unquoted values:    
-
-    if ( ( pos = valueArray.find('"', pos) ) != string::npos) {
-        endQuote *= -1; 
-        while ( ( pos = valueArray.find('"', pos + 1) ) != string::npos) {
-            endQuote *= -1; 
-            if (endQuote == 1) {
-                tmpString.assign( valueArray.substr(0, pos) );
-                procparVector->push_back(tmpString); 
-                valueArray.assign( valueArray.substr(pos + 1) ); 
-                pos = string::npos; 
-            }
-        }
-
-    } else {
-
-        while ( (pos = valueArray.find_first_of(' ')) != string::npos) {  
-    
-            iss->str( valueArray.substr(0, pos) );
-            *iss >> tmpString;
-            procparVector->push_back(tmpString); 
-            iss->clear();
-    
-            valueArray.assign( valueArray.substr(pos + 1) ); 
-        }
-        iss->str( valueArray);
-        *iss >> tmpString;
-        procparVector->push_back(tmpString); 
-    }
-
-    delete iss; 
-*/
-}
-
-
-/*!
  *  Prints the key value pairs parsed from the header. 
  */
 void svkBrukerRawMRSReader::PrintParamKeyValuePairs()
 {
-/*
+
     //  Print out key value pairs parsed from header:
-    map< string, vector< vector<string> > >::iterator mapIter;
-    for ( mapIter = procparMap.begin(); mapIter != procparMap.end(); ++mapIter ) {
+    map< string, vector< string > >::iterator mapIter;
+    for ( mapIter = this->paramMap.begin(); mapIter != this->paramMap.end(); ++mapIter ) {
      
         cout << this->GetClassName() << " " << mapIter->first << " = " << endl;
 
-        vector < vector<string> >::iterator it;
-        for ( it = procparMap[mapIter->first].begin() ; it < procparMap[mapIter->first].end(); it++ ) {
+        vector < string >::iterator it;
+        for ( it = this->paramMap[mapIter->first].begin() ; it < this->paramMap[mapIter->first].end(); it++ ) {
 
-            vector<string> tmpVector = *it;  
-            vector<string>::iterator vecIter;
+            //vector<string> tmpVector = *it;  
+            //vector<string>::iterator vecIter;
 
-            for ( vecIter = tmpVector.begin(); vecIter != tmpVector.end(); ++vecIter ) {
-                cout << "       ->" << *vecIter << endl ;
-            }
+            //for ( vecIter = tmpVector.begin(); vecIter != tmpVector.end(); ++vecIter ) {
+                cout << "       ->" << *it<< endl ;
+            //}
             cout << endl;
         }
         cout << endl;
     }
-*/
 }
 
 
@@ -544,35 +520,22 @@ void svkBrukerRawMRSReader::PrintParamKeyValuePairs()
 svkBrukerRawMRSMapper* svkBrukerRawMRSReader::GetBrukerRawMRSMapper()
 {
     svkBrukerRawMRSMapper* aMapper = NULL;
-/*
-    string seqfil = this->procparMap["seqfil"][0][0];
+
+    string sequence = this->paramMap["Method"][0];
 
     //convert to lower case:
     string::iterator it;
-    for ( it = seqfil.begin(); it < seqfil.end(); it++ ) {
+    for ( it = sequence.begin(); it < sequence.end(); it++ ) {
         *it = (char)tolower(*it);
     }
 
-    if ( ( seqfil.compare("csi2d") == 0 ) || ( seqfil.compare("c13_csi2d") == 0 ) || ( seqfil.compare("c13_csi2d_nlr") == 0 ) ) {
+    if ( sequence.find("mm_csi") != string::npos ) {
 
-        // UCSF 2DCSI :  
-        //  TODO:  this may be generalizable for product csi2d.  It was tested against the 
-        //  product sequence csi2d from an agilent scanner and appears to be correct. 
-        aMapper = svkVarianUCSF2DcsiMapper::New();
-
-    } else if ( seqfil.compare("epsi2d") == 0) {
-
-        // UCSF 2DCSI :
-        aMapper =  svkVarianUCSFEPSI2DMapper::New();
-
-    } else if ( seqfil.compare("episense_ce") == 0) {
-
-        aMapper = svkVarianCSFidMapper::New();
+        aMapper = svkBrukerRawMRSMapper::New();
 
     } else {
         cout << "Not a supported Varian sequence" << endl;
     }
-*/
 
     return aMapper;
 }
@@ -656,11 +619,11 @@ void svkBrukerRawMRSReader::InitDcmHeader()
 
     //  should be a mapper factory to get psd specific instance:
     if ( this->mapper != NULL )  {
-        mapper->Delete();
+        this->mapper->Delete();
         this->mapper = NULL;
     }
     this->mapper = this->GetBrukerRawMRSMapper();
-    this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+    this->mapper->AddObserver(vtkCommand::ProgressEvent, this->progressCallback);
 
     //  all the IE initialization modules would be contained within the mapper
     this->mapper->InitializeDcmHeader(
@@ -669,7 +632,7 @@ void svkBrukerRawMRSReader::InitDcmHeader()
         iod,
         this->GetSwapBytes()
     );
-    this->RemoveObserver(progressCallback);
+    this->RemoveObserver(this->progressCallback);
 
 
     if (this->GetDebug()) {
@@ -678,6 +641,56 @@ void svkBrukerRawMRSReader::InitDcmHeader()
 
     iod->Delete();
 }
+
+
+/*!
+ * 
+ */
+void svkBrukerRawMRSReader::AssignParamVectorElements(vector<string>* paramVector, string valueArray)
+{
+    size_t pos = 0;
+    istringstream* iss = new istringstream();
+    string tmpString;
+
+    int endQuote = 1;
+    //  Parse bracketed strings separately from unquoted values:    
+
+    if ( ( pos = valueArray.find('<', pos) ) != string::npos) {
+        endQuote *= -1;
+        while ( ( pos = valueArray.find('>', pos + 1) ) != string::npos) {
+            endQuote *= -1;
+            if (endQuote == 1) {
+                tmpString.assign( valueArray.substr(1, pos - 1) );
+                //this->RemoveStringQuotes(&tmpString);
+                paramVector->push_back(tmpString);
+                valueArray.assign( valueArray.substr(pos + 1) );
+                pos = string::npos;
+            }
+        }
+
+    } else {
+        /*
+        while ( (pos = valueArray.find_first_of(' ')) != string::npos) {
+
+            iss->str( valueArray.substr(0, pos) );
+            *iss >> tmpString;
+            //this->RemoveStringQuotes(&tmpString);
+            paramVector->push_back(tmpString);
+            iss->clear();
+
+            valueArray.assign( valueArray.substr(pos + 1) );
+        }
+        iss->str( valueArray);
+        *iss >> tmpString;
+        //this->RemoveStringQuotes(&tmpString);
+        paramVector->push_back(tmpString);
+        */
+        paramVector->push_back(valueArray);
+    }
+
+    delete iss;
+}
+
 
 
 /*!

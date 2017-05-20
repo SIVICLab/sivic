@@ -126,6 +126,7 @@ class svkBrukerRawMRSReader : public svkImageReader2
                                                 void* callData
                                             );
         void                                UpdateProgress(double amount);
+        void                                ParseParamFileToMap( string paramFileName ); 
 
 
         //  Members:

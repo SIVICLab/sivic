@@ -53,7 +53,8 @@
 using namespace svk;
 
 
-//vtkCxxRevisionMacro(svkBrukerRawMRSMapper, "$Rev$");
+vtkStandardNewMacro(svkBrukerRawMRSMapper);
+
 
 
 /*!
@@ -95,10 +96,10 @@ svkBrukerRawMRSMapper::~svkBrukerRawMRSMapper()
  *  and initizlizes the svkDcmHeader member of the svkImageData 
  *  object.    
  */
-void svkBrukerRawMRSMapper::InitializeDcmHeader(map <string, vector < vector<string> > >  procparMap, 
+void svkBrukerRawMRSMapper::InitializeDcmHeader(map <string, vector < string> >  paramMap, 
     svkDcmHeader* header, svkMRSIOD* iod, int swapBytes) 
 {
-    this->procparMap = procparMap; 
+    this->paramMap = paramMap; 
     this->dcmHeader = header; 
     this->iod = iod;   
     this->swapBytes = swapBytes; 
@@ -130,10 +131,10 @@ void svkBrukerRawMRSMapper::InitPatientModule()
 {
 
     this->dcmHeader->InitPatientModule(
-        this->dcmHeader->GetDcmPatientName( this->GetHeaderValueAsString("samplename") ),
-        this->GetHeaderValueAsString("dataid"), 
-        this->GetHeaderValueAsString("birthday"), 
-        this->GetHeaderValueAsString("gender") 
+        this->dcmHeader->GetDcmPatientName( this->GetHeaderValueAsString("SUBJECT_name_string") ),
+        this->GetHeaderValueAsString("SUBJECT_id"), 
+        this->GetHeaderValueAsString("SUBJECT_dbirth"), 
+        this->GetHeaderValueAsString("SUBJECT_sex") 
     );
 
 }
@@ -144,7 +145,7 @@ void svkBrukerRawMRSMapper::InitPatientModule()
  */
 void svkBrukerRawMRSMapper::InitGeneralStudyModule()
 {
-    string timeDate = this->GetHeaderValueAsString( "time_svfdate" ); 
+    string timeDate = this->GetHeaderValueAsString( "SUBJECT_date" ); 
     size_t delim = timeDate.find("T"); 
     string date = timeDate.substr(0, delim); 
 
@@ -152,7 +153,7 @@ void svkBrukerRawMRSMapper::InitGeneralStudyModule()
         date, 
         "",
         "",
-        this->GetHeaderValueAsString("studyid_"), 
+        this->GetHeaderValueAsString("SUBJECT_study_instance_uid"), 
         "", 
         ""
     );
@@ -167,7 +168,7 @@ void svkBrukerRawMRSMapper::InitGeneralSeriesModule()
 {
     this->dcmHeader->InitGeneralSeriesModule(
         "0", 
-        "Varian FID Data", 
+        "BRUKER SER Data", 
         this->GetDcmPatientPositionString()
     );
 }
@@ -181,7 +182,7 @@ void svkBrukerRawMRSMapper::InitGeneralEquipmentModule()
 {
     this->dcmHeader->SetValue(
         "Manufacturer",
-        "Varian"
+        "Bruker"
     );
 }
 
@@ -199,13 +200,17 @@ void svkBrukerRawMRSMapper::InitMultiFrameFunctionalGroupsModule()
         1
     );
 
+    string timeDate = this->GetHeaderValueAsString( "SUBJECT_date" );
+    size_t delim = timeDate.find("T");
+    string date = timeDate.substr(0, delim);
+
     this->dcmHeader->SetValue(
         "ContentDate",
-        this->GetHeaderValueAsString( "time_svfdate" )
+        date
     );
 
-    this->numSlices = this->GetHeaderValueAsInt("ns");
-    int numEchoes = this->GetHeaderValueAsInt("ne");
+    this->numSlices = 1; 
+    int numEchoes = this->GetHeaderValueAsInt("NECHOES");
 
     this->numFrames = this->numSlices * numEchoes;
     this->dcmHeader->SetValue(
@@ -257,9 +262,9 @@ void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
     this->dcmHeader->GetPixelSize(pixelSpacing);
 
     int numPixels[3];
-    numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
-    numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
-    numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
+    numPixels[0] = this->GetHeaderValueAsInt("ACQ_spatial_size_0");
+    numPixels[1] = this->GetHeaderValueAsInt("ACQ_spatial_size_1");
+    numPixels[2] = 1; 
 
     //  Get center coordinate float array from fidMap and use that to generate
     //  Displace from that coordinate by 1/2 fov - 1/2voxel to get to the center of the
@@ -273,13 +278,15 @@ void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
         //  Get the volumetric center in acquisition frame coords:
         double volumeCenterAcqFrame[3];
         for (int i = 0; i < 3; i++) {
-            volumeCenterAcqFrame[i] = this->GetHeaderValueAsFloat("location[]", i);
+            //volumeCenterAcqFrame[i] = this->GetHeaderValueAsFloat("location[]", i);
+            volumeCenterAcqFrame[i] = 0.; 
         }
 
         double* volumeTlcAcqFrame = new double[3];
         for (int i = 0; i < 3; i++) {
             volumeTlcAcqFrame[i] = volumeCenterAcqFrame[i]
-                                 + ( this->GetHeaderValueAsFloat("span[]", i) - pixelSpacing[i] )/2;
+                                 + (100 - pixelSpacing[i] )/2;
+                                 //+ ( this->GetHeaderValueAsFloat("span[]", i) - pixelSpacing[i] )/2;
         }
         svkVarianReader::UserToMagnet(volumeTlcAcqFrame, volumeTlcLPSFrame, dcos);
         delete [] volumeTlcAcqFrame;
@@ -373,9 +380,12 @@ void svkBrukerRawMRSMapper::InitPlaneOrientationMacro()
     );
 
     //  Get the euler angles for the acquisition coordinate system:
-    float psi = this->GetHeaderValueAsFloat("psi", 0);
-    float phi = this->GetHeaderValueAsFloat("phi", 0);
-    float theta = this->GetHeaderValueAsFloat("theta", 0);
+    float psi = 0; 
+    float phi = 0; 
+    float theta = 0; 
+    //float psi = this->GetHeaderValueAsFloat("psi", 0);
+    //float phi = this->GetHeaderValueAsFloat("phi", 0);
+    //float theta = this->GetHeaderValueAsFloat("theta", 0);
 
     vtkTransform* eulerTransform = vtkTransform::New();
     eulerTransform->RotateX( theta);
@@ -451,8 +461,10 @@ void svkBrukerRawMRSMapper::InitPlaneOrientationMacro()
 void svkBrukerRawMRSMapper::InitMRTimingAndRelatedParametersMacro()
 {
     this->dcmHeader->InitMRTimingAndRelatedParametersMacro(
-        this->GetHeaderValueAsFloat( "tr" ),
-        this->GetHeaderValueAsFloat("fliplist", 0)
+        1000,
+        0
+        //this->GetHeaderValueAsFloat( "tr" ),
+        //this->GetHeaderValueAsFloat("fliplist", 0)
     ); 
 }
 
@@ -462,7 +474,6 @@ void svkBrukerRawMRSMapper::InitMRTimingAndRelatedParametersMacro()
  */
 void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
 {
-
     this->dcmHeader->AddSequenceItemElement(
         "SharedFunctionalGroupsSequence",
         0,
@@ -473,16 +484,17 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SpectroscopyAcquisitionDataColumns",
-        this->GetHeaderValueAsInt("np", 0)/2,
+        this->GetHeaderValueAsInt("PVM_DigNp"), 
         "SharedFunctionalGroupsSequence",
         0
     );
+
 
     this->dcmHeader->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SpectroscopyAcquisitionPhaseColumns",
-        this->GetHeaderValueAsInt("nv", 0),
+        this->GetHeaderValueAsInt("ACQ_spatial_size_0"),
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -491,7 +503,7 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SpectroscopyAcquisitionPhaseRows",
-        this->GetHeaderValueAsInt("nv2", 0),
+        this->GetHeaderValueAsInt("ACQ_spatial_size_1"),
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -500,7 +512,7 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SpectroscopyAcquisitionOutOfPlanePhaseSteps",
-        this->GetHeaderValueAsInt("ns", 0),
+        1,
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -518,7 +530,8 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcquisitionPixelSpacing",
-        this->GetHeaderValueAsString("vox1", 0) + '\\' + this->GetHeaderValueAsString("vox2", 0),
+        //this->GetHeaderValueAsString("vox1", 0) + '\\' + this->GetHeaderValueAsString("vox2", 0),
+        "10\\10",
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -527,7 +540,8 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcquisitionSliceThickness",
-        this->GetHeaderValueAsFloat("vox3", 0),
+        //this->GetHeaderValueAsFloat("vox3", 0),
+        "10",
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -549,7 +563,7 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcqReorderedPhaseColumns",
-        this->GetHeaderValueAsInt("nv", 0),
+        this->GetHeaderValueAsInt("ACQ_spatial_size_0"),
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -558,7 +572,7 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",   
         0,                               
         "SVK_SpectroscopyAcqReorderedPhaseRows",
-        this->GetHeaderValueAsInt("nv2", 0),
+        this->GetHeaderValueAsInt("ACQ_spatial_size_1"),
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -567,7 +581,7 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",   
         0,                               
         "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
-        this->GetHeaderValueAsInt("ns", 0), 
+        1,
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -585,7 +599,7 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",   
         0,                                  
         "SVK_SpectroscopyAcqReorderedPixelSpacing",
-        this->GetHeaderValueAsString("vox1", 0) + '\\' + this->GetHeaderValueAsString("vox2", 0),
+        "10\\10",
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -594,7 +608,7 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,                                      
         "SVK_SpectroscopyAcqReorderedSliceThickness",
-        this->GetHeaderValueAsFloat("vox3", 0), 
+        "10", 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -634,7 +648,8 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
  */
 void svkBrukerRawMRSMapper::InitMREchoMacro()
 {
-    this->dcmHeader->InitMREchoMacro( this->GetHeaderValueAsFloat( "te" ) * 1000. );
+
+    this->dcmHeader->InitMREchoMacro( 1 * 1000.); 
 }
 
 
@@ -653,7 +668,7 @@ void svkBrukerRawMRSMapper::InitMRModifierMacro()
  */
 void svkBrukerRawMRSMapper::InitMRTransmitCoilMacro()
 {
-    this->dcmHeader->InitMRTransmitCoilMacro("Varian", "UNKNOWN", "BODY");
+    this->dcmHeader->InitMRTransmitCoilMacro("Bruker", "UNKNOWN", "BODY");
 }
 
 
@@ -673,7 +688,7 @@ void svkBrukerRawMRSMapper::InitMRReceiveCoilMacro()
         "MRReceiveCoilSequence",
         0,
         "ReceiveCoilName",
-        "Varian Coil",
+        "Bruker Coil",
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -761,10 +776,11 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyModule()
     /*  =======================================
      *  MR Image and Spectroscopy Instance Macro
      *  ======================================= */
+    string timeDate = this->GetHeaderValueAsString( "SUBJECT_date" );
 
     this->dcmHeader->SetValue(
         "AcquisitionDateTime",
-        this->GetHeaderValueAsString("date")
+        timeDate
     );
     
     this->dcmHeader->SetValue(
@@ -773,18 +789,10 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyModule()
     );
 
 
-    string nucleus = this->GetHeaderValueAsString("tn"); 
-    string dicomNucleus = "1H"; 
-    if ( nucleus.compare("C13") == 0 ) {
-        dicomNucleus = "13C"; 
-    } else if ( nucleus.compare("N15") == 0 ) {
-        dicomNucleus = "15N"; 
-    }
-
-
+    string nucleus = this->GetHeaderValueAsString("NUC1"); 
     this->dcmHeader->SetValue(
         "ResonantNucleus",
-        dicomNucleus 
+        nucleus 
     );
 
     this->dcmHeader->SetValue(
@@ -800,7 +808,8 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyModule()
     //  B0 in Gauss?
     this->dcmHeader->SetValue(
         "MagneticFieldStrength",
-        static_cast< int > ( this->GetHeaderValueAsFloat("B0") / 10000 )
+        3
+        //static_cast< int > ( this->GetHeaderValueAsFloat("B0") / 10000 )
     );
     /*  =======================================
      *  END: MR Image and Spectroscopy Instance Macro
@@ -841,12 +850,14 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "TransmitterFrequency",
-        this->GetHeaderValueAsFloat( "sfrq" )
+        //this->GetHeaderValueAsFloat( "sfrq" )
+        100
     );
 
     this->dcmHeader->SetValue(
         "SpectralWidth",
-        this->GetHeaderValueAsFloat( "sw" )
+        //this->GetHeaderValueAsFloat( "sw" )
+        100    
     );
 
     this->dcmHeader->SetValue(
@@ -857,8 +868,9 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyModule()
     //  sp is the frequency in Hz at left side (downfield/High freq) 
     //  side of spectrum: 
     //
-    float ppmRef = this->GetHeaderValueAsFloat( "sp" ) + this->GetHeaderValueAsFloat( "sw" )/2.;
-    ppmRef /= this->GetHeaderValueAsFloat( "sfrq" ); 
+    //float ppmRef = this->GetHeaderValueAsFloat( "sp" ) + this->GetHeaderValueAsFloat( "sw" )/2.;
+    //ppmRef /= this->GetHeaderValueAsFloat( "sfrq" ); 
+    float ppmRef = 0; 
     this->dcmHeader->SetValue(
         "ChemicalShiftReference",
         ppmRef 
@@ -913,10 +925,10 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyModule()
  */
 void svkBrukerRawMRSMapper::InitMRSpectroscopyDataModule()
 {
-    this->dcmHeader->SetValue( "Columns", this->GetHeaderValueAsInt("nv", 0) );
-    this->dcmHeader->SetValue( "Rows", this->GetHeaderValueAsInt("nv2", 0) );
+    this->dcmHeader->SetValue( "Columns", this->GetHeaderValueAsInt("ACQ_spatial_size_0") );
+    this->dcmHeader->SetValue( "Rows", this->GetHeaderValueAsInt("ACQ_spatial_size_1") );
     this->dcmHeader->SetValue( "DataPointRows", 0 );
-    this->dcmHeader->SetValue( "DataPointColumns", this->GetHeaderValueAsInt("np", 0)/2 );
+    this->dcmHeader->SetValue( "DataPointColumns", this->GetHeaderValueAsInt("PVM_DigNp", 0) );
     this->dcmHeader->SetValue( "DataRepresentation", "COMPLEX" );
     this->dcmHeader->SetValue( "SignalDomainColumns", "TIME" );
     this->dcmHeader->SetValue( "SVK_ColumnsDomain", "KSPACE" );
@@ -928,13 +940,13 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyDataModule()
 /*!
  *  Reads spec data from fid file.
  */
-void svkBrukerRawMRSMapper::ReadSerFile( string fidFileName, svkImageData* data )
+void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkImageData* data )
 {
     
-    vtkDebugMacro( << this->GetClassName() << "::ReadFidFile()" );
+    vtkDebugMacro( << this->GetClassName() << "::ReadSerFile()" );
 
-    ifstream* fidDataIn = new ifstream();
-    fidDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+    ifstream* serDataIn = new ifstream();
+    serDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
     int pixelWordSize = 4;
     int numComponents = 2;
@@ -949,7 +961,7 @@ void svkBrukerRawMRSMapper::ReadSerFile( string fidFileName, svkImageData* data 
 
     int numBytesInVol = ( numPixInVolume * pixelWordSize * numComponents * numSpecPoints );
 
-    fidDataIn->open( fidFileName.c_str(), ios::binary );
+    serDataIn->open( serFileName.c_str(), ios::binary );
 
     /*
      *   Flatten the data volume into one dimension
@@ -958,11 +970,8 @@ void svkBrukerRawMRSMapper::ReadSerFile( string fidFileName, svkImageData* data 
         this->specData = new float[ numBytesInVol/pixelWordSize ];
     }
 
-    fidDataIn->seekg(0, ios::beg);
-    int fileHeaderSize = 32;
-    int blockHeaderSize = 28;
-    fidDataIn->seekg(fileHeaderSize + blockHeaderSize, ios::beg);
-    fidDataIn->read( (char *)(this->specData), numBytesInVol);
+    serDataIn->seekg(0, ios::beg);
+    serDataIn->read( (char *)(this->specData), numBytesInVol);
 
     /*
      *  FID files are bigendian.
@@ -998,8 +1007,8 @@ void svkBrukerRawMRSMapper::ReadSerFile( string fidFileName, svkImageData* data 
     progress = 1;
 	this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&progress));
 
-    fidDataIn->close();
-    delete fidDataIn;
+    serDataIn->close();
+    delete serDataIn;
 
 }
 
@@ -1064,7 +1073,7 @@ void svkBrukerRawMRSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, in
  */
 void svkBrukerRawMRSMapper::ConvertCmToMm()
 {
-
+/*
     float cmToMm = 10.;
     float tmp;
     ostringstream oss;
@@ -1072,34 +1081,35 @@ void svkBrukerRawMRSMapper::ConvertCmToMm()
     // FOV 
     tmp = cmToMm * this->GetHeaderValueAsFloat("lpe", 0);
     oss << tmp;
-    ( this->procparMap["lpe"] )[0][0] = oss.str();
+    ( this->paramMap["lpe"] )[0][0] = oss.str();
 
     oss.str("");
     tmp = cmToMm * this->GetHeaderValueAsFloat("lpe2", 0);
     oss << tmp;
-    ( this->procparMap["lpe2"] )[0][0] = oss.str();
+    ( this->paramMap["lpe2"] )[0][0] = oss.str();
 
     oss.str("");
     tmp = cmToMm * this->GetHeaderValueAsFloat("lro", 0);
     oss << tmp;
-    ( this->procparMap["lro"] )[0][0] = oss.str(); 
+    ( this->paramMap["lro"] )[0][0] = oss.str(); 
 
 
     //  Center 
     oss.str("");
     tmp = cmToMm * this->GetHeaderValueAsFloat("ppe", 0);
     oss << tmp;
-    ( this->procparMap["ppe"] )[0][0] = oss.str();
+    ( this->paramMap["ppe"] )[0][0] = oss.str();
 
     oss.str("");
     tmp = cmToMm * this->GetHeaderValueAsFloat("ppe2", 0);
     oss << tmp;
-    ( this->procparMap["ppe2"] )[0][0] = oss.str();
+    ( this->paramMap["ppe2"] )[0][0] = oss.str();
 
     oss.str("");
     tmp = cmToMm * this->GetHeaderValueAsFloat("pro", 0);
     oss << tmp;
-    ( this->procparMap["pro"] )[0][0] = oss.str();
+    ( this->paramMap["pro"] )[0][0] = oss.str();
+*/
 
 }
 
@@ -1111,23 +1121,23 @@ string svkBrukerRawMRSMapper::GetDcmPatientPositionString()
 {
     string dcmPatientPosition;
 
-    string position1 = this->GetHeaderValueAsString("position1", 0);
-    if( position1.find("head first") != string::npos ) {
+    string position1 = this->GetHeaderValueAsString("SUBJECT_entry");
+    if( position1.find("HeadFirst") != string::npos ) {
         dcmPatientPosition.assign("HF");
-    } else if( position1.find("feet first") != string::npos ) {
+    } else if( position1.find("FeetFirst") != string::npos ) {
         dcmPatientPosition.assign("FF");
     } else {
         dcmPatientPosition.assign("UNKNOWN");
     }
 
-    string position2 = this->GetHeaderValueAsString("position2", 0);
-    if( position2.find("supine") != string::npos ) {
+    string position2 = this->GetHeaderValueAsString("ACQ_patient_pos");
+    if( position2.find("Supine") != string::npos ) {
         dcmPatientPosition += "S";
-    } else if( position2.find("prone") != string::npos ) {
+    } else if( position2.find("Prone") != string::npos ) {
         dcmPatientPosition += "P";
-    } else if( position2.find("decubitus left") != string::npos ) {
+    } else if( position2.find("Decubitus left") != string::npos ) {
         dcmPatientPosition += "DL";
-    } else if( position2.find("decubitus right") != string::npos ) {
+    } else if( position2.find("Decubitus right") != string::npos ) {
         dcmPatientPosition += "DR";
     } else {
         dcmPatientPosition += "UNKNOWN";
@@ -1140,13 +1150,13 @@ string svkBrukerRawMRSMapper::GetDcmPatientPositionString()
 /*!
  *
  */
-int svkBrukerRawMRSMapper::GetHeaderValueAsInt(string keyString, int valueIndex, int procparRow)
+int svkBrukerRawMRSMapper::GetHeaderValueAsInt(string keyString, int valueIndex )
 {
 
     istringstream* iss = new istringstream();
     int value;
 
-    iss->str( (this->procparMap[keyString])[procparRow][valueIndex]);
+    iss->str( (this->paramMap[keyString])[valueIndex]);
     *iss >> value;
 
     delete iss; 
@@ -1158,12 +1168,12 @@ int svkBrukerRawMRSMapper::GetHeaderValueAsInt(string keyString, int valueIndex,
 /*!
  *
  */
-float svkBrukerRawMRSMapper::GetHeaderValueAsFloat(string keyString, int valueIndex, int procparRow)
+float svkBrukerRawMRSMapper::GetHeaderValueAsFloat(string keyString, int valueIndex )
 {
 
     istringstream* iss = new istringstream();
     float value;
-    iss->str( (this->procparMap[keyString])[procparRow][valueIndex]);
+    iss->str( (this->paramMap[keyString])[valueIndex]);
     *iss >> value;
 
     delete iss; 
@@ -1175,9 +1185,9 @@ float svkBrukerRawMRSMapper::GetHeaderValueAsFloat(string keyString, int valueIn
 /*!
  *
  */
-string svkBrukerRawMRSMapper::GetHeaderValueAsString(string keyString, int valueIndex, int procparRow)
+string svkBrukerRawMRSMapper::GetHeaderValueAsString(string keyString, int valueIndex )
 {
-    return (this->procparMap[keyString])[procparRow][valueIndex];
+    return (this->paramMap[keyString])[valueIndex];
 }
 
 
@@ -1188,15 +1198,19 @@ string svkBrukerRawMRSMapper::GetHeaderValueAsString(string keyString, int value
 void svkBrukerRawMRSMapper::InitPixelMeasuresMacro()
 {
     float numPixels[3];
-    numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
-    numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
-    numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
+    numPixels[0] = this->GetHeaderValueAsInt("ACQ_spatial_size_0");
+    numPixels[1] = this->GetHeaderValueAsInt("ACQ_spatial_size_1");
+    numPixels[2] = 1;
+
 
     //  Not sure if this is best, also see lpe (phase encode resolution in cm)
     float pixelSize[3];
-    pixelSize[0] = this->GetHeaderValueAsFloat("vox1", 0);
-    pixelSize[1] = this->GetHeaderValueAsFloat("vox2", 0);
-    pixelSize[2] = this->GetHeaderValueAsFloat("vox3", 0);
+    pixelSize[0] = 10; 
+    pixelSize[1] = 10; 
+    pixelSize[2] = 10; 
+    //pixelSize[0] = this->GetHeaderValueAsFloat("vox1", 0);
+    //pixelSize[1] = this->GetHeaderValueAsFloat("vox2", 0);
+    //pixelSize[2] = this->GetHeaderValueAsFloat("vox3", 0);
 
     string pixelSizeString[3];
 
@@ -1211,4 +1225,9 @@ void svkBrukerRawMRSMapper::InitPixelMeasuresMacro()
         pixelSizeString[2]
     );
 }
+
+
+void svkBrukerRawMRSMapper::InitMRSpectroscopyPulseSequenceModule() 
+{
+} 
 

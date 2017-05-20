@@ -76,16 +76,17 @@ class svkBrukerRawMRSMapper : public vtkObject
 
     public:
 
+        static svkBrukerRawMRSMapper* New();
         vtkTypeMacro( svkBrukerRawMRSMapper, vtkObject );
 
         virtual void    InitializeDcmHeader(
-                            map <string, vector < string> >    procparMap,
+                            map <string, vector < string> >    paramMap,
                             svkDcmHeader* header,
                             svkMRSIOD* iod,
                             int        swapBytes  
                         );
 
-        virtual void    ReadSerFile( string fidFileName, svkImageData* data );
+        virtual void    ReadSerFile( string serFileName, svkImageData* data );
 
         
     protected:
@@ -110,7 +111,7 @@ class svkBrukerRawMRSMapper : public vtkObject
         virtual void    InitMREchoMacro();
         virtual void    InitMRTimingAndRelatedParametersMacro();
         virtual void    InitMRReceiveCoilMacro();
-        virtual void    InitMRSpectroscopyPulseSequenceModule() = 0;
+        virtual void    InitMRSpectroscopyPulseSequenceModule(); 
         virtual void    InitMRSpectroscopyModule();
         virtual void    InitMRSpectroscopyFOVGeometryMacro();
         virtual void    InitMRSpectroscopyDataModule();
@@ -119,13 +120,13 @@ class svkBrukerRawMRSMapper : public vtkObject
         virtual void    ConvertCmToMm();
 
         int             GetHeaderValueAsInt(
-                            string keyString, int valueIndex = 0, int procparRow = 0
+                            string keyString, int valueIndex = 0
                         );
         float           GetHeaderValueAsFloat(
-                            string keyString, int valueIndex = 0, int procparRow = 0
+                            string keyString, int valueIndex = 0 
                         );
         string          GetHeaderValueAsString(
-                            string keyString, int valueIndex = 0, int procparRow = 0
+                            string keyString, int valueIndex = 0
                         );
 
         virtual void    SetCellSpectrum(
@@ -136,8 +137,7 @@ class svkBrukerRawMRSMapper : public vtkObject
                         );
 
 
-        map <string, vector < vector<string> > >    
-                                                    procparMap;
+        map <string, vector < string> >             paramMap; 
         svkDcmHeader*                               dcmHeader; 
         float*                                      specData; 
         svkDcmHeader::DcmDataOrderingDirection      dataSliceOrder;
