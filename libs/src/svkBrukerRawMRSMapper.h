@@ -139,7 +139,7 @@ class svkBrukerRawMRSMapper : public vtkObject
 
         map <string, vector < string> >             paramMap; 
         svkDcmHeader*                               dcmHeader; 
-        float*                                      specData; 
+        void*                                       specData; 
         svkDcmHeader::DcmDataOrderingDirection      dataSliceOrder;
         int                                         numSlices; 
         int                                         numFrames; 

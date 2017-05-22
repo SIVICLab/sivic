@@ -948,7 +948,12 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkImageData* data 
     ifstream* serDataIn = new ifstream();
     serDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
+    string rawFormat = this->GetHeaderValueAsString("GO_raw_data_format"); 
     int pixelWordSize = 4;
+    if ( rawFormat.find("32_BIT") != string::npos ) {
+        pixelWordSize = 4;
+    }
+
     int numComponents = 2;
     int numSpecPoints = this->dcmHeader->GetIntValue( "DataPointColumns" );
 
@@ -967,7 +972,7 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkImageData* data 
      *   Flatten the data volume into one dimension
      */
     if (this->specData == NULL) {
-        this->specData = new float[ numBytesInVol/pixelWordSize ];
+        this->specData = new char[ numBytesInVol ];
     }
 
     serDataIn->seekg(0, ios::beg);
@@ -1040,9 +1045,9 @@ void svkBrukerRawMRSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, in
     numVoxels[2] = this->dcmHeader->GetNumberOfSlices();
 
     //  if cornoal, swap z and x:
-    int xTmp = x; 
-    x = y; 
-    y = xTmp; 
+    //int xTmp = x; 
+    //x = y; 
+    //y = xTmp; 
     x = numVoxels[0] - x - 1; 
     y = numVoxels[1] - y - 1; 
 
@@ -1054,8 +1059,20 @@ void svkBrukerRawMRSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, in
                  );
 
 
-    for (int i = 0; i < numPts; i++) {
-        dataArray->SetTuple(i, &(this->specData[offset + (i * 2)]));
+    string rawFormat = this->GetHeaderValueAsString("GO_raw_data_format"); 
+    if ( rawFormat.find("SGN_INT") != string::npos ) {
+        for (int i = 0; i < numPts; i++) {
+            int intValRe     = static_cast<int*>(  this->specData)[offset + (i * 2)];
+            int intValIm     = static_cast<int*>(  this->specData)[offset + (i * 2 + 1)];
+            float floatVal[2]; 
+            floatVal[0] = intValRe; 
+            floatVal[1] = intValIm; 
+            dataArray->SetTuple( i,  floatVal ); 
+        }
+    } else { 
+        for (int i = 0; i < numPts; i++) {
+            dataArray->SetTuple(i, &(static_cast<float*>(this->specData)[offset + (i * 2)]));
+        }
     }
 
     //  Add the spectrum's dataArray to the CellData:
