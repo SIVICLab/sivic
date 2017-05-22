@@ -42,6 +42,7 @@
 
 #include <svkBrukerRawMRSMapper.h>
 #include <svkVarianReader.h>
+#include <svkFreqCorrect.h>
 
 #include <vtkDebugLeaks.h>
 #include <vtkTransform.h>
@@ -1008,6 +1009,17 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkImageData* data 
             }
         }
     }
+
+    //  Bruker FIDs are shifted by a group delay number of points defined by PVM_DigShiftDbl.  
+    //  Apply this global shift to correct the data here: 
+    svkFreqCorrect* freqShift = svkFreqCorrect::New(); 
+    freqShift->SetInputData( data ); 
+    freqShift->SetCircularShift(); 
+    freqShift->SetGlobalFrequencyShift( 
+        -1 * this->GetHeaderValueAsInt("PVM_DigShiftDbl") 
+    ); 
+    freqShift->Update(); 
+    freqShift->Delete(); 
 
     progress = 1;
 	this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&progress));

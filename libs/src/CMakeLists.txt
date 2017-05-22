@@ -237,6 +237,7 @@ ADD_LIBRARY(
     svkImageAlgorithm.cc
     svkImageAlgorithmExecuter.cc
     svkImageThreshold.cc
+    svkFreqCorrect.cc
     svkAlgorithmPortMapper.cc
     svkImageAlgorithmWithPortMapper.cc
     svkImageAlgorithmPipeline.cc
