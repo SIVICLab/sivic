@@ -196,7 +196,6 @@ int svkFreqCorrect::ApplyGlobalCorrection( )
         for (int i = 0; i < numFrequencyPoints; i++) {
 
             int shiftedIndex = i - this->globalShift; 
-            cout << "SHIFTED INDEX0: " << i << " " << shiftedIndex << endl;
             if ( shiftedIndex >= 0 && shiftedIndex < numFrequencyPoints ) {
                 newRe = origSpecPtr[ 2*shiftedIndex ]; 
                 newIm = origSpecPtr[ 2*shiftedIndex + 1];
@@ -207,7 +206,6 @@ int svkFreqCorrect::ApplyGlobalCorrection( )
                     } else {
                         shiftedIndex -= numFrequencyPoints; 
                     } 
-                    cout << "SHIFTED INDEX1: " << i << " " << shiftedIndex << endl;
                     // if circular shift, then wrap values around: 
                     newRe = origSpecPtr[ 2*shiftedIndex ]; 
                     newIm = origSpecPtr[ 2*shiftedIndex + 1]; 
@@ -216,7 +214,6 @@ int svkFreqCorrect::ApplyGlobalCorrection( )
                     newIm = 0.; 
                 }
             }    
-            cout << "SHIFTED INDEX: " << i << " " << shiftedIndex << endl;
 
             // And set the shifted value into the spectrum. 
             specPtr[2*i]   = newRe; 
