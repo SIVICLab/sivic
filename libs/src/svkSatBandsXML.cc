@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -100,6 +100,9 @@ int svkSatBandsXML::SetXMLFileName( string xmlFileName )
 }
 
 
+/*
+ *  Tries to parse an XML RX file. 
+ */
 int svkSatBandsXML::ParseXML( vtkXMLDataElement* satBandsElement )
 {
     // Now we have to remove the old xml file
@@ -218,7 +221,6 @@ int svkSatBandsXML::ConvertDatToXML( string rootName )
 }
 
 // Use press_box.dat to obtain the PRESS parameters for XML 2
-
 int svkSatBandsXML::InitPressBoxFromDat2( string rootName ) 
 {
 

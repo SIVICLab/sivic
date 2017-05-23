@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -507,11 +507,6 @@ void svkSiemensRdaReader::InitMultiFrameFunctionalGroupsModule()
     this->numSlices = this->GetHeaderValueAsInt("CSIMatrixSize[2]");  
     this->numCoils = 1; 
     this->numTimePts = 1; 
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "NumberOfFrames",
-        this->numSlices * this->numCoils * this->numTimePts
-    );
 
     InitPerFrameFunctionalGroupMacros();
 

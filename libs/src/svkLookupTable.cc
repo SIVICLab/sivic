@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -6033,7 +6033,20 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         //this->SetScaleToLog10();
         this->TableRange[0] = 0;
         this->TableRange[1] = 90;
-
+    } else if ( this->type == svkLookupTable::GREEN_SCALE ) {
+        this->SetNumberOfTableValues( 1024 );
+        this->SetHueRange(90/360.0,125/360.0);
+        this->SetSaturationRange(1.0,1.0);
+        this->SetValueRange(0,1);
+        this->SetAlphaRange(1.,1.);
+        this->SetRampToLinear();
+    } else if ( this->type == svkLookupTable::RED_SCALE ) {
+        this->SetNumberOfTableValues( 1024 );
+        this->SetHueRange(40/360.0,0/360.0);
+        this->SetSaturationRange(1.0,1.0);
+        this->SetValueRange(0,1);
+        this->SetAlphaRange(1.,1.);
+        this->SetRampToLinear();
     } else {
     	this->type = NONE;
         vtkWarningWithObjectMacro(this, "lookup table not supported: " << type);   

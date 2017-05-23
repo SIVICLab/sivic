@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -263,6 +263,7 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
             this->SetProp( svkOverlayView::VOL_SELECTION, selectionTopo->GetNextActor());     
             this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::VOL_SELECTION) );
             this->TurnPropOn( svkOverlayView::VOL_SELECTION );
+            this->UpdateSelectionBoxVisibility();
             selectionTopo->Delete();
         }
     }
@@ -527,14 +528,7 @@ void svkOverlayView::SetSlice(int slice, bool centerImage)
 
             // Case for no selection box
             if( this->GetProp( svkOverlayView::VOL_SELECTION ) != NULL && this->dataVector[MR4D]->IsA("svkMrsImageData") ) {
-
-                // If it is make it visible, otherwise hide it
-                if( static_cast<svkMrsImageData*>(this->dataVector[MR4D])->IsSliceInSelectionBox( this->slice, this->orientation ) && isPropOn[VOL_SELECTION] && this->toggleSelBoxVisibility) {
-                    this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
-                } else if( this->toggleSelBoxVisibility ) {
-                    this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
-                }
-
+                UpdateSelectionBoxVisibility();
             }
             int toggleDraw = this->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
             if( toggleDraw ) {
@@ -553,6 +547,19 @@ void svkOverlayView::SetSlice(int slice, bool centerImage)
         } 
     } else {
         this->slice = slice;
+    }
+}
+
+
+/*
+ * Check the state of the selection box visibility and update if necessary
+ */
+void svkOverlayView::UpdateSelectionBoxVisibility() {
+    if(static_cast<svkMrsImageData*>(dataVector[MR4D])->IsSliceInSelectionBox(slice, orientation)
+       && isPropOn[VOL_SELECTION] && toggleSelBoxVisibility) {
+        GetProp(VOL_SELECTION )->SetVisibility(1);
+    } else if(toggleSelBoxVisibility) {
+        GetProp(VOL_SELECTION )->SetVisibility(0);
     }
 }
 
@@ -926,7 +933,7 @@ void svkOverlayView::SetOverlayThreshold( double threshold )
 {
     this->overlayThreshold = threshold;
     if( this->colorTransfer != NULL ) {
-        this->colorTransfer->SetAlphaThreshold(threshold); 
+        this->colorTransfer->SetAlphaThreshold(threshold);
         this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )->Modified();
     } 
 }

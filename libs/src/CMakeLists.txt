@@ -1,5 +1,5 @@
 #
-#   Copyright © 2009-2014 The Regents of the University of California.
+#   Copyright © 2009-2017 The Regents of the University of California.
 #   All Rights Reserved.
 #
 #   Redistribution and use in source and binary forms, with or without
@@ -116,6 +116,10 @@ IF(WIN32)
 	SET(PLATFORM_INCLUDE ../getopt)
 ENDIF(WIN32)
 
+IF(CLION_BUILD)
+    SET(PLATFORM_INCLUDE ${CLION_VTK_INCLUDE})
+ENDIF(CLION_BUILD)
+
 INCLUDE_DIRECTORIES(
     ./
     ${DCMTK_DIR}/include
@@ -180,6 +184,7 @@ ADD_LIBRARY(
     svkGEPFileMapperUCSFfidcsiDev0.cc
     svkGEPFileMapperUCSFfidcsiDev07t.cc
     svkGEPFileMapperUCSFProseProstate.cc
+    svkGEPFileMapperUCSFProseBreast.cc
     svkGEPFileMapperMPCSIOBL.cc
     svkIdfVolumeReader.cc
     svkDdfVolumeReader.cc
@@ -187,6 +192,7 @@ ADD_LIBRARY(
     svkDcmVolumeReader.cc
     svkDcmMrsVolumeReader.cc
     svkDcmMriVolumeReader.cc
+    svkDcmPETVolumeReader.cc
     svkDcmEnhancedVolumeReader.cc
     svkDcmSegmentationVolumeReader.cc
     svkDcmRawDataReader.cc
@@ -201,6 +207,8 @@ ADD_LIBRARY(
     svkVarianUCSF2DcsiMapper.cc
     svkVarianUCSFEPSI2DMapper.cc
     svkVarianFidMapper.cc
+    svkBrukerRawMRSReader.cc
+    svkBrukerRawMRSMapper.cc
     svkGESigna5XReader.cc
     svkGESignaLX2Reader.cc
     svkPACSInterface.cc
@@ -229,6 +237,7 @@ ADD_LIBRARY(
     svkImageAlgorithm.cc
     svkImageAlgorithmExecuter.cc
     svkImageThreshold.cc
+    svkFreqCorrect.cc
     svkAlgorithmPortMapper.cc
     svkImageAlgorithmWithPortMapper.cc
     svkImageAlgorithmPipeline.cc
@@ -271,6 +280,7 @@ ADD_LIBRARY(
     svkIntegratePeak.cc
     svkApodizationWindow.cc
     svkMrsApodizationFilter.cc
+    svkMrsSimulate.cc
     svkExtractVOI.cc
     svkDICOMParser.cc
     svkImageStatistics.cc

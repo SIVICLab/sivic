@@ -289,6 +289,14 @@ void sivicImageViewWidget::CreateWidget()
     invocation << "SetLUTCallback " << svkLookupTable::CBF_FIXED << endl;
     lutMenu->AddRadioButton("Fixed CBF LUT", this->sivicController, invocation.str().c_str());
 
+    invocation.str("");
+    invocation << "SetLUTCallback " << svkLookupTable::GREEN_SCALE << endl;
+    lutMenu->AddRadioButton("Green LUT", this->sivicController, invocation.str().c_str());
+
+    invocation.str("");
+    invocation << "SetLUTCallback " << svkLookupTable::RED_SCALE << endl;
+    lutMenu->AddRadioButton("Red LUT", this->sivicController, invocation.str().c_str());
+
     this->lutBox->GetWidget()->SetValue( "Color LUT" );
 
     this->thresholdType = vtkKWMenuButtonWithLabel::New();   
@@ -832,10 +840,10 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->overlayThresholdSlider->Focus(); 
     } else if( caller == this->volSelButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         if ( this->volSelButton->GetSelectedState() ) {
-            this->overlayController->TurnPropOn( svkOverlayView::VOL_SELECTION );
+            svkOverlayView::SafeDownCast(this->overlayController->GetView())->ToggleSelBoxVisibilityOn();
             this->plotController->TurnPropOn( svkPlotGridView::VOL_SELECTION );
         } else {
-            this->overlayController->TurnPropOff( svkOverlayView::VOL_SELECTION );
+            svkOverlayView::SafeDownCast(this->overlayController->GetView())->ToggleSelBoxVisibilityOn();
             this->plotController->TurnPropOff( svkPlotGridView::VOL_SELECTION );
         }
         this->overlayController->GetView()->Refresh();

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -78,11 +78,11 @@ int main (int argc, char** argv)
     usemsg += "             [--verbose ] [ -h ]                                                     \n"; 
     usemsg += "                                                                                     \n";  
     usemsg += "   -i input_file_name        name of file to convert.                                \n"; 
-    usemsg += "   -o output_root_name       root name of outputfile. This is a directory if using   \n";  
-    usemsg += "                             --xml.  All files will get written to the dir.          \n";  
+    usemsg += "   -o output_root_name       root name of outputfile. May include a directory        \n";  
+    usemsg += "                             e.g.:  -o dirName/fileRoot.                             \n";  
     usemsg += "   -t output_data_type       target data type:                                       \n";  
     usemsg += "                                 3 = UCSF IDF                                        \n";  
-    usemsg += "                                 6 = DICOM_MRI                                       \n";  
+    usemsg += "                                 6 = DICOM_Enhanced MRI                              \n";  
     usemsg += "   -b                        Only fit inside volume selection                        \n"; 
     usemsg += "   -s                        Scale output data to full floating point range for idf  \n"; 
     usemsg += "                             output. Default is to cast double precision results to  \n"; 
@@ -165,6 +165,10 @@ int main (int argc, char** argv)
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
+                if( ! svkUtils::FilePathExists( inputFileName.c_str() ) ) {
+                    cerr << endl << "Input file can not be loaded (may not exist) " << inputFileName << endl << endl;
+                    exit(1);
+                }
                 break;
             case 'o':
                 outputFileRoot.assign(optarg);
@@ -192,6 +196,10 @@ int main (int argc, char** argv)
                 break;
            case FLAG_XML_FILE:
                 xmlFileName.assign(optarg);
+                if( ! svkUtils::FilePathExists( xmlFileName.c_str() ) ) {
+                    cerr << endl << "Input file can not be loaded (may not exist) " << xmlFileName << endl << endl;
+                    exit(1);
+                }
                 break;
            case FLAG_ALGORITHM:
                 algoInt = atoi(optarg); 
@@ -307,8 +315,8 @@ int main (int argc, char** argv)
             cout << "mapId: " << mapId << endl; 
             cout << "SD: " << (*metMapVector)[mapId]->GetDcmHeader()->GetStringValue("SeriesDescription") << endl;
             string outputMap = outputFileRoot; 
-            outputMap.append("/");    
             outputMap.append( (*metMapVector)[mapId]->GetDcmHeader()->GetStringValue("SeriesDescription") );    
+            cout << "output file: " << outputMap << endl; 
             writer->SetFileName( outputMap.c_str() ); 
             writer->SetInputData( (*metMapVector)[mapId] );
     

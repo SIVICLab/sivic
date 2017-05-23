@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -40,8 +40,8 @@
 
 
 #include <svkImageStatistics.h>
-#include <svkImageThreshold.h>
 #include <svkTypeUtils.h>
+#include <vtkMultiBlockDataSet.h>
 
 using namespace svk;
 
@@ -51,7 +51,7 @@ vtkStandardNewMacro(svkImageStatistics);
 //! Constructor
 svkImageStatistics::svkImageStatistics()
 {
-    this->SetNumberOfInputPorts(29);
+    this->SetNumberOfInputPorts(27);
     this->SetNumberOfOutputPorts(1);
     bool required = true;
     bool repeatable = true;
@@ -77,10 +77,8 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MOMENT_3, "COMPUTE_MOMENT_3", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MOMENT_4, "COMPUTE_MOMENT_4", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_VARIANCE, "COMPUTE_VARIANCE", svkAlgorithmPortMapper::SVK_BOOL, !required);
-    this->GetPortMapper()->InitializeInputPort( COMPUTE_SAMPLE_KURTOSIS, "COMPUTE_SAMPLE_KURTOSIS", svkAlgorithmPortMapper::SVK_BOOL, !required);
-    this->GetPortMapper()->InitializeInputPort( COMPUTE_SAMPLE_SKEWNESS, "COMPUTE_SAMPLE_SKEWNESS", svkAlgorithmPortMapper::SVK_BOOL, !required);
-    this->GetPortMapper()->InitializeInputPort( COMPUTE_POPULATION_KURTOSIS, "COMPUTE_POPULATION_KURTOSIS", svkAlgorithmPortMapper::SVK_BOOL, !required);
-    this->GetPortMapper()->InitializeInputPort( COMPUTE_POPULATION_SKEWNESS, "COMPUTE_POPULATION_SKEWNESS", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_KURTOSIS, "COMPUTE_KURTOSIS", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_SKEWNESS, "COMPUTE_SKEWNESS", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( NORMALIZATION_METHOD, "NORMALIZATION_METHOD", svkAlgorithmPortMapper::SVK_INT, !required);
     this->GetPortMapper()->InitializeInputPort( NORMALIZATION_ROI_INDEX, "NORMALIZATION_ROI_INDEX", svkAlgorithmPortMapper::SVK_INT, !required);
     this->GetPortMapper()->InitializeInputPort( OUTPUT_FILE_NAME, "OUTPUT_FILE_NAME", svkAlgorithmPortMapper::SVK_STRING, !required);
@@ -189,14 +187,6 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             vtkDataArray* maskedPixels = svkStatistics::GetMaskedPixels(image,roi);
             if( geometriesMatch ) {
                 this->ComputeSmoothStatistics(image,roi, binSize, maskedPixels, statistics);
-                /*
-                // Using smooth computation instead of order statistics
-                if( this->GetPortMapper()->GetIntInputPortValue( SMOOTH_BINS ) != NULL ){;
-                    this->ComputeSmoothStatistics(image,roi, statistics);
-                } else {
-                    this->ComputeOrderStatistics(image,roi, statistics);
-                }
-                */
                 this->ComputeAccumulateStatistics(image,roi, binSize, maskedPixels, statistics);
                 this->ComputeDescriptiveStatistics(image,roi, maskedPixels, statistics);
             }
@@ -379,79 +369,6 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
 
 
 /*!
- * Computes statistics using the vtkOrderStatistics class.
- */
-void svkImageStatistics::ComputeOrderStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixels, vtkXMLDataElement* results)
-{
-    if( image != NULL ) {
-        vtkDataArray* pixelsInROI = svkStatistics::GetMaskedPixels(image,roi);
-        vtkTable* table = vtkTable::New();
-        table->AddColumn( pixelsInROI );
-
-
-        // Compute Quartiles
-        vtkOrderStatistics* quartileStatsCalculator = vtkOrderStatistics::New();
-        quartileStatsCalculator->SetInputData( vtkStatisticsAlgorithm::INPUT_DATA, table );
-        quartileStatsCalculator->AddColumn(pixelsInROI->GetName());
-        quartileStatsCalculator->SetLearnOption(true);
-        quartileStatsCalculator->SetAssessOption(false);
-        quartileStatsCalculator->Update();
-        vtkTable* quartileResults = quartileStatsCalculator->GetOutput(1);
-
-        /*
-         // This is usefull for debuging. It prints all the results of the algroithm out.
-        for( int i = 0; i < quartileResults->GetNumberOfRows(); i++) {
-            for( int j = 0; j < quartileResults->GetNumberOfColumns(); j++) {
-                cout << quartileResults->GetColumnName(j) << ": " << quartileResults->GetValue(i,j) << endl;
-            }
-        }
-        */
-
-        // Compute deciles
-        vtkOrderStatistics* decileStatsCalculator = vtkOrderStatistics::New();
-        decileStatsCalculator->SetInputData( vtkStatisticsAlgorithm::INPUT_DATA, table );
-        decileStatsCalculator->AddColumn(pixelsInROI->GetName());
-        decileStatsCalculator->SetLearnOption(true);
-        decileStatsCalculator->SetAssessOption(false);
-        decileStatsCalculator->SetNumberOfIntervals(10);
-        decileStatsCalculator->Update();
-        vtkTable* decileResults = decileStatsCalculator->GetOutput(1);
-
-        /*
-         // This is usefull for debuging. It prints all the results of the algroithm out.
-        for( int i = 0; i < decileResults->GetNumberOfRows(); i++) {
-            for( int j = 0; j < decileResults->GetNumberOfColumns(); j++) {
-                cout << decileResults->GetColumnName(j) << ": " << decileResults->GetValue(i,j) << endl;
-            }
-        }
-        */
-
-        if( this->GetShouldCompute(COMPUTE_QUANTILES)) {
-            string valueString = this->DoubleToString( decileResults->GetValueByName(0,"0.1-quantile").ToDouble() );
-            svkXMLUtils::CreateNestedXMLDataElement( results, "percent10", valueString);
-            valueString = this->DoubleToString( quartileResults->GetValueByName(0,"First Quartile").ToDouble() );
-            svkXMLUtils::CreateNestedXMLDataElement( results, "percent25", valueString);
-            valueString = this->DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
-            svkXMLUtils::CreateNestedXMLDataElement( results, "median", valueString);
-            valueString = this->DoubleToString( quartileResults->GetValueByName(0,"Third Quartile").ToDouble() );
-            svkXMLUtils::CreateNestedXMLDataElement( results, "percent75", valueString);
-            valueString = this->DoubleToString( decileResults->GetValueByName(0,"0.9-quantile").ToDouble() );
-            svkXMLUtils::CreateNestedXMLDataElement( results, "percent90", valueString);
-        } else if( this->GetShouldCompute(COMPUTE_MEDIAN)) {
-            string valueString = this->DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
-            svkXMLUtils::CreateNestedXMLDataElement( results, "median", valueString);
-        }
-
-
-        decileStatsCalculator->Delete();
-        quartileStatsCalculator->Delete();
-        table->Delete();
-        pixelsInROI->Delete();
-    }
-}
-
-
-/*!
  * Computes statistics using the vtkDescriptiveStatistics class.
  */
 void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixels, vtkXMLDataElement* results )
@@ -482,20 +399,10 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
         descriptiveStats->SetLearnOption(true);
         descriptiveStats->SetAssessOption(false);
         descriptiveStats->Update();
-        vtkTable* statResults = descriptiveStats->GetOutput(1);
-        /*
-        for( int i = 0; i < statResults->GetNumberOfRows(); i++) {
-            for( int j = 0; j < statResults->GetNumberOfColumns(); j++) {
-                cout << statResults->GetColumnName(j) << ": " << statResults->GetValue(i,j) << endl;
-            }
-        }
-        */
-        /*
-        if( this->GetShouldCompute(COMPUTE_SUM)){
-            string valueString = this->DoubleToString( statResults->GetValueByName(0,"Sum").ToDouble() );
-            svkXMLUtils::CreateNestedXMLDataElement( results, "sum", valueString);
-        }
-        */
+        vtkMultiBlockDataSet* statModel = vtkMultiBlockDataSet::SafeDownCast( descriptiveStats->GetOutputDataObject( vtkStatisticsAlgorithm::OUTPUT_MODEL ) );
+        vtkTable* statResults = vtkTable::SafeDownCast( statModel->GetBlock( 0 ) );
+        vtkTable* statDerivedResults = vtkTable::SafeDownCast( statModel->GetBlock( 1 ) );
+
         if( this->GetShouldCompute(COMPUTE_MOMENT_2) && numPixelsInROI > 0 ) {
             if( statResults->GetRowData()->GetArray("M2")->GetNumberOfTuples() > 0 ){
                 string valueString = this->DoubleToString( statResults->GetValueByName(0,"M2").ToDouble() );
@@ -524,8 +431,8 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
             string valueString = this->DoubleToString( statResults->GetValueByName(0,"Variance").ToDouble() );
             svkXMLUtils::CreateNestedXMLDataElement( results, "variance", valueString);
         }
-        if( this->GetShouldCompute(COMPUTE_SAMPLE_KURTOSIS)){
-            string valueString = this->DoubleToString( statResults->GetValueByName(0,"g2 Kurtosis").ToDouble() );
+        if( this->GetShouldCompute(COMPUTE_KURTOSIS) ){
+            string valueString = this->DoubleToString( statDerivedResults->GetValueByName(0,"Kurtosis").ToDouble() );
             // TODO: Make this only happen in UCSF Compatibility mode.
             if( numPixelsInROI == 1 ) {
                 valueString = "-3.0";
@@ -536,18 +443,14 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
 
             svkXMLUtils::CreateNestedXMLDataElement( results, "kurtosis", valueString);
         }
-        if( this->GetShouldCompute(COMPUTE_SAMPLE_SKEWNESS)){
-            string valueString = this->DoubleToString( statResults->GetValueByName(0,"g1 Skewness").ToDouble() );
+        if( this->GetShouldCompute(COMPUTE_SKEWNESS)){
+            string valueString = this->DoubleToString( statDerivedResults->GetValueByName(0,"Skewness").ToDouble() );
             svkXMLUtils::CreateNestedXMLDataElement( results, "skewness", valueString);
         }
-        if( this->GetShouldCompute(COMPUTE_POPULATION_KURTOSIS)){
-            string valueString = this->DoubleToString( statResults->GetValueByName(0,"G2 Kurtosis").ToDouble() );
-            svkXMLUtils::CreateNestedXMLDataElement( results, "populationkurtosis", valueString);
+        if( statModel != NULL) {
+            statModel->Delete();
         }
-        if( this->GetShouldCompute(COMPUTE_POPULATION_SKEWNESS)){
-            string valueString = this->DoubleToString( statResults->GetValueByName(0,"G1 Skewness").ToDouble() );
-            svkXMLUtils::CreateNestedXMLDataElement( results, "populationskewness", valueString);
-        }
+
     }
 }
 

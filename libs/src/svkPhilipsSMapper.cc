@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -39,7 +39,9 @@
  *      Beck Olson
  */
 
-
+#ifdef WIN32
+#include<signal.h>
+#endif
 #include <svkPhilipsSMapper.h>
 #include <svkSpecUtils.h>
 #include <svkImageReader2.h>

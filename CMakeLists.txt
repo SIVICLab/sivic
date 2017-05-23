@@ -82,6 +82,7 @@ option( BUILD_PROFILER "Build for profiling with gprof." FALSE)
 option( BUILD_TESTS "Build test applications." FALSE)
 option( BUILD_CREATE_RAW "Build svk_create_raw. Requires open ssl" FALSE)
 option( BUILD_EPIC "Build for EPIC PSD linking." FALSE)
+option( CREATE_WRAPPER_SCRIPTS "Create wrapper scripts for executables." TRUE)
 
 ADD_DEFINITIONS(-DSVK_RELEASE_VERSION="\\"${SVK_RELEASE_VERSION}\\"" )
 ADD_DEFINITIONS( -DSVK_MAJOR_VERSION="${SVK_MAJOR_VERSION}" )
@@ -186,5 +187,10 @@ endif ( BUILD_CLAPACK )
 if( BUILD_CREATE_RAW )
     FIND_PATH( OPENSSL_DIR REQUIRED )
 endif ( BUILD_CREATE_RAW )
+
+IF(CLION_BUILD)
+    FILE(GLOB CLION_VTK_INCLUDE ${VTK_DIR}/../../../include/*)
+    message(CLION_VTK_INCLUDE = ${CLION_VTK_INCLUDE})
+ENDIF(CLION_BUILD)
 
 INSTALL_FILES( /local/sivic FILES README LICENSE)

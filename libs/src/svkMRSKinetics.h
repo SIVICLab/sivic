@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -55,6 +55,7 @@
 #include <svkMriImageData.h>
 #include <svkImageAlgorithm.h>
 #include <svkDcmHeader.h>
+#include <svkKineticModelCostFunction.h>
 
 #include <math.h>
 #include <stdio.h>
@@ -83,19 +84,29 @@ class svkMRSKinetics: public svkImageAlgorithm
         static                  svkMRSKinetics* New();
 
         typedef enum {
-            SIG_PYR= 0,
-            SIG_LAC,
-            SIG_UREA,
-            MASK
-        } MODEL_INPUT;
-
-
+            UNDEFINED = 0, 
+            FIRST_MODEL = 1, 
+            TWO_SITE_EXCHANGE = FIRST_MODEL,
+            TWO_SITE_EXCHANGE_PERF, 
+            TWO_SITE_IM, 
+            TWO_SITE_IM_PYR, 
+            LAST_MODEL = TWO_SITE_IM_PYR
+        } MODEL_TYPE;
 
 
         void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         void                    SetZeroCopy(bool zeroCopy); 
-        void                    SetModelType( int modelType ); 
+        void                    SetModelType( svkMRSKinetics::MODEL_TYPE modelType ); 
+        void                    SetTR( float TR ); 
+        float                   GetTR( ); 
+        int                     GetNumberOfModelOutputPorts(); 
+        int                     GetNumberOfModelSignals(); 
+        string                  GetModelOutputDescription( int outputIndex ); 
+        void                    SetCustomParamSearchBounds(
+                                    vector<int>* customBoundsParamNumbers, 
+                                    vector<float>* customLowerBounds, 
+                                    vector<float>* customUpperBounds);
 
 
     protected:
@@ -130,35 +141,37 @@ class svkMRSKinetics: public svkImageAlgorithm
 
     private:
         void                    GenerateKineticParamMap();
-        void                    CalculateLactateKinetics( double* fittedModelParams, 
-                                                          int numTimePts,
-														  float* metKinetics0,
-                                                          float* metKinetics1, 
-                                                          float* lacKinetics ); 
-        void                    FitVoxelKinetics( 
-                                    float* metKinetics0, 
-                                    float* metKinetics1, 
-                                    float* metKinetics2, 
-                                    int voxelIndex 
-                                );
+        void                    InitAverageDynamics(bool hasMask, int totalVoxels, unsigned short* mask); 
 
-        void                    InitOptimizer( 
-                                    float* metKinetics0, 
-                                    float* metKinetics1, 
-                                    float* metKinetics2, 
-                                    itk::ParticleSwarmOptimizer::Pointer itkOptimizer 
-                                );
+        void                    FitVoxelKinetics( int voxelID ); 
 
-        float*                  metKinetics0;
-        float*                  metKinetics1;
-        float*                  metKinetics2;
-        int                     currentTimePoint; 
-        int                     numTimePoints; 
-        vtkDataArray*           mapArrayKpl; 
-        vtkDataArray*           mapArrayT1all; 
-        vtkDataArray*           mapArrayKtrans; 
-        int                     modelType; 
+        void                    InitOptimizer(  itk::ParticleSwarmOptimizer::Pointer itkOptimizer, int voxelID ); 
+        void                    InitCostFunction( 
+                                    svkKineticModelCostFunction::Pointer& costFunction, 
+                                    int voxelID 
+                                ); 
+        void                    GetCostFunction( svkKineticModelCostFunction::Pointer& costFunction); 
+        int                     GetNumberOfModelParameters(); 
+        void                    InitModelOutputDescriptionVector(); 
+        void                    PrintInitialParamBounds(); 
 
+
+        float*                      metKinetics0;
+        float*                      metKinetics1;
+        float*                      metKinetics2;
+        int                         currentTimePoint; 
+        int                         numTimePoints; 
+        int                         num3DOutputMaps;
+        vtkDataArray*               mapArrayKpl; 
+        vtkDataArray*               mapArrayT1all; 
+        vtkDataArray*               mapArrayKtrans; 
+        svkMRSKinetics::MODEL_TYPE  modelType; 
+        vector<string>              modelOutputDescriptionVector;
+        vector<vtkFloatArray*>      averageSignalVector;
+        float                       TR; 
+        vector<int>*                customBoundsParamNumbers; 
+        vector<float>*              customLowerBounds; 
+        vector<float>*              customUpperBounds; 
 
 };
 

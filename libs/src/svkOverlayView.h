@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -247,16 +247,17 @@ class svkOverlayView : public svkDataView
     private:
 
         void                            SetSliceOverlay();
+        void                            UpdateSelectionBoxVisibility();
         bool                            ResliceImage(svkImageData* input, svkImageData* target, int targetIndex);
-        float                           GetImageToSpecSliceRatio(svkImageData* input, svkImageData* target); 
-        bool                            OriginShiftRequired(svkImageData* input, svkImageData* target, double* targetOrigin); 
+        float                           GetImageToSpecSliceRatio(svkImageData* input, svkImageData* target);
+        bool                            OriginShiftRequired(svkImageData* input, svkImageData* target, double* targetOrigin);
 
 
         double                          overlayOpacity;
         double                          overlayThreshold;
 
         //! Stores the interpolation method of the overlay
-        InterpolationType               interpolationType; 
+        InterpolationType               interpolationType;
 
         //! Manipulates the actor that represents the sat bands
         svkSatBandSet*                 satBandsAxial;
@@ -264,9 +265,9 @@ class svkOverlayView : public svkDataView
         svkSatBandSet*                 satBandsSagittal;
 
         // Determines how close to the voxels things are clipped
-        static const double            CLIP_TOLERANCE; 
+        static const double            CLIP_TOLERANCE;
 
-        
+
 };
 
 

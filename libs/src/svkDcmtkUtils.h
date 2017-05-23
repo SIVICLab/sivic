@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -94,7 +94,7 @@ class svkDcmtkUtils
         static float getFloatValue(DcmItem* item, const DcmTagKey &tag, int pos = 0)
             throw (overflow_error, svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
 
-        static double getDoubleValue(DcmItem* item, const DcmTagKey &tag) 
+        static double getDoubleValue(DcmItem* item, const DcmTagKey &tag, bool searchInto = false ) 
             throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
 
         static string getStringValue(DcmItem* item, const DcmTagKey &tag, int pos)

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -584,7 +584,7 @@ void svkSecondaryCaptureFormatter::RenderCombinedImage( int firstFrame, int last
     if( flipImage ) {  
         vtkImageFlip* flipper = vtkImageFlip::New();
         flipper->SetFilteredAxis( 1 );
-        flipper->SetInputData( sliceAppender->GetOutput() );
+        flipper->SetInputConnection( sliceAppender->GetOutputPort() );
         flipper->Update();
         outputImage->DeepCopy( flipper->GetOutput() );
         flipper->Delete();

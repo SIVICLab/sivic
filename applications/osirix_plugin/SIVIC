@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-#   Copyright © 2009-2014 The Regents of the University of California.
+#   Copyright © 2009-2017 The Regents of the University of California.
 #   All Rights Reserved.
 #
 #   Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,12 @@
 #
 #   Startup script for OsX SIVIC binary
 #
+
+osascript /Applications/SIVIC.app/Contents/Resources/detect_xquartz.scpt 
+
+if [ $? -ne 0 ]; then
+    exit 1 
+fi
 
 exec '/Applications/SIVIC.app/Contents/Resources/sivic.sh'
 

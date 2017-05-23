@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -84,7 +84,7 @@ int main (int argc, char** argv)
     usemsg += "                                 2 = UCSF DDF                                    \n";
     usemsg += "                                 4 = DICOM_MRS (default)                         \n";
     usemsg += "   -f                       Write out filter image                               \n";
-    usemsg += "   -q                      Write out success map image                 \n";
+    usemsg += "   -q                       Write out success map image                          \n";
     usemsg += "   -b                       only filter spectra in selection box, others         \n"; 
     usemsg += "                            are zeroed out.                                      \n"; 
     usemsg += "   -m                order  model order (default = 25)                           \n"; 
@@ -99,7 +99,7 @@ int main (int argc, char** argv)
     usemsg += "                                 2 = IGNORE_ERROR                                \n";
     usemsg += "   --singleThreaded         Execute the algorithm as a single                    \n";
     usemsg += "                            thread, e.g. on grids (default is multi-threaded).   \n";
-    usemsg += "   -h                       Print this help message.                              \n";
+    usemsg += "   -h                       Print this help message.                             \n";
     usemsg += "                                                                                 \n";  
     usemsg += "HSVD filter to remove baseline components from spectra.                          \n";  
     usemsg += "Default is to remove water by filtering all frequencies downfield                \n"; 

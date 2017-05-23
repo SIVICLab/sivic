@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -109,15 +109,18 @@ int main (int argc, char** argv)
     usemsg += "   --no_dc_correction        Turns DC Offset correction off.                                         \n"; 
     usemsg += "   --single                  Only converts specified file if                                         \n";
     usemsg += "---------------------------------------------------------------------------------                    \n"; 
-    usemsg += "   --epsi_type    type       Specify 1 (flyback), 2(symmetric), 3(interleaved).                      \n";
-    usemsg += "   --epsi_axis    axis       EPSI axis 1, 2, 3                                                       \n";
-    usemsg += "   --epsi_lobes   num        Num lobes in EPSI waveform                                              \n";
+    usemsg += "   --epsi_type        type   Specify 1 (flyback), 2(symmetric), 3(interleaved).                      \n";
+    usemsg += "   --epsi_axis        axis   EPSI axis 1, 2, 3                                                       \n";
+    usemsg += "   --epsi_lobes       num    Num lobes in EPSI waveform                                              \n";
     usemsg += "                             Not all samples will be represented in output data                      \n";
     usemsg += "                             (see skip and first                                                     \n";
-    usemsg += "   --epsi_skip    num        Num samples to skip between in each cycle of waveform                   \n";
-    usemsg += "   --epsi_first   num        First input sample to write out, represents an initial                  \n";
+    usemsg += "   --epsi_skip        num    Num samples to skip between in each cycle of waveform                   \n";
+    usemsg += "   --epsi_first       num    First input sample to write out, represents an initial                  \n";
     usemsg += "                             offset of skipped samples (samples start at 1). By                      \n";
     usemsg += "                             default first is set to 1, so no initial offset.                        \n";
+    usemsg += "   --epsi_flip        lobe   Flip the order of either the first (1) or second (2) lobe               \n";
+    usemsg += "                             in a symmetric EPSI acquisition. Default is based on pfile version and  \n";   
+    usemsg += "                             not reliable.                                                           \n";   
     usemsg += "---------------------------------------------------------------------------------                    \n"; 
     usemsg += "   --print_header            Only prints the PFile header key-value pairs, does not load data                    \n";
     usemsg += "   --print_short_header      Only prints limited PFile header key-value pairs.                                   \n";
@@ -148,6 +151,7 @@ int main (int argc, char** argv)
     int     epsiNumLobes      = UNDEFINED;
     int     epsiSkip          = UNDEFINED;
     int     epsiFirst         = 0;
+    int     epsiFlipLobe      = 0;  //No default, base on pfile version
     bool    isUCSFMNS7T       = false;  
     bool   onlyLoadSingleFile = false;
 
@@ -167,6 +171,7 @@ int main (int argc, char** argv)
         FLAG_EPSI_NUM_LOBES,
         FLAG_EPSI_SKIP,
         FLAG_EPSI_FIRST, 
+        FLAG_EPSI_FLIP, 
         FLAG_UCSF_MNS_7T, 
         FLAG_SINGLE
     }; 
@@ -186,6 +191,7 @@ int main (int argc, char** argv)
         {"epsi_lobes",          required_argument, NULL,  FLAG_EPSI_NUM_LOBES},
         {"epsi_skip",           required_argument, NULL,  FLAG_EPSI_SKIP},
         {"epsi_first",          required_argument, NULL,  FLAG_EPSI_FIRST},
+        {"epsi_flip",           required_argument, NULL,  FLAG_EPSI_FLIP},
         {"ucsf_MNS_7T",         no_argument,       NULL,  FLAG_UCSF_MNS_7T}, 
         {"single",              no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
@@ -250,6 +256,9 @@ int main (int argc, char** argv)
             case FLAG_EPSI_FIRST:
                 epsiFirst = atoi(optarg) - 1;
                 break;
+            case FLAG_EPSI_FLIP:
+                epsiFlipLobe = atoi(optarg);
+                break;
             case FLAG_UCSF_MNS_7T:
                 isUCSFMNS7T = true; 
                 break;
@@ -296,7 +305,8 @@ int main (int argc, char** argv)
                 epsiNumLobes == UNDEFINED ||
                 epsiSkip == UNDEFINED ||
                 epsiFirst < 0 ||
-                epsiAxis < 0  || epsiAxis > 2 
+                epsiAxis < 0  || epsiAxis > 2 ||
+                epsiFlipLobe < 0  || epsiFlipLobe > 2 
             ) {
                 cout << usemsg << endl;
                 exit(1);
@@ -311,9 +321,10 @@ int main (int argc, char** argv)
     }
 
     //  if chop was specified, must be either On or Off
-    if ( chopString.compare("") != 0 && (chopString.compare("on")!=0 || chopString.compare("off") != 0 ))  {
-        cout << "chop value must be either on or off." << endl;
+    if ( chopString.compare("") != 0 && (chopString.compare("on")!=0 && chopString.compare("off") != 0 ))  {
+        cout << "chop value must be either on or off: " << chopString <<  endl;
         cout << usemsg << endl;
+        exit(1);
     }
         
 
@@ -404,7 +415,13 @@ int main (int argc, char** argv)
             static_cast<svkEPSIReorder::EPSIAxis>(epsiAxis), 
             epsiFirst,  
             epsiNumLobes, 
-            epsiSkip 
+            epsiSkip, 
+            epsiFlipLobe
+        );
+    }
+    if ( epsiType == svkEPSIReorder::UNDEFINED_EPSI_TYPE && epsiFlipLobe != 0 ) { 
+        reader->SetEPSIParams( 
+            epsiFlipLobe
         );
     }
 

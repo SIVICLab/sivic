@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -75,48 +75,63 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_image_threshold -i input_file_name -o output_file_name -t output_data_type  \n";
-    usemsg += "                 [ -v mask_value ][-l lower_bound] [-u upper_bound][-b][-V][-h] \n";
-    usemsg += "                                                                             \n";  
-    usemsg += "   -i            input_file_name     Name of file to convert.                \n"; 
-    usemsg += "   -o            output_file_name    Name of outputfile.                     \n";  
-    usemsg += "   -t            output_data_type    Target data type:                       \n";  
-    usemsg += "                                         3 = UCSF IDF                        \n";  
-    usemsg += "                                         5 = DICOM_MRI                       \n";  
-    usemsg += "                                         6 = DICOM_Enhanced MRI              \n";  
-    usemsg += "   -v            mask_value          The integer output pixel value.         \n";
-    usemsg += "   -l            lower_bound         The lower bound for thresholding.       \n";
-    usemsg += "   -u            upper_bound         The upper bound for thresholding.       \n";
-    usemsg += "   -b                                Set output data type to byte.           \n";
-    usemsg += "   -V                                Verbose output.                         \n";
-    usemsg += "   -h                                Print help mesage.                      \n";  
-    usemsg += "                                                                             \n";  
-    usemsg += "Applies a thresholding to an input image.                                    \n";
-    usemsg += "                                                                             \n";  
+    usemsg += "svk_image_threshold -i input_file_name -o output_file_name -t output_data_type   \n";
+    usemsg += "                 [ -v mask_value ][-l lower_bound] [-u upper_bound][-b][-V][-h]  \n";
+    usemsg += "                                                                                 \n";  
+    usemsg += "   -i            input_file_name     Name of file to convert.                    \n"; 
+    usemsg += "   -o            output_file_name    Name of outputfile.                         \n";  
+    usemsg += "   -t            output_data_type    Target data type:                           \n";  
+    usemsg += "                                         3 = UCSF IDF                            \n";  
+    usemsg += "                                         5 = DICOM_MRI                           \n";  
+    usemsg += "                                         6 = DICOM_Enhanced MRI                  \n";  
+    usemsg += "   -v            mask_value          The integer output pixel value.             \n";
+    usemsg += "   -r            mask_volume         Restrict the mask to the given volume.      \n";
+    usemsg += "   -l            lower_bound         The lower bound for thresholding.           \n";
+    usemsg += "   -u            upper_bound         The upper bound for thresholding.           \n";
+    usemsg += "   --pm          percent             threshold is 'percent' of intensity range   \n"; 
+    usemsg += "                                     above minimum intensity                     \n"; 
+    usemsg += "   -b                                Set output data type to byte.               \n";
+    usemsg += "   --single                          Only converts specified file if multi vol.  \n";
+    usemsg += "   -V                                Verbose output.                             \n";
+    usemsg += "   -h                                Print help mesage.                          \n";  
+    usemsg += "                                                                                 \n";  
+    usemsg += "Applies a thresholding to an input image.                                        \n";
+    usemsg += "                                                                                 \n";  
 
     string inputFileName; 
     string outputFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
-    bool   convertToByteMask = false;
-    double upperValue = VTK_DOUBLE_MAX;
-    double lowerValue = VTK_DOUBLE_MIN;
-    int outputValue = 1;
-    bool   verbose = false;
+    bool    convertToByteMask = false;
+    double  upperValue = VTK_DOUBLE_MAX;
+    double  lowerValue = VTK_DOUBLE_MIN;
+    double  percentOfRange = VTK_DOUBLE_MIN; 
+    int     outputValue = 1;
+    bool    verbose = false;
+    bool    onlyLoadSingleFile = false;
+    int     volume = -1;
+
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
+    enum FLAG_NAME {
+        FLAG_SINGLE, 
+        FLAG_PERCENT_OF_RANGE
+    };
+
     static struct option long_options[] =
     {
+        {"single",      no_argument,       NULL,  FLAG_SINGLE},
+        {"pm",          required_argument, NULL,  FLAG_PERCENT_OF_RANGE},
         {0, 0, 0, 0}
     };
 
 
     /*
-    *   Process flags and arguments
-    */
+     *  Process flags and arguments
+     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:o:t:v:l:u:bhV", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:o:t:v:l:u:r:bhV", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -135,6 +150,15 @@ int main (int argc, char** argv)
                 break;
             case 'u':
                 upperValue = svkTypeUtils::StringToDouble(optarg);
+                break;            
+            case 'r':
+                volume = svkTypeUtils::StringToInt(optarg) - 1;
+                break;
+            case FLAG_SINGLE:
+                onlyLoadSingleFile = true;
+                break;
+            case FLAG_PERCENT_OF_RANGE:
+                percentOfRange = svkTypeUtils::StringToDouble(optarg);
                 break;
             case 'v':
                 outputValue = svkTypeUtils::StringToInt(optarg);
@@ -185,6 +209,9 @@ int main (int argc, char** argv)
     }
 
     reader->SetFileName( inputFileName.c_str() );
+    if ( onlyLoadSingleFile == true ) {
+        reader->OnlyReadOneInputFile();
+    }
     reader->Update(); 
 
     svkImageData* currentImage =  reader->GetOutput();
@@ -205,9 +232,21 @@ int main (int argc, char** argv)
 		writer->SetFileName( outputFileName.c_str() );
         svkImageThreshold* thresholder = svkImageThreshold::New();
         thresholder->SetInputData(currentImage);
+        if( volume >= 0 ) {
+            thresholder->SetVolume( volume );
+        }
         if( convertToByteMask ) {
             thresholder->SetOutputScalarType( VTK_UNSIGNED_CHAR );
         }
+        if ( percentOfRange != VTK_DOUBLE_MIN ) {
+            double range[2]; 
+            reader->GetOutput()->GetDataRange(range, 0); 
+            lowerValue = range[0] + percentOfRange * (range[1] - range[0]); 
+            cout << "Threshold at " << percentOfRange << "* the intensity range above the lowest intensity:" << endl;
+        }
+        cout << "Intensities within the following range will be included in the output mask" << endl;
+        cout << "   LOWER THRESHOLD: " << lowerValue << endl;
+        cout << "   UPPER THRESHOLD: " << upperValue << endl;
         thresholder->SetThresholdMin( lowerValue );
         thresholder->SetThresholdMax( upperValue );
         thresholder->SetMaskOutputValue( outputValue );

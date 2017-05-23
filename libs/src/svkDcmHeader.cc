@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -45,7 +45,7 @@
 #include <svkDICOMParser.h>
 #include <vector>
 #include <set>
-
+#include "svkTypeUtils.h"
 #include "svkDcmHeader.h"
 
 
@@ -699,22 +699,27 @@ void svkDcmHeader::UpdateOrientation()
     //  The 6 elements of the ImageOrientationPatient are the in plane vectors along the
     //  row and column directions:
 
-    //  for multi-frame objects, orientation is in shared functional group sequence: 
-    bool inSharedFunctionalGroup = false; 
-    if( this->ElementExists( "ImageOrientationPatient", "SharedFunctionalGroupsSequence") ) {
-        inSharedFunctionalGroup = true; 
-    } 
+    //  for multi-frame objects, orientation is in shared or per frame functional group sequence: 
+    string parentSequence;
+    bool inFunctionalGroup = false;
+    if( this->ElementExists( "PlaneOrientationSequence", "PerFrameFunctionalGroupsSequence" ) ) {
+        parentSequence = "PerFrameFunctionalGroupsSequence";
+        inFunctionalGroup = true;
+    } else if( this->ElementExists( "PlaneOrientationSequence", "SharedFunctionalGroupsSequence" ) ) {
+        parentSequence = "SharedFunctionalGroupsSequence";
+        inFunctionalGroup = true;
+    }
 
     int linearIndex = 0;
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 3; j++) {
-            if ( inSharedFunctionalGroup ) {
+            if ( inFunctionalGroup ) {
                 orientationString = this->GetStringSequenceItemElement(
                     "PlaneOrientationSequence",
                     0,
                     "ImageOrientationPatient",
                     linearIndex,
-                    "SharedFunctionalGroupsSequence",
+                    parentSequence.c_str(), 
                     0
                 );
             } else {
@@ -743,10 +748,10 @@ void svkDcmHeader::UpdatePixelSize()
 
     //  for multi-frame objects, orientation is in shared functional group sequence: 
     bool inFunctionalGroup = false; 
-    if( this->ElementExists( "PixelSpacing", "PerFrameFunctionalGroupsSequence" ) ) {
+    if( this->ElementExists( "PixelMeasuresSequence", "PerFrameFunctionalGroupsSequence" ) ) {
         parentSequence = "PerFrameFunctionalGroupsSequence";
         inFunctionalGroup = true; 
-    } else if( this->ElementExists( "PixelSpacing", "SharedFunctionalGroupsSequence" ) ) {
+    } else if( this->ElementExists( "PixelMeasuresSequence", "SharedFunctionalGroupsSequence" ) ) {
         parentSequence = "SharedFunctionalGroupsSequence";
         inFunctionalGroup = true; 
     } 
@@ -770,20 +775,24 @@ void svkDcmHeader::UpdatePixelSize()
             }
         }
         iss->str(sizeString);
-        *iss >> pixelSize[i];
+        *iss >> this->pixelSize[i];
         iss->clear();
     }
 
-    if( this->ElementExists( "SliceThickness", parentSequence.c_str()) ) {
-        pixelSize[2] = this->GetDoubleSequenceItemElement(
+    if( this->ElementExists( "SliceThickness", "PixelMeasuresSequence") ) {
+        this->pixelSize[2] = this->GetDoubleSequenceItemElement(
             "PixelMeasuresSequence",
             0,
             "SliceThickness",
             parentSequence.c_str(),
             0
         );
+    } else if( this->ElementExists( "SliceThickness") ) {
+        //  in case it lives elsewhere
+        bool searchInto = true; 
+        this->pixelSize[2] = this->GetDoubleValue("SliceThickness", searchInto); 
     } else {
-        pixelSize[2] = 0;
+        this->pixelSize[2] = 0;
         
     }
 
@@ -1050,7 +1059,12 @@ int svkDcmHeader::GetNumberOfFramesInDimension( int dimensionIndex )
 
     int numFramesInDimension; 
 
-    if ( dimensionIndex >= 0 ) {
+    bool frameContentExists = false; 
+    if( this->ElementExists( "FrameContentSequence", "PerFrameFunctionalGroupsSequence" ) ) {
+        frameContentExists = true; 
+    }
+
+    if ( (dimensionIndex >= 0) && (frameContentExists == true) ) {
 
         int numberOfFrames = this->GetNumberOfFrames();
         set <int> frames;
@@ -1415,6 +1429,50 @@ void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double v
                                              double dcos[3][3], svkDcmHeader::DimensionVector* dimensionVector) 
 {
 
+    //  =============================================================================
+    //  If pixel measures, etc are in the perFrame rather than shared functional 
+    //  group, reinitialize them now in the shared func group so they aren't lost:
+    //  =============================================================================
+    bool reinitPixelMeasures            = false;
+    if( this->ElementExists( "PixelMeasuresSequence", "PerFrameFunctionalGroupsSequence" ) ) {
+        reinitPixelMeasures = true;
+    }
+    bool reinitPlaneOrientationMacro    = false;
+    if( this->ElementExists( "PlaneOrientationSequence", "PerFrameFunctionalGroupsSequence" ) ) {
+        reinitPlaneOrientationMacro = true;
+    }
+    bool reinitPixelValueTransformation = false;
+    double slope;
+    double intercept;
+    if( this->ElementExists( "PixelValueTransformationSequence", "PerFrameFunctionalGroupsSequence" ) ) {
+        reinitPixelValueTransformation = true;
+        //get slope and intercept: 
+        slope     = this->GetDoubleSequenceItemElement ( 
+            "PixelValueTransformationSequence", 0, "RescaleSlope", "PerFrameFunctionalGroupsSequence" );
+        intercept = this->GetDoubleSequenceItemElement ( 
+            "PixelValueTransformationSequence", 0, "RescaleIntercept", "PerFrameFunctionalGroupsSequence" );
+    }
+    bool reinitMREchoMacro = false;
+    float TE;
+    if( this->ElementExists( "MREchoSequence", "PerFrameFunctionalGroupsSequence" ) ) {
+        reinitMREchoMacro = true;
+        TE = this->GetFloatSequenceItemElement( 
+            "MREchoSequence", 0, "EffectiveEchoTime", "PerFrameFunctionalGroupsSequence", 0); 
+    }
+    bool reinitMRTimingAndRelatedParametersMacro = false; 
+    float TR; 
+    float flipAngle; 
+    int numEchoes = 0; 
+    if( this->ElementExists( "MRTimingAndRelatedParametersSequence", "PerFrameFunctionalGroupsSequence" ) ) {
+        reinitMRTimingAndRelatedParametersMacro = true; 
+        TR = this->GetFloatSequenceItemElement( 
+            "MRTimingAndRelatedParametersSequence", 0, "RepetitionTime", "PerFrameFunctionalGroupsSequence", 0); 
+        flipAngle = this->GetFloatSequenceItemElement(
+            "MRTimingAndRelatedParametersSequence", 0, "FlipAngle", "PerFrameFunctionalGroupsSequence", 0); 
+    }
+    //  =============================================================================
+
+
     this->ClearSequence( "PerFrameFunctionalGroupsSequence" );
 
     //  obtain the number of frames for each dimension. 
@@ -1426,6 +1484,47 @@ void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double v
     this->InitFrameContentMacro( dimensionVector ); 
     this->InitPlaneOrientationMacro( dcos ); 
     this->InitPlanePositionMacro( toplc, voxelSpacing, dcos, dimensionVector); 
+
+
+    //  =============================================================================
+    if ( reinitPixelMeasures == true ) {
+        string pixelSpacingString = svkTypeUtils::DoubleToString(pixelSpacing[0]) + "\\" + svkTypeUtils::DoubleToString(pixelSpacing[1]);
+        string sliceThicknessString = svkTypeUtils::DoubleToString(pixelSpacing[2]);
+        this->InitPixelMeasuresMacro( pixelSpacingString, sliceThicknessString );
+    }
+    if ( reinitPlaneOrientationMacro == true ) {
+
+        ostringstream ossDcos;
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 3; j++) {
+                ossDcos << dcos[i][j];
+                if (i * j != 2) {
+                    ossDcos<< "\\";
+                }
+            }
+        }
+        this->InitPlaneOrientationMacro( ossDcos.str() );
+    }
+    if ( reinitPixelValueTransformation == true ) {
+        this->InitPixelValueTransformationMacro(slope, intercept);
+    }
+    if ( reinitMREchoMacro == true ) {
+        this->InitMREchoMacro(TE); 
+    }
+    if ( reinitMRTimingAndRelatedParametersMacro == true ) {
+        this->InitMRTimingAndRelatedParametersMacro(TR, flipAngle, numEchoes); 
+    }
+
+    //  =============================================================================
+
+    //  Finally, to avoid confusion there should only be one ImageOrientationPatient entry in 
+    //  the data set, within the Shared functional group
+    if( this->ElementExists("ImageOrientationPatient", "top")) {
+        //  TODO: this is probably fine, but triggers a lot of changes in test cases that I don't have time to 
+        //  look at right now.  
+        //this->RemoveElement( "ImageOrientationPatient" ); 
+    }
+
 }
  
  
@@ -2492,17 +2591,24 @@ int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, st
  *      0008,0050 AccessionNumber
  *      0008,0080 InstitutionName
  *      0008,0090 ReferringPhysicianName
+ *      0008,1060 NameOfPhysiciansReadingStudy
  *      0008,1155 RefSOPInstanceUID
  *      0010,0010 PatientName
  *      0010,0020 PatientID
  *      0010,0030 PatientBirthDate
+ *      0010,1000 OtherPatientIDs
+ *      0010,1001 OtherPatientNames
  *      0010,1040 PatientAddress 
+ *      0010,1060 PatientMotherBirthName
  *      0010,2154 PatientTelephoneNumbers
  *      0020,000D StudyInstanceUID
  *      0020,000E SeriesInstanceUID
  *      0020,0010 StudyID
  *      0020,0052 FrameOfReferenceUID
  *      0028,0301 BurnedInAnnotation
+ *      0032,1032 RequestingPhysician
+ *      0040,1001 RequestedProcedureID
+ *      0040,0009 ScheduledProcedureStepID
  *      0040,A124 UID
  *      0088,0140 StorageMediaFileSetUID
  *      3006,0024 ReferencedFrameOfReferenceUID
@@ -2527,17 +2633,24 @@ void svkDcmHeader::Deidentify( PHIType phiType )
  *      0008,0050 AccessionNumber
  *      0008,0080 InstitutionName
  *      0008,0090 ReferringPhysicianName
+ *      0008,1060 NameOfPhysiciansReadingStudy
  *      0008,1155 RefSOPInstanceUID
  *      0010,0010 PatientName
  *      0010,0020 PatientID
  *      0010,0030 PatientBirthDate
+ *      0010,1000 OtherPatientIDs
+ *      0010,1001 OtherPatientNames
  *      0010,1040 PatientAddress 
+ *      0010,1060 PatientMotherBirthName
  *      0010,2154 PatientTelephoneNumbers
  *      0020,000D StudyInstanceUID
  *      0020,000E SeriesInstanceUID
  *      0020,0010 StudyID
  *      0020,0052 FrameOfReferenceUID
  *      0028,0301 BurnedInAnnotation
+ *      0032,1032 RequestingPhysician
+ *      0040,1001 RequestedProcedureID
+ *      0040,0009 ScheduledProcedureStepID
  *      0040,A124 UID
  *      0088,0140 StorageMediaFileSetUID
  *      3006,0024 ReferencedFrameOfReferenceUID
@@ -2562,17 +2675,24 @@ void svkDcmHeader::Deidentify( PHIType phiType, string id )
  *      0008,0050 AccessionNumber
  *      0008,0080 InstitutionName
  *      0008,0090 ReferringPhysicianName
+ *      0008,1060 NameOfPhysiciansReadingStudy
  *      0008,1155 RefSOPInstanceUID
  *      0010,0010 PatientName
  *      0010,0020 PatientID
  *      0010,0030 PatientBirthDate
+ *      0010,1000 OtherPatientIDs
+ *      0010,1001 OtherPatientNames
  *      0010,1040 PatientAddress 
+ *      0010,1060 PatientMotherBirthName
  *      0010,2154 PatientTelephoneNumbers
  *      0020,000D StudyInstanceUID
  *      0020,000E SeriesInstanceUID
  *      0020,0010 StudyID
  *      0020,0052 FrameOfReferenceUID
  *      0028,0301 BurnedInAnnotation
+ *      0032,1032 RequestingPhysician
+ *      0040,1001 RequestedProcedureID
+ *      0040,0009 ScheduledProcedureStepID
  *      0040,A124 UID
  *      0088,0140 StorageMediaFileSetUID
  *      3006,0024 ReferencedFrameOfReferenceUID
@@ -2594,13 +2714,31 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
         this->ModifyValueRecursive( "InstitutionName",               studyId); 
         this->ModifyValueRecursive( "ReferringPhysicianName",        studyId); 
 
+        if( this->ElementExists( "NameOfPhysiciansReadingStudy" ) ) {
+            this->ModifyValueRecursive( "NameOfPhysiciansReadingStudy", emptyString); 
+        }
+
         newUID = this->GenerateUniqueUID(); 
         this->ModifyValueRecursive( "ReferencedSOPInstanceUID",      newUID); 
         this->ModifyValueRecursive( "PatientName",                   patientId); 
         this->ModifyValueRecursive( "PatientID",                     patientId); 
+
+        if( this->ElementExists( "OtherPatientIDs" ) ) {
+            this->ModifyValueRecursive( "OtherPatientIDs", emptyString); 
+        }
+
+        if( this->ElementExists( "OtherPatientNames" ) ) {
+            this->ModifyValueRecursive( "OtherPatientNames", emptyString); 
+        }
+
         if( this->ElementExists( "PatientAddress" ) ) {
             this->ModifyValueRecursive( "PatientAddress",                emptyString); 
         }
+
+        if( this->ElementExists( "PatientMotherBirthName" ) ) {
+            this->ModifyValueRecursive( "PatientMotherBirthName",       emptyString); 
+        }
+
         if( this->ElementExists( "PatientTelephoneNumbers" ) ) {
             this->ModifyValueRecursive( "PatientTelephoneNumbers",       emptyString); 
         }
@@ -2617,6 +2755,18 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
         this->ModifyValueRecursive( "FrameOfReferenceUID",           newUID); 
 
         this->ModifyValueRecursive( "BurnedInAnnotation",            studyId); 
+
+        if( this->ElementExists( "RequestingPhysician" ) ) {
+            this->ModifyValueRecursive( "RequestingPhysician",          emptyString); 
+        }
+
+        if( this->ElementExists( "RequestedProcedureID" ) ) {
+            this->ModifyValueRecursive( "RequestedProcedureID",         emptyString); 
+        }
+
+        if( this->ElementExists( "ScheduledProcedureStepID" ) ) {
+            this->ModifyValueRecursive( "ScheduledProcedureStepID",     emptyString); 
+        }
 
         newUID = this->GenerateUniqueUID(); 
         this->ModifyValueRecursive( "UID",                           newUID); 
@@ -2871,6 +3021,7 @@ void  svkDcmHeader::UpdateDimensionIndexVector()
     dimensionIndexVector.push_back(indexRowMap);                    
     indexRowMap.clear();
 
+
     //  Now add the items in the dimensionIndexSequence: 
     int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
     for (int dimensionIndex = 0; dimensionIndex < numDims; dimensionIndex++) {
@@ -2884,6 +3035,13 @@ void  svkDcmHeader::UpdateDimensionIndexVector()
         indexRowMap.clear();
 
     }                    
+
+    //initialize slices to at least 1: 
+    if ( ! svkDcmHeader::IsDimensionDefined( &dimensionIndexVector, SLICE_INDEX) ) {
+        indexRowMap.insert( pair<DimensionIndexLabel, int>( svkDcmHeader::SLICE_INDEX, 0) );
+        dimensionIndexVector.push_back(indexRowMap);                    
+        indexRowMap.clear();
+    }
 
     if (this->GetDebug()) {
         svkDcmHeader::PrintDimensionIndexVector( &dimensionIndexVector ); 
@@ -2983,7 +3141,54 @@ void svkDcmHeader::Redimension(svkDcmHeader::DimensionVector* newDimensionVector
     //cout << "new voxels: " << newNumVoxels[0] << " " << newNumVoxels[1] << " " << newNumVoxels[2] << endl;
     //cout << "new toplc: " << newToplcOrigin[0] << " " << newToplcOrigin[1] << " " << newToplcOrigin[2] << endl;
        
+    //===========================
+    //  If pixel measures, etc are in per frame rather than shared func group, 
+    //  reinitialize them now in the shared func group.
+    //===========================
+    bool reinitPixelMeasures            = false; 
+    if( this->ElementExists( "PixelMeasuresSequence", "PerFrameFunctionalGroupsSequence" ) ) {
+        reinitPixelMeasures = true; 
+    }
+    bool reinitPlaneOrientationMacro    = false; 
+    if( this->ElementExists( "PlaneOrientationSequence", "PerFrameFunctionalGroupsSequence" ) ) {
+        reinitPlaneOrientationMacro = true; 
+    }
+    bool reinitPixelValueTransformation = false; 
+    double slope; 
+    double intercept; 
+    if( this->ElementExists( "PixelValueTransformationSequence", "PerFrameFunctionalGroupsSequence" ) ) {
+        reinitPixelValueTransformation = true; 
+        //get slope and intercept: 
+        slope     = this->GetDoubleSequenceItemElement ( 
+            "PixelValueTransformationSequence", 0, "RescaleSlope", "PerFrameFunctionalGroupsSequence" );
+        intercept = this->GetDoubleSequenceItemElement ( 
+            "PixelValueTransformationSequence", 0, "RescaleIntercept", "PerFrameFunctionalGroupsSequence" );
+    }
+
     this->InitPerFrameFunctionalGroupSequence(newToplcOrigin, pixelSpacing, dcos, newDimensionVector) ; 
+
+    if ( reinitPixelMeasures == true ) {  
+        string pixelSpacingString = svkTypeUtils::DoubleToString(pixelSpacing[0]) + "\\" + svkTypeUtils::DoubleToString(pixelSpacing[1]); 
+        string sliceThicknessString = svkTypeUtils::DoubleToString(pixelSpacing[2]); 
+        this->InitPixelMeasuresMacro( pixelSpacingString, sliceThicknessString ); 
+    }
+    if ( reinitPlaneOrientationMacro == true ) {  
+        
+        ostringstream ossDcos;
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 3; j++) {
+                ossDcos << dcos[i][j];
+                if (i * j != 2) {
+                    ossDcos<< "\\";
+                }
+            }
+        }
+        cout << "OS: " << ossDcos.str() << endl;
+        this->InitPlaneOrientationMacro( ossDcos.str() ); 
+    }
+    if ( reinitPixelValueTransformation == true ) {  
+        this->InitPixelValueTransformationMacro(slope, intercept); 
+    }
 
     this->InitMultiFrameDimensionModule( newDimensionVector ); 
 

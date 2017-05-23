@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -74,21 +74,21 @@ svkApodizationWindow::~svkApodizationWindow()
  *  \param dt        Temporal resolution of the window in seconds.
  *
  */
-void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window,  float fwhh, float dt )
+void svkApodizationWindow::GetLorentzianWindow( vector < vtkFloatArray* >* window,  float fwhh, float dt )
 {
     if( window != NULL ) {
 
-        int numPoints = window->GetNumberOfTuples();
-        int numComponents = window->GetNumberOfComponents();
+        int numPoints = (*window)[0]->GetNumberOfTuples();
+        int numComponents = (*window)[0]->GetNumberOfComponents();
 
         for( int i = 0; i < numPoints; i++ ) {
             // NOTE: fabs is used here in case we want to alter the center of the window in the future.
             float value = exp( -fwhh * vtkMath::Pi()* fabsf( dt * i ) );
             for( int j = 0; j < numComponents; j++ ) {
-				window->SetComponent( i, j, value );
+				(*window)[0]->SetComponent( i, j, value );
             }
         }
-    }
+    } 
 }
 
 
@@ -107,16 +107,21 @@ void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window,  float fw
  *                   Value in Hz.
  *
  */
-void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window, svkImageData* data, float fwhh )
+void svkApodizationWindow::GetLorentzianWindow( vector < vtkFloatArray*>* window, svkImageData* data, float fwhh )
 {
 	float dt = 0;
 	if( data != NULL ) {
 		dt = svkApodizationWindow::GetWindowResolution(data);
 	}
     if( data->IsA("svkMrsImageData") && window != NULL && dt != 0 ) {
-    	svkApodizationWindow::InitializeWindow( window, data );
+        if ( window->size() == 0 ) { 
+            vtkFloatArray* window1D = vtkFloatArray::New(); 
+            window->push_back( window1D ); 
+        }    
+    	svkApodizationWindow::InitializeWindowSpectral( window, data );
         svkApodizationWindow::GetLorentzianWindow( window, fwhh, svkApodizationWindow::GetWindowResolution( data ) );
     } else {
+        cout << "WINDOW: " << window << endl;
          vtkErrorWithObjectMacro(data, "Could not generate Lorentzian window for give data type!");
     }
 }
@@ -140,15 +145,15 @@ void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window, svkImageD
  *  \param center    The center point for the window in ms.
  *
  */
-void svkApodizationWindow::GetGaussianWindow( vtkFloatArray* window, float fwhh, float dt, float center )
+void svkApodizationWindow::GetGaussianWindow( vector < vtkFloatArray* >* window, float fwhh, float dt, float center )
 {
     if( window != NULL ) {
-        int numPoints = window->GetNumberOfTuples();
-        int numComponents = window->GetNumberOfComponents();
+        int numPoints = (*window)[0]->GetNumberOfTuples();
+        int numComponents = (*window)[0]->GetNumberOfComponents();
         for( int i = 0; i < numPoints; i++ ) {
             float value = exp( -0.5 * pow((fwhh * vtkMath::Pi()* ( dt * i - center/1000 ))/pow(2*log(2.),0.5),2) );
             for( int j = 0; j < numComponents; j++ ) {
-				window->SetComponent( i, j, value );
+				(*window)[0]->SetComponent( i, j, value );
             }
         }
     }
@@ -170,19 +175,127 @@ void svkApodizationWindow::GetGaussianWindow( vtkFloatArray* window, float fwhh,
  *  \param center    The center point for the peak of the Gaussian.
  *
  */
-void svkApodizationWindow::GetGaussianWindow( vtkFloatArray* window, svkImageData* data, float fwhh, float center )
+void svkApodizationWindow::GetGaussianWindow( vector < vtkFloatArray* >* window, svkImageData* data, float fwhh, float center )
 {
 	float dt = 0;
 	if( data != NULL ) {
 		dt = svkApodizationWindow::GetWindowResolution(data);
 	}
     if( data->IsA("svkMrsImageData") && window != NULL && dt != 0 ) {
-    	svkApodizationWindow::InitializeWindow( window, data );
+        if ( window->size() == 0 ) { 
+            vtkFloatArray* window1D = vtkFloatArray::New(); 
+            window->push_back( window1D ); 
+        }    
+    	svkApodizationWindow::InitializeWindowSpectral( window, data );
         svkApodizationWindow::GetGaussianWindow( window, fwhh, svkApodizationWindow::GetWindowResolution( data ), center );
     } else {
          vtkErrorWithObjectMacro(data, "Could not generate Gaussian window for give data type!");
     }
 }
+
+
+/*!
+ *  Creates a vector of 3 Hamming windows using the equation, 1 for each of the 3 spatial dimensions:
+ *
+ *  H(k) = .54 - .46 * cos( 2*PI(k/K-1), where the maximum is at k=0 and K is the number of 
+ *          kspace points in a dimension. 
+ *
+ *  \param window    vector ocated array that will be populated with the window.
+ *                   The number of tuples allocated determines the number of points in the window.
+ *
+ */
+void  svkApodizationWindow::GetHammingWindow( vector < vtkFloatArray* >* window, svkImageData* data, svkApodizationWindow::Dimension dimension )
+{
+    if( data->IsA("svkMrsImageData") && window != NULL ) {
+
+        //  TODO: Verify that the data is in k-space, all 3 dimensions, otherwise exit
+        cout << "===============================================" << endl;
+        cout << "TODO:  Verify that data is in k-space" << endl;
+        cout << "===============================================" << endl;
+
+        if ( window->size() == 0 ) {
+            //  create 3 1D filters, one for each spatial dimension
+            for ( int i = 0; i < 3; i++ ) {
+                vtkFloatArray* window1D = vtkFloatArray::New();
+                window->push_back( window1D );
+            }
+        }
+        svkApodizationWindow::InitializeWindowSpatial( window, data );
+        svkApodizationWindow::GetHammingWindowData( window, data, dimension );
+    } else {
+        cout << "WINDOW: " << window << endl;
+        vtkErrorWithObjectMacro(data, "Could not generate Hamming window for give data type!");
+    }
+}
+
+
+/*!
+ *  Creates a vector of 3 Hamming windows using the equation, 1 for each of the 3 spatial dimensions:
+ *
+ *  H(k) = .54 - .46 * cos(( 2*PI)/(k/K-1)), where the maximum is at k=0 and K is the number of 
+ *          kspace points in a dimension. 
+ *
+ *  \param window    Pre-allocated array that will be populated with the window.
+ *                   The number of tuples allocated determines the number of points in the window.
+ */
+ 
+void svkApodizationWindow::GetHammingWindowData( vector < vtkFloatArray* >* window, svkImageData* data, svkApodizationWindow::Dimension dimension )
+{
+
+    if( window != NULL ) {
+
+        // loop over each dimension. 
+        for ( int dim = 0; dim < 3; dim++ ) {
+
+            int numVoxels = (*window)[dim]->GetNumberOfTuples();
+            int numComponents = (*window)[dim]->GetNumberOfComponents();
+            
+            for( int i = 0; i < numVoxels; i++ ) {
+
+                //  Only set hamming window in requested dimensions, others set to 1: 
+                float hamming = 1;  
+                if ( (dim == dimension || dimension == svkApodizationWindow::THREE_D) && numVoxels > 1) {  
+                    float N = svkApodizationWindow::GetWindowExpansion( data, numVoxels);
+                    hamming = 0.54 - 0.46 * (cos ((2 * vtkMath::Pi() * i)/(N - 1)));
+                }
+                
+                for( int j = 0; j < numComponents; j++ ) {
+                    (*window)[dim]->SetComponent( i, j, hamming);
+                }
+            }
+        }
+    }
+}
+
+
+/*!
+ *  Below is a truth table that determines the size of the window under different conditions.
+ */
+
+float svkApodizationWindow::GetWindowExpansion( svkImageData* data, int numVoxels )
+{
+    string k0Sampled = data->GetDcmHeader()->GetStringValue( "SVK_K0Sampled" );
+
+    float N;
+
+    if ( k0Sampled.compare("YES") == 0 ) {
+        if (numVoxels%2 == 0) {
+	        N = numVoxels + 1;
+        } else {
+	        N = numVoxels;
+        }
+    } else {
+        if (numVoxels%2 == 0) {
+	        N = numVoxels;
+        } else {
+            cout << "Error: svkApodizationWindow::GetWindowExpansion, numVoxels is too small." << endl;
+            exit(1);
+        }
+    }
+    return N;
+}
+
+
 
 
 /*!
@@ -193,7 +306,7 @@ void svkApodizationWindow::GetGaussianWindow( vtkFloatArray* window, svkImageDat
  *  \return the resolution, 0 is for failure
  *
  */
-void  svkApodizationWindow::InitializeWindow( vtkFloatArray* window, svkImageData* data )
+void  svkApodizationWindow::InitializeWindowSpectral( vector < vtkFloatArray* >* window, svkImageData* data )
 {
     if( data->IsA("svkMrsImageData") && window != NULL ) {
 
@@ -202,14 +315,48 @@ void  svkApodizationWindow::InitializeWindow( vtkFloatArray* window, svkImageDat
 		int numComponents = 1;
 
 		// And the number of components
-		vtkstd::string representation =  data->GetDcmHeader()->GetStringValue( "DataRepresentation" );
+		string representation =  data->GetDcmHeader()->GetStringValue( "DataRepresentation" );
 		if (representation.compare( "COMPLEX" ) == 0 ) {
 			numComponents = 2;
 		}
 
         // Lets set the number of components and the number of tuples
-        window->SetNumberOfComponents ( numComponents );
-        window->SetNumberOfTuples( numPoints );
+        (*window)[0]->SetNumberOfComponents ( numComponents );
+        (*window)[0]->SetNumberOfTuples( numPoints );
+    }
+}
+
+
+
+/*!
+ * Determines the spatial extent of image and allocates appropriate size window arrays.
+ *
+ *  \param data The data for which you wish to get the required window resolution
+ *
+ *  \return the resolution, 0 is for failure
+ *
+ */
+void  svkApodizationWindow::InitializeWindowSpatial( vector < vtkFloatArray* >* window, svkImageData* data )
+{
+    if( data->IsA("svkMrsImageData") && window != NULL ) {
+
+        // Determine the number of voxels in each of 3 spatial dimensions. 
+        int numVoxels[3]; 
+        data->GetNumberOfVoxels( numVoxels ); 
+
+
+        // And the number of components
+        int numComponents = 1;
+        string representation =  data->GetDcmHeader()->GetStringValue( "DataRepresentation" );
+        if (representation.compare( "COMPLEX" ) == 0 ) {
+            numComponents = 2;
+        }
+
+        // Lets set the number of components and the number of tuples
+        for ( int dim = 0; dim < 3; dim++ ) {
+            (*window)[dim]->SetNumberOfComponents ( numComponents );
+            (*window)[dim]->SetNumberOfTuples( numVoxels[dim] );
+        }
     }
 }
 
@@ -232,3 +379,7 @@ float svkApodizationWindow::GetWindowResolution( svkImageData* data )
     }
     return windowResolution;
 }
+
+
+
+

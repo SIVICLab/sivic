@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svk_sat_bands xmlns="svkSatBands" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="svkSatBands svkSatBands.xsd">
+   <version>2.0</version>
+   <press_box>
+      <sat_band id="1" label="sagittal">
+         <normal_x>1</normal_x>
+         <normal_y>0</normal_y>
+         <normal_z>0</normal_z>
+         <thickness>19.7683</thickness>
+         <distance_from_origin>12.0315</distance_from_origin>
+      </sat_band>
+      <sat_band id="2" label="coronal">
+         <normal_x>0</normal_x>
+         <normal_y>0.97252</normal_y>
+         <normal_z>0.23282</normal_z>
+         <thickness>20.2339</thickness>
+         <distance_from_origin>15.4884</distance_from_origin>
+      </sat_band>
+      <sat_band id="3" label="axial">
+         <normal_x>0</normal_x>
+         <normal_y>-0.23282</normal_y>
+         <normal_z>0.97252</normal_z>
+         <thickness>20.1225</thickness>
+         <distance_from_origin>0.79476</distance_from_origin>
+      </sat_band>
+   </press_box>
+   <auto_sats>
+      <sat_band id="1" label="SatInferior">
+         <normal_x>0</normal_x>
+         <normal_y>0.11921</normal_y>
+         <normal_z>-0.99287</normal_z>
+         <thickness>45</thickness>
+         <distance_from_origin>33.8114</distance_from_origin>
+      </sat_band>
+      <sat_band id="2" label="SatRight">
+         <normal_x>-1</normal_x>
+         <normal_y>0</normal_y>
+         <normal_z>0</normal_z>
+         <thickness>45</thickness>
+         <distance_from_origin>24.0038</distance_from_origin>
+      </sat_band>
+   </auto_sats>
+</svk_sat_bands>

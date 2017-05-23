@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -186,55 +186,24 @@ void svkImageMathematics::SetDatatypes()
 {
     // By default, output datatype is the greater of the input datatypes
     // With two integer inputs, you must explicitly request float output
+    svk::svkDcmHeader::DcmPixelDataFormat svkOutputType = svkDcmHeader::UNDEFINED;
     if (this->GetPortMapper()->GetIntInputPortValue(OUTPUT_TYPE)) {
         int outputType = this->GetOutputType()->GetValue();
         switch (outputType) {
             case UNDEFINED:
                 break;
             case UNSIGNED_INT_2:
-                svkImageData::SafeDownCast(this->GetImageDataInput(0))->CastDataFormat(svkDcmHeader::UNSIGNED_INT_2);
-                if (this->GetInput(1)) {
-                    svkImageData::SafeDownCast(this->GetImageDataInput(1))->CastDataFormat(svkDcmHeader::UNSIGNED_INT_2);
-                }
+                svkOutputType = svkDcmHeader::UNSIGNED_INT_2;
+                break;
             case SIGNED_FLOAT_4:
-                svkImageData::SafeDownCast(this->GetImageDataInput(0))->CastDataFormat(svkDcmHeader::SIGNED_FLOAT_4);
+                svkOutputType = svkDcmHeader::SIGNED_FLOAT_4;
+                break;
             default:
                 break;
         }
     }
 
-    if (this->GetInput(1)) {
-
-        int outType0 = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() );
-        int outType1 = vtkImageData::GetScalarType( this->GetImageDataInput(1)->GetInformation() );
-        
-        vtkImageCast* cast = vtkImageCast::New();
-        if ( outType0 > outType1 ) {
-            cout << "Cast image 1 to image 0 type: " << outType0 << endl;
-            //  The cast doesn't seem to work correctly with multple PointData arrays
-            //cast->SetOutputScalarType( outType0 );
-            //cast->SetInput( this->GetImageDataInput(1) ); 
-            //cast->ClampOverflowOn();
-            //cast->Update(); 
-            //this->GetImageDataInput(1)->DeepCopy( cast->GetOutput() ); 
-
-            svkImageData::SafeDownCast(this->GetImageDataInput(1))->CastDataFormat( svkDcmHeader::SIGNED_FLOAT_4); 
-        }
-        if ( outType1 > outType0 ) {
-            cout << "Cast image 0 to image 1 type: " << outType1 << endl;
-            //  target cast type should depend on outType1: 
-            //cast->SetOutputScalarType( outType1 );
-            //cast->SetInput( this->GetImageDataInput(0) ); 
-            //cast->ClampOverflowOn();
-            //cast->Update(); 
-            //this->GetImageDataInput(0)->DeepCopy( cast->GetOutput() ); 
-
-            svkImageData::SafeDownCast(this->GetImageDataInput(0))->CastDataFormat( svkDcmHeader::SIGNED_FLOAT_4); 
-        }
-    }
-
-    // Sets output type from Input 0
-    this->GetOutput()->DeepCopy( this->GetImageDataInput(0) ); 
+    svkMriImageData::SafeDownCast(this->GetOutput())->DeepCopy( this->GetImageDataInput(0), svkOutputType );
 }
 
 
@@ -242,7 +211,9 @@ void svkImageMathematics::SetDatatypes()
  *  This method loops over all volumes and calls the VTK super class update method on each to 
  *  perform the specified calculation.  If necessary the output will be masked by an input mask.
  */
-void svkImageMathematics::Update()
+int svkImageMathematics::RequestData( vtkInformation* request,
+                                            vtkInformationVector** inputVector,
+                                            vtkInformationVector* outputVector )
 {
 
     // if there are 2 inputs of different types, upcast to the larger: 
@@ -354,6 +325,7 @@ void svkImageMathematics::Update()
             in2Array = this->GetImageDataInput(1)->GetPointData()->GetScalars();    // returns a vtkDataArray
         }
         vtkDataArray* outArray = this->GetOutput()->GetPointData()->GetArray(arrayName0.c_str() );    // returns a vtkDataArray
+        int numComponents = outArray->GetNumberOfComponents(); 
         for ( int i = 0; i < totalVoxels; i++ ) {
             if ( this->Operation == VTK_ADD ) {
                 outArray->SetTuple1( 
@@ -378,10 +350,14 @@ void svkImageMathematics::Update()
                     ); 
                 }
             } else if ( this->Operation == VTK_MULTIPLY ) {
-                outArray->SetTuple1( 
-                    i,  
-                    in1Array->GetTuple1(i) * in2Array->GetTuple1(i) 
-                ); 
+                //  rewrote this to support complex valued image tuples
+                for ( int c = 0; c < numComponents; c++ ) {
+                    outArray->SetComponent(
+                        i, 
+                        c, 
+                        in1Array->GetComponent(i, c) * in2Array->GetComponent(i, c)
+                    );
+                }
             } else if ( this->Operation == VTK_MULTIPLYBYK ) {
                 outArray->SetTuple1( 
                     i,  
@@ -439,6 +415,7 @@ void svkImageMathematics::Update()
         string description = this->GetPortMapper()->GetStringInputPortValue( OUTPUT_SERIES_DESCRIPTION )->GetValue();
         svkMriImageData::SafeDownCast(this->GetOutput())->GetDcmHeader()->SetValue("SeriesDescription", description );
     }
+    return 1;
 }
 
 

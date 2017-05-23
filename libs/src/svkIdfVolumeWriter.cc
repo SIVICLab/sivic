@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -315,13 +315,17 @@ string svkIdfVolumeWriter::GetHeaderString( int vol )
         out << "UNKNOWN, ";
     }
 
-    if ( positionString.substr(2) == string( "S" ) ) {
+    string orientationSubstring = ""; 
+    if ( positionString.length() >= 3 ) {
+        orientationSubstring = positionString.substr(2); 
+    }
+    if ( orientationSubstring == string( "S" ) ) {
         out << "Supine" << endl;
-    } else if ( positionString.substr(2) == string( "P" ) ) {
+    } else if ( orientationSubstring == string( "P" ) ) {
         out << "Prone" << endl;
-    } else if ( positionString.substr(2) == string( "DL" ) ) {
+    } else if ( orientationSubstring == string( "DL" ) ) {
         out << "Decubitus Left" << endl;
-    } else if ( positionString.substr(2) == string( "DR" ) ) {
+    } else if ( orientationSubstring == string( "DR" ) ) {
         out << "Decubitus Right" << endl;
     } else {
         out << "UNKNOWN" << endl;;

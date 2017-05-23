@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -293,6 +293,8 @@ void  svk4DImageData::GetImage(  svkImageData* image,
                                  int component,
                                  int vtkDataType  )
 {
+
+    cout << "DEPRECATED Get_Image METHOD" << endl;
     if( image != NULL ) {
 
         svkEnhancedMRIIOD* iod = svkEnhancedMRIIOD::New();
@@ -395,6 +397,7 @@ void  svk4DImageData::GetImage(  svkImageData* image,
                                  int component,
                                  int vtkDataType )
 {
+    cout << "DEPRECATED Get_Image METHOD" << endl;
     if( image != NULL ) {
 
         //  Get the origin cell data to extract the image from:

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -71,7 +71,17 @@ class svkMrsApodizationFilter : public svkImageInPlaceFilter
         static svkMrsApodizationFilter* New();
         vtkTypeMacro( svkMrsApodizationFilter, svkImageInPlaceFilter);
 
-        void SetWindow( vtkFloatArray* window );
+
+        typedef enum {
+            UNDEFINED = 0,
+            SPECTRAL_WINDOW,
+            SPATIAL_WINDOW,
+            LAST
+        }FilterDomain;
+
+        void                SetWindow( vector< vtkFloatArray* >* window );
+        svkMriImageData*    GetSpatialFilter(); 
+
 
     protected:
 
@@ -95,8 +105,16 @@ class svkMrsApodizationFilter : public svkImageInPlaceFilter
 
 
     private:
+
+        int             RequestDataSpectral(); 
+        int             RequestDataSpatial(); 
+
         
-        vtkFloatArray* window;
+        vector< vtkFloatArray* >*               window;
+        svkMrsApodizationFilter::FilterDomain   filterDomain;  
+        svkMriImageData*                        spatialFilter;
+        svkMriImageData*                        spatialFilterReal;
+ 
 
 };
 

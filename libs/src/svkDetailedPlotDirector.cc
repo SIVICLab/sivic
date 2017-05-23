@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -70,7 +70,7 @@ svkDetailedPlotDirector::svkDetailedPlotDirector()
     this->xyPlotActor->GetTitleTextProperty()->SetColor(0,1,1);
     this->xyPlotActor->AdjustTitlePositionOff();
     this->xyPlotActor->SetTitlePosition(0.15, 0.9);
-#if VTK_MINOR_VERSION >= 6
+#if VTK_MINOR_VERSION >= 6 || VTK_MAJOR_VERSION >= 6
     this->xyPlotActor->ChartBoxOn();
     this->xyPlotActor->ChartBorderOn();
     this->xyPlotActor->GetChartBoxProperty()->SetColor(0,0,0);
@@ -87,6 +87,7 @@ svkDetailedPlotDirector::svkDetailedPlotDirector()
     this->xyPlotActor->SetAdjustXLabels(0);
     this->xyPlotActor->SetAdjustYLabels(0);
     this->xyPlotActor->SetXLabelFormat("%0.2f");
+    this->xyPlotActor->GetAxisLabelTextProperty()->BoldOn();
     this->abscissa = NULL;
     this->numPoints = -1;
     this->cursorLocationCB = NULL;
@@ -284,7 +285,7 @@ void svkDetailedPlotDirector::SetPlotColor( int plotIndex, double* rgb)
 
 void svkDetailedPlotDirector::SetBackgroundColor( double* rgb )
 {
-    #if VTK_MINOR_VERSION >= 6
+    #if VTK_MINOR_VERSION >= 6 || VTK_MAJOR_VERSION >= 6
         this->xyPlotActor->GetChartBoxProperty()->SetColor(rgb);
     #endif
 
@@ -296,7 +297,7 @@ void svkDetailedPlotDirector::SetBackgroundColor( double* rgb )
  */
 void svkDetailedPlotDirector::SetBackgroundOpacity( double opacity )
 {
-    #if VTK_MINOR_VERSION >= 6
+    #if VTK_MINOR_VERSION >= 6 || VTK_MAJOR_VERSION >= 6
         this->xyPlotActor->GetChartBoxProperty()->SetOpacity(opacity);
     #endif
 
@@ -308,7 +309,7 @@ void svkDetailedPlotDirector::SetBackgroundOpacity( double opacity )
  */
 void svkDetailedPlotDirector::SetBackgroundVisibility( bool visible )
 {
-#if VTK_MINOR_VERSION >= 6
+#if VTK_MINOR_VERSION >= 6 || VTK_MAJOR_VERSION >= 6
     if( visible ) {
         this->xyPlotActor->ChartBoxOn();
     } else {

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -50,6 +50,7 @@ using namespace svk;
 
 /*
  *  Cost function for ITK optimizer: 
+ *  This represents a 2 site exchange model for conversion of pyr->lactate
  */
 class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
 {
@@ -60,156 +61,172 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
         itkNewMacro( Self );
 
 
-        svk2SiteExchangeCostFunction() {
-        }
-
-
-        int GetArrivalTime( float* firstSignal, int numPts ) const
+        /*!
+         *
+         */
+        svk2SiteExchangeCostFunction() 
         {
-            int arrivalTime = 0;
-            float maxValue0 = firstSignal[0];
-            int t;
-            for(t = arrivalTime;  t < numPts; t++ ) {
-                if( firstSignal[t] > maxValue0) {
-                    maxValue0 = firstSignal[t];
-                    arrivalTime = t;
-                }
-            }
-            //cout << "t: " << arrivalTime << " " << firstSignal[arrivalTime] << " " << numPts << endl;
-            return arrivalTime;
+            //  this model has 2 signals, Pyr and Lac 
+            this->InitNumberOfSignals(); 
+            this->TR = 0; 
         }
 
 
-
-        virtual MeasureType  GetResidual( const ParametersType& parameters) const
-        {
-            //cout << "GUESS: " << parameters[0] << " " << parameters[1] << endl;;
-
-            this->GetKineticModel( parameters,
-                                    this->kineticModel0, 
-                                    this->kineticModel1,
-                                    this->kineticModel2,
-                                    this->signal0,
-                                    this->signal1,
-                                    this->signal2,
-                                    this->numTimePoints );
-
-            double residual = 0;
-
-            // Find time to peak pyrvaute/urea
-            int arrivalTime = GetArrivalTime( this->signal0, this->numTimePoints );
-
-             
-            for ( int t = arrivalTime; t < this->numTimePoints; t++ ) { 
-                residual += ( this->signal0[t] - this->kineticModel0[t] )  * ( this->signal0[t] - this->kineticModel0[t] ); 
-                residual += ( this->signal1[t] - this->kineticModel1[t] )  * ( this->signal1[t] - this->kineticModel1[t] );
-            }
-
-            // for now ignore the urea residual 
-            //for ( int t = 0; t < this->numTimePoints-arrivalTime; t++ ) { 
-                //residual += ( this->signal2[t] - this->kineticModel2[t] )  * ( this->signal2[t] - this->kineticModel2[t] );
-            //}
-
-            //cout << "RESIDUAL: " << residual << endl;
-
-            MeasureType measure = residual ;
-
-            return measure;
-        }
-
-
-
-        virtual void GetKineticModel( const ParametersType& parameters,
-                    float* kineticModel0,
-                    float* kineticModel1,
-                    float* kineticModel2,
-                    float* signal0,
-                    float* signal1,
-                    float* signal2,
-                    int numTimePoints
-        ) const 
+        /*!
+         *  For a given set of parameter values, compute the model kinetics
+         */   
+        virtual void GetKineticModel( const ParametersType& parameters ) const
         {
 
             double T1all  = parameters[0];
             double Kpl    = parameters[1];
-            double Ktrans = parameters[2];
-            double K2     = parameters[3];
+            float  dc     = parameters[2];    //  dc baseline offset                                
 
+
+            //  cout << "GUESSES: " << T1all << " " << Kpl  << endl;
             //  use model params and initial signal intensity to calculate the metabolite signals vs time 
             //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
 
             //  Find time to peak pyrvaute/urea
-            //arrivalTime = ARRIVAL_TIME;
-            int arrivalTime = GetArrivalTime( signal0, numTimePoints );
-
-            //set up Arterial Input function
-            float  Ao    = 5000;
-            float  alpha = .2;
-            float  beta  = 4.0;
-            int    TR    = 3; //sec
-    
-            float* inputFunction   = new float [numTimePoints];
-            for(int t = 0;  t < numTimePoints; t++ ) {
-                inputFunction [t] = Ao * powf((t),alpha) * exp(-(t)/beta);
-            }
-             
-            
-            //cout << "GUESSES: " << T1all << " " << Kpl  << endl;
+            int arrivalTime = GetArrivalTime( this->GetSignal(0) );
   
-            //  use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
+            //  Use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
             //  each time point
-            //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
 
-            // DEFINE COST FUNCTION 
-            for ( int t = 0; t < numTimePoints; t++ ) {
+            //  ==============================================================
+            //  DEFINE COST FUNCTION 
+            //  Pre arrival time and post arrival time are separate functions
+            //      - Before the arrival time the pyr and lac models are just the 
+            //        observed input signals. 
+            //      - At and after the arrival time the model is: 
+            //          pyr(t) = pyr(arrivalTime) * e^(-kt)  
+            //              where k is the sum of contributions from T1 decay and convsion to lactate at rate Kpl
+            //          lac(t) = lac(arrivalTime) * e^(-kt)      
+            //  ==============================================================
+            for ( int t = 0; t < this->numTimePoints; t++ ) {
 
                 if (t < arrivalTime ) {
-                    kineticModel0[t] = signal0[t]; 
-                    kineticModel1[t] = signal1[t]; 
+                    this->GetModelSignal(0)[t] = this->GetSignalAtTime(0, t); 
+                    this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, t); 
                 }
 
                 if (t >= arrivalTime ) {      
 
                     // PYRUVATE 
-                    kineticModel0[t] = signal0[arrivalTime] 
-                        * exp( -((1/T1all) + Kpl) * ( t - arrivalTime) );
+                    this->GetModelSignal(0)[t] = this->GetSignalAtTime(0, arrivalTime) 
+                        * exp( -((1/T1all) + Kpl) * ( t - arrivalTime) ) + dc;
 
                     // LACTATE 
-                    kineticModel1[t] = signal1[arrivalTime]         // T1 decay of lac signal
+                    this->GetModelSignal(1)[t] = this->GetSignalAtTime(1, arrivalTime)         // T1 decay of lac signal
                         * exp( -( t - arrivalTime )/T1all) 
-                        - signal0[ arrivalTime ]                    
+                        - this->GetSignalAtTime(0, arrivalTime )                    
                             * exp( -( t - arrivalTime )/T1all)
-                            * ( exp( -Kpl * ( t - arrivalTime )) - 1 );
+                            * ( exp( -Kpl * ( t - arrivalTime )) - 1 ) + dc;
 
                 }
 
-                // UREA
-                //determine convolution with arterial input function
-                float* convolutionMat  = new float [numTimePoints];
-                convolutionMat[0] = 0;
-                for (int tau = -(numTimePoints); tau < (numTimePoints); tau ++){      
-                    convolutionMat[t] = inputFunction[tau] * exp(-Ktrans * (t-tau)/K2) + convolutionMat[t-1]; 
-                }
-
-                kineticModel2[t] = Ktrans * TR * convolutionMat[t];
-                  
-                //cout << "Estimated Pyruvate(" << t << "): " <<  kineticModel0[t] << endl; 
-    
             }
 
         }
 
 
+        /*!
+         *  T1all
+         *  Kpl
+         *  DC offset
+         */   
         virtual unsigned int GetNumberOfParameters(void) const
         {
-            int numParameters = 4;
+            int numParameters = 3;
             return numParameters;
+        }
+
+
+        /*!
+         *  Initialize the number of input signals for the model 
+         */
+        virtual void InitNumberOfSignals(void) 
+        {
+            //  pyruvate and lactate
+            this->SetNumberOfSignals(2);
+        } 
+
+
+        /*!
+         *  Get the vector that contains the string identifier for each output port
+         */
+        virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const
+        {
+            outputDescriptionVector->resize( this->GetNumberOfOutputPorts() );
+            (*outputDescriptionVector)[0] = "pyr";
+            (*outputDescriptionVector)[1] = "lac";
+            (*outputDescriptionVector)[2] = "T1all";
+            (*outputDescriptionVector)[3] = "Kpl";
+            (*outputDescriptionVector)[4] = "dcoffset";
+        }
+
+
+        /*!
+         *  Initialize the parameter uppler and lower bounds for this model. 
+         *  All params are dimensionless and scaled by TR
+         */
+        virtual void InitParamBounds( vector<float>* lowerBounds, vector<float>* upperBounds,
+            vector<vtkFloatArray*>* averageSigVector )
+        {
+            (*upperBounds)[0] = 50.;       //  T1all
+            (*lowerBounds)[0] = 1. ;       //  T1all
+        
+            (*upperBounds)[1] = 0.20 ;     //  Kpl
+            (*lowerBounds)[1] = 0.00 ;     //  Kpl
+
+            (*upperBounds)[2] =  100000;   //  Baseline
+            (*lowerBounds)[2] = -100000;   //  Baseline
+
+        }   
+
+
+        /*!
+         *  Define the scale factors required to make the params dimensionless
+         *  (scaled for point rather than time domain)   
+         */
+        virtual void InitParamScaleFactors()
+        {
+            //  T1 all ( time ), divide by TR
+            this->paramScaleFactors[0] = 1./this->TR;
+
+            //  Kpl (rate), mult by TR
+            this->paramScaleFactors[1] = this->TR;
+
+            //  baseline (dimensionless), do not scale
+            this->paramScaleFactors[2] = 1.;
+        }
+
+
+
+    private: 
+
+        /*!
+         *  
+         */
+        int GetArrivalTime( float* firstSignal) const
+        {
+            int arrivalTime = 0;
+            float maxValue0 = firstSignal[0];
+            int t;
+                    
+            for(t = arrivalTime;  t < this->numTimePoints; t++ ) {
+                if( firstSignal[t] > maxValue0) {
+                    maxValue0 = firstSignal[t];
+                    arrivalTime = t;
+                }
+            }
+            //cout << "t: " << arrivalTime << " " << firstSignal[arrivalTime] << " " << this->numTimePoints<< endl;
+            return arrivalTime;
         }
 
 
 
 };
-
 
 
 #endif// SVK_2_SITE_EXCHANGE_COST_COST_FUNCTION_H

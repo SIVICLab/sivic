@@ -1,5 +1,5 @@
 #
-#   Copyright © 2009-2014 The Regents of the University of California.
+#   Copyright © 2009-2017 The Regents of the University of California.
 #   All Rights Reserved.
 #
 #   Redistribution and use in source and binary forms, with or without
@@ -416,6 +416,16 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_create_secondary_capture
+    svk_create_secondary_capture.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_create_secondary_capture
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_image_threshold
     svk_image_threshold.cc
 )
@@ -740,6 +750,15 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_simulate
+    svk_simulate.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_simulate
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_zerofill
     svk_zerofill.cc
 )
@@ -916,19 +935,21 @@ if ( BUILD_ITK )
     LIST(APPEND APPS svk_met_kinetics)
 endif ( BUILD_ITK )
 
-IF (NOT WIN32)	
-    FOREACH(APP ${APPS})    
-        configure_file( svk_cmd_start ./${APP} [COPYONLY])
-        INSTALL_TARGETS( /local/sivic ${APP} )
-        INSTALL_PROGRAMS( /local/bin FILES ${APP} )
-    ENDFOREACH(APP)
-ELSE (NOT WIN32)
-    FOREACH(APP ${APPS})    
-        configure_file( svk_cmd_start.bat ${APP}.bat [COPYONLY])
-        INSTALL_TARGETS( /local/sivic ${APP} )
-        INSTALL_PROGRAMS( /local/bin FILES ${APP}.bat )
-    ENDFOREACH(APP)
-ENDIF (NOT WIN32)
+IF( CREATE_WRAPPER_SCRIPTS )
+    IF (NOT WIN32)
+        FOREACH(APP ${APPS})
+            configure_file( svk_cmd_start ./${APP} [COPYONLY])
+            INSTALL_TARGETS( /local/sivic ${APP} )
+            INSTALL_PROGRAMS( /local/bin FILES ${APP} )
+        ENDFOREACH(APP)
+    ELSE (NOT WIN32)
+        FOREACH(APP ${APPS})
+            configure_file( svk_cmd_start.bat ${APP}.bat [COPYONLY])
+            INSTALL_TARGETS( /local/sivic ${APP} )
+            INSTALL_PROGRAMS( /local/bin FILES ${APP}.bat )
+        ENDFOREACH(APP)
+    ENDIF (NOT WIN32)
+ENDIF( CREATE_WRAPPER_SCRIPTS )
 
 
 

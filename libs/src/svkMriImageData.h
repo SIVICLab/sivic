@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -84,8 +84,10 @@ class svkMriImageData: public svkImageData
         double*                 GetImagePixel( int id );
         double*                 GetImagePixel( int x, int y, int z );
         void                    SetImagePixels( double* pixels, int slice);
-        void                    SetImagePixel( int id, double value );
         void                    SetImagePixel( int x, int y, int z, double value );
+        void                    SetImagePixel( int id, double value );
+        void                    SetImagePixelTuple( int x, int y, int z, double* value ); 
+        void                    SetImagePixelTuple( int id , double* value ); 
         virtual void            GetNumberOfVoxels(int numVoxels[3]);
         void                    GetAutoWindowLevel( double& window, double& level, int numBins = START_NUM_BINS
                                                                          , double excludeFactor = EXCLUDE_FACTOR );

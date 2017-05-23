@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -73,6 +73,8 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
         sivicProcessingWidget();
         ~sivicProcessingWidget();
 
+        vtkKWLabel*                     spatialDomainLabel;
+        vtkKWLabel*                     spectralDomainLabel;
         vtkKWCheckButton*               spatialButton;
         vtkKWCheckButton*               spectralButton;
         vtkKWPushButton*                fftButton;

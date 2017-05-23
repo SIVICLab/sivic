@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -100,7 +100,6 @@ class svkImageMathematics : public vtkImageMathematics
 
 
         vtkTypeMacro( svkImageMathematics, vtkImageMathematics);
-        virtual void    Update(); 
 
         //! Prints all input parameters set.
         void                    PrintSelf( ostream &os, vtkIndent indent );
@@ -114,14 +113,17 @@ class svkImageMathematics : public vtkImageMathematics
         svkImageMathematics();
         ~svkImageMathematics();
 
+        virtual int RequestData(vtkInformation *request,
+                                vtkInformationVector **inputVector,
+                                vtkInformationVector *outputVector);
         virtual int         FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         virtual int         FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
 
         //! The port mapper used to set the input port parameters.
         svkAlgorithmPortMapper* portMapper;
 
-    private: 
-        void                SetDatatypes(); 
+    private:
+        void                SetDatatypes();
 
 
 };

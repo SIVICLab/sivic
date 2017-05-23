@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -153,7 +153,7 @@ class svkGEPFileMapper : public vtkObject
         virtual int             GetNumDummyScans(); 
         virtual int             GetNumEPSIAcquisitions(); 
         bool                    AddDummy( int offset, int coilNum, int timePt ); 
-        void                    GetDcos( double dcos[3][3] ); 
+        virtual void            GetDcos( double dcos[3][3] ); 
         virtual float           GetPPMRef(); 
         bool                    IsSwapOn(); 
         bool                    Is2D(); 
@@ -196,7 +196,7 @@ class svkGEPFileMapper : public vtkObject
         int*                                    specData; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         int                                     chopVal; 
-        map < string, void* >   inputArgs; 
+        map < string, void* >                   inputArgs;
         int                                     swapBytes;
         svkMRSIOD*                              iod;
         double                                  progress; 

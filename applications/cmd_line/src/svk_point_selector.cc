@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -300,7 +300,7 @@ int main ( int argc, char** argv )
 	vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
 	sphereActor->SetMapper( mapper);
 	sphereActor->GetProperty()->SetDiffuseColor(1,1,1 );
-	mapper->SetInputData( globalVars.sphere->GetOutput() );
+	mapper->SetInputConnection( globalVars.sphere->GetOutputPort() );
 
     // Lets create setup our window and renderers
 	globalVars.window = vtkRenderWindow::New();
@@ -498,12 +498,12 @@ void SetupImageViewer( double position[4], svkDcmHeader::Orientation orientation
 			line->SetPoint1(lineLength*orthSliceNormal[0] + disp*sliceNormal[0], lineLength*orthSliceNormal[1] + disp*sliceNormal[1], lineLength*orthSliceNormal[2] + disp*sliceNormal[2] );
 			line->SetPoint2(-lineLength*orthSliceNormal[0] + disp*sliceNormal[0], -lineLength*orthSliceNormal[1] + disp*sliceNormal[1], -lineLength*orthSliceNormal[2] + disp*sliceNormal[2] );
 			vtkGlyph3D* glyph = vtkGlyph3D::New();
-			glyph->SetSourceData( line->GetOutput() );
+			glyph->SetSourceConnection( line->GetOutputPort() );
 			glyph->SetInputData(pd);
 			vtkActor* cursorActor = vtkActor::New();
 			vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
 			cursorActor->GetProperty()->SetLineWidth(1);
-			mapper->SetInputData( glyph->GetOutput() );
+			mapper->SetInputConnection( glyph->GetOutputPort() );
 			cursorActor->SetMapper( mapper );
 			cursorActor->GetProperty()->SetColor(globalVars.inactiveCursorColor);
 			imageViewer->GetRenderer()->AddActor( cursorActor );
@@ -770,7 +770,7 @@ void UpdateCursorLocation(vtkObject* subject, unsigned long eid, void* thisObjec
 
 
 /*!
- * Displays the usage message.
+ * Displays the usage message
  */
 void DisplayUsage( void )
 {

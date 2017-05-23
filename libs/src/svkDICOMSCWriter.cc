@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -152,7 +152,7 @@ void svkDICOMSCWriter::Write()
     // Fill in image information.
     this->UpdateInformation(); 
 
-    int* wExtent = this->GetOutputInformation(0)->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
+    int* wExtent = vtkImageData::SafeDownCast(this->GetInput(0))->GetExtent();
     this->FileNumber = wExtent[4]; 
     this->MaximumFileNumber = this->FileNumber;
     this->MinimumFileNumber = this->FileNumber;
