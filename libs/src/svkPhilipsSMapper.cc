@@ -1217,6 +1217,10 @@ void svkPhilipsSMapper::InitPixelMeasuresMacro()
 
 /*
  *  Sets the fov in 3 dimensions. Only applies to isotropic voxels for now.  
+ *  Philips informs that only isotropic voxles are supported in the reconstructed
+ *  S* files.  Are anisotropic voxels supported: 
+ *  "No, since the "Reconstructed voxel size" is set by a single number, it is usually equal 
+ *  to or less than the smallest voxel size set."
  */
 void svkPhilipsSMapper::GetFOV(float* fov) 
 {
