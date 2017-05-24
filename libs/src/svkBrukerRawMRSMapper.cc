@@ -1216,7 +1216,14 @@ float svkBrukerRawMRSMapper::GetHeaderValueAsFloat(string keyString, int valueIn
  */
 string svkBrukerRawMRSMapper::GetHeaderValueAsString(string keyString, int valueIndex )
 {
-    return (this->paramMap[keyString])[valueIndex];
+
+    map< string, vector < string > >::iterator it;
+    it = this->paramMap.find(keyString);
+    if ( it != this->paramMap.end() ) {
+        return (this->paramMap[keyString])[valueIndex];
+    } else {
+        return ""; 
+    }
 }
 
 
