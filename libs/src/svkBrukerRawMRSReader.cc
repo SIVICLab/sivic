@@ -105,7 +105,10 @@ int svkBrukerRawMRSReader::CanReadFile(const char* fname)
     if( fileToCheck.size() >= 3 ) {
 
         // Also see "vtkImageReader2::GetFileExtensions method" 
-        if (  fileToCheck.substr( fileToCheck.size() - 3 ) == "ser" ) {
+        if (
+            (  fileToCheck.substr( fileToCheck.size() - 3 ) == "ser" ) || 
+            (  fileToCheck.substr( fileToCheck.size() - 3 ) == "fid" )  
+        ) {
             FILE *fp = fopen(fname, "rb");
             if (fp) {
                 fclose(fp);
