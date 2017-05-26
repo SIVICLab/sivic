@@ -179,11 +179,11 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
         this->progress = (float)timePt/numTimePts; 
         this->UpdateProgress( this->progress );
 
-	// Detect symmetric EPSI based on equal positive and negative gradient lobe lengths (stored in rhuser 13 and 16)
-	if (this->GetHeaderValueAsInt( "rhr.rh_user13" ) == this->GetHeaderValueAsInt( "rhr.rh_user16" )) { 
-        	//  Separate out EPSI sampled data into time and k-space dimensions:
-        	this->ReorderEPSIData( tmpImage );
-	}
+        // Detect symmetric EPSI based on equal positive and negative gradient lobe lengths (stored in rhuser 13 and 16)
+        if (this->GetHeaderValueAsInt( "rhr.rh_user13" ) == this->GetHeaderValueAsInt( "rhr.rh_user16" )) { 
+            //  Separate out EPSI sampled data into time and k-space dimensions:
+            this->ReorderEPSIData( tmpImage );
+        }
         //data->DeepCopy( tmpImage ); 
 
         //  copy data to tmpImageDynamic and add appropriate arrays

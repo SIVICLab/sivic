@@ -63,6 +63,7 @@
 #include <svkGESignaLX2Reader.h>
 #include <svkGEPostageStampReader.h>
 #include <svkBrukerDCMMRSReader.h>
+#include <svkBrukerRawMRSReader.h>
 #include <svkDcmRawDataReader.h>
 #include <svkDcmSegmentationVolumeReader.h>
 #include <svkLCModelCSVReader.h>
@@ -121,6 +122,7 @@ class svkImageReaderFactory : public vtkImageReader2Factory
         svkGESignaLX2Reader*            geSignaLX2Reader;
         svkGEPostageStampReader*        gePostageStampReader;
         svkBrukerDCMMRSReader*          brukerDCMMRSReader;
+        svkBrukerRawMRSReader*          brukerRawMRSReader; 
         svkPhilipsSReader*              philipsSReader;
         svkDcmRawDataReader*            dcmRawDataReader;
         svkDcmSegmentationVolumeReader* dcmSegmentationVolReader; 

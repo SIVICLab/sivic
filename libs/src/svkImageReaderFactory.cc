@@ -76,6 +76,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->geSignaLX2Reader          = svkGESignaLX2Reader::New();
     this->gePostageStampReader      = svkGEPostageStampReader::New();
     this->brukerDCMMRSReader        = svkBrukerDCMMRSReader::New();
+    this->brukerRawMRSReader        = svkBrukerRawMRSReader::New();
     this->philipsSReader            = svkPhilipsSReader::New();
     this->dcmRawDataReader          = svkDcmRawDataReader::New();
     this->dcmSegmentationVolReader  = svkDcmSegmentationVolumeReader::New();
@@ -97,6 +98,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->geSignaLX2Reader );
     vtkImageReader2Factory::RegisterReader( this->gePostageStampReader );
     vtkImageReader2Factory::RegisterReader( this->brukerDCMMRSReader );
+    vtkImageReader2Factory::RegisterReader( this->brukerRawMRSReader );
     vtkImageReader2Factory::RegisterReader( this->philipsSReader );
     vtkImageReader2Factory::RegisterReader( this->dcmRawDataReader);
     vtkImageReader2Factory::RegisterReader( this->dcmSegmentationVolReader );
@@ -189,6 +191,11 @@ svkImageReaderFactory::~svkImageReaderFactory()
     if (this->brukerDCMMRSReader != NULL) {
         this->brukerDCMMRSReader->Delete();
         this->brukerDCMMRSReader = NULL;
+    }
+
+    if (this->brukerRawMRSReader != NULL) {
+        this->brukerRawMRSReader->Delete();
+        this->brukerRawMRSReader = NULL;
     }
 
     if (this->philipsSReader != NULL) {
@@ -292,6 +299,8 @@ svkImageReader2* svkImageReaderFactory::CreateImageReader2( svkImageReader2::Rea
         return svkLCModelTableReader::New(); 
     } else if ( readerType == svkImageReader2::BRUKER_MRS) {
         return svkBrukerDCMMRSReader::New(); 
+    } else if ( readerType == svkImageReader2::BRUKER_RAW_MRS) {
+        return svkBrukerRawMRSReader::New(); 
     } else if ( readerType == svkImageReader2::PHILIPS_S ) {
         return svkPhilipsSReader::New(); 
     } else if ( readerType == svkImageReader2::DDF) {
