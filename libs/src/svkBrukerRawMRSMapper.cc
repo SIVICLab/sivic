@@ -105,8 +105,6 @@ void svkBrukerRawMRSMapper::InitializeDcmHeader(map <string, vector < string> > 
     this->iod = iod;   
     this->swapBytes = swapBytes; 
 
-    this->ConvertCmToMm(); 
-
     this->InitPatientModule();
     this->InitGeneralStudyModule();
     this->InitGeneralSeriesModule();
@@ -399,19 +397,6 @@ void svkBrukerRawMRSMapper::InitPlaneOrientationMacro()
         cout << *dcos << endl;
     }
 
-    //  and analagous to the fdf reader, convert from LAI to LPS: 
-    //dcos->SetElement(0, 0, dcos->GetElement(0, 0)  * 1 );
-    //dcos->SetElement(0, 1, dcos->GetElement(0, 1)  * -1);
-    //dcos->SetElement(0, 2, dcos->GetElement(0, 2)  * -1);
-
-    //dcos->SetElement(1, 0, dcos->GetElement(1, 0)  * 1 );
-    //dcos->SetElement(1, 1, dcos->GetElement(1, 1)  * -1);
-    //dcos->SetElement(1, 2, dcos->GetElement(1, 2)  * -1);
-
-    //dcos->SetElement(2, 0, dcos->GetElement(2, 0)  * 1 );
-    //dcos->SetElement(2, 1, dcos->GetElement(2, 1)  * -1);
-    //dcos->SetElement(2, 2, dcos->GetElement(2, 2)  * -1);
-    
 
     string orientationString;
 
@@ -939,9 +924,9 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyDataModule()
 
 
 /*!
- *  Reads spec data from fid file.
+ *  Reads spec data from Bruker raw file (e.g. "ser" or "fid").
  */
-void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkImageData* data )
+void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkMrsImageData* data )
 {
     
     vtkDebugMacro( << this->GetClassName() << "::ReadSerFile()" );
@@ -990,6 +975,16 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkImageData* data 
 
     double progress = 0;
 
+    string encoding = this->GetHeaderValueAsString("PVM_EncOrder");
+    if ( encoding.find("CENTRIC_ENC") != string::npos ) { 
+        encoding = "CENTRIC"; 
+    } else if ( encoding.find("LINEAR_ENC") != string::npos  ) { 
+        encoding = "LINEAR"; 
+    }  else {
+        //  make this the default.  Not sure if would be specified for all sequences. 
+        encoding = "LINEAR"; 
+    }
+             
     int numTimePts = hdr->GetNumberOfTimePoints(); 
     int numCoils = hdr->GetNumberOfCoils(); 
     for (int coilNum = 0; coilNum < numCoils; coilNum++) {
@@ -999,16 +994,20 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkImageData* data 
                 for (int y = 0; y < numVoxels[1]; y++) {
                     for (int x = 0; x < numVoxels[0]; x++) {
                         SetCellSpectrum(data, x, y, z, timePt, coilNum);
-
-                        if( timePt % 2 == 0 ) { // only update every other index
-				            progress = (timePt * coilNum)/((double)(numTimePts*numCoils));
-				            this->InvokeEvent(vtkCommand::ProgressEvent, static_cast<void *>(&progress));
-        	            }
                     }
                 }
+            } 
+            if( timePt % 2 == 0 ) { // only update every other index
+                progress = (timePt * coilNum)/((double)(numTimePts*numCoils));
+                this->InvokeEvent(vtkCommand::ProgressEvent, static_cast<void *>(&progress));
             }
         }
     }
+
+    if (encoding.compare("CENTRIC") == 0 ) {
+        this->ReorderKSpace( data ); 
+    }
+
 
     //  Bruker FIDs are shifted by a group delay number of points defined by PVM_DigShiftDbl.  
     //  Apply this global shift to correct the data here: 
@@ -1027,6 +1026,81 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkImageData* data 
     serDataIn->close();
     delete serDataIn;
 
+}
+
+
+/*!
+ *  Reorder centric (or reverse centric) k-space data to standard linear encoding
+ */
+void svkBrukerRawMRSMapper::ReorderKSpace( svkMrsImageData* data )
+{
+        
+    svkMrsImageData* tmpData = svkMrsImageData::New();
+    tmpData->DeepCopy( data );
+
+    int numVoxels[3]; 
+    numVoxels[0] = this->dcmHeader->GetIntValue( "Columns" ); 
+    numVoxels[1] = this->dcmHeader->GetIntValue( "Rows" ); 
+    numVoxels[2] = this->dcmHeader->GetNumberOfSlices( ); 
+
+    int numPts   = this->dcmHeader->GetIntValue( "DataPointColumns" );
+
+    svkDcmHeader::DimensionVector dimVector    = data->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector loopVector   = dimVector; 
+    svkDcmHeader::DimensionVector targetVector = dimVector; 
+
+    int timePt = 0; 
+    int coilNum = 0; 
+
+    int signX= -1; 
+    int signY= -1; 
+    int signZ= -1; 
+    int zc = numVoxels[2]/2; 
+
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimVector );
+    int cellID = numCells - 1;     
+    float specTuple[2];
+
+    for ( int z = 0; z < numVoxels[2] ; z++ ) {
+        signZ *= -1; 
+        int yc = numVoxels[1]/2; 
+        zc =  zc + (z * signZ); 
+        for ( int y = 0; y < numVoxels[1]; y++ ) {
+            signY *= -1; 
+            int xc = numVoxels[0]/2; 
+            yc =  yc + (y * signY); 
+            for ( int x = 0; x < numVoxels[0]; x++ ) {
+
+                signX *= -1; 
+                xc =  xc + (x * signX); 
+
+                //  Get dim vector for location where the data should go (reordered to standard linear encoding) 
+                svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::COL_INDEX,   xc); 
+                svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::ROW_INDEX,   yc); 
+                svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::SLICE_INDEX, zc); 
+                int targetCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &targetVector );
+
+                cout << "CELL: " << cellID << " -> " << targetCellID << " x: " << xc << " y: " << yc << " z: " << zc << endl;
+
+                //  get the loopVector spectrum and write the contents into the targetVector spectrum
+                vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast(
+                    svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID)
+                );
+                vtkFloatArray* targetSpectrum = vtkFloatArray::SafeDownCast(
+                    svkMrsImageData::SafeDownCast(tmpData)->GetSpectrum( targetCellID )
+                );
+
+                for ( int freq = 0; freq < numPts; freq++ ) {
+                    spectrum->GetTupleValue( freq, specTuple);
+                    //cout << "ST: " << specTuple[0] << endl;
+                    targetSpectrum->InsertTuple(freq, specTuple);
+                }
+
+                cellID--; 
+            }
+        }
+    }
+    data->DeepCopy( tmpData );
 }
 
 
@@ -1056,10 +1130,6 @@ void svkBrukerRawMRSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, in
     numVoxels[1] = this->dcmHeader->GetIntValue( "Rows" );
     numVoxels[2] = this->dcmHeader->GetNumberOfSlices();
 
-    //  if cornoal, swap z and x:
-    //int xTmp = x; 
-    //x = y; 
-    //y = xTmp; 
     x = numVoxels[0] - x - 1; 
     y = numVoxels[1] - y - 1; 
 
@@ -1096,51 +1166,6 @@ void svkBrukerRawMRSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, in
     return;
 }
 
-
-/*!
- *  Convert FID (Procpar) spatial values from cm to mm: FOV, Center, etc. 
- */
-void svkBrukerRawMRSMapper::ConvertCmToMm()
-{
-/*
-    float cmToMm = 10.;
-    float tmp;
-    ostringstream oss;
-
-    // FOV 
-    tmp = cmToMm * this->GetHeaderValueAsFloat("lpe", 0);
-    oss << tmp;
-    ( this->paramMap["lpe"] )[0][0] = oss.str();
-
-    oss.str("");
-    tmp = cmToMm * this->GetHeaderValueAsFloat("lpe2", 0);
-    oss << tmp;
-    ( this->paramMap["lpe2"] )[0][0] = oss.str();
-
-    oss.str("");
-    tmp = cmToMm * this->GetHeaderValueAsFloat("lro", 0);
-    oss << tmp;
-    ( this->paramMap["lro"] )[0][0] = oss.str(); 
-
-
-    //  Center 
-    oss.str("");
-    tmp = cmToMm * this->GetHeaderValueAsFloat("ppe", 0);
-    oss << tmp;
-    ( this->paramMap["ppe"] )[0][0] = oss.str();
-
-    oss.str("");
-    tmp = cmToMm * this->GetHeaderValueAsFloat("ppe2", 0);
-    oss << tmp;
-    ( this->paramMap["ppe2"] )[0][0] = oss.str();
-
-    oss.str("");
-    tmp = cmToMm * this->GetHeaderValueAsFloat("pro", 0);
-    oss << tmp;
-    ( this->paramMap["pro"] )[0][0] = oss.str();
-*/
-
-}
 
 
 /*!

@@ -93,7 +93,7 @@ svkBrukerRawMRSReader::~svkBrukerRawMRSReader()
 }
 
 /*!
- *  Check to see if the extension indicates a Varian FDF file.  If so, try 
+ *  Check to see if the extension indicates a Bruker Raw MRS file.  If so, try 
  *  to open the file for reading.  If that works, then return a success code. 
  *  Return Values: 1 if can read the file, 0 otherwise.
  */
@@ -288,14 +288,17 @@ int svkBrukerRawMRSReader::GetParamKeyValuePair( )
             } 
             //cout << "PARAM KEY: " << keyString << endl;
 
+            //  ====================================================================
             //  Now check if the value is scalar or an array of values: 
             //  If it's an array of values, the array size will be encoded in parenthesis. 
             //  Parse the following lines for the value 
             //  Heuristically, it looks like: 
             //       =( val ) indicates the size of the array on following lines
-            //       =(vals) indicates the a value (no space after parenthesis).   
+            //       =(vals) indicates the value (no space after parenthesis).   
+            //  ====================================================================
             parenthesisPosition = iss->str().find("( ");
             if ( parenthesisPosition != string::npos) {
+                //  It's an array on the subsequent lines
 
                 string tmpString; 
                 string numElementsString = "1";
@@ -331,6 +334,8 @@ int svkBrukerRawMRSReader::GetParamKeyValuePair( )
                         } 
                         //cout << "LINE: " << iss->str() << endl;
                     } 
+                } else {
+                    valueString->append( iss->str() ); 
                 }
 
             } else { 
@@ -537,7 +542,13 @@ svkBrukerRawMRSMapper* svkBrukerRawMRSReader::GetBrukerRawMRSMapper()
         aMapper = svkBrukerRawMRSMapper::New();
 
     } else {
-        cout << "Not a supported Varian sequence" << endl;
+        cout <<  endl;
+        cout << "===============================" << endl;
+        cout << "===============================" << endl;
+        cout << "Not a supported Bruker sequence" << endl;
+        cout << "===============================" << endl;
+        cout << "===============================" << endl;
+        cout <<  endl;
     }
 
     return aMapper;
@@ -552,7 +563,7 @@ void svkBrukerRawMRSReader::ExecuteDataWithInformation(vtkDataObject* output, vt
 {
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 
     if ( this->FileName ) {
         this->mapper->ReadSerFile( this->FileName, data );
@@ -647,7 +658,8 @@ void svkBrukerRawMRSReader::InitDcmHeader()
 
 
 /*!
- * 
+ *  paramVector is the vector of values parsed from valueArray that get set 
+ *  into map data structure. 
  */
 void svkBrukerRawMRSReader::AssignParamVectorElements(vector<string>* paramVector, string valueArray)
 {
@@ -664,7 +676,6 @@ void svkBrukerRawMRSReader::AssignParamVectorElements(vector<string>* paramVecto
             endQuote *= -1;
             if (endQuote == 1) {
                 tmpString.assign( valueArray.substr(1, pos - 1) );
-                //this->RemoveStringQuotes(&tmpString);
                 paramVector->push_back(tmpString);
                 valueArray.assign( valueArray.substr(pos + 1) );
                 pos = string::npos;
@@ -672,22 +683,6 @@ void svkBrukerRawMRSReader::AssignParamVectorElements(vector<string>* paramVecto
         }
 
     } else {
-        /*
-        while ( (pos = valueArray.find_first_of(' ')) != string::npos) {
-
-            iss->str( valueArray.substr(0, pos) );
-            *iss >> tmpString;
-            //this->RemoveStringQuotes(&tmpString);
-            paramVector->push_back(tmpString);
-            iss->clear();
-
-            valueArray.assign( valueArray.substr(pos + 1) );
-        }
-        iss->str( valueArray);
-        *iss >> tmpString;
-        //this->RemoveStringQuotes(&tmpString);
-        paramVector->push_back(tmpString);
-        */
         paramVector->push_back(valueArray);
     }
 

@@ -141,7 +141,7 @@ int svkVarianFidReader::CanReadFile(const char* fname)
                 //  should be a mapper factory to get psd specific instance:
                 this->mapper = this->GetFidMapper();
                 if ( this->mapper == NULL ) {
-                    cout  << " Not a know FID sequnce.  Can not read file."   << endl;
+                    cout  << "Not a known Varian FID sequnce.  Can not read file."   << endl;
                     return 0;
                 }
 
