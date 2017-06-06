@@ -51,7 +51,7 @@ sub svk_ge_get_tail($);
 #   $HOST and registered hostnames on svk_ge network.
 #
 %svk_ge_data_browser_conf::network_hostnames = (
-    'qb3-7t'                    =>  'qb3-mr7t',
+    $ENV{HOST}                  =>  $ENV{HOST},
     'icn1'                      =>  'icn1'
 );
 
