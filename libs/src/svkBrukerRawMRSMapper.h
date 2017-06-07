@@ -135,6 +135,9 @@ class svkBrukerRawMRSMapper : public vtkObject
                             int coilNum
                         );
         void            ReorderKSpace( svkMrsImageData* data ); 
+        void            GetDcmOrientation(float dcos[3][3], string* orientationString); 
+        void            GetBrukerPixelSize( float pixelSize[3] ); 
+
 
 
 

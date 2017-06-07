@@ -189,7 +189,9 @@ void svkBrukerRawMRSReader::ParseParamFiles( )
     this->ParseParamFileToMap( paramFilePath ); 
 
 
-    this->PrintParamKeyValuePairs(); 
+    if (this->GetDebug()) {
+        this->PrintParamKeyValuePairs(); 
+    }
 }
 
 
@@ -199,7 +201,6 @@ void svkBrukerRawMRSReader::ParseParamFiles( )
 void svkBrukerRawMRSReader::ParseParamFileToMap( string paramFileName )    
 {
     
-    //  If ONE procpar file is present, parse it as well:
     vtkGlobFileNames* paramFileGlob = vtkGlobFileNames::New();
     paramFileGlob->AddFileNames( paramFileName.c_str() );
 
@@ -233,7 +234,7 @@ void svkBrukerRawMRSReader::ParseParamFileToMap( string paramFileName )
 
     } else {
         cout << "WARNING: " << this->GetClassName() << " Can't parse Bruker param file" << endl; 
-        cout << "         found " << paramFileGlob->GetFileNames()->GetNumberOfValues();
+        cout << "         " << paramFileName  << endl;
     }
     paramFileGlob->Delete();
 
