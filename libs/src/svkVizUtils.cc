@@ -86,6 +86,7 @@ void svkVizUtils::SaveWindow( vtkWindow* window, string fileName )
     }
     writerFactory->Delete();
     vtkWindowToImageFilter* w2i = vtkWindowToImageFilter::New();
+    w2i->ReadFrontBufferOff();
     w2i->SetInput(window);
     w2i->Update();
 

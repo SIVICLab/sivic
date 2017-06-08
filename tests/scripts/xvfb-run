@@ -41,7 +41,7 @@
 #  
 
 export DISPLAY_PORT=$((RANDOM+1))
-/netopt/rhel7/bin/Xvfb :$DISPLAY_PORT -ac -screen 0 1024x768x24&
+Xvfb :$DISPLAY_PORT -ac -screen 0 1024x768x24&
 export PID=$!
 sleep 1
 if [ -f /tmp/.X$DISPLAY_PORT-lock ]; then
