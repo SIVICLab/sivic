@@ -1071,7 +1071,7 @@ void svkBrukerRawMRSMapper::ReorderKSpace( svkMrsImageData* data )
                 svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::SLICE_INDEX, zc); 
                 int targetCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &targetVector );
 
-                cout << "CELL: " << cellID << " -> " << targetCellID << " x: " << xc << " y: " << yc << " z: " << zc << endl;
+                //cout << "CELL: " << cellID << " -> " << targetCellID << " x: " << xc << " y: " << yc << " z: " << zc << endl;
 
                 //  get the loopVector spectrum and write the contents into the targetVector spectrum
                 vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast(
