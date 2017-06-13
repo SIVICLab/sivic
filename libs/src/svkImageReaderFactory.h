@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -49,6 +49,7 @@
 #include <svkNIFTIVolumeReader.h>
 #include <svkIdfVolumeReader.h>
 #include <svkDcmMriVolumeReader.h>
+#include <svkDcmPETVolumeReader.h>
 #include <svkDcmMrsVolumeReader.h>
 #include <svkDcmEnhancedVolumeReader.h>
 #include <svkDdfVolumeReader.h>
@@ -62,6 +63,7 @@
 #include <svkGESignaLX2Reader.h>
 #include <svkGEPostageStampReader.h>
 #include <svkBrukerDCMMRSReader.h>
+#include <svkBrukerRawMRSReader.h>
 #include <svkDcmRawDataReader.h>
 #include <svkDcmSegmentationVolumeReader.h>
 #include <svkLCModelCSVReader.h>
@@ -106,6 +108,7 @@ class svkImageReaderFactory : public vtkImageReader2Factory
 
         //  Members:
         svkDcmMriVolumeReader*          dcmMriVolReader;
+        svkDcmPETVolumeReader*          dcmPETVolReader;
         svkDcmMrsVolumeReader*          dcmMrsVolReader;
         svkDcmEnhancedVolumeReader*     dcmEnhancedVolReader;
         svkNIFTIVolumeReader*           niiVolReader;
@@ -120,6 +123,7 @@ class svkImageReaderFactory : public vtkImageReader2Factory
         svkGESignaLX2Reader*            geSignaLX2Reader;
         svkGEPostageStampReader*        gePostageStampReader;
         svkBrukerDCMMRSReader*          brukerDCMMRSReader;
+        svkBrukerRawMRSReader*          brukerRawMRSReader; 
         svkPhilipsSReader*              philipsSReader;
         svkDcmRawDataReader*            dcmRawDataReader;
         svkDcmSegmentationVolumeReader* dcmSegmentationVolReader; 

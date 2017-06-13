@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2016 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -89,7 +89,6 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
 
             //  Find time to peak pyrvaute/urea
             int arrivalTime = GetArrivalTime( this->GetSignal(0) );
-
   
             //  Use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
             //  each time point
@@ -170,47 +169,38 @@ class svk2SiteExchangeCostFunction : public svkKineticModelCostFunction
         /*!
          *  Initialize the parameter uppler and lower bounds for this model. 
          *  All params are dimensionless and scaled by TR
-         */     
-        virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) 
+         */
+        virtual void InitParamBounds( vector<float>* lowerBounds, vector<float>* upperBounds,
+            vector<vtkFloatArray*>* averageSigVector )
         {
-            upperBounds[0] = 50./this->TR;      //  T1all
-            lowerBounds[0] = 1. /this->TR;      //  T1all
+            (*upperBounds)[0] = 50.;       //  T1all
+            (*lowerBounds)[0] = 1. ;       //  T1all
         
-            upperBounds[1] = 0.20 * this->TR;   //  Kpl
-            lowerBounds[1] = 0.00 * this->TR;   //  Kpl
+            (*upperBounds)[1] = 0.20 ;     //  Kpl
+            (*lowerBounds)[1] = 0.00 ;     //  Kpl
 
-            upperBounds[2] =  100000;                       //  Baseline
-            lowerBounds[2] = -100000;                       //  Baseline
+            (*upperBounds)[2] =  100000;   //  Baseline
+            (*lowerBounds)[2] = -100000;   //  Baseline
+
         }   
 
 
-       /*!
-        *   Initialize the parameter initial values (dimensionless, scaled by TR)
-        */
-        virtual void InitParamInitialPosition( ParametersType* initialPosition )
+        /*!
+         *  Define the scale factors required to make the params dimensionless
+         *  (scaled for point rather than time domain)   
+         */
+        virtual void InitParamScaleFactors()
         {
-            if (this->TR == 0 )  {
-                cout << "ERROR: TR Must be set before initializing parameters" << endl;
-                exit(1); 
-            }
-            (*initialPosition)[0] =  12   / this->TR;    // T1all  (s)
-            (*initialPosition)[1] =  0.01 * this->TR;    // Kpl    (1/s)  
-            (*initialPosition)[2] =  70000;              // Baseilne (a.u.)  
-        } 
+            //  T1 all ( time ), divide by TR
+            this->paramScaleFactors[0] = 1./this->TR;
 
+            //  Kpl (rate), mult by TR
+            this->paramScaleFactors[1] = this->TR;
 
-       /*!
-        *   Get the scaled (with time units) final fitted param values. 
-        */
-        virtual void GetParamFinalScaledPosition( ParametersType* finalPosition )
-        {
-            if (this->TR == 0 )  {
-                cout << "ERROR: TR Must be set before scaling final parameters" << endl;
-                exit(1); 
-            }
-            (*finalPosition)[0] *= this->TR;    // T1all  (s)
-            (*finalPosition)[1] /= this->TR;    // Kpl    (1/s)  
-        } 
+            //  baseline (dimensionless), do not scale
+            this->paramScaleFactors[2] = 1.;
+        }
+
 
 
     private: 

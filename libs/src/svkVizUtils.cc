@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -86,6 +86,7 @@ void svkVizUtils::SaveWindow( vtkWindow* window, string fileName )
     }
     writerFactory->Delete();
     vtkWindowToImageFilter* w2i = vtkWindowToImageFilter::New();
+    w2i->ReadFrontBufferOff();
     w2i->SetInput(window);
     w2i->Update();
 

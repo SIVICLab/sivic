@@ -74,37 +74,4 @@ set | grep TK_LIBRARY
 DCMDICTPATH="${plugin_path}/dicom.dic"
 export DCMDICTPATH
 
-if [ $# == 0 ]; then
-    echo "${plugin_path}/sivic"
-    "${plugin_path}/sivic"
-fi
-
-
-if [ $# == 2 ]; then
-    path1=`echo $1 | sed 's/ /\\ /'`
-    path2=`echo $2 | sed 's/ /\\ /'`
-    echo "${plugin_path}/sivic" "${path1}" "${path2}"
-    "${plugin_path}/sivic" "${path1}" "${path2}"
-fi
-
-
-if [ $# == 4 ]; then
-    path1=`echo $1 | sed 's/ /\\ /'`
-    path2=`echo $2 | sed 's/ /\\ /'`
-    path3=`echo $3 | sed 's/ /\\ /'`
-    path4=`echo $4 | sed 's/ /\\ /'`
-    echo "${plugin_path}/sivic" "${path1}" "${path2}" "${path3}" "${path4}"
-    "${plugin_path}/sivic" "${path1}" "${path2}" "${path3}" "${path4}"
-fi
-
-if [ $# == 6 ]; then
-    path1=`echo $1 | sed 's/ /\\ /'`
-    path2=`echo $2 | sed 's/ /\\ /'`
-    path3=`echo $3 | sed 's/ /\\ /'`
-    path4=`echo $4 | sed 's/ /\\ /'`
-    path3=`echo $5 | sed 's/ /\\ /'`
-    path4=`echo $6 | sed 's/ /\\ /'`
-    echo "${plugin_path}/sivic" "${path1}" "${path2}" "${path3} ${path4} "${path5}" "${path6}"
-    "${plugin_path}/sivic" "${path1}" "${path2}" "${path3} "${path4}" "${path5}" "${path6}"
-fi
-
+${plugin_path}/sivic $*

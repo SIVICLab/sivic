@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -165,6 +165,10 @@ int main (int argc, char** argv)
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
+                if( ! svkUtils::FilePathExists( inputFileName.c_str() ) ) {
+                    cerr << endl << "Input file can not be loaded (may not exist) " << inputFileName << endl << endl;
+                    exit(1);
+                }
                 break;
             case 'o':
                 outputFileRoot.assign(optarg);
@@ -192,6 +196,10 @@ int main (int argc, char** argv)
                 break;
            case FLAG_XML_FILE:
                 xmlFileName.assign(optarg);
+                if( ! svkUtils::FilePathExists( xmlFileName.c_str() ) ) {
+                    cerr << endl << "Input file can not be loaded (may not exist) " << xmlFileName << endl << endl;
+                    exit(1);
+                }
                 break;
            case FLAG_ALGORITHM:
                 algoInt = atoi(optarg); 

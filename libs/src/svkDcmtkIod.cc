@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -142,10 +142,10 @@ float svkDcmtkIod::getFloatValue(const DcmTagKey &tag, int pos)
  *  @throws svkTagNotFound
  *  @throws svkIncompatibleVR
  */
-double svkDcmtkIod::getDoubleValue(const DcmTagKey &tag) 
+double svkDcmtkIod::getDoubleValue(const DcmTagKey &tag, bool searchInto) 
     throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR)
 {
-    return svkDcmtkUtils::getDoubleValue(this->getItem(), tag);
+    return svkDcmtkUtils::getDoubleValue(this->getItem(), tag, searchInto);
 }
 
 

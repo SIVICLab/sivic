@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -427,7 +427,7 @@ float svkDcmtkUtils::getFloatValue(DcmItem* item, const DcmTagKey &tag, int pos)
  *  @throws svkTagNotFound
  *  @throws svkIncompatibleVR
  */
-double svkDcmtkUtils::getDoubleValue(DcmItem* item, const DcmTagKey &tag) 
+double svkDcmtkUtils::getDoubleValue(DcmItem* item, const DcmTagKey &tag, bool searchInto) 
     throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR)
 {
 
@@ -445,13 +445,21 @@ double svkDcmtkUtils::getDoubleValue(DcmItem* item, const DcmTagKey &tag)
     switch (elem->ident()){
         case EVR_FL:
         case EVR_OF:
-            handleError(item->findAndGetFloat32(tag, float_value),"getDoubleValue", &tag);
+            if ( searchInto == true ) {
+                handleError(item->findAndGetFloat32(tag, float_value, 0, OFTrue),"getDoubleValue", &tag);
+            } else {
+                handleError(item->findAndGetFloat32(tag, float_value),"getDoubleValue", &tag);
+            }
             return (double) float_value;
             break;
 
         case EVR_DS:
         case EVR_FD:
-            handleError(item->findAndGetFloat64(tag, double_value),"getDoubleValue", &tag);
+            if ( searchInto == true ) {
+                handleError(item->findAndGetFloat64(tag, double_value, 0, OFTrue),"getDoubleValue", &tag);
+            } else {
+                handleError(item->findAndGetFloat64(tag, double_value),"getDoubleValue", &tag);
+            }
             return double_value;
             break;
 
@@ -462,7 +470,11 @@ double svkDcmtkUtils::getDoubleValue(DcmItem* item, const DcmTagKey &tag)
         case EVR_US:
         case EVR_xs:
         case EVR_SS:
-            handleError(item->findAndGetLongInt(tag, int_value),"getDoubleValue", &tag);
+            if ( searchInto == true ) {
+                handleError(item->findAndGetLongInt(tag, int_value, 0, OFTrue),"getDoubleValue", &tag);
+            } else {
+                handleError(item->findAndGetLongInt(tag, int_value),"getDoubleValue", &tag);
+            }
             return (double) int_value;
             break;
         default:

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 #
-#   Copyright © 2009-2014 The Regents of the University of California.
+#   Copyright © 2009-2017 The Regents of the University of California.
 #   All Rights Reserved.
 # 
 #   Redistribution and use in source and binary forms, with or without 
@@ -51,7 +51,7 @@ sub svk_ge_get_tail($);
 #   $HOST and registered hostnames on svk_ge network.
 #
 %svk_ge_data_browser_conf::network_hostnames = (
-    'qb3-7t'                    =>  'qb3-mr7t',
+    $ENV{HOST}                  =>  $ENV{HOST},
     'icn1'                      =>  'icn1'
 );
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -62,6 +62,7 @@ svkImageReaderFactory::svkImageReaderFactory()
 #endif
 
     this->dcmMriVolReader           = svkDcmMriVolumeReader::New();
+    this->dcmPETVolReader           = svkDcmPETVolumeReader::New();
     this->dcmMrsVolReader           = svkDcmMrsVolumeReader::New();
     this->dcmEnhancedVolReader      = svkDcmEnhancedVolumeReader::New();
     this->idfVolReader              = svkIdfVolumeReader::New();
@@ -76,6 +77,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->geSignaLX2Reader          = svkGESignaLX2Reader::New();
     this->gePostageStampReader      = svkGEPostageStampReader::New();
     this->brukerDCMMRSReader        = svkBrukerDCMMRSReader::New();
+    this->brukerRawMRSReader        = svkBrukerRawMRSReader::New();
     this->philipsSReader            = svkPhilipsSReader::New();
     this->dcmRawDataReader          = svkDcmRawDataReader::New();
     this->dcmSegmentationVolReader  = svkDcmSegmentationVolumeReader::New();
@@ -83,6 +85,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->lcmodelTableReader        = svkLCModelTableReader::New();
 
     vtkImageReader2Factory::RegisterReader( this->dcmMriVolReader );
+    vtkImageReader2Factory::RegisterReader( this->dcmPETVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmMrsVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmEnhancedVolReader );
     vtkImageReader2Factory::RegisterReader( this->niiVolReader );
@@ -97,6 +100,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->geSignaLX2Reader );
     vtkImageReader2Factory::RegisterReader( this->gePostageStampReader );
     vtkImageReader2Factory::RegisterReader( this->brukerDCMMRSReader );
+    vtkImageReader2Factory::RegisterReader( this->brukerRawMRSReader );
     vtkImageReader2Factory::RegisterReader( this->philipsSReader );
     vtkImageReader2Factory::RegisterReader( this->dcmRawDataReader);
     vtkImageReader2Factory::RegisterReader( this->dcmSegmentationVolReader );
@@ -129,6 +133,11 @@ svkImageReaderFactory::~svkImageReaderFactory()
     if (this->dcmMriVolReader != NULL) {
         this->dcmMriVolReader->Delete();
         this->dcmMriVolReader = NULL;
+    }
+
+    if (this->dcmPETVolReader != NULL) {
+        this->dcmPETVolReader->Delete();
+        this->dcmPETVolReader = NULL;
     }
 
     if (this->dcmMrsVolReader != NULL) {
@@ -189,6 +198,11 @@ svkImageReaderFactory::~svkImageReaderFactory()
     if (this->brukerDCMMRSReader != NULL) {
         this->brukerDCMMRSReader->Delete();
         this->brukerDCMMRSReader = NULL;
+    }
+
+    if (this->brukerRawMRSReader != NULL) {
+        this->brukerRawMRSReader->Delete();
+        this->brukerRawMRSReader = NULL;
     }
 
     if (this->philipsSReader != NULL) {
@@ -259,7 +273,9 @@ svkImageReader2* svkImageReaderFactory::CreateImageReader2( svkImageReader2::Rea
     if ( readerType == svkImageReader2::DICOM_MRS) {
         return svkDcmMrsVolumeReader::New(); 
     } else if ( readerType == svkImageReader2::DICOM_MRI) {
-        return svkDcmMriVolumeReader::New(); 
+        return svkDcmMriVolumeReader::New();
+    } else if ( readerType == svkImageReader2::DICOM_PET) {
+        return svkDcmPETVolumeReader::New();
     } else if ( readerType == svkImageReader2::DICOM_ENHANCED_MRI) {
         return svkDcmEnhancedVolumeReader::New(); 
     } else if ( readerType == svkImageReader2::DICOM_SEGMENTATION) {
@@ -290,6 +306,8 @@ svkImageReader2* svkImageReaderFactory::CreateImageReader2( svkImageReader2::Rea
         return svkLCModelTableReader::New(); 
     } else if ( readerType == svkImageReader2::BRUKER_MRS) {
         return svkBrukerDCMMRSReader::New(); 
+    } else if ( readerType == svkImageReader2::BRUKER_RAW_MRS) {
+        return svkBrukerRawMRSReader::New(); 
     } else if ( readerType == svkImageReader2::PHILIPS_S ) {
         return svkPhilipsSReader::New(); 
     } else if ( readerType == svkImageReader2::DDF) {

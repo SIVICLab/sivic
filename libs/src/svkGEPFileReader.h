@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -117,6 +117,7 @@ class svkGEPFileReader : public svkImageReader2
                                 int numSkip,
                                 int epsiFlipLobe
                             );
+        void                SetEPSIParams( int flipLobe );
         void                Deidentify( ); 
         void                ModifyRawField( string rawField, string value); 
         void                SetPSDLogic( string psdName ); 

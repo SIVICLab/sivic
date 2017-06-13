@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -178,7 +178,8 @@ void svkDICOMEnhancedMRIWriter::InitPixelData( svkDcmHeader* dcmHeader )
 
     int offset = 0; 
 
-    int vtkDataType = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() ); 
+    int vtkDataType = vtkImageData::GetScalarType( this->GetImageDataInput(0)->GetInformation() );
+    dcmHeader->InitPixelValueTransformationMacro();
     switch ( this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( vtkDataType ) ) {
 
         case svkDcmHeader::UNSIGNED_INT_1:
@@ -191,7 +192,7 @@ void svkDICOMEnhancedMRIWriter::InitPixelData( svkDcmHeader* dcmHeader )
                     static_cast<vtkUnsignedCharArray*>(this->GetImageDataInput(0)->GetPointData()->GetArray(volume))->GetPointer(0)
                 );
                 for (int i = 0; i < dataLength; i++) {
-                    shortPixelData[offset + i] = pixelData[offset + i];
+                    shortPixelData[offset + i] = pixelData[i];
                 }
                 dcmHeader->SetPixelDataType( svkDcmHeader::UNSIGNED_INT_2 );
             }

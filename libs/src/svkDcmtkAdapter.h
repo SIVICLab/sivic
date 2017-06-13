@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -105,7 +105,7 @@ class svkDcmtkAdapter: public svkDcmHeader
         virtual int     GetIntValue(const char *name);
         virtual float   GetFloatValue(const char *name);
         virtual void    GetFloatValue(const char* name, float* values, long unsigned int numValues); 
-        virtual double  GetDoubleValue(const char *name);
+        virtual double  GetDoubleValue(const char *name, bool searchInto = false );
         virtual string  GetStringValue(const char *name);
         virtual string  GetStringValue(const char *name, int pos);
 
