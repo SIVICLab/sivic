@@ -85,7 +85,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->dcmMriVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmMrsVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmEnhancedVolReader );
-    vtkImageReader2Factory::RegisterReader( this->niiVolReader )
+    vtkImageReader2Factory::RegisterReader( this->niiVolReader );
     vtkImageReader2Factory::RegisterReader( this->idfVolReader );
     vtkImageReader2Factory::RegisterReader( this->ddfVolReader );
     vtkImageReader2Factory::RegisterReader( this->fdfVolReader );
