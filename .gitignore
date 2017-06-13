@@ -1,6 +1,7 @@
 .idea
 .cproject
 .project
+*.sublime-*
 CMakeFiles
 Linux_x86_64
 Linux_x86_64_debug

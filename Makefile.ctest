@@ -30,7 +30,7 @@ CMAKE_PREFIX_PATH 	= ${VTK_DIR}
 	
 #   Mac OS X
 ifeq ($(OSTYPE),Darwin)
-	CMAKE_DIR               := /opt/local/bin
+	CMAKE_DIR               := /usr/local/bin
 	DCMTK_DIR               := /usr/local/dicom
 	CLAPACK_DIR             := /usr/local/clapack-3.2.1-CMAKE
 	VTK6_DIR_DBG            := /usr/local/vtk6.3/lib/cmake/vtk-6.3
