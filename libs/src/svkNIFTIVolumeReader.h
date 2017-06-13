@@ -39,17 +39,17 @@
  *      Beck Olson
  */
 
-#ifndef SVK_IDF_VOLUME_READER_H
-#define SVK_IDF_VOLUME_READER_H
+#ifndef SVK_NIFTI_VOLUME_READER_H
+#define SVK_NIFTI_VOLUME_READER_H
 
 #include <vtkInformation.h>
 #include <map>
-#include <vtkStringArray.h>
 #include <string>
 
 #include <svkUtils.h>
 #include <svkImageReader2.h>
 #include <svkEnhancedMRIIOD.h>
+#include <vtkNIFTIImageReader.h>
 
 namespace svk {
 
@@ -59,11 +59,6 @@ class svkNIFTIVolumeReader : public svkImageReader2 {
 
         static svkNIFTIVolumeReader* New();
         vtkTypeMacro(svkNIFTIVolumeReader, svkImageReader2);
-
-        typedef enum {
-            TIME_SERIES_DATA = 0,
-            MULTI_CHANNEL_DATA
-        } MultiVolumeType;
 
         virtual const char* GetDescriptiveName() {
             return "NIFTI File";
@@ -104,37 +99,19 @@ class svkNIFTIVolumeReader : public svkImageReader2 {
         void            InitMRImagingModifierMacro();
         void            InitMRReceiveCoilMacro();
         void            InitMRTransmitCoilMacro();
-        void            ReadVolumeFile();
+        void            ReadData();
         int             GetNumPixelsInVol();
         int             GetNumSlices();
-        void            ParseIdfComment(
-                                        string comment,
-                                        string* PatientName,
-                                        string* seriesDescription,
-                                        string* studyDate
-                        );
-        string  GetDcmPatientPositionString(string patientPosition);
-        void            ParseIdf();
-        void            PrintKeyValuePairs();
-        bool            IsIdfStudyIdAccessionNumber();
-
 
 
         // Members:
-        void*                                   pixelData;
-        ifstream*                               volumeHdr;
-        map <string, string>                    idfMap;
+        map <string, string>                    niftiMap;
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
-        bool                                    readIntAsSigned;
         svkEnhancedMRIIOD*                      iod;
-        vtkStringArray*                         tmpFileNames;
-        int                                     numFrames;
-        int                                     numSlices;
-        int                                     numVolumes;
-        svkNIFTIVolumeReader::MultiVolumeType   multiVolumeType;
+        vtkNIFTIImageReader*                    vtkNIFTIReader;
 };
 
 } //svk
 
 
-#endif //SVK_IDF_VOLUME_READER_H
+#endif //SVK_NIFTI_VOLUME_READER_H
