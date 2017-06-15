@@ -41,17 +41,12 @@
 
 
 #include <svkNIFTIVolumeReader.h>
-#include <svkDcmMriVolumeReader.h>
 #include <vtkDebugLeaks.h>
-#include <vtkByteSwap.h>
-
-#include <sys/stat.h>
 
 
 using namespace svk;
 
 
-//vtkCxxRevisionMacro(svkNIFTIVolumeReader, "$Rev$");
 vtkStandardNewMacro(svkNIFTIVolumeReader);
 
 
@@ -68,7 +63,8 @@ svkNIFTIVolumeReader::svkNIFTIVolumeReader()
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
-    this->vtkNIFTIReader = svkNIFTIVolumeReader::New();
+    this->vtkNIFTIReader = vtkNIFTIImageReader::New();
+    this->vtkNIFTIHeader = vtkNIFTIImageHeader::New();
 }
 
 
@@ -77,14 +73,7 @@ svkNIFTIVolumeReader::svkNIFTIVolumeReader()
  */
 svkNIFTIVolumeReader::~svkNIFTIVolumeReader()
 {
-
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
-
-    if ( this->vtkNIFTIReader != NULL )  {
-        delete vtkNIFTIReader; 
-        this->vtkNIFTIReader = NULL; 
-    }
-
 }
 
 
@@ -99,137 +88,27 @@ int svkNIFTIVolumeReader::CanReadFile(const char* fname)
 
 
 /*!
- *  Interpret the volumes as time points or channels.       
+ *  Loads the nifti file (.nii) into a VTK nifti reader
  */
-void svkNIFTIVolumeReader::SetMultiVolumeType(svkNIFTIVolumeReader::MultiVolumeType volumeType)   
+void svkNIFTIVolumeReader::ReadData()
 {
-    this->multiVolumeType = volumeType; 
+
+    vtkDebugMacro( << this->GetClassName() << "::ReadData()" );
+
+    this->vtkNIFTIReader->SetFileName(this->GetFileName());
+    this->Update();
 }
 
 
 /*!
- *  Set boolean to determine if int2 should be interpreted as signed, or unsigned.
- */
-void svkNIFTIVolumeReader::SetReadIntAsSigned(bool readIntAsSigned)
-{
-    this->readIntAsSigned = readIntAsSigned;
-    if (this->GetDebug()) {
-        vtkWarningWithObjectMacro(this, "readIntAsSigned: " << this->readIntAsSigned);
-    }
-}
-
-
-/*!
- *  Reads the IDf data file (.byt, .int2, .real)
- */
-void svkNIFTIVolumeReader::ReadVolumeFile()
-{
-
-    if ( this->onlyReadHeader == true ) {
-        return; 
-    }
-
-    vtkDebugMacro( << this->GetClassName() << "::ReadVolumeFile()" );
-
-    svkImageData* data = this->GetOutput(); 
-
-    for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
-
-        string volFileName = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) );
-        int dataUnitSize; 
-        vtkDataArray* array;
-        if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
-            array = vtkUnsignedCharArray::New();
-            volFileName.append( ".byt" );
-            dataUnitSize = 1;
-        } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
-            array = vtkUnsignedShortArray::New();
-            volFileName.append( ".int2" );
-            dataUnitSize = 2;
-        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
-            array = vtkShortArray::New();
-            volFileName.append( ".int2" );
-            dataUnitSize = 2;
-        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
-            array =  vtkFloatArray::New();
-            volFileName.append( ".real" );
-            dataUnitSize = 4;
-        }
-
-        /*
-        *   Flatten the data volume into one dimension
-        */
-        int numBytesInVol = this->GetNumPixelsInVol() * dataUnitSize; 
-        this->pixelData = (void* ) malloc( numBytesInVol ); 
-
-        ifstream* volumeDataIn = new ifstream();
-        volumeDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
-
-        if( svkUtils::IsFileCompressed( volFileName )) {
-        	svkUtils::UncompressFile( volFileName );
-        }
-        volumeDataIn->open( volFileName.c_str(), ios::binary);
-        volumeDataIn->read( (char *)(this->pixelData), numBytesInVol );
-
-        if ( this->GetSwapBytes() ) {
-            if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 || this->GetFileType() == svkDcmHeader::SIGNED_INT_2) {
-                vtkByteSwap::SwapVoidRange(pixelData, this->GetNumPixelsInVol(), sizeof(short));
-            } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
-                vtkByteSwap::SwapVoidRange(pixelData, this->GetNumPixelsInVol(), sizeof(float));
-            }
-        }
-
-        array->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
-
-        int vtkDataType; 
-        if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
-            vtkDataType = VTK_UNSIGNED_CHAR; 
-        } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
-            vtkDataType = VTK_UNSIGNED_SHORT; 
-        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
-            vtkDataType = VTK_SHORT; 
-        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
-            vtkDataType = VTK_FLOAT; 
-        }
-
-        vtkDataObject::SetPointDataActiveScalarInfo(
-            this->GetOutput()->GetInformation(),
-            vtkDataType,
-            this->GetOutput()->GetNumberOfScalarComponents()
-        );
-
-
-        ostringstream number;
-        number << fileIndex ; 
-        string arrayNameString("pixels"); 
-        arrayNameString.append(number.str());
-
-        array->SetName( arrayNameString.c_str() ); 
-
-        if (fileIndex == 0 ) {
-            data->GetPointData()->SetScalars(array);
-        } else {
-            data->GetPointData()->AddArray(array);
-        }
-
-        // We can now get rid of of our local reference to the array
-        array->Delete();
-
-        volumeDataIn->close();
-        delete volumeDataIn;
-    }
-}
-
-
-/*!
- *  Utility method returns the total number of Pixels in 3D. 
+ *  Utility method returns the total number of Pixels in 3D.
  */
 int svkNIFTIVolumeReader::GetNumPixelsInVol()
 {
     return (
-        ( (this->GetDataExtent())[1] + 1 ) * 
-        ( (this->GetDataExtent())[3] + 1 ) * 
-        ( (this->GetDataExtent())[5] + 1 )  
+        ( (this->GetDataExtent())[1] + 1 ) *
+        ( (this->GetDataExtent())[3] + 1 ) *
+        ( (this->GetDataExtent())[5] + 1 )
     );
 }
 
@@ -239,7 +118,7 @@ int svkNIFTIVolumeReader::GetNumPixelsInVol()
  */
 int svkNIFTIVolumeReader::GetNumSlices()
 {
-    vtkWarningWithObjectMacro(this, "GetNumSlices: May not be correct for non axial data.");   
+    vtkWarningWithObjectMacro(this, "GetNumSlices: May not be correct for non axial data.");
     return (this->GetDataExtent())[5] + 1;
 }
 
@@ -269,7 +148,7 @@ void svkNIFTIVolumeReader::ExecuteDataWithInformation(vtkDataObject* output, vtk
             return;
         }
 
-        this->ReadVolumeFile();
+        this->ReadData();
 
         this->GetOutput()->SetDataRange( data->GetScalarRange(), svkImageData::REAL );
         double imaginaryRange[2] = {0,0}; 
@@ -323,16 +202,6 @@ void svkNIFTIVolumeReader::ExecuteInformation()
         this->SetupOutputInformation();
     }
 
-    //  This is a workaround required since the vtkImageAlgo executive
-    //  for the reder resets the Extent[5] value to the number of files
-    //  which is not correct for 3D multislice volume files. So store
-    //  the files in a temporary array until after ExecuteData has been
-    //  called, then reset the array.
-    this->tmpFileNames = vtkStringArray::New();
-    this->tmpFileNames->DeepCopy(this->FileNames);
-    this->FileNames->Delete();
-    this->FileNames = NULL;
-
 }
 
 
@@ -350,13 +219,13 @@ void svkNIFTIVolumeReader::InitDcmHeader()
     this->iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
     this->iod->InitDcmHeader();
 
-    // this->InitPatientModule();
-    // this->InitGeneralStudyModule();
-    // this->InitGeneralSeriesModule();
-    // this->InitGeneralEquipmentModule();
-    // this->InitImagePixelModule();
-    // this->InitMultiFrameFunctionalGroupsModule();
-    // this->InitAcquisitionContextModule();
+     this->InitPatientModule();
+     this->InitGeneralStudyModule();
+     this->InitGeneralSeriesModule();
+     this->InitGeneralEquipmentModule();
+     this->InitImagePixelModule();
+//     this->InitMultiFrameFunctionalGroupsModule();
+     this->InitAcquisitionContextModule();
 
     if (this->GetDebug()) {
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
@@ -371,26 +240,19 @@ void svkNIFTIVolumeReader::InitDcmHeader()
  */
 svkDcmHeader::DcmPixelDataFormat svkNIFTIVolumeReader::GetFileType()
 {
-    // istringstream* iss = new istringstream();
-    // iss->str(idfMap["fileType"]);  
 
-    // int fileType; 
-    // *iss >> fileType; 
-    // delete iss; 
+    int fileType = this->vtkNIFTIReader->GetDataScalarType();
 
-    // if ( fileType == 2 ) { 
-    //     return svkDcmHeader::UNSIGNED_INT_1;
-    // } else if ( fileType == 3 ) { 
-    //     if( this->readIntAsSigned ) {
-    //         return svkDcmHeader::SIGNED_INT_2;
-    //     } else {
-    //         return svkDcmHeader::UNSIGNED_INT_2;
-    //     }
-    // } else if ( fileType == 7 ) { 
-    //     return svkDcmHeader::SIGNED_FLOAT_4;
-    // }
+    switch (fileType) {
+        case 0: return svkDcmHeader::UNDEFINED;
+        case 7: return svkDcmHeader::UNSIGNED_INT_1;
+        case 9: return svkDcmHeader::UNSIGNED_INT_2;
+        case 8: return svkDcmHeader::SIGNED_INT_2;
+        case 10: return svkDcmHeader::SIGNED_FLOAT_4;
+        case 11: return svkDcmHeader::SIGNED_FLOAT_8;
+        default: return svkDcmHeader::UNSIGNED_INT_2;
+    }
 
-    return svkDcmHeader::UNSIGNED_INT_2;
 }
 
 
@@ -401,15 +263,10 @@ svkDcmHeader::DcmPixelDataFormat svkNIFTIVolumeReader::GetFileType()
 void svkNIFTIVolumeReader::InitPatientModule()
 {
 
-    string patientID;
-    if ( this->IsIdfStudyIdAccessionNumber() ) {
-        patientID = "";  
-    } else {
-        patientID = idfMap[ "studyId" ];  
-    }
+    string patientID = this->GetFileName();
 
     this->GetOutput()->GetDcmHeader()->InitPatientModule(
-        this->GetOutput()->GetDcmHeader()->GetDcmPatientName( idfMap["patientName"] ),
+        this->GetOutput()->GetDcmHeader()->GetDcmPatientName(this->GetFileName()),
         patientID, 
         "",
         "" 
@@ -423,19 +280,13 @@ void svkNIFTIVolumeReader::InitPatientModule()
  */
 void svkNIFTIVolumeReader::InitGeneralStudyModule()
 {
-    string accessionNumber;
-    if ( this->IsIdfStudyIdAccessionNumber() ) {
-        accessionNumber = idfMap[ "studyId" ];  
-    } else {
-        accessionNumber = ""; 
-    }
-
+    string accessionNumber = this->GetFileName();
 
     this->GetOutput()->GetDcmHeader()->InitGeneralStudyModule(
-        idfMap[ "studyDate" ], 
         "",
         "",
-        idfMap[ "studyNum" ], 
+        "",
+        this->GetFileName(),
         accessionNumber, 
         "" 
     );
@@ -450,9 +301,9 @@ void svkNIFTIVolumeReader::InitGeneralSeriesModule()
 {
 
     this->GetOutput()->GetDcmHeader()->InitGeneralSeriesModule(
-        idfMap[ "seriesNum" ], 
-        idfMap[ "seriesDescription" ], 
-        GetDcmPatientPositionString( idfMap[ "patientPosition" ] )
+        "",
+        "",
+        ""
     );
 
 }
@@ -473,19 +324,11 @@ void svkNIFTIVolumeReader::InitGeneralEquipmentModule()
  */
 void svkNIFTIVolumeReader::InitImagePixelModule()
 {        
-    int value;
-    istringstream* iss = new istringstream();
+    int rows = this->vtkNIFTIHeader->GetDim(1);
+    this->GetOutput()->GetDcmHeader()->SetValue( "Rows", rows );
 
-    iss->str(idfMap["numPixels_1"]);  
-    *iss >> value; 
-    this->GetOutput()->GetDcmHeader()->SetValue( "Rows", value ); 
-
-    iss->clear();
-    iss->str(idfMap["numPixels_0"]);  
-    *iss >> value; 
-    this->GetOutput()->GetDcmHeader()->SetValue( "Columns", value ); 
-
-    delete iss; 
+    int cols = this->vtkNIFTIHeader->GetDim(2);
+    this->GetOutput()->GetDcmHeader()->SetValue( "Columns", cols );
 }
 
 
@@ -494,23 +337,12 @@ void svkNIFTIVolumeReader::InitImagePixelModule()
  */
 void svkNIFTIVolumeReader::InitMultiFrameFunctionalGroupsModule()
 {
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "ContentDate",
-        idfMap[ "studyDate" ] 
-    );
-
-    int value;
-    istringstream* iss = new istringstream();
-    iss->str(idfMap["numPixels_2"]);  
-    *iss >> this->numSlices; 
-
-    this->numVolumes = this->GetFileNames()->GetNumberOfValues();
-    this->numFrames = this->numSlices * this->numVolumes; 
+    this->numSlices = this->vtkNIFTIHeader->GetDim(3);
+    this->numVolumes = this->vtkNIFTIHeader->GetDim(4);
+    this->numFrames = this->numSlices * this->numVolumes;
 
     this->InitSharedFunctionalGroupMacros();
     this->InitPerFrameFunctionalGroupMacros();
-    delete iss; 
 }
 
 
@@ -542,55 +374,23 @@ void svkNIFTIVolumeReader::InitPerFrameFunctionalGroupMacros()
 
     //  Get toplc float array from idfMap and use that to generate 
     //  frame locations:
-    double toplc[3];
-    int value;
-    for (int i = 0; i < 3; i++) {
-        ostringstream ossIndex;
-        ossIndex << i;     
-        string indexString(ossIndex.str());
-        istringstream* iss = new istringstream();
-        iss->setf(ios::fixed, ios::floatfield); 
-        iss->precision(3);
-        iss->str( idfMap[ string("toplc_" + indexString) ] );  
-        *iss >> setiosflags(std::ios::fixed) >> setprecision(3) >>  toplc[i]; 
-        delete iss; 
-    }
+    double toplc[3] = {-127.50000, -156.49001, 96.99010};
 
-    double dcos[3][3];
-    double pixelSize[3];
-    for (int i = 0; i < 3; i++) {
+    double dcos[3][3] = {
+            {1.00000, 0.00000, 0.00000},
+            {0.00000, 1.00000, 0.00000},
+            {0.00000, 0.00000, -1.00000}
+    };
 
-        ostringstream ossIndexI;
-        ossIndexI << i;
-        string indexStringI(ossIndexI.str());
+    double pixelSize[3] = {1.00000, 1.00000, 1.50000};
 
-        istringstream* issSize = new istringstream();
-        issSize->str( idfMap[ string( "pixelSize_" + indexStringI ) ] );
-        *issSize >> pixelSize[i];
+    svkDcmHeader::DimensionVector dimensionVector =
+            this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(
+            &dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
 
-        for (int j = 0; j < 3; j++) {
-            ostringstream ossIndexJ;
-            ossIndexJ << j;
-            string indexStringJ(ossIndexJ.str());
-
-            istringstream* iss = new istringstream();
-            iss->str( idfMap[ string("dcos_" + indexStringI + "_" + indexStringJ)] ); 
-            *iss >> dcos[i][j];
-            delete iss; 
-        }
-        delete issSize; 
-    }
-
-    svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
-    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
-
-    if ( this->multiVolumeType == svkNIFTIVolumeReader::MULTI_CHANNEL_DATA ) { 
-        this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
-            &dimensionVector, svkDcmHeader::CHANNEL_INDEX, this->numVolumes-1);
-    } else if ( this->multiVolumeType == svkNIFTIVolumeReader::TIME_SERIES_DATA ) { 
-        this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
+    this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
             &dimensionVector, svkDcmHeader::TIME_INDEX, this->numVolumes-1);
-    } 
 
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
                 toplc,        
@@ -606,21 +406,9 @@ void svkNIFTIVolumeReader::InitPerFrameFunctionalGroupMacros()
  */
 void svkNIFTIVolumeReader::InitPixelMeasuresMacro()
 {
-    float pixelSize[3];
-    for (int i = 0; i < 3; i++) {
-        ostringstream ossIndex;
-        ossIndex << i;
-        string indexString(ossIndex.str());
-
-        istringstream* issSize = new istringstream();
-        issSize->str( idfMap[ string( "pixelSize_" + indexString ) ] );
-        *issSize >> pixelSize[i];
-        delete issSize; 
-    }
-
     this->GetOutput()->GetDcmHeader()->InitPixelMeasuresMacro(
-        idfMap[ string( "pixelSize_0" ) ] + "\\" + idfMap[ string( "pixelSize_1" ) ],
-        idfMap[ string( "sliceThickness" ) ]
+        "1.00000\\1.00000",
+        "1.50000"
     );
 }
 
@@ -637,21 +425,9 @@ void svkNIFTIVolumeReader::InitPlaneOrientationMacro()
         "PlaneOrientationSequence"
     );
 
-    string orientationString;
-    for (int i = 0; i < 2; i++) {
-        ostringstream ossIndexI;
-        ossIndexI << i;
-        string indexStringI(ossIndexI.str());
-        for (int j = 0; j < 3; j++) {
-            ostringstream ossIndexJ;
-            ossIndexJ << j;
-            string indexStringJ(ossIndexJ.str());
-            orientationString.append( idfMap["dcos_" + indexStringI + "_" + indexStringJ ]) ;
-            if (i + j < 3) {
-                orientationString.append( "\\") ;
-            }
-        }
-    }
+    string orientationString = "1.00000\\0.00000\\0.00000\\";
+    orientationString += "0.00000\\1.00000\\0.00000\\";
+    orientationString += "0.00000\\0.00000\\-1.00000";
 
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "PlaneOrientationSequence",
@@ -667,20 +443,7 @@ void svkNIFTIVolumeReader::InitPlaneOrientationMacro()
     double normal[3];
     this->GetOutput()->GetDcmHeader()->GetNormalVector(normal);
 
-    double dcosSliceOrder[3];
-    string indexStringI("2");
-    for (int j = 0; j < 3; j++) {
-       
-        ostringstream ossIndexJ;
-        ossIndexJ << j;
-        string indexStringJ(ossIndexJ.str());
-
-        istringstream* iss = new istringstream();
-        string newone ("dcos_" + indexStringI + "_" + indexStringJ  );
-        iss->str( idfMap["dcos_" + indexStringI + "_" + indexStringJ ] );
-        *iss >> dcosSliceOrder[j];
-        delete iss;
-    }
+    double dcosSliceOrder[3] = {0, 1, 0};
 
     //  Use the scalar product to determine whether the data in the .cmplx
     //  file is ordered along the slice normal or antiparalle to it.
@@ -706,6 +469,30 @@ void svkNIFTIVolumeReader::InitMRTransmitCoilMacro()
 
 
 /*!
+ *  Receive Coil:
+ */
+void svkNIFTIVolumeReader::InitMRReceiveCoilMacro()
+{
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+            "SharedFunctionalGroupsSequence",
+            0,
+            "MRReceiveCoilSequence"
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+            "MRReceiveCoilSequence",
+            0,
+            "ReceiveCoilName",
+            "",
+            "SharedFunctionalGroupsSequence",
+            0
+    );
+
+}
+
+
+/*!
  *
  */
 void svkNIFTIVolumeReader::InitMRImagingModifierMacro()
@@ -715,123 +502,6 @@ void svkNIFTIVolumeReader::InitMRImagingModifierMacro()
     float pixelBandwidth = -1; 
 
     this->GetOutput()->GetDcmHeader()->InitMRImagingModifierMacro( transmitFreq, pixelBandwidth ); 
-}
-
-
-/*!
- *  Receive Coil:
- */
-void svkNIFTIVolumeReader::InitMRReceiveCoilMacro()
-{
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "MRReceiveCoilSequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRReceiveCoilSequence",
-        0,
-        "ReceiveCoilName",
-        idfMap[ string( "coilName" ) ],
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-}
-
-
-/*! 
- *  Use the IDF patient position string to set the DCM_PatientPosition data element.
- */
-string svkNIFTIVolumeReader::GetDcmPatientPositionString(string patientPosition)
-{
-    size_t delim = patientPosition.find_first_of(',');
-    string headFeetFirst( patientPosition.substr(0, delim) );
-
-    for(int i = 0; i < headFeetFirst.size(); i++){
-        headFeetFirst[i] = tolower( headFeetFirst[i] );
-    }
-
-    string dcmPatientPosition;
-    if( headFeetFirst.find("head first") != string::npos ) {
-        dcmPatientPosition.assign("HF");
-    } else if( headFeetFirst.find("feet first") != string::npos ) {
-        dcmPatientPosition.assign("FF");
-    } else {
-        dcmPatientPosition.assign("UNKNOWN");
-    }
-
-    //  skip ", ":
-    string spd( patientPosition.substr(delim + 2) );
-    for(int i = 0; i < spd.size(); i++){
-        spd[i] = tolower( spd[i] );
-    }
-
-    if( spd.find("supine") != string::npos ) {
-        dcmPatientPosition += "S";
-    } else if( spd.find("prone") != string::npos ) {
-        dcmPatientPosition += "P";
-    } else if( spd.find("decubitus left") != string::npos ) {
-        dcmPatientPosition += "DL";
-    } else if( spd.find("decubitus right") != string::npos ) {
-        dcmPatientPosition += "DR";
-    } else {
-        dcmPatientPosition += "UNKNOWN";
-    }
-
-    return dcmPatientPosition; 
-}
-
-
-/*! 
- *  Parses the IDF comment field for:
- *      PatientName
- *      seriesDescription
- *      studyDate
- */
-void svkNIFTIVolumeReader::ParseIdfComment(string comment, string* PatientName, 
-    string* seriesDescription, string* studyDate)
-{
-
-    PatientName->assign(""); 
-    studyDate->assign(""); 
-    seriesDescription->assign(""); 
-
-    size_t delim;
-    if ( (delim = comment.find_first_of('-')) != string::npos)
-    { 
-        delim = delim -1;
-        PatientName->assign( svkImageReader2::StripWhite( comment.substr(0, delim) ) );
-
-        string commentSub;
-        commentSub = comment.substr(delim + 3);
-        delim = commentSub.find_last_of('-') - 1;
-        seriesDescription->assign( commentSub.substr(0, delim) );
-    
-        studyDate->assign( commentSub.substr(delim + 3) );
-
-        studyDate->assign( this->RemoveDelimFromDate(studyDate) );
-    }
-}
-
-
-/*!
- *  Tries to determine whether an idf studyId field is a t-number 
- *  aka study id or a b# aka patient id based on a leading "t#_". 
- */
-bool svkNIFTIVolumeReader::IsIdfStudyIdAccessionNumber()
-{
-    bool isAccession = false; 
-    string idfStudyId = idfMap[ "studyId" ]; 
-
-    size_t pos = idfStudyId.find( "t" ); 
-    if ( pos == 0 ) {
-        isAccession = true; 
-    }
-
-    return isAccession; 
 }
 
 

@@ -50,6 +50,7 @@
 #include <svkImageReader2.h>
 #include <svkEnhancedMRIIOD.h>
 #include <vtkNIFTIImageReader.h>
+#include <vtkNIFTIImageHeader.h>
 
 namespace svk {
 
@@ -108,7 +109,12 @@ class svkNIFTIVolumeReader : public svkImageReader2 {
         map <string, string>                    niftiMap;
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         svkEnhancedMRIIOD*                      iod;
+        vtkStringArray*                         tmpFileNames;
         vtkNIFTIImageReader*                    vtkNIFTIReader;
+        vtkNIFTIImageHeader*                    vtkNIFTIHeader;
+        int                                     numFrames;
+        int                                     numSlices;
+        int                                     numVolumes;
 };
 
 } //svk
