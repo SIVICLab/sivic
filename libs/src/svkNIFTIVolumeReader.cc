@@ -64,7 +64,6 @@ svkNIFTIVolumeReader::svkNIFTIVolumeReader()
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
     this->vtkNIFTIReader = vtkNIFTIImageReader::New();
-    this->vtkNIFTIHeader = vtkNIFTIImageHeader::New();
 }
 
 
@@ -74,6 +73,7 @@ svkNIFTIVolumeReader::svkNIFTIVolumeReader()
 svkNIFTIVolumeReader::~svkNIFTIVolumeReader()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
+    this->vtkNIFTIReader->Delete();
 }
 
 
@@ -90,13 +90,16 @@ int svkNIFTIVolumeReader::CanReadFile(const char* fname)
 /*!
  *  Loads the nifti file (.nii) into a VTK nifti reader
  */
-void svkNIFTIVolumeReader::ReadData()
+void svkNIFTIVolumeReader::LoadNifti()
 {
 
     vtkDebugMacro( << this->GetClassName() << "::ReadData()" );
 
     this->vtkNIFTIReader->SetFileName(this->GetFileName());
-    this->Update();
+    this->vtkNIFTIReader->Update();
+
+    this->vtkNIFTIHeader = this->vtkNIFTIReader->GetNIFTIHeader();
+
 }
 
 
@@ -129,36 +132,7 @@ int svkNIFTIVolumeReader::GetNumSlices()
  */
 void svkNIFTIVolumeReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
-
-    this->FileNames = vtkStringArray::New();
-    this->FileNames->DeepCopy(this->tmpFileNames);
-    this->tmpFileNames->Delete();
-    this->tmpFileNames = NULL;
-
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
-
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
-
-    if ( this->GetFileNames()->GetNumberOfValues() ) {
-
-        vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
-        struct stat fs;
-        if ( stat(this->GetFileNames()->GetValue(0), &fs) ) {
-            vtkErrorMacro("Unable to open file " << string(this->GetFileNames()->GetValue(0)) );
-            return;
-        }
-
-        this->ReadData();
-
-        this->GetOutput()->SetDataRange( data->GetScalarRange(), svkImageData::REAL );
-        double imaginaryRange[2] = {0,0}; 
-
-        // Imaginary values are zeroes-- since images only have real components
-        this->GetOutput()->SetDataRange( imaginaryRange, svkImageData::IMAGINARY );
-
-        // Magnitudes are the same as the reals since the imaginaries are zero
-        this->GetOutput()->SetDataRange( data->GetScalarRange(), svkImageData::MAGNITUDE );
-    }
 
     /* 
      * We need to make a shallow copy of the output, otherwise we would have it
@@ -198,6 +172,8 @@ void svkNIFTIVolumeReader::ExecuteInformation()
             return;
         }
 
+        this->LoadNifti();
+
         this->InitDcmHeader();
         this->SetupOutputInformation();
     }
@@ -219,13 +195,13 @@ void svkNIFTIVolumeReader::InitDcmHeader()
     this->iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
     this->iod->InitDcmHeader();
 
-     this->InitPatientModule();
-     this->InitGeneralStudyModule();
-     this->InitGeneralSeriesModule();
-     this->InitGeneralEquipmentModule();
-     this->InitImagePixelModule();
-//     this->InitMultiFrameFunctionalGroupsModule();
-     this->InitAcquisitionContextModule();
+    this->InitPatientModule();
+    this->InitGeneralStudyModule();
+    this->InitGeneralSeriesModule();
+    this->InitGeneralEquipmentModule();
+    this->InitImagePixelModule();
+    this->InitMultiFrameFunctionalGroupsModule();
+    this->InitAcquisitionContextModule();
 
     if (this->GetDebug()) {
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();

@@ -100,7 +100,7 @@ class svkNIFTIVolumeReader : public svkImageReader2 {
         void            InitMRImagingModifierMacro();
         void            InitMRReceiveCoilMacro();
         void            InitMRTransmitCoilMacro();
-        void            ReadData();
+        void            LoadNifti();
         int             GetNumPixelsInVol();
         int             GetNumSlices();
 
