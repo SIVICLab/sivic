@@ -277,16 +277,15 @@ void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
 
         //  Get the volumetric center in acquisition frame coords:
         double volumeCenterAcqFrame[3];
-        for (int i = 0; i < 3; i++) {
-            //volumeCenterAcqFrame[i] = this->GetHeaderValueAsFloat("location[]", i);
-            volumeCenterAcqFrame[i] = 0.; 
-        }
+        volumeCenterAcqFrame[0] = 0.; 
+        volumeCenterAcqFrame[1] = 0.; 
+        volumeCenterAcqFrame[2] = this->GetHeaderValueAsFloat("ACQ_slice_offset"); 
+        cout << "OFFSET: " << volumeCenterAcqFrame[2] << endl;
 
         double* volumeTlcAcqFrame = new double[3];
         for (int i = 0; i < 3; i++) {
             volumeTlcAcqFrame[i] = volumeCenterAcqFrame[i]
                                  + (100 - pixelSpacing[i] )/2;
-                                 //+ ( this->GetHeaderValueAsFloat("span[]", i) - pixelSpacing[i] )/2;
         }
         svkVarianReader::UserToMagnet(volumeTlcAcqFrame, volumeTlcLPSFrame, dcos);
         delete [] volumeTlcAcqFrame;
@@ -307,9 +306,10 @@ void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
 
         //  Location is the center of the image frame in user (acquisition frame).
         double centerAcqFrame[3];
-        for ( int j = 0; j < 3; j++) {
-            centerAcqFrame[j] = 0.0;
-        }
+        centerAcqFrame[0] = 0.0; 
+        centerAcqFrame[1] = 0.0; 
+        centerAcqFrame[2] = this->GetHeaderValueAsFloat("ACQ_slice_offset"); 
+        cout << "OFFSET: " << centerAcqFrame[2] << endl;
 
         //  Now get the center of the tlc voxel in the acq frame:
         double* tlcAcqFrame = new double[3];
@@ -392,7 +392,7 @@ void svkBrukerRawMRSMapper::InitPlaneOrientationMacro()
 
 
 /*!
- *
+ *  Initializes the numeric and string representation of the orientation
  */
 void svkBrukerRawMRSMapper::GetDcmOrientation(float dcos[3][3], string* orientationString) 
 {
@@ -402,10 +402,13 @@ void svkBrukerRawMRSMapper::GetDcmOrientation(float dcos[3][3], string* orientat
     char* cstr = new char [orientationString->length()+1];
     strcpy( cstr, orientationString->c_str() );
     float dcosTmp[9]; 
-    for ( int i = 0; i < 9; i++ ) {    
-        string tmp = string( strtok( cstr, " ") ); 
-        dcosTmp[i] = svkTypeUtils::StringToFloat( strtok( cstr, " ") ); 
+    char* element; 
+    dcosTmp[0] = svkTypeUtils::StringToFloat( strtok( cstr, " ") ); 
+    for ( int i = 1; i < 9; i++ ) {    
+        dcosTmp[i] = svkTypeUtils::StringToFloat( strtok( NULL, " ") ); 
     }
+
+    //  RAS 
     dcos[0][0] = dcosTmp[0]; 
     dcos[0][1] = dcosTmp[1]; 
     dcos[0][2] = dcosTmp[2]; 
@@ -416,10 +419,79 @@ void svkBrukerRawMRSMapper::GetDcmOrientation(float dcos[3][3], string* orientat
     dcos[2][1] = dcosTmp[7]; 
     dcos[2][2] = dcosTmp[8]; 
 
-    size_t pos; 
-    while ( (pos = orientationString->find_first_of(' ') ) != string::npos ) {
-        orientationString->replace( pos, 1,  "\\"); 
+    string encoding = this->GetHeaderValueAsString("PVM_EncOrder");
+    if ( encoding.find("CENTRIC_ENC") != string::npos ) { 
+        encoding = "CENTRIC"; 
+    } else if ( encoding.find("LINEAR_ENC") != string::npos  ) { 
+        encoding = "LINEAR"; 
+    }  else {
+        //  make this the default.  Not sure if would be specified for all sequences. 
+        encoding = "LINEAR"; 
     }
+
+    if (encoding.compare("LINEAR") == 0 ) {
+
+        //  Invert about origin in RL and AP: 
+        float inverter[3][3]; 
+        inverter[0][0] = -1;   
+        inverter[0][1] = 0;  
+        inverter[0][2] = 0;  
+        inverter[1][0] = 0;  
+        inverter[1][1] = -1;  
+        inverter[1][2] = 0;  
+        inverter[2][0] = 0;  
+        inverter[2][1] = 0;  
+        inverter[2][2] = 1;  
+
+        float tmp[3][3];
+        tmp[0][0] = 0; 
+        tmp[0][1] = 0; 
+        tmp[0][2] = 0; 
+        tmp[1][0] = 0; 
+        tmp[1][1] = 0; 
+        tmp[1][2] = 0; 
+        tmp[2][0] = 0; 
+        tmp[2][1] = 0; 
+        tmp[2][2] = 0; 
+
+        for ( int j = 0; j < 3; j++ ) { 
+            for ( int i = 0; i < 3; i++ ) { 
+                for ( int k = 0; k < 3; k++ ) { 
+                    tmp[j][i] += dcos[j][k] * inverter[k][i];  
+                }
+            }
+        }
+        dcos[0][0] = tmp[0][0]; 
+        dcos[0][1] = tmp[0][1]; 
+        dcos[0][2] = tmp[0][2]; 
+        dcos[1][0] = tmp[1][0]; 
+        dcos[1][1] = tmp[1][1]; 
+        dcos[1][2] = tmp[1][2]; 
+        dcos[2][0] = tmp[2][0]; 
+        dcos[2][1] = tmp[2][1]; 
+        dcos[2][2] = tmp[2][2]; 
+
+    }
+     
+
+    //orientationString->assign(""); 
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[0][0] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[0][1] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[0][2] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[1][0] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[1][1] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[1][2] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[2][0] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[2][1] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[2][2] ) ); 
 }
 
 
@@ -1071,6 +1143,7 @@ void svkBrukerRawMRSMapper::ReorderKSpace( svkMrsImageData* data )
                 svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::SLICE_INDEX, zc); 
                 int targetCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &targetVector );
 
+                //  order of mapping from input cell ordering, to output cell ordering
                 //cout << "CELL: " << cellID << " -> " << targetCellID << " x: " << xc << " y: " << yc << " z: " << zc << endl;
 
                 //  get the loopVector spectrum and write the contents into the targetVector spectrum
