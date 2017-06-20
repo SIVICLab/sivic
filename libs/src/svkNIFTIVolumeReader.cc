@@ -42,6 +42,7 @@
 
 #include <svkNIFTIVolumeReader.h>
 #include <vtkDebugLeaks.h>
+#include <svkTypeUtils.h>
 
 
 using namespace svk;
@@ -93,7 +94,7 @@ int svkNIFTIVolumeReader::CanReadFile(const char* fname)
 void svkNIFTIVolumeReader::LoadNifti()
 {
 
-    vtkDebugMacro( << this->GetClassName() << "::ReadData()" );
+    vtkDebugMacro( << this->GetClassName() << "::LoadNifti()" );
 
     this->vtkNIFTIReader->SetFileName(this->GetFileName());
     this->vtkNIFTIReader->Update();
@@ -134,6 +135,14 @@ void svkNIFTIVolumeReader::ExecuteDataWithInformation(vtkDataObject* output, vtk
 {
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
+    svkImageData* data = this->GetOutput();
+    vtkImageData* niiData = this->vtkNIFTIReader->GetOutput();
+
+    data->DeepCopy(niiData);
+
+    string arrayNameString("pixels");
+    data->GetPointData()->GetArray(0)->SetName(arrayNameString.c_str());
+
     /* 
      * We need to make a shallow copy of the output, otherwise we would have it
      * registered twice to the same reader which would cause the reader to never delete.
@@ -146,6 +155,12 @@ void svkNIFTIVolumeReader::ExecuteDataWithInformation(vtkDataObject* output, vtk
     //  been allocated. but that requires the number of components to be specified. 
     this->GetOutput()->GetIncrements(); 
     this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+
+    cout << "NIFTI Header:\n";
+    cout << *this->vtkNIFTIHeader;
+
+    cout << "Image Data Output: \n";
+    cout << *this->GetOutput();
 
 }
 
@@ -173,7 +188,6 @@ void svkNIFTIVolumeReader::ExecuteInformation()
         }
 
         this->LoadNifti();
-
         this->InitDcmHeader();
         this->SetupOutputInformation();
     }
@@ -239,10 +253,11 @@ svkDcmHeader::DcmPixelDataFormat svkNIFTIVolumeReader::GetFileType()
 void svkNIFTIVolumeReader::InitPatientModule()
 {
 
+    string patientName = this->GetFileName();
     string patientID = this->GetFileName();
 
     this->GetOutput()->GetDcmHeader()->InitPatientModule(
-        this->GetOutput()->GetDcmHeader()->GetDcmPatientName(this->GetFileName()),
+        patientName,
         patientID, 
         "",
         "" 
@@ -257,12 +272,13 @@ void svkNIFTIVolumeReader::InitPatientModule()
 void svkNIFTIVolumeReader::InitGeneralStudyModule()
 {
     string accessionNumber = this->GetFileName();
+    string studyID = this->GetFileName();
 
     this->GetOutput()->GetDcmHeader()->InitGeneralStudyModule(
         "",
         "",
         "",
-        this->GetFileName(),
+        studyID,
         accessionNumber, 
         "" 
     );
@@ -275,11 +291,12 @@ void svkNIFTIVolumeReader::InitGeneralStudyModule()
  */
 void svkNIFTIVolumeReader::InitGeneralSeriesModule()
 {
+    string patientPosition;
 
     this->GetOutput()->GetDcmHeader()->InitGeneralSeriesModule(
+        "0",
         "",
-        "",
-        ""
+        "HFS"
     );
 
 }
@@ -325,55 +342,13 @@ void svkNIFTIVolumeReader::InitMultiFrameFunctionalGroupsModule()
 /*! 
  *  
  */
-void svkNIFTIVolumeReader::InitAcquisitionContextModule()
-{
-}
-
-
-/*! 
- *  
- */
 void svkNIFTIVolumeReader::InitSharedFunctionalGroupMacros()
 {
     this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
-    this->InitMRImagingModifierMacro(); 
+    this->InitMRImagingModifierMacro();
+    this->InitMRTransmitCoilMacro();
     this->InitMRReceiveCoilMacro();
-}
-
-
-/*! 
- *  
- */
-void svkNIFTIVolumeReader::InitPerFrameFunctionalGroupMacros()
-{
-
-    //  Get toplc float array from idfMap and use that to generate 
-    //  frame locations:
-    double toplc[3] = {-127.50000, -156.49001, 96.99010};
-
-    double dcos[3][3] = {
-            {1.00000, 0.00000, 0.00000},
-            {0.00000, 1.00000, 0.00000},
-            {0.00000, 0.00000, -1.00000}
-    };
-
-    double pixelSize[3] = {1.00000, 1.00000, 1.50000};
-
-    svkDcmHeader::DimensionVector dimensionVector =
-            this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
-    svkDcmHeader::SetDimensionVectorValue(
-            &dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
-
-    this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
-            &dimensionVector, svkDcmHeader::TIME_INDEX, this->numVolumes-1);
-
-    this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
-                toplc,        
-                pixelSize,  
-                dcos,  
-                &dimensionVector
-    );
 }
 
 
@@ -382,9 +357,18 @@ void svkNIFTIVolumeReader::InitPerFrameFunctionalGroupMacros()
  */
 void svkNIFTIVolumeReader::InitPixelMeasuresMacro()
 {
+    double rowDim = this->vtkNIFTIHeader->GetPixDim(1);
+    double colDim = this->vtkNIFTIHeader->GetPixDim(2);
+    double sliceDim = this->vtkNIFTIHeader->GetPixDim(3);
+
+    string rowString = svkTypeUtils::DoubleToString(rowDim, 5);
+    string colString = svkTypeUtils::DoubleToString(colDim, 5);
+    string pixSpacing = rowString + "\\" + colString;
+    string sliceThickness = svkTypeUtils::DoubleToString(sliceDim, 5);
+
     this->GetOutput()->GetDcmHeader()->InitPixelMeasuresMacro(
-        "1.00000\\1.00000",
-        "1.50000"
+        pixSpacing,
+        sliceThickness
     );
 }
 
@@ -395,15 +379,29 @@ void svkNIFTIVolumeReader::InitPixelMeasuresMacro()
 void svkNIFTIVolumeReader::InitPlaneOrientationMacro()
 {
 
+    double dcos[3][3] = {
+            {1.00000, 0.00000, 0.00000},
+            {0.00000, 1.00000, 0.00000},
+            {0.00000, 0.00000, -1.00000}
+    };
+
+    ostringstream ossDcos;
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 3; j++) {
+            ossDcos << dcos[i][j];
+            if (i * j != 2) {
+                ossDcos<< "\\";
+            }
+        }
+    }
+
+    string orientationString = ossDcos.str();
+
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "SharedFunctionalGroupsSequence",
         0,
         "PlaneOrientationSequence"
     );
-
-    string orientationString = "1.00000\\0.00000\\0.00000\\";
-    orientationString += "0.00000\\1.00000\\0.00000\\";
-    orientationString += "0.00000\\0.00000\\-1.00000";
 
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "PlaneOrientationSequence",
@@ -436,16 +434,16 @@ void svkNIFTIVolumeReader::InitPlaneOrientationMacro()
 
 
 /*!
- *
+ *  Transmit Coil: (Info not present => use dummy default)
  */
 void svkNIFTIVolumeReader::InitMRTransmitCoilMacro()
 {
-    this->GetOutput()->GetDcmHeader()->InitMRTransmitCoilMacro("GE", "UNKNOWN", "BODY");
+    this->GetOutput()->GetDcmHeader()->InitMRTransmitCoilMacro("UNKNOWN", "UNKNOWN", "UNKNOWN");
 }
 
 
 /*!
- *  Receive Coil:
+ *  Receive Coil: (Info not present => use dummy default)
  */
 void svkNIFTIVolumeReader::InitMRReceiveCoilMacro()
 {
@@ -460,11 +458,46 @@ void svkNIFTIVolumeReader::InitMRReceiveCoilMacro()
             "MRReceiveCoilSequence",
             0,
             "ReceiveCoilName",
-            "",
+            "UNKNOWN",
             "SharedFunctionalGroupsSequence",
             0
     );
 
+}
+
+
+/*!
+ *
+ */
+void svkNIFTIVolumeReader::InitPerFrameFunctionalGroupMacros()
+{
+
+    //  Get toplc float array from idfMap and use that to generate
+    //  frame locations:
+    double toplc[3] = {-127.50000, -156.49001, 96.99010};
+
+    double dcos[3][3] = {
+            {1.00000, 0.00000, 0.00000},
+            {0.00000, 1.00000, 0.00000},
+            {0.00000, 0.00000, -1.00000}
+    };
+
+    double pixelSize[3] = {1.00000, 1.00000, 1.50000};
+
+    svkDcmHeader::DimensionVector dimensionVector =
+            this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue(
+            &dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
+
+    this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
+            &dimensionVector, svkDcmHeader::TIME_INDEX, this->numVolumes-1);
+
+    this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
+            toplc,
+            pixelSize,
+            dcos,
+            &dimensionVector
+    );
 }
 
 
@@ -480,6 +513,12 @@ void svkNIFTIVolumeReader::InitMRImagingModifierMacro()
     this->GetOutput()->GetDcmHeader()->InitMRImagingModifierMacro( transmitFreq, pixelBandwidth ); 
 }
 
+/*!
+ *
+ */
+void svkNIFTIVolumeReader::InitAcquisitionContextModule()
+{
+}
 
 /*!
  *
