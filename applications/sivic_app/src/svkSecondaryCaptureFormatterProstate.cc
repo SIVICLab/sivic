@@ -281,10 +281,11 @@ void svkSecondaryCaptureFormatterProstate::RenderCombinedImage( int firstFrame, 
 
             tmpData->DeepCopy( wtif->GetOutput() );
             //tmpData->Update();
-            sliceAppender->SetInputData(m-firstFrame, tmpData );
+            sliceAppender->AddInputData( tmpData );
             wtif->Delete();
         }
 
+        sliceAppender->Update();
         if( flipImage ) {  
             vtkImageFlip* flipper = vtkImageFlip::New();
             flipper->SetFilteredAxis( 1 );
@@ -293,7 +294,6 @@ void svkSecondaryCaptureFormatterProstate::RenderCombinedImage( int firstFrame, 
             outputImage->DeepCopy( flipper->GetOutput() );
             flipper->Delete();
         } else {
-            sliceAppender->Update();
             outputImage->DeepCopy( sliceAppender->GetOutput() );
         }
 
@@ -480,10 +480,10 @@ void svkSecondaryCaptureFormatterProstate::RenderCombinedImage( int firstFrame, 
 
             tmpData->DeepCopy( wtif->GetOutput() );
             //tmpData->Update();
-            sliceAppender->SetInputData(m-firstFrame, tmpData );
+            sliceAppender->AddInputData( tmpData );
             wtif->Delete();
         }
-
+        sliceAppender->Update();
         if( flipImage ) {  
             vtkImageFlip* flipper = vtkImageFlip::New();
             flipper->SetFilteredAxis( 1 );
@@ -492,7 +492,6 @@ void svkSecondaryCaptureFormatterProstate::RenderCombinedImage( int firstFrame, 
             outputImage->DeepCopy( flipper->GetOutput() );
             flipper->Delete();
         } else {
-            sliceAppender->Update();
             outputImage->DeepCopy( sliceAppender->GetOutput() );
         }
 
@@ -740,7 +739,7 @@ void svkSecondaryCaptureFormatterProstate::WriteCombinedWithSummaryCapture( vtkI
     outputImageCopy1->SetDcmHeader( outputImage->GetDcmHeader() );
     outputImageCopy1->GetDcmHeader()->Register( outputImageCopy1 );
     this->RenderCombinedImage( firstFrame, lastFrame, outputImageCopy1, flipImage, print );
-    sliceAppender->SetInputData(0, outputImageCopy1 );
+    sliceAppender->AddInputData( outputImageCopy1 );
     firstFrame = firstFrame-2 < 0 ? 0 : firstFrame-2;
     int numSummaryImages = 0; 
     int currentSummaryImage = 1;
