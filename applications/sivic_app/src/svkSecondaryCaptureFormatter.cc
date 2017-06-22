@@ -220,6 +220,7 @@ void svkSecondaryCaptureFormatter::RenderSpectraImage( int firstFrame, int lastF
         this->sivicController->SetSlice(m);
         window->Render();
         vtkWindowToImageFilter* wtif = vtkWindowToImageFilter::New();
+        wtif->ReadFrontBufferOff();
         wtif->SetMagnification(2);
         wtif->SetInput( window );
         wtif->Update();
@@ -572,6 +573,7 @@ void svkSecondaryCaptureFormatter::RenderCombinedImage( int firstFrame, int last
         window->Render();
         vtkWindowToImageFilter* wtif = vtkWindowToImageFilter::New();
         wtif->SetMagnification(1);
+        wtif->ReadFrontBufferOff();
         wtif->SetInput( window );
         wtif->Update( );
 
@@ -823,6 +825,7 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
 
     vtkWindowToImageFilter* wtif = vtkWindowToImageFilter::New();
     wtif->SetMagnification(1);
+        wtif->ReadFrontBufferOff();
     wtif->SetInput( titleWindow );
     titleWindow->SetSize( x*numCols, (int)(imageSize[1]*titleSpace) );
     titleWindow->Render();

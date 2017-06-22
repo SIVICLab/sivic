@@ -276,8 +276,10 @@ void svkSecondaryCaptureFormatterProstate::RenderCombinedImage( int firstFrame, 
             window->Render();
             vtkWindowToImageFilter* wtif = vtkWindowToImageFilter::New();
             wtif->SetMagnification(1);
+            wtif->ReadFrontBufferOff();
             wtif->SetInput( window );
             wtif->Update( );
+
 
             tmpData->DeepCopy( wtif->GetOutput() );
             //tmpData->Update();
@@ -475,6 +477,7 @@ void svkSecondaryCaptureFormatterProstate::RenderCombinedImage( int firstFrame, 
             window->Render();
             vtkWindowToImageFilter* wtif = vtkWindowToImageFilter::New();
             wtif->SetMagnification(1);
+            wtif->ReadFrontBufferOff();
             wtif->SetInput( window );
             wtif->Update( );
 
