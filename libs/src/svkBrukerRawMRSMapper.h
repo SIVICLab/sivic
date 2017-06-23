@@ -138,6 +138,9 @@ class svkBrukerRawMRSMapper : public vtkObject
         void            GetDcmOrientation(float dcos[3][3], string* orientationString); 
         void            GetBrukerPixelSize( float pixelSize[3] ); 
         void            ApplyGroupDelay( svkMrsImageData* data ); 
+        void            FixBrukerOrientationAnomalies( float dcos[3][3] ); 
+        void            MatMult(float A[3][3], float B[3][3] ); 
+
 
 
         map <string, vector < string> >             paramMap; 

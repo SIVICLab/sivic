@@ -443,36 +443,10 @@ void svkBrukerRawMRSMapper::GetDcmOrientation(float dcos[3][3], string* orientat
         inverter[2][1] = 0;  
         inverter[2][2] = 1;  
 
-        float tmp[3][3];
-        tmp[0][0] = 0; 
-        tmp[0][1] = 0; 
-        tmp[0][2] = 0; 
-        tmp[1][0] = 0; 
-        tmp[1][1] = 0; 
-        tmp[1][2] = 0; 
-        tmp[2][0] = 0; 
-        tmp[2][1] = 0; 
-        tmp[2][2] = 0; 
-
-        for ( int j = 0; j < 3; j++ ) { 
-            for ( int i = 0; i < 3; i++ ) { 
-                for ( int k = 0; k < 3; k++ ) { 
-                    tmp[j][i] += dcos[j][k] * inverter[k][i];  
-                }
-            }
-        }
-        dcos[0][0] = tmp[0][0]; 
-        dcos[0][1] = tmp[0][1]; 
-        dcos[0][2] = tmp[0][2]; 
-        dcos[1][0] = tmp[1][0]; 
-        dcos[1][1] = tmp[1][1]; 
-        dcos[1][2] = tmp[1][2]; 
-        dcos[2][0] = tmp[2][0]; 
-        dcos[2][1] = tmp[2][1]; 
-        dcos[2][2] = tmp[2][2]; 
-
+        this->MatMult( dcos, inverter );  
     }
-     
+
+    this->FixBrukerOrientationAnomalies( dcos ); 
 
     //orientationString->assign(""); 
     orientationString->append( svkTypeUtils::DoubleToString( dcos[0][0] ) ); 
@@ -494,6 +468,85 @@ void svkBrukerRawMRSMapper::GetDcmOrientation(float dcos[3][3], string* orientat
     orientationString->append( svkTypeUtils::DoubleToString( dcos[2][2] ) ); 
 }
 
+
+/*!
+ *  Heuristic adjustments to Bruker orientation to account for orientation "anomolies"
+ *  observed in validation phantoms: 
+ *      1.  Centric Coronal is inverted through all 3 directions (LP and S) 
+ */
+void svkBrukerRawMRSMapper::FixBrukerOrientationAnomalies( float dcos[3][3] )
+{
+    string encoding = this->GetHeaderValueAsString("PVM_EncOrder");
+    if ( encoding.find("CENTRIC_ENC") != string::npos ) { 
+        encoding = "CENTRIC"; 
+    } else if ( encoding.find("LINEAR_ENC") != string::npos  ) { 
+        encoding = "LINEAR"; 
+    }  else {
+        //  make this the default.  Not sure if would be specified for all sequences. 
+        encoding = "LINEAR"; 
+    }
+
+    //  coronal if dcos[2][1] = 1 (assuming non oblique data)
+    if (
+        (encoding.compare("CENTRIC") == 0  ) && 
+        ( dcos[2][1] == 1 || dcos[2][1] == -1 ) 
+    ) {
+
+        //  Invert about origin in RL and SI: 
+        float inverter[3][3]; 
+        inverter[0][0] = -1;   
+        inverter[0][1] = 0;  
+        inverter[0][2] = 0;  
+        inverter[1][0] = 0;  
+        inverter[1][1] = -1;  
+        inverter[1][2] = 0;  
+        inverter[2][0] = 0;  
+        inverter[2][1] = 0;  
+        inverter[2][2] = -1;  
+
+        this->MatMult( dcos, inverter );  
+        
+    }
+}
+
+
+/*!
+ *  Probably implemented elsewhere, stupid. Returns product in the original 
+ *  A matrix
+ */
+void svkBrukerRawMRSMapper::MatMult(float A[3][3], float B[3][3] )
+{
+    float tmp[3][3];
+    tmp[0][0] = 0; 
+    tmp[0][1] = 0; 
+    tmp[0][2] = 0; 
+    tmp[1][0] = 0; 
+    tmp[1][1] = 0; 
+    tmp[1][2] = 0; 
+    tmp[2][0] = 0; 
+    tmp[2][1] = 0; 
+    tmp[2][2] = 0; 
+
+    for ( int j = 0; j < 3; j++ ) { 
+        for ( int i = 0; i < 3; i++ ) { 
+            for ( int k = 0; k < 3; k++ ) { 
+                tmp[j][i] += A[j][k] * B[k][i];  
+            }
+        }
+    }
+
+    A[0][0] = tmp[0][0]; 
+    A[0][1] = tmp[0][1]; 
+    A[0][2] = tmp[0][2]; 
+    A[1][0] = tmp[1][0]; 
+    A[1][1] = tmp[1][1]; 
+    A[1][2] = tmp[1][2]; 
+    A[2][0] = tmp[2][0]; 
+    A[2][1] = tmp[2][1]; 
+    A[2][2] = tmp[2][2]; 
+
+}
+     
 
 /*!
  *
@@ -1358,6 +1411,11 @@ void svkBrukerRawMRSMapper::InitPixelMeasuresMacro()
 
 void svkBrukerRawMRSMapper::InitMRSpectroscopyPulseSequenceModule() 
 {
+    //  I would have thought this would be no for linear and an even number of 
+    //  phase encodes, but I thought the centric encoding would have sampled k0
+    //  assymetrically, however both trajectories yield best spatial overlap with 
+    //  reference image when this is set to NO. 
+    this->dcmHeader->SetValue( "SVK_K0Sampled", "NO");
 } 
 
 
