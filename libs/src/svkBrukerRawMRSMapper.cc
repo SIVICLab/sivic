@@ -1071,6 +1071,27 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkMrsImageData* da
         this->ReorderKSpace( data ); 
     }
 
+    
+    this->ApplyGroupDelay( data ); 
+
+    progress = 1;
+	this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&progress));
+
+    serDataIn->close();
+    delete serDataIn;
+
+}
+
+
+/*!
+ *  Apply group delay shift in FID if necessary. Was required originally, but Bruker appears to 
+ *  have fixed this so the FIDs start at the correct time point now. 
+ */
+void svkBrukerRawMRSMapper::ApplyGroupDelay( svkMrsImageData* data )
+{
+
+    // not required anymore
+    return; 
 
     //  Bruker FIDs are shifted by a group delay number of points defined by PVM_DigShiftDbl.  
     //  Apply this global shift to correct the data here: 
@@ -1082,13 +1103,6 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkMrsImageData* da
     ); 
     freqShift->Update(); 
     freqShift->Delete(); 
-
-    progress = 1;
-	this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&progress));
-
-    serDataIn->close();
-    delete serDataIn;
-
 }
 
 
@@ -1213,11 +1227,12 @@ void svkBrukerRawMRSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, in
             float floatVal[2]; 
             floatVal[0] = intValRe; 
             floatVal[1] = intValIm; 
-            dataArray->SetTuple( i,  floatVal ); 
+            //  Bruker data points are in reverse order: 
+            dataArray->SetTuple( numPts - 1 -i,  floatVal ); 
         }
     } else { 
         for (int i = 0; i < numPts; i++) {
-            dataArray->SetTuple(i, &(static_cast<float*>(this->specData)[offset + (i * 2)]));
+            dataArray->SetTuple(numPts - 1 - i, &(static_cast<float*>(this->specData)[offset + (i * 2)]));
         }
     }
 

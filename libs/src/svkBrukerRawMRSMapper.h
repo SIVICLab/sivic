@@ -137,8 +137,7 @@ class svkBrukerRawMRSMapper : public vtkObject
         void            ReorderKSpace( svkMrsImageData* data ); 
         void            GetDcmOrientation(float dcos[3][3], string* orientationString); 
         void            GetBrukerPixelSize( float pixelSize[3] ); 
-
-
+        void            ApplyGroupDelay( svkMrsImageData* data ); 
 
 
         map <string, vector < string> >             paramMap; 
