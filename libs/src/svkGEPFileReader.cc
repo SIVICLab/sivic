@@ -685,7 +685,7 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
     } else if ( psd.find("fidcsi") != string::npos ) {
 
         //  fidcsi ucsf sequence 
-        aMapper = svkGEPFileMapperUCSFfidcsi::New();
+        aMapper = svkGEPFileMapperUCSFfidcsiDev0::New();
 
     } else if ( ( psd.compare("jpress") == 0 ) || ( psd.compare("mbrease_dev") == 0 ) ) {
 
