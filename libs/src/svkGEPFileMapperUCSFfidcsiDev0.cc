@@ -472,9 +472,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
     //  Swap X/Y dimensions if swap on and if epsi is on X or Y
     if ( this->IsSwapOn()  && epsiAxis_init == 0) {
-	epsiAxis_init = 1;
+        epsiAxis_init = 1;
     } else if ( this->IsSwapOn()  && epsiAxis_init == 1) {
-	epsiAxis_init = 0;
+        epsiAxis_init = 0;
     }
 
     reorder->SetEPSIAxis( static_cast<svkEPSIReorder::EPSIAxis>(epsiAxis_init)  );

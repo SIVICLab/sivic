@@ -44,10 +44,11 @@
 
 
 #include <vtkImageData.h>
-#include <svkImageData.h>
 
+#include <svkImageData.h>
 #include <svkDcmHeader.h>
 #include <svkMRSIOD.h>
+#include <svkMrsImageData.h>
 
 #include <map>
 #include <string>
@@ -86,7 +87,7 @@ class svkBrukerRawMRSMapper : public vtkObject
                             int        swapBytes  
                         );
 
-        virtual void    ReadSerFile( string serFileName, svkImageData* data );
+        virtual void    ReadSerFile( string serFileName, svkMrsImageData* data );
 
         
     protected:
@@ -117,8 +118,6 @@ class svkBrukerRawMRSMapper : public vtkObject
         virtual void    InitMRSpectroscopyDataModule();
         string          GetDcmPatientPositionString(); 
 
-        virtual void    ConvertCmToMm();
-
         int             GetHeaderValueAsInt(
                             string keyString, int valueIndex = 0
                         );
@@ -135,6 +134,13 @@ class svkBrukerRawMRSMapper : public vtkObject
                             int timePt, 
                             int coilNum
                         );
+        void            ReorderKSpace( svkMrsImageData* data ); 
+        void            GetDcmOrientation(float dcos[3][3], string* orientationString); 
+        void            GetBrukerPixelSize( float pixelSize[3] ); 
+        void            ApplyGroupDelay( svkMrsImageData* data ); 
+        void            FixBrukerOrientationAnomalies( float dcos[3][3] ); 
+        void            MatMult(float A[3][3], float B[3][3] ); 
+        int             GetNumTimePoints(); 
 
 
         map <string, vector < string> >             paramMap; 

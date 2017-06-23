@@ -182,7 +182,7 @@ int svkFreqCorrect::ApplyGlobalCorrection( )
     float* specPtr;
     float* origSpecPtr;
 
-    cout << "NFP: " << numFrequencyPoints << endl;
+    //cout << "NFP: " << numFrequencyPoints << endl;
 
     for (int cellID = 0; cellID < numMRSCells; cellID++) {
 

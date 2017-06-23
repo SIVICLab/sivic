@@ -1268,7 +1268,8 @@ void vtkSivicController::OpenMetabolites( const char* metabolites )
                 string metaboliteFileName;
                 metaboliteFileName += svkUCSFUtils::GetMetaboliteFileName( 
                                         this->model->GetDataFileName("SpectroscopicData"), metaboliteString, includePath );
-                this->OpenOverlay( metaboliteFileName.c_str() );
+                bool onlyReadOneInputFile = true; 
+                this->OpenOverlay( metaboliteFileName.c_str(), onlyReadOneInputFile  );
 
                 if( !this->model->DataExists("MetaboliteData")) {
                     static_cast<vtkKWMenu*>(
