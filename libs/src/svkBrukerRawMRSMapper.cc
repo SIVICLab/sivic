@@ -112,7 +112,7 @@ void svkBrukerRawMRSMapper::InitializeDcmHeader(map <string, vector < string> > 
     this->InitGeneralEquipmentModule();
 
     this->InitMultiFrameFunctionalGroupsModule();
-//    this->InitMultiFrameDimensionModule();
+    this->InitMultiFrameDimensionModule();
 //    this->InitAcquisitionContextModule();
     this->InitMRSpectroscopyModule();
     this->InitMRSpectroscopyPulseSequenceModule();
@@ -330,11 +330,15 @@ void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
             toplc[j] = volumeTlcLPSFrame[j]; 
         }
     
-   }
+    }
+
 
 
     svkDcmHeader::DimensionVector dimensionVector = this->dcmHeader->GetDimensionIndexVector();
     svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numFrames-1);
+    int numTimePts = this->GetNumTimePoints();
+    this->dcmHeader->AddDimensionIndex( &dimensionVector, svkDcmHeader::TIME_INDEX, numTimePts - 1 );
+
 
     this->dcmHeader->InitPerFrameFunctionalGroupSequence(
         toplc, pixelSpacing, dcos, &dimensionVector
@@ -818,7 +822,7 @@ void svkBrukerRawMRSMapper::InitMultiFrameDimensionModule()
         "Slice"
     );
 
-/*
+
     if (this->GetNumTimePoints() > 1) {
         indexCount++; 
         this->dcmHeader->AddSequenceItemElement(
@@ -828,7 +832,7 @@ void svkBrukerRawMRSMapper::InitMultiFrameDimensionModule()
             "Time Point"
         );
     }
-*/
+
 
 //      if (this->GetNumCoils() > 1) {
 //          indexCount++; 
@@ -1124,7 +1128,7 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkMrsImageData* da
         this->ReorderKSpace( data ); 
     }
 
-    
+    //cout << *data << endl; 
     this->ApplyGroupDelay( data ); 
 
     progress = 1;
@@ -1133,6 +1137,15 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkMrsImageData* da
     serDataIn->close();
     delete serDataIn;
 
+}
+
+
+/*!
+ *  Determine number of time points in the fid or ser file. 
+ */
+int svkBrukerRawMRSMapper::GetNumTimePoints()
+{
+    return this->GetHeaderValueAsInt("NR");  
 }
 
 
@@ -1179,7 +1192,7 @@ void svkBrukerRawMRSMapper::ReorderKSpace( svkMrsImageData* data )
     svkDcmHeader::DimensionVector loopVector   = dimVector; 
     svkDcmHeader::DimensionVector targetVector = dimVector; 
 
-    int timePt = 0; 
+    int numTimePts = this->GetNumTimePoints();
     int coilNum = 0; 
 
     int signX= -1; 
@@ -1191,46 +1204,49 @@ void svkBrukerRawMRSMapper::ReorderKSpace( svkMrsImageData* data )
     int cellID = numCells - 1;     
     float specTuple[2];
 
-    for ( int z = 0; z < numVoxels[2] ; z++ ) {
-        signZ *= -1; 
-        int yc = numVoxels[1]/2; 
-        zc =  zc + (z * signZ); 
-        for ( int y = 0; y < numVoxels[1]; y++ ) {
-            signY *= -1; 
-            int xc = numVoxels[0]/2; 
-            yc =  yc + (y * signY); 
-            for ( int x = 0; x < numVoxels[0]; x++ ) {
+    //for ( int time = 0; time < numTimePts; time++ ) {
+        for ( int z = 0; z < numVoxels[2] ; z++ ) {
+            signZ *= -1; 
+            int yc = numVoxels[1]/2; 
+            zc =  zc + (z * signZ); 
+            for ( int y = 0; y < numVoxels[1]; y++ ) {
+                signY *= -1; 
+                int xc = numVoxels[0]/2; 
+                yc =  yc + (y * signY); 
+                for ( int x = 0; x < numVoxels[0]; x++ ) {
 
-                signX *= -1; 
-                xc =  xc + (x * signX); 
+                    signX *= -1; 
+                    xc =  xc + (x * signX); 
 
-                //  Get dim vector for location where the data should go (reordered to standard linear encoding) 
-                svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::COL_INDEX,   xc); 
-                svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::ROW_INDEX,   yc); 
-                svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::SLICE_INDEX, zc); 
-                int targetCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &targetVector );
+                    //  Get dim vector for location where the data should go (reordered to standard linear encoding) 
+                    svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::COL_INDEX,   xc); 
+                    svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::ROW_INDEX,   yc); 
+                    svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::SLICE_INDEX, zc); 
+                    //svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::TIME_INDEX,  time); 
+                    int targetCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &targetVector );
 
-                //  order of mapping from input cell ordering, to output cell ordering
-                //cout << "CELL: " << cellID << " -> " << targetCellID << " x: " << xc << " y: " << yc << " z: " << zc << endl;
+                    //  order of mapping from input cell ordering, to output cell ordering
+                    //cout << "CELL: " << cellID << " -> " << targetCellID << " x: " << xc << " y: " << yc << " z: " << zc << endl;
 
-                //  get the loopVector spectrum and write the contents into the targetVector spectrum
-                vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast(
-                    svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID)
-                );
-                vtkFloatArray* targetSpectrum = vtkFloatArray::SafeDownCast(
-                    svkMrsImageData::SafeDownCast(tmpData)->GetSpectrum( targetCellID )
-                );
+                    //  get the loopVector spectrum and write the contents into the targetVector spectrum
+                    vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast(
+                        svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID)
+                    );
+                    vtkFloatArray* targetSpectrum = vtkFloatArray::SafeDownCast(
+                        svkMrsImageData::SafeDownCast(tmpData)->GetSpectrum( targetCellID )
+                    );
 
-                for ( int freq = 0; freq < numPts; freq++ ) {
-                    spectrum->GetTupleValue( freq, specTuple);
-                    //cout << "ST: " << specTuple[0] << endl;
-                    targetSpectrum->InsertTuple(freq, specTuple);
+                    for ( int freq = 0; freq < numPts; freq++ ) {
+                        spectrum->GetTupleValue( freq, specTuple);
+                        //cout << "ST: " << specTuple[0] << endl;
+                        targetSpectrum->InsertTuple(freq, specTuple);
+                    }
+
+                    cellID--; 
                 }
-
-                cellID--; 
             }
         }
-    }
+    //}
     data->DeepCopy( tmpData );
 }
 

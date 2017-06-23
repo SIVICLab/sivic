@@ -140,7 +140,7 @@ class svkBrukerRawMRSMapper : public vtkObject
         void            ApplyGroupDelay( svkMrsImageData* data ); 
         void            FixBrukerOrientationAnomalies( float dcos[3][3] ); 
         void            MatMult(float A[3][3], float B[3][3] ); 
-
+        int             GetNumTimePoints(); 
 
 
         map <string, vector < string> >             paramMap; 
