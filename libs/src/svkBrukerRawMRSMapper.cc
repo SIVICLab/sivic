@@ -112,7 +112,7 @@ void svkBrukerRawMRSMapper::InitializeDcmHeader(map <string, vector < string> > 
     this->InitGeneralEquipmentModule();
 
     this->InitMultiFrameFunctionalGroupsModule();
-//    this->InitMultiFrameDimensionModule();
+    this->InitMultiFrameDimensionModule();
 //    this->InitAcquisitionContextModule();
     this->InitMRSpectroscopyModule();
     this->InitMRSpectroscopyPulseSequenceModule();
@@ -277,16 +277,15 @@ void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
 
         //  Get the volumetric center in acquisition frame coords:
         double volumeCenterAcqFrame[3];
-        for (int i = 0; i < 3; i++) {
-            //volumeCenterAcqFrame[i] = this->GetHeaderValueAsFloat("location[]", i);
-            volumeCenterAcqFrame[i] = 0.; 
-        }
+        volumeCenterAcqFrame[0] = 0.; 
+        volumeCenterAcqFrame[1] = 0.; 
+        volumeCenterAcqFrame[2] = this->GetHeaderValueAsFloat("ACQ_slice_offset"); 
+        cout << "OFFSET: " << volumeCenterAcqFrame[2] << endl;
 
         double* volumeTlcAcqFrame = new double[3];
         for (int i = 0; i < 3; i++) {
             volumeTlcAcqFrame[i] = volumeCenterAcqFrame[i]
                                  + (100 - pixelSpacing[i] )/2;
-                                 //+ ( this->GetHeaderValueAsFloat("span[]", i) - pixelSpacing[i] )/2;
         }
         svkVarianReader::UserToMagnet(volumeTlcAcqFrame, volumeTlcLPSFrame, dcos);
         delete [] volumeTlcAcqFrame;
@@ -307,9 +306,10 @@ void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
 
         //  Location is the center of the image frame in user (acquisition frame).
         double centerAcqFrame[3];
-        for ( int j = 0; j < 3; j++) {
-            centerAcqFrame[j] = 0.0;
-        }
+        centerAcqFrame[0] = 0.0; 
+        centerAcqFrame[1] = 0.0; 
+        centerAcqFrame[2] = this->GetHeaderValueAsFloat("ACQ_slice_offset"); 
+        cout << "OFFSET: " << centerAcqFrame[2] << endl;
 
         //  Now get the center of the tlc voxel in the acq frame:
         double* tlcAcqFrame = new double[3];
@@ -330,11 +330,15 @@ void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
             toplc[j] = volumeTlcLPSFrame[j]; 
         }
     
-   }
+    }
+
 
 
     svkDcmHeader::DimensionVector dimensionVector = this->dcmHeader->GetDimensionIndexVector();
     svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numFrames-1);
+    int numTimePts = this->GetNumTimePoints();
+    this->dcmHeader->AddDimensionIndex( &dimensionVector, svkDcmHeader::TIME_INDEX, numTimePts - 1 );
+
 
     this->dcmHeader->InitPerFrameFunctionalGroupSequence(
         toplc, pixelSpacing, dcos, &dimensionVector
@@ -392,7 +396,7 @@ void svkBrukerRawMRSMapper::InitPlaneOrientationMacro()
 
 
 /*!
- *
+ *  Initializes the numeric and string representation of the orientation
  */
 void svkBrukerRawMRSMapper::GetDcmOrientation(float dcos[3][3], string* orientationString) 
 {
@@ -402,10 +406,13 @@ void svkBrukerRawMRSMapper::GetDcmOrientation(float dcos[3][3], string* orientat
     char* cstr = new char [orientationString->length()+1];
     strcpy( cstr, orientationString->c_str() );
     float dcosTmp[9]; 
-    for ( int i = 0; i < 9; i++ ) {    
-        string tmp = string( strtok( cstr, " ") ); 
-        dcosTmp[i] = svkTypeUtils::StringToFloat( strtok( cstr, " ") ); 
+    char* element; 
+    dcosTmp[0] = svkTypeUtils::StringToFloat( strtok( cstr, " ") ); 
+    for ( int i = 1; i < 9; i++ ) {    
+        dcosTmp[i] = svkTypeUtils::StringToFloat( strtok( NULL, " ") ); 
     }
+
+    //  RAS 
     dcos[0][0] = dcosTmp[0]; 
     dcos[0][1] = dcosTmp[1]; 
     dcos[0][2] = dcosTmp[2]; 
@@ -416,12 +423,134 @@ void svkBrukerRawMRSMapper::GetDcmOrientation(float dcos[3][3], string* orientat
     dcos[2][1] = dcosTmp[7]; 
     dcos[2][2] = dcosTmp[8]; 
 
-    size_t pos; 
-    while ( (pos = orientationString->find_first_of(' ') ) != string::npos ) {
-        orientationString->replace( pos, 1,  "\\"); 
+    string encoding = this->GetHeaderValueAsString("PVM_EncOrder");
+    if ( encoding.find("CENTRIC_ENC") != string::npos ) { 
+        encoding = "CENTRIC"; 
+    } else if ( encoding.find("LINEAR_ENC") != string::npos  ) { 
+        encoding = "LINEAR"; 
+    }  else {
+        //  make this the default.  Not sure if would be specified for all sequences. 
+        encoding = "LINEAR"; 
+    }
+
+    if (encoding.compare("LINEAR") == 0 ) {
+
+        //  Invert about origin in RL and AP: 
+        float inverter[3][3]; 
+        inverter[0][0] = -1;   
+        inverter[0][1] = 0;  
+        inverter[0][2] = 0;  
+        inverter[1][0] = 0;  
+        inverter[1][1] = -1;  
+        inverter[1][2] = 0;  
+        inverter[2][0] = 0;  
+        inverter[2][1] = 0;  
+        inverter[2][2] = 1;  
+
+        this->MatMult( dcos, inverter );  
+    }
+
+    this->FixBrukerOrientationAnomalies( dcos ); 
+
+    //orientationString->assign(""); 
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[0][0] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[0][1] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[0][2] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[1][0] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[1][1] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[1][2] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[2][0] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[2][1] ) ); 
+    orientationString->append("\\");
+    orientationString->append( svkTypeUtils::DoubleToString( dcos[2][2] ) ); 
+}
+
+
+/*!
+ *  Heuristic adjustments to Bruker orientation to account for orientation "anomolies"
+ *  observed in validation phantoms: 
+ *      1.  Centric Coronal is inverted through all 3 directions (LP and S) 
+ */
+void svkBrukerRawMRSMapper::FixBrukerOrientationAnomalies( float dcos[3][3] )
+{
+    string encoding = this->GetHeaderValueAsString("PVM_EncOrder");
+    if ( encoding.find("CENTRIC_ENC") != string::npos ) { 
+        encoding = "CENTRIC"; 
+    } else if ( encoding.find("LINEAR_ENC") != string::npos  ) { 
+        encoding = "LINEAR"; 
+    }  else {
+        //  make this the default.  Not sure if would be specified for all sequences. 
+        encoding = "LINEAR"; 
+    }
+
+    //  coronal if dcos[2][1] = 1 (assuming non oblique data)
+    if (
+        (encoding.compare("CENTRIC") == 0  ) && 
+        ( dcos[2][1] == 1 || dcos[2][1] == -1 ) 
+    ) {
+
+        //  Invert about origin in RL and SI: 
+        float inverter[3][3]; 
+        inverter[0][0] = -1;   
+        inverter[0][1] = 0;  
+        inverter[0][2] = 0;  
+        inverter[1][0] = 0;  
+        inverter[1][1] = -1;  
+        inverter[1][2] = 0;  
+        inverter[2][0] = 0;  
+        inverter[2][1] = 0;  
+        inverter[2][2] = -1;  
+
+        this->MatMult( dcos, inverter );  
+        
     }
 }
 
+
+/*!
+ *  Probably implemented elsewhere, stupid. Returns product in the original 
+ *  A matrix
+ */
+void svkBrukerRawMRSMapper::MatMult(float A[3][3], float B[3][3] )
+{
+    float tmp[3][3];
+    tmp[0][0] = 0; 
+    tmp[0][1] = 0; 
+    tmp[0][2] = 0; 
+    tmp[1][0] = 0; 
+    tmp[1][1] = 0; 
+    tmp[1][2] = 0; 
+    tmp[2][0] = 0; 
+    tmp[2][1] = 0; 
+    tmp[2][2] = 0; 
+
+    for ( int j = 0; j < 3; j++ ) { 
+        for ( int i = 0; i < 3; i++ ) { 
+            for ( int k = 0; k < 3; k++ ) { 
+                tmp[j][i] += A[j][k] * B[k][i];  
+            }
+        }
+    }
+
+    A[0][0] = tmp[0][0]; 
+    A[0][1] = tmp[0][1]; 
+    A[0][2] = tmp[0][2]; 
+    A[1][0] = tmp[1][0]; 
+    A[1][1] = tmp[1][1]; 
+    A[1][2] = tmp[1][2]; 
+    A[2][0] = tmp[2][0]; 
+    A[2][1] = tmp[2][1]; 
+    A[2][2] = tmp[2][2]; 
+
+}
+     
 
 /*!
  *
@@ -693,7 +822,7 @@ void svkBrukerRawMRSMapper::InitMultiFrameDimensionModule()
         "Slice"
     );
 
-/*
+
     if (this->GetNumTimePoints() > 1) {
         indexCount++; 
         this->dcmHeader->AddSequenceItemElement(
@@ -703,7 +832,7 @@ void svkBrukerRawMRSMapper::InitMultiFrameDimensionModule()
             "Time Point"
         );
     }
-*/
+
 
 //      if (this->GetNumCoils() > 1) {
 //          indexCount++; 
@@ -999,6 +1128,36 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkMrsImageData* da
         this->ReorderKSpace( data ); 
     }
 
+    //cout << *data << endl; 
+    this->ApplyGroupDelay( data ); 
+
+    progress = 1;
+	this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&progress));
+
+    serDataIn->close();
+    delete serDataIn;
+
+}
+
+
+/*!
+ *  Determine number of time points in the fid or ser file. 
+ */
+int svkBrukerRawMRSMapper::GetNumTimePoints()
+{
+    return this->GetHeaderValueAsInt("NR");  
+}
+
+
+/*!
+ *  Apply group delay shift in FID if necessary. Was required originally, but Bruker appears to 
+ *  have fixed this so the FIDs start at the correct time point now. 
+ */
+void svkBrukerRawMRSMapper::ApplyGroupDelay( svkMrsImageData* data )
+{
+
+    // not required anymore
+    return; 
 
     //  Bruker FIDs are shifted by a group delay number of points defined by PVM_DigShiftDbl.  
     //  Apply this global shift to correct the data here: 
@@ -1010,13 +1169,6 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkMrsImageData* da
     ); 
     freqShift->Update(); 
     freqShift->Delete(); 
-
-    progress = 1;
-	this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&progress));
-
-    serDataIn->close();
-    delete serDataIn;
-
 }
 
 
@@ -1040,7 +1192,7 @@ void svkBrukerRawMRSMapper::ReorderKSpace( svkMrsImageData* data )
     svkDcmHeader::DimensionVector loopVector   = dimVector; 
     svkDcmHeader::DimensionVector targetVector = dimVector; 
 
-    int timePt = 0; 
+    int numTimePts = this->GetNumTimePoints();
     int coilNum = 0; 
 
     int signX= -1; 
@@ -1052,45 +1204,49 @@ void svkBrukerRawMRSMapper::ReorderKSpace( svkMrsImageData* data )
     int cellID = numCells - 1;     
     float specTuple[2];
 
-    for ( int z = 0; z < numVoxels[2] ; z++ ) {
-        signZ *= -1; 
-        int yc = numVoxels[1]/2; 
-        zc =  zc + (z * signZ); 
-        for ( int y = 0; y < numVoxels[1]; y++ ) {
-            signY *= -1; 
-            int xc = numVoxels[0]/2; 
-            yc =  yc + (y * signY); 
-            for ( int x = 0; x < numVoxels[0]; x++ ) {
+    //for ( int time = 0; time < numTimePts; time++ ) {
+        for ( int z = 0; z < numVoxels[2] ; z++ ) {
+            signZ *= -1; 
+            int yc = numVoxels[1]/2; 
+            zc =  zc + (z * signZ); 
+            for ( int y = 0; y < numVoxels[1]; y++ ) {
+                signY *= -1; 
+                int xc = numVoxels[0]/2; 
+                yc =  yc + (y * signY); 
+                for ( int x = 0; x < numVoxels[0]; x++ ) {
 
-                signX *= -1; 
-                xc =  xc + (x * signX); 
+                    signX *= -1; 
+                    xc =  xc + (x * signX); 
 
-                //  Get dim vector for location where the data should go (reordered to standard linear encoding) 
-                svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::COL_INDEX,   xc); 
-                svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::ROW_INDEX,   yc); 
-                svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::SLICE_INDEX, zc); 
-                int targetCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &targetVector );
+                    //  Get dim vector for location where the data should go (reordered to standard linear encoding) 
+                    svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::COL_INDEX,   xc); 
+                    svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::ROW_INDEX,   yc); 
+                    svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::SLICE_INDEX, zc); 
+                    //svkDcmHeader::SetDimensionVectorValue(&targetVector, svkDcmHeader::TIME_INDEX,  time); 
+                    int targetCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &targetVector );
 
-                //cout << "CELL: " << cellID << " -> " << targetCellID << " x: " << xc << " y: " << yc << " z: " << zc << endl;
+                    //  order of mapping from input cell ordering, to output cell ordering
+                    //cout << "CELL: " << cellID << " -> " << targetCellID << " x: " << xc << " y: " << yc << " z: " << zc << endl;
 
-                //  get the loopVector spectrum and write the contents into the targetVector spectrum
-                vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast(
-                    svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID)
-                );
-                vtkFloatArray* targetSpectrum = vtkFloatArray::SafeDownCast(
-                    svkMrsImageData::SafeDownCast(tmpData)->GetSpectrum( targetCellID )
-                );
+                    //  get the loopVector spectrum and write the contents into the targetVector spectrum
+                    vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast(
+                        svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID)
+                    );
+                    vtkFloatArray* targetSpectrum = vtkFloatArray::SafeDownCast(
+                        svkMrsImageData::SafeDownCast(tmpData)->GetSpectrum( targetCellID )
+                    );
 
-                for ( int freq = 0; freq < numPts; freq++ ) {
-                    spectrum->GetTupleValue( freq, specTuple);
-                    //cout << "ST: " << specTuple[0] << endl;
-                    targetSpectrum->InsertTuple(freq, specTuple);
+                    for ( int freq = 0; freq < numPts; freq++ ) {
+                        spectrum->GetTupleValue( freq, specTuple);
+                        //cout << "ST: " << specTuple[0] << endl;
+                        targetSpectrum->InsertTuple(freq, specTuple);
+                    }
+
+                    cellID--; 
                 }
-
-                cellID--; 
             }
         }
-    }
+    //}
     data->DeepCopy( tmpData );
 }
 
@@ -1140,11 +1296,12 @@ void svkBrukerRawMRSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, in
             float floatVal[2]; 
             floatVal[0] = intValRe; 
             floatVal[1] = intValIm; 
-            dataArray->SetTuple( i,  floatVal ); 
+            //  Bruker data points are in reverse order: 
+            dataArray->SetTuple( numPts - 1 -i,  floatVal ); 
         }
     } else { 
         for (int i = 0; i < numPts; i++) {
-            dataArray->SetTuple(i, &(static_cast<float*>(this->specData)[offset + (i * 2)]));
+            dataArray->SetTuple(numPts - 1 - i, &(static_cast<float*>(this->specData)[offset + (i * 2)]));
         }
     }
 
@@ -1270,6 +1427,11 @@ void svkBrukerRawMRSMapper::InitPixelMeasuresMacro()
 
 void svkBrukerRawMRSMapper::InitMRSpectroscopyPulseSequenceModule() 
 {
+    //  I would have thought this would be no for linear and an even number of 
+    //  phase encodes, but I thought the centric encoding would have sampled k0
+    //  assymetrically, however both trajectories yield best spatial overlap with 
+    //  reference image when this is set to NO. 
+    this->dcmHeader->SetValue( "SVK_K0Sampled", "NO");
 } 
 
 
