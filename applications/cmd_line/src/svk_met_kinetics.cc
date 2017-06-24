@@ -71,7 +71,7 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ;
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";
-    usemsg += "svk_met_kinetics   --i1 name --i2 name [ --i3 name ]                     \n";
+    usemsg += "svk_met_kinetics   --i1 name --i2 name [ --i3 name ] --tr                \n";
     usemsg += "                 [ --mask name ] -o root [ -t output_data_type ]         \n";
     usemsg += "                 [ --param num --lb value --ub value]                    \n";
     usemsg += "                 [ --model type ] [ -h ]                                 \n";

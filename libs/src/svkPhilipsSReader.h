@@ -60,9 +60,12 @@ namespace svk {
 
 /*! 
  *  Reader for Philips MRS "S" files: SPAR and SDAT.  Parses the SPAR file to create a map of header values which 
- *  are used to initialize the DICOM header through the mapper instance.  The specific mapper instance
+ *  are used to initialize the DICOM MRS header through a sequence specific mapper instance.  The specific mapper instance
  *  is likely a function of the acquisition type / pulse sequence and is obtained from a mapper factory
  *  with rules TBD.  Data is parsed from the SDAT file.   
+ *
+ *  Thanks to Sandeep Ganji (Philips), PhD and Kazu Yamamoto (NIH), PhD for their help developing and validating this reader 
+ *  and for providing valuable validation phantoms. 
  */
 class svkPhilipsSReader : public svkImageReader2 
 {
