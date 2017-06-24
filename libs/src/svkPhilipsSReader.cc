@@ -353,7 +353,7 @@ void svkPhilipsSReader::ParseSPAR( string path )
         cerr << "ERROR opening or reading Philips spar file( " << path << ": " << e.what() << endl;
         exit(1); 
     }
-    this->PrintSparKeyValuePairs(); 
+    //this->PrintSparKeyValuePairs(); 
 
 }
 
