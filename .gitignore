@@ -1,6 +1,7 @@
 .idea
 .cproject
 .project
+*.sublime-*
 CMakeFiles
 Linux_x86_64
 Linux_x86_64_debug
@@ -63,3 +64,4 @@ nbproject/private/launcher.properties
 stash/
 working/
 cmake-build-debug/
+cmake-build-release/

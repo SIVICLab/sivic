@@ -291,6 +291,7 @@ ADD_LIBRARY(
     svkString.cc
     svkXML.cc
     svkF2C.cc
+    svkNIFTIVolumeReader.cc
 )
 
 ADD_LIBRARY(
