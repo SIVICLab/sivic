@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
  *  Authors:
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
+ *      James Hawkins
  */
 
 #ifndef SVK_NIFTI_VOLUME_READER_H
@@ -54,7 +55,11 @@
 
 namespace svk {
 
-class svkNIFTIVolumeReader : public svkImageReader2 {
+/*! 
+ *  Reader for NIFTI files.  Composed with vtkNIFTIImageReader. 
+ */
+class svkNIFTIVolumeReader : public svkImageReader2 
+{
 
     public:
 
