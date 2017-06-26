@@ -279,7 +279,8 @@ void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
         double volumeCenterAcqFrame[3];
         volumeCenterAcqFrame[0] = 0.; 
         volumeCenterAcqFrame[1] = 0.; 
-        volumeCenterAcqFrame[2] = this->GetHeaderValueAsFloat("ACQ_slice_offset"); 
+        //  Invert about origin in SI: 
+        volumeCenterAcqFrame[2] = -1 * this->GetHeaderValueAsFloat("ACQ_slice_offset"); 
         cout << "OFFSET: " << volumeCenterAcqFrame[2] << endl;
 
         double* volumeTlcAcqFrame = new double[3];
@@ -308,7 +309,8 @@ void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
         double centerAcqFrame[3];
         centerAcqFrame[0] = 0.0; 
         centerAcqFrame[1] = 0.0; 
-        centerAcqFrame[2] = this->GetHeaderValueAsFloat("ACQ_slice_offset"); 
+        //  Invert about origin in SI: 
+        centerAcqFrame[2] = -1 * this->GetHeaderValueAsFloat("ACQ_slice_offset"); 
         cout << "OFFSET: " << centerAcqFrame[2] << endl;
 
         //  Now get the center of the tlc voxel in the acq frame:
@@ -435,17 +437,20 @@ void svkBrukerRawMRSMapper::GetDcmOrientation(float dcos[3][3], string* orientat
 
     if (encoding.compare("LINEAR") == 0 ) {
 
-        //  Invert about origin in RL and AP: 
+        //  Invert about origin in SI: 
         float inverter[3][3]; 
-        inverter[0][0] = -1;   
+        inverter[0][0] = 1;   
+        //inverter[0][0] = -1;   
         inverter[0][1] = 0;  
         inverter[0][2] = 0;  
         inverter[1][0] = 0;  
-        inverter[1][1] = -1;  
+        inverter[1][1] = 1;  
+        //inverter[1][1] = -1;  
         inverter[1][2] = 0;  
         inverter[2][0] = 0;  
         inverter[2][1] = 0;  
-        inverter[2][2] = 1;  
+        //inverter[2][2] = 1;  
+        inverter[2][2] = -1;  
 
         this->MatMult( dcos, inverter );  
     }
@@ -490,26 +495,31 @@ void svkBrukerRawMRSMapper::FixBrukerOrientationAnomalies( float dcos[3][3] )
         encoding = "LINEAR"; 
     }
 
+    //  invert about LPS 
+    //  axial if dcos[2][2] = 1 (assuming non oblique data)
     //  coronal if dcos[2][1] = 1 (assuming non oblique data)
-    if (
-        (encoding.compare("CENTRIC") == 0  ) && 
-        ( dcos[2][1] == 1 || dcos[2][1] == -1 ) 
-    ) {
-
-        //  Invert about origin in RL and SI: 
+    if (encoding.compare("CENTRIC") == 0  ) { 
         float inverter[3][3]; 
-        inverter[0][0] = -1;   
+        inverter[0][0] = 1;   
         inverter[0][1] = 0;  
         inverter[0][2] = 0;  
         inverter[1][0] = 0;  
-        inverter[1][1] = -1;  
+        inverter[1][1] = 1;  
         inverter[1][2] = 0;  
         inverter[2][0] = 0;  
         inverter[2][1] = 0;  
-        inverter[2][2] = -1;  
-
+        inverter[2][2] = 1;  
+        if ( dcos[2][1] == 1 || dcos[2][1] == -1 ) {
+            //  CORONAL: Invert about origin in L: 
+            inverter[0][0] = -1;   
+        } 
+        if ( dcos[2][2] == 1 || dcos[2][2] == -1 ) {
+            //  AXIAL: Invert about origin in LPS: 
+            inverter[0][0] = -1;   
+            inverter[1][1] = -1;  
+            inverter[2][2] = -1;  
+        }
         this->MatMult( dcos, inverter );  
-        
     }
 }
 
@@ -1295,13 +1305,14 @@ void svkBrukerRawMRSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, in
             int intValIm     = static_cast<int*>(  this->specData)[offset + (i * 2 + 1)];
             float floatVal[2]; 
             floatVal[0] = intValRe; 
-            floatVal[1] = intValIm; 
+            floatVal[1] = -1 * intValIm; 
             //  Bruker data points are in reverse order: 
-            dataArray->SetTuple( numPts - 1 -i,  floatVal ); 
+            //  chop in freq space?  
+            dataArray->SetTuple( i,  floatVal ); 
         }
     } else { 
         for (int i = 0; i < numPts; i++) {
-            dataArray->SetTuple(numPts - 1 - i, &(static_cast<float*>(this->specData)[offset + (i * 2)]));
+            dataArray->SetTuple( i, &(static_cast<float*>(this->specData)[offset + (i * 2)]));
         }
     }
 
