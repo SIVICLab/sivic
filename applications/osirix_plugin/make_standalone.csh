@@ -122,6 +122,6 @@ mv ./SIVIC.app                                                                  
 cp -r sivic_logo.icns                                                           ./SIVIC_DISTRIBUTION/.background/
 cp /Applications\ alias                                                         ./SIVIC_DISTRIBUTION/Applications
 cp -r ~/Library/Developer/Xcode/DerivedData/SIVIC_MRSI-gfzhgwmtudqatzemvsdhqbsdogzb/Build/Products/Deployment/SIVIC_MRSI.bundle                 ./SIVIC_DISTRIBUTION/SIVIC_MRSI.osirixplugin
-cp ~/Library/Application\ Support/OsiriX/Plugins                                 ./SIVIC_DISTRIBUTION/Plugins
+cp ~/Library/Application\ Support/OsiriX/Plugins\ alias                         ./SIVIC_DISTRIBUTION/Plugins
 
 
