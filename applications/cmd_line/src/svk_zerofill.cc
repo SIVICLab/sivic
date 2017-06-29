@@ -107,14 +107,14 @@ int main (int argc, char** argv)
     int customPtsX     = -1;  
     int customPtsY     = -1;  
     int customPtsZ     = -1;  
-    int doublePtsSpec  = -1;  
-    int doublePtsX     = -1;  
-    int doublePtsY     = -1;  
-    int doublePtsZ     = -1;  
-    int pow2PtsSpec    = -1;  
-    int pow2PtsX       = -1;  
-    int pow2PtsY       = -1;  
-    int pow2PtsZ       = -1;  
+    bool doublePtsSpec  = false;  
+    bool doublePtsX     = false;  
+    bool doublePtsY     = false;  
+    bool doublePtsZ     = false;  
+    bool pow2PtsSpec    = false;  
+    bool pow2PtsX       = false;  
+    bool pow2PtsY       = false;  
+    bool pow2PtsZ       = false;  
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS; 
     bool   verbose = false;
 
@@ -184,28 +184,28 @@ int main (int argc, char** argv)
                 customPtsZ = atoi( optarg);
                 break;
             case FLAG_DOUBLE_SPEC:
-                doublePtsSpec = atoi( optarg);
+                doublePtsSpec = true; 
                 break;
             case FLAG_DOUBLE_X:
-                doublePtsX = atoi( optarg);
+                doublePtsX = true; 
                 break;
             case FLAG_DOUBLE_Y:
-                doublePtsY = atoi( optarg);
+                doublePtsY = true; 
                 break;
             case FLAG_DOUBLE_Z:
-                doublePtsZ = atoi( optarg);
+                doublePtsZ = true; 
                 break;
             case FLAG_POW2_SPEC:
-                pow2PtsSpec = atoi( optarg);
+                pow2PtsSpec = true; 
                 break;
             case FLAG_POW2_X:
-                pow2PtsX = atoi( optarg);
+                pow2PtsX = true; 
                 break;
             case FLAG_POW2_Y:
-                pow2PtsY = atoi( optarg);
+                pow2PtsY = true; 
                 break;
             case FLAG_POW2_Z:
-                pow2PtsZ = atoi( optarg);
+                pow2PtsZ = true; 
                 break;
             case 'v':
                 verbose = true;
@@ -281,29 +281,29 @@ int main (int argc, char** argv)
         zeroFill->SetNumberOfSlices( customPtsZ ); 
     }
 
-    if ( doublePtsSpec != -1 ) {
+    if ( doublePtsSpec == true ) {
         zeroFill->SetNumberOfSpecPointsToDouble( ); 
     }
-    if ( doublePtsX != -1 ) {
+    if ( doublePtsX == true ) {
         zeroFill->SetNumberOfColumnsToDouble( ); 
     }
-    if ( doublePtsY != -1 ) {
+    if ( doublePtsY == true ) {
         zeroFill->SetNumberOfRowsToDouble( ); 
     }
-    if ( doublePtsZ != -1 ) {
+    if ( doublePtsZ == true ) {
         zeroFill->SetNumberOfSlicesToDouble( ); 
     }
 
-    if ( pow2PtsSpec != -1 ) {
+    if ( pow2PtsSpec == true ) {
         zeroFill->SetNumberOfSpecPointsToNextPower2( ); 
     }
-    if ( pow2PtsX != -1 ) {
+    if ( pow2PtsX == true ) {
         zeroFill->SetNumberOfColumnsToNextPower2( ); 
     }
-    if ( pow2PtsY != -1 ) {
+    if ( pow2PtsY == true ) {
         zeroFill->SetNumberOfRowsToNextPower2( ); 
     }
-    if ( pow2PtsZ != -1 ) {
+    if ( pow2PtsZ == true ) {
         zeroFill->SetNumberOfSlicesToNextPower2( ); 
     }
 
