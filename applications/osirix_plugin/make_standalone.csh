@@ -121,7 +121,7 @@ mkdir -p ./SIVIC_DISTRIBUTION/.background
 mv ./SIVIC.app                                                                  ./SIVIC_DISTRIBUTION/
 cp -r sivic_logo.icns                                                           ./SIVIC_DISTRIBUTION/.background/
 cp /Applications\ alias                                                         ./SIVIC_DISTRIBUTION/Applications
-cp -r ~/xcode-build/Build/Products/Deployment/SIVIC_MRSI.bundle                 ./SIVIC_DISTRIBUTION/SIVIC_MRSI.osirixplugin
-cp /Library/Application\ Support/OsiriX/OsiriX_Plugins                          ./SIVIC_DISTRIBUTION/OsiriX_Plugins
+cp -r ~/Library/Developer/Xcode/DerivedData/SIVIC_MRSI-gfzhgwmtudqatzemvsdhqbsdogzb/Build/Products/Deployment/SIVIC_MRSI.bundle                 ./SIVIC_DISTRIBUTION/SIVIC_MRSI.osirixplugin
+cp ~/Library/Application\ Support/OsiriX/Plugins                                 ./SIVIC_DISTRIBUTION/Plugins
 
 
