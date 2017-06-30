@@ -39,58 +39,61 @@
  *      Beck Olson
  */
 
-#ifndef SVK_PHILIPS_S_MAPPER_H
-#define SVK_PHILIPS_S_MAPPER_H
+#ifndef SVK_BRUKER_RAW_MRS_MAPPER_H
+#define SVK_BRUKER_RAW_MRS_MAPPER_H
 
 
 #include <vtkImageData.h>
-#include <svkImageData.h>
 
+#include <svkImageData.h>
 #include <svkDcmHeader.h>
 #include <svkMRSIOD.h>
-#include <vtkMatrix4x4.h>
+#include <svkMrsImageData.h>
 
 #include <map>
 #include <string>
+#include <vector>
 
 
 namespace svk {
 
 
 /*! 
- *  Mapper base class for converting from Philips SPAR header format to DICOM MR Spectrosocpy IOD/SOP 
- *  Class instance.  The mapper receives the SPAR fields from the svkPhilipsSReader.  The spar fields are 
- *  in the form of a map of of key value pairs (sparMap). 
- *  Map values are key value pairs and can be accessed by key string name and value index (GetHeaderValueAsType 
+ *  Mapper base class for converting from Varian FID Procpar header format to DICOM MR Spectrosocpy IOD/SOP 
+ *  Class instance.  The mapper receives the procpar fields from the svkBrukerRawMRSReader.  The procpar fields are 
+ *  in the form of a map of of key value pairs (procparMap). 
+ *  Map values are vectors of strings and can be accessed by key string name and value index (GetHeaderValueAsType 
  *  methods).  
  *
  *  Concrete mappers need to be implemented to map sequence specific content from Varian acquisitions to DICOM MR
- *  Spectroscopy.  It is the svkPhilipsSReader's responsibility to select the appropriate svkPhilipsSMapper 
+ *  Spectroscopy.  It is the svkBrukerRawMRSReader's responsibility to select the appropriate svkBrukerRawMRSMapper 
  *  instance for any give data set. 
  *  
+ *  Thanks to Dr. Sukumar Subramaniam (UCSF NMR Lab) for help understanding the Varian data format and for his 
+ *  assistance validating SIVIC's Varian data reading functionality.  
  */
-class svkPhilipsSMapper : public vtkObject 
+class svkBrukerRawMRSMapper : public vtkObject 
 {
 
     public:
 
-        static svkPhilipsSMapper* New();
-        vtkTypeMacro( svkPhilipsSMapper, vtkObject );
+        static svkBrukerRawMRSMapper* New();
+        vtkTypeMacro( svkBrukerRawMRSMapper, vtkObject );
 
         virtual void    InitializeDcmHeader(
-                            map <string, string >    sparMap,
+                            map <string, vector < string> >    paramMap,
                             svkDcmHeader* header,
                             svkMRSIOD* iod,
                             int        swapBytes  
                         );
 
-        virtual void    ReadSDATFile( string sdatFileName, svkImageData* data );
+        virtual void    ReadSerFile( string serFileName, svkMrsImageData* data );
 
         
     protected:
 
-        svkPhilipsSMapper();
-        ~svkPhilipsSMapper();
+        svkBrukerRawMRSMapper();
+        ~svkBrukerRawMRSMapper();
   
         void            InitPatientModule();
         void            InitGeneralStudyModule();
@@ -108,39 +111,41 @@ class svkPhilipsSMapper : public vtkObject
         virtual void    InitPlaneOrientationMacro();
         virtual void    InitMREchoMacro();
         virtual void    InitMRTimingAndRelatedParametersMacro();
-        virtual void    InitVolumeLocalizationSeq(); 
         virtual void    InitMRReceiveCoilMacro();
-        virtual void    InitMRSpectroscopyPulseSequenceModule();
+        virtual void    InitMRSpectroscopyPulseSequenceModule(); 
         virtual void    InitMRSpectroscopyModule();
         virtual void    InitMRSpectroscopyFOVGeometryMacro();
         virtual void    InitMRSpectroscopyDataModule();
         string          GetDcmPatientPositionString(); 
 
-        int             GetHeaderValueAsInt( string keyString ); 
-        float           GetHeaderValueAsFloat( string keyString ); 
+        int             GetHeaderValueAsInt(
+                            string keyString, int valueIndex = 0
+                        );
+        float           GetHeaderValueAsFloat(
+                            string keyString, int valueIndex = 0 
+                        );
+        string          GetHeaderValueAsString(
+                            string keyString, int valueIndex = 0
+                        );
+
         virtual void    SetCellSpectrum(
                             vtkImageData* data, 
                             int x, int y, int z, 
                             int timePt, 
                             int coilNum
                         );
-        string          GetDcmDate(); 
-        void            VaxToFloat( const void *inbuf, void *outbuf,
-                                    const int *count ); 
-        void            GetFOV(float* fov); 
-        void            GetDimPnts(int* numPixels); 
-
-        void            GetDcosFromAngulation( 
-                            float psi, 
-                            float phi, 
-                            float theta, 
-                            vtkMatrix4x4* dcos, 
-                            string* orientationString ); 
+        void            ReorderKSpace( svkMrsImageData* data ); 
+        void            GetDcmOrientation(float dcos[3][3], string* orientationString); 
+        void            GetBrukerPixelSize( float pixelSize[3] ); 
+        void            ApplyGroupDelay( svkMrsImageData* data ); 
+        void            FixBrukerOrientationAnomalies( float dcos[3][3] ); 
+        void            MatMult(float A[3][3], float B[3][3] ); 
+        int             GetNumTimePoints(); 
 
 
-        map <string, string >                       sparMap; 
+        map <string, vector < string> >             paramMap; 
         svkDcmHeader*                               dcmHeader; 
-        float*                                      specData; 
+        void*                                       specData; 
         svkDcmHeader::DcmDataOrderingDirection      dataSliceOrder;
         int                                         numSlices; 
         int                                         numFrames; 
@@ -152,5 +157,5 @@ class svkPhilipsSMapper : public vtkObject
 
 }   //svk
 
-#endif //SVK_PHILIPS_S_MAPPER_H
+#endif //SVK_BRUKER_RAW_MRS_MAPPER_H
 

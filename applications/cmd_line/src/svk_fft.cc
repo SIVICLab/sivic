@@ -148,6 +148,10 @@ int main (int argc, char** argv)
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
+                if( ! svkUtils::FilePathExists( inputFileName.c_str() ) ) {
+                    cerr << endl << "Input file can not be loaded (may not exist) " << inputFileName << endl << endl;
+                    exit(1);
+                }
                 break;
             case 'o':
                 outputFileName.assign(optarg);

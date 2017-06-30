@@ -207,6 +207,8 @@ ADD_LIBRARY(
     svkVarianUCSF2DcsiMapper.cc
     svkVarianUCSFEPSI2DMapper.cc
     svkVarianFidMapper.cc
+    svkBrukerRawMRSReader.cc
+    svkBrukerRawMRSMapper.cc
     svkGESigna5XReader.cc
     svkGESignaLX2Reader.cc
     svkPACSInterface.cc
@@ -235,6 +237,7 @@ ADD_LIBRARY(
     svkImageAlgorithm.cc
     svkImageAlgorithmExecuter.cc
     svkImageThreshold.cc
+    svkFreqCorrect.cc
     svkAlgorithmPortMapper.cc
     svkImageAlgorithmWithPortMapper.cc
     svkImageAlgorithmPipeline.cc
@@ -288,6 +291,7 @@ ADD_LIBRARY(
     svkString.cc
     svkXML.cc
     svkF2C.cc
+    svkNIFTIVolumeReader.cc
 )
 
 ADD_LIBRARY(
