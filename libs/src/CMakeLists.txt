@@ -291,7 +291,7 @@ ADD_LIBRARY(
     svkString.cc
     svkXML.cc
     svkF2C.cc
-)
+        svkGEPFileMapperEPSIslaser.cpp)
 
 ADD_LIBRARY(
     svkXMLUtils

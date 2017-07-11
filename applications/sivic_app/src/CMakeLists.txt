@@ -1,4 +1,5 @@
 ##
+##
 #  Copyright © 2009-2017 The Regents of the University of California.
 #  All Rights Reserved.
 #
@@ -220,6 +221,8 @@ INCLUDE_DIRECTORIES(
     ../../../libs/src/
     ${DCMTK_DIR}/include
     ${PLATFORM_INCLUDE}
+        ${OPENGL_INCLUDE_DIR}
+
 )
 
 if ( BUILD_ITK )

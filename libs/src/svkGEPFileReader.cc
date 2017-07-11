@@ -654,7 +654,10 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
   
     if ( ( psd.compare("probe-p") == 0 ) || ( psd.find("presscsi") != string::npos ) ) { 
 
-        // product GE sequence:  
+        // product GE sequence:
+        //aMapper = svkGEPFileMapper::New();
+
+        // EC - Semi-Laser EPSI GE sequence:
         aMapper = svkGEPFileMapper::New();
 
     } else if ( psd.find("prose_prostate_ucsf") != string::npos ) {
@@ -1361,7 +1364,8 @@ string svkGEPFileReader::GetOffsetsString()
     //  rhr.rh_rdbm_rev                    , FLOAT_4,   1   ,       0       value
     //  rhr.rh_logo                        , CHAR   ,   10  ,       34
 
-    string offsets; 
+    string offsets;
+    cout<<"hhhhhhhhh";
 
     if ( (int)(this->pfileVersion) == 9 ) {
 
@@ -2513,7 +2517,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_user11                      , FLOAT_4, 1   , 260,\
             rhr.rh_user12                      , FLOAT_4, 1   , 264,\
             rhr.rh_user13                      , FLOAT_4, 1   , 268,\
-            rhr.rh_user14                      , FLOAT_4, 1   , 272,\
+            rhr.rh_Øuser14                      , FLOAT_4, 1   , 272,\
             rhr.rh_user15                      , FLOAT_4, 1   , 276,\
             rhr.rh_user16                      , FLOAT_4, 1   , 280,\
             rhr.rh_user17                      , FLOAT_4, 1   , 284,\
