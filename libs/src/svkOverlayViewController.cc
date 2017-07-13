@@ -649,7 +649,9 @@ void svkOverlayViewController::UseSelectionStyle()
             }
         }
         this->currentInteractorStyle = SELECTION;
-        svkOverlayView::SafeDownCast(this->view)->ToggleSelBoxVisibilityOn();
+        if( svkOverlayView::SafeDownCast(this->view)->GetSelectionBoxVisibility() != svkOverlayView::VISIBLE ) {
+            svkOverlayView::SafeDownCast(this->view)->SetSelectionBoxVisibility(svkOverlayView::VISIBLE_WHEN_CONTAINS_CURRENT_SLICE);
+        }
     }
 
 }
@@ -687,7 +689,9 @@ void svkOverlayViewController::UseRotationStyle()
             view->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE); 
             view->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
         }
-        svkOverlayView::SafeDownCast(this->view)->ToggleSelBoxVisibilityOff();
+        if( svkOverlayView::SafeDownCast(this->view)->GetSelectionBoxVisibility() != svkOverlayView::HIDDEN ) {
+            svkOverlayView::SafeDownCast(this->view)->SetSelectionBoxVisibility(svkOverlayView::VISIBLE);
+        }
         this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
         this->myRenderWindow->SetNumberOfLayers(1);
         this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOff();

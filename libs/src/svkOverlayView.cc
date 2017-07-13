@@ -70,7 +70,6 @@ svkOverlayView::svkOverlayView()
     this->myRenderWindow = NULL;
     this->tlcBrc[0] = -1;
     this->tlcBrc[1] = -1;
-    this->toggleSelBoxVisibility = true;
 
     this->windowLevelerAxial = NULL;
     this->windowLevelerCoronal = NULL;
@@ -151,7 +150,7 @@ svkOverlayView::svkOverlayView()
 
     this->SetProp( svkOverlayView::SAT_BANDS_SAGITTAL, this->satBandsSagittal->GetSatBandsActor() );
     this->TurnPropOff( svkOverlayView::SAT_BANDS_SAGITTAL );
-
+    this->selBoxVisibility = VISIBLE_WHEN_CONTAINS_CURRENT_SLICE;
     
     this->interpolationType = NEAREST; 
 }
@@ -263,7 +262,6 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
             this->SetProp( svkOverlayView::VOL_SELECTION, selectionTopo->GetNextActor());     
             this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::VOL_SELECTION) );
             this->TurnPropOn( svkOverlayView::VOL_SELECTION );
-            this->UpdateSelectionBoxVisibility();
             selectionTopo->Delete();
         }
     }
@@ -277,8 +275,7 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
 
    
     this->SetProp( svkOverlayView::PLOT_GRID, this->GetProp( svkOverlayView::PLOT_GRID ) );
-    string acquisitionType = dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-    if( acquisitionType == "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->HasSelectionBox() ) {
+    if( this->dataVector[MR4D]->GetNumberOfCells() == 1 && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->HasSelectionBox() ) {
         this->TurnPropOff( svkOverlayView::PLOT_GRID );
     } else {
         this->TurnPropOn( svkOverlayView::PLOT_GRID );
@@ -526,17 +523,15 @@ void svkOverlayView::SetSlice(int slice, bool centerImage)
             this->slice = slice;
             this->GenerateClippingPlanes();
 
-            // Case for no selection box
-            if( this->GetProp( svkOverlayView::VOL_SELECTION ) != NULL && this->dataVector[MR4D]->IsA("svkMrsImageData") ) {
-                UpdateSelectionBoxVisibility();
-            }
+
             int toggleDraw = this->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
             if( toggleDraw ) {
                 this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
             }
             this->UpdateImageSlice( centerImage );
             this->SetSliceOverlay();
-                
+            this->UpdateSelectionBoxVisibility();
+
             if( toggleDraw ) {
                 this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
             }
@@ -555,11 +550,18 @@ void svkOverlayView::SetSlice(int slice, bool centerImage)
  * Check the state of the selection box visibility and update if necessary
  */
 void svkOverlayView::UpdateSelectionBoxVisibility() {
-    if(static_cast<svkMrsImageData*>(dataVector[MR4D])->IsSliceInSelectionBox(slice, orientation)
-       && isPropOn[VOL_SELECTION] && toggleSelBoxVisibility) {
-        GetProp(VOL_SELECTION )->SetVisibility(1);
-    } else if(toggleSelBoxVisibility) {
-        GetProp(VOL_SELECTION )->SetVisibility(0);
+    if( this->GetProp( svkOverlayView::VOL_SELECTION ) ) {
+        bool isSliceInBox = static_cast<svkMrsImageData *>(dataVector[MR4D])->IsSliceInSelectionBox(slice, orientation);
+        if ( this->selBoxVisibility == VISIBLE ||
+            (isSliceInBox && this->selBoxVisibility == VISIBLE_WHEN_CONTAINS_CURRENT_SLICE)) {
+            this->TurnPropOn(VOL_SELECTION);
+            this->GetRenderer(PRIMARY)->ResetCameraClippingRange();
+        } else {
+            this->TurnPropOff(VOL_SELECTION);
+        }
+        if(this->GetRenderer(svkOverlayView::PRIMARY)->HasViewProp( this->GetProp( svkOverlayView::VOL_SELECTION ))){
+            cout << "Render has VOL_SELECTION and its visibility is:" << this->GetProp( svkOverlayView::VOL_SELECTION )->GetVisibility() << endl;
+        }
     }
 }
 
@@ -580,14 +582,7 @@ void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
             this->GetRenderer(svkOverlayView::PRIMARY)->AddViewProp(this->GetProp( svkOverlayView::PLOT_GRID ));
         }
         int newSpectraSlice = this->FindSpectraSlice( slice, orientation );
-        if( this->dataVector[MR4D]->IsA("svkMrsImageData")
-                && static_cast<svkMrsImageData*>(this->dataVector[MR4D])->IsSliceInSelectionBox( newSpectraSlice, orientation )
-                && isPropOn[VOL_SELECTION]
-                && this->toggleSelBoxVisibility) {
-            this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
-        } else if( this->GetProp( svkOverlayView::VOL_SELECTION) && this->toggleSelBoxVisibility ) {
-            this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
-        }
+        this->UpdateSelectionBoxVisibility();
         if(  newSpectraSlice >= this->dataVector[MR4D]->GetFirstSlice( this->orientation ) &&
              newSpectraSlice <=  this->dataVector[MR4D]->GetLastSlice( this->orientation ) ) {
 
@@ -689,8 +684,7 @@ int svkOverlayView::FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation 
 	double spacing[3] = {0,0,0};
     this->dataVector[MR4D]->GetSpacing(spacing);
     if( svkMrsImageData::SafeDownCast( this->dataVector[MR4D]) ) {
-    	string acquisitionType = this->dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-    	if( acquisitionType == "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->HasSelectionBox() ) {
+    	if( this->dataVector[MR4D]->GetNumberOfCells() == 1 && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->HasSelectionBox() ) {
     		svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->GetSelectionBoxSpacing( spacing );
     	}
     }
@@ -2116,6 +2110,7 @@ void svkOverlayView::SetOrientation( svkDcmHeader::Orientation orientation )
         if( toggleDraw ) {
             this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
         }
+        this->UpdateSelectionBoxVisibility();
         this->Refresh();
     }
 }
@@ -2251,42 +2246,6 @@ bool svkOverlayView::AreAllSatBandOutlinesOn( svkDcmHeader::Orientation orientat
 /*!
  *
  */
-void svkOverlayView::ToggleSelBoxVisibilityOn() 
-{
-    this->toggleSelBoxVisibility = true;
-    if( this->GetProp( svkOverlayView::VOL_SELECTION ) == NULL ) {
-        return;
-    }
-    if( this->dataVector[MR4D] != NULL && this->dataVector[MR4D]->IsA("svkMrsImageData")
-            && static_cast<svkMrsImageData*>(this->dataVector[MR4D])->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
-        this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
-        this->TurnPropOn( svkOverlayView::VOL_SELECTION );
-    } else {
-        vtkProp* volSelection = this->GetProp( svkOverlayView::VOL_SELECTION ); 
-        if( volSelection != NULL ) {
-            this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
-        }
-    }
-}
-
-
-/*!
- *
- */
-void svkOverlayView::ToggleSelBoxVisibilityOff() 
-{
-    this->toggleSelBoxVisibility = false;
-    vtkProp* volSelection = this->GetProp( svkOverlayView::VOL_SELECTION ); 
-    if( volSelection != NULL ) {
-        this->TurnPropOn( svkOverlayView::VOL_SELECTION );
-        this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
-    }
-}
-
-
-/*!
- *
- */
 void svkOverlayView::AlignCamera() 
 {
     int toggleDraw = this->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
@@ -2337,4 +2296,14 @@ void svkOverlayView::SetCameraZoom( double zoom )
 bool svkOverlayView::IsImageInsideSpectra() 
 {
     return imageInsideSpectra;
+}
+
+void svkOverlayView::SetSelectionBoxVisibility(svkOverlayView::SelectionBoxVisibilityState visibility)
+{
+    this->selBoxVisibility = visibility;
+    this->UpdateSelectionBoxVisibility();
+}
+
+svkOverlayView::SelectionBoxVisibilityState svkOverlayView::GetSelectionBoxVisibility( ) {
+    return  this->selBoxVisibility;
 }

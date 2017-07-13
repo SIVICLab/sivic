@@ -99,6 +99,12 @@ class svkOverlayView : public svkDataView
     friend class svkOverlayViewController;
     
     public:
+
+    enum SelectionBoxVisibilityState {
+        VISIBLE = 0,
+        HIDDEN = 1,
+        VISIBLE_WHEN_CONTAINS_CURRENT_SLICE
+    };
         // vtk type revision macro
         vtkTypeMacro( svkOverlayView, svkDataView );
 
@@ -122,8 +128,6 @@ class svkOverlayView : public svkDataView
         void                TurnOrthogonalImagesOff();
         bool                AreOrthogonalImagesOn();
         void                SetOrientation( svkDcmHeader::Orientation orientation );
-        void                ToggleSelBoxVisibilityOn();
-        void                ToggleSelBoxVisibilityOff();
         void                AlignCamera();
         bool                IsImageInsideSpectra();
         void                SetLevel(double level);
@@ -135,7 +139,9 @@ class svkOverlayView : public svkDataView
         double              GetColorOverlayWindow( ); 
         double              GetColorOverlayLevel( );
         bool                CheckDataOrientations();
-        void                SetCameraZoom( double zoom ); 
+        void                SetCameraZoom( double zoom );
+        void                SetSelectionBoxVisibility( SelectionBoxVisibilityState visibility );
+        SelectionBoxVisibilityState GetSelectionBoxVisibility( );
 
 
         svkLookupTable*     GetLookupTable( );
@@ -201,7 +207,6 @@ class svkOverlayView : public svkDataView
         vtkRenderWindow*                myRenderWindow;
 
 
-        bool                            toggleSelBoxVisibility;
         bool                            imageInsideSpectra;
 
         //! Object used to window livel the overlay 
@@ -266,6 +271,7 @@ class svkOverlayView : public svkDataView
 
         // Determines how close to the voxels things are clipped
         static const double            CLIP_TOLERANCE;
+        SelectionBoxVisibilityState    selBoxVisibility;
 
 
 };
