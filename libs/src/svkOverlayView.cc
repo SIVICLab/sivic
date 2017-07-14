@@ -559,9 +559,6 @@ void svkOverlayView::UpdateSelectionBoxVisibility() {
         } else {
             this->TurnPropOff(VOL_SELECTION);
         }
-        if(this->GetRenderer(svkOverlayView::PRIMARY)->HasViewProp( this->GetProp( svkOverlayView::VOL_SELECTION ))){
-            cout << "Render has VOL_SELECTION and its visibility is:" << this->GetProp( svkOverlayView::VOL_SELECTION )->GetVisibility() << endl;
-        }
     }
 }
 
