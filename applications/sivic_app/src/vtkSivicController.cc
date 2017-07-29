@@ -2031,7 +2031,7 @@ void vtkSivicController::SaveData( char* fileName )
     svkImageWriter* writer;
 
     string fileNameString = string( fileName);
-    size_t pos = fileNameString.find(".");
+    size_t pos = fileNameString.find_last_of(".");
     if( strcmp( fileNameString.substr(pos).c_str(), ".ddf" ) == 0 ) {
         writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter(svkImageWriterFactory::DDF));
     } else {
