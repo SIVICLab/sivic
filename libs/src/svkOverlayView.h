@@ -273,6 +273,8 @@ class svkOverlayView : public svkDataView
         static const double            CLIP_TOLERANCE;
         SelectionBoxVisibilityState    selBoxVisibility;
 
+        bool                           interpolateView; 
+
 
 };
 

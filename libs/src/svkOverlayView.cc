@@ -153,6 +153,10 @@ svkOverlayView::svkOverlayView()
     this->selBoxVisibility = VISIBLE_WHEN_CONTAINS_CURRENT_SLICE;
     
     this->interpolationType = NEAREST; 
+
+    //  if true, then the actor's interpolation will be turned on in the view.  This is in 
+    //  addition to the defined "interpolationType".
+    this->interpolateView = true; 
 }
 
 
@@ -1489,17 +1493,41 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
         if( this->interpOverlay == dataVector[OVERLAY] ) {
             this->SetInput( svkMriImageData::SafeDownCast(sincInterpolation->GetInput()), OVERLAY );
         }
-        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOn();
-        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOn();
-        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOn();
-        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOn();
-        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOn();
-        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOn();
+        if (this->interpolateView)
+        if ( this->interpolateView == true ) {
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOn();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOn();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOn();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOn();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOn();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOn();
+        } else {
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOff();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOff();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOff();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOff();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOff();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOff();
+        }
     } else if (interpolationType == SINC) {
         this->interpolationType = SINC; 
         if( this->interpOverlay != dataVector[OVERLAY] ) {
         	this->UpdateSincInterpolation();
-
+        }
+        if ( this->interpolateView == true ) {
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOnf();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOn();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOn();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOn();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOn();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOn();
+        } else {
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOff();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOff();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOff();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOff();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOff();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOff();
         }
     }
     this->Refresh();
@@ -1511,18 +1539,37 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
  */
 void svkOverlayView::UpdateSincInterpolation()
 {
+    //  get the extent of the overlay image that is being interpolated. 
 	int* extent = this->dataVector[OVERLAY]->GetExtent();
 	int xLength = extent[1]-extent[0] + 1;
 	int yLength = extent[3]-extent[2] + 1;
 	int zLength = extent[5]-extent[4] + 1;
 
+    //  get the extent of the reference "MRI" image that the overlay is being interpolated to.
+	int* targetExtent = this->dataVector[MRI]->GetExtent();
+    int xLengthTarget = targetExtent[1]-targetExtent[0] + 1;
+    int yLengthTarget = targetExtent[3]-targetExtent[2] + 1;
+    int zLengthTarget = targetExtent[5]-targetExtent[4] + 1;
+
 	double* imageSpacing = this->dataVector[MRI]->GetSpacing();
 	double* overlaySpacing = this->dataVector[OVERLAY]->GetSpacing();
 
-	// Lets choose the resolution of the sinc by trying to get to the resolution of the image
-	int xSize = (int)pow( 2., vtkMath::Round( log( static_cast<double>(xLength * (overlaySpacing[0]/imageSpacing[0]) ))/log(2.) ) );
-	int ySize = (int)pow( 2., vtkMath::Round( log( static_cast<double>(yLength * (overlaySpacing[1]/imageSpacing[1]) ))/log(2.) ) );
-	int zSize = (int)pow( 2., vtkMath::Round( log( static_cast<double>(zLength * (overlaySpacing[2]/imageSpacing[2]) ))/log(2.) ) );
+	//  Define the target resolution of the sinc interpolation.  If the target array size is still fairly small 
+    //  use it as defined, oterhwise try to interpolate to a size that is a power of 2 and close to the target resolution
+    //  so that the FT is "fast". 
+	int xSize;
+	int ySize;
+	int zSize;
+    if ( ( xLengthTarget > 64 )  || ( yLengthTarget > 64 ) || ( zLengthTarget > 64 ) )  {
+	    xSize = (int)pow( 2., vtkMath::Round( log( static_cast<double>(xLength * (overlaySpacing[0]/imageSpacing[0]) ))/log(2.) ) );
+	    ySize = (int)pow( 2., vtkMath::Round( log( static_cast<double>(yLength * (overlaySpacing[1]/imageSpacing[1]) ))/log(2.) ) );
+	    zSize = (int)pow( 2., vtkMath::Round( log( static_cast<double>(zLength * (overlaySpacing[2]/imageSpacing[2]) ))/log(2.) ) );
+    } else {
+        xSize = xLengthTarget; 
+        ySize = yLengthTarget; 
+        zSize = zLengthTarget; 
+    }
+
 	if( xSize > SINC_MAX_EXTENT ) {
 		xSize = SINC_MAX_EXTENT;
 	}
