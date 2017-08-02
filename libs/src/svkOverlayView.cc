@@ -1515,7 +1515,7 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
         	this->UpdateSincInterpolation();
         }
         if ( this->interpolateView == true ) {
-            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOnf();
+            svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOn();
             svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOn();
             svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOn();
             svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOn();
