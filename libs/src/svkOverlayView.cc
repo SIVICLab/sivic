@@ -58,6 +58,7 @@ const double svkOverlayView::CLIP_TOLERANCE = 0.001;
  */
 svkOverlayView::svkOverlayView()
 {
+    this->contourDirector = svkOverlayContourDirector::New();
     this->imageViewer = svkImageViewer2::New();
     this->satBandsAxial = svkSatBandSet::New();
     this->satBandsCoronal = svkSatBandSet::New();
@@ -338,12 +339,13 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
                 this->GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetViewUp(), 
                 sizeof(double)*3);
         memcpy(cameraFocus, 
-                this->GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetFocalPoint(), 
+                this->GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetFocalPoint(),
                 sizeof(double)*3);
     }
     
     // We need to execute these before resolving the state
     imageViewer->SetInputData( dataVector[MRI] );
+    this->contourDirector->SetReferenceImage(svkMriImageData::SafeDownCast(this->dataVector[MRI]));
     imageViewer->SetSlice( slice );
     
     if( resetViewState ) {
@@ -400,7 +402,7 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
 {
 
     // Check for out of bounds
-    if( data != NULL && index <= OVERLAY && index >= 0 ) {
+    if( data != NULL && index >= 0 ) {
         // Check for null datasets and out of bound data sets...
         vector<svkImageData*> allImages( this->dataVector );
         allImages.push_back( data );
@@ -427,6 +429,9 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
         }
         this->ResliceImage(this->dataVector[MRI], resliceTargetData , MRI);
         this->ResliceImage(this->dataVector[OVERLAY], resliceTargetData , OVERLAY);
+        for( int i = OVERLAY_CONTOUR; i < this->dataVector.size(); i++ ) {
+            this->ResliceImage(this->dataVector[i], resliceTargetData , i);
+        }
         bool wasDataResliced = false;
         if( index != MR4D ) {
             wasDataResliced = this->ResliceImage(data, resliceTargetData , index);
@@ -446,7 +451,12 @@ void svkOverlayView::SetInputPostReslice(svkImageData* data, int index)
     bool resetViewState = 1;
     string resultInfo = this->GetDataCompatibility( data, index );
     if( strcmp( resultInfo.c_str(), "" ) == 0 ) { 
-    
+
+        // Contours will always add new, will not replace existing
+        if( index == OVERLAY_CONTOUR ) {
+            index = dataVector.size();
+            dataVector.push_back(NULL);
+        }
         if( dataVector[index] != NULL ) {
             dataVector[index]->Delete();
             dataVector[index] = NULL;
@@ -457,6 +467,8 @@ void svkOverlayView::SetInputPostReslice(svkImageData* data, int index)
         dataVector[index] = data;
         if( index == OVERLAY ) {
             SetupOverlay();
+        } else if( index >= OVERLAY_CONTOUR){
+            SetupOverlayContour( index );
         } else if( data->IsA("svkMriImageData") ) {
             SetupMrInput( resetViewState );
         } else if( data->IsA("svk4DImageData") ) {
@@ -698,7 +710,7 @@ int svkOverlayView::FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation 
 /*
  *  Finds the spectra slice that most closely corresponds to the input image slice.
  */
-int svkOverlayView::FindOverlaySlice( int imageSlice, svkDcmHeader::Orientation orientation ) 
+int svkOverlayView::FindOverlaySlice( int imageSlice, svkDcmHeader::Orientation orientation )
 {
     int overlaySlice = -1;
     double sliceCenter[3];
@@ -1238,7 +1250,8 @@ void svkOverlayView::SetSliceOverlay() {
 
 
 
-    }  
+    }
+    this->contourDirector->SetSlice(this->imageViewer->GetSlice(), this->GetOrientation());
 }
 
 
@@ -1469,6 +1482,18 @@ void svkOverlayView::SetupOverlay()
 
 
 /*!
+ *  Sets up the contour overlay actor.
+ */
+void svkOverlayView::SetupOverlayContour( int contourIndex )
+{
+    vtkActor* contourActor = this->contourDirector->AddInput(svkMriImageData::SafeDownCast(this->dataVector[contourIndex]));
+    this->GetRenderer( svkOverlayView::PRIMARY )->AddActor(contourActor);
+    this->SetSliceOverlay();
+    this->Refresh();
+}
+
+
+/*!
  *  Sets the type of interpolation for the overlayed image.
  *
  *  \param interpolationType options are NEAREST, LINEAR, or SINC
@@ -1687,7 +1712,7 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
     svkDataValidator* validator = svkDataValidator::New();
     
     // Check for null datasets and out of bound data sets...
-    if ( data == NULL || targetIndex > OVERLAY || targetIndex < 0 ) {
+    if ( data == NULL ||  targetIndex < 0 ) {
 
         resultInfo = "Data incompatible-- NULL or outside of input range.\n";
 
@@ -1706,7 +1731,9 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
             svkImageData* loadedImage = NULL;
             if( targetIndex == MRI && this->dataVector[OVERLAY] != NULL ) {
                 loadedImage = this->dataVector[OVERLAY];
-            } else if ( targetIndex == OVERLAY && this->dataVector[MRI] != NULL ) {
+            } else if( targetIndex == MRI && this->dataVector.size() > OVERLAY_CONTOUR && this->dataVector[OVERLAY_CONTOUR] != NULL ) {
+                loadedImage = this->dataVector[OVERLAY_CONTOUR];
+            } else if ( targetIndex >= OVERLAY && this->dataVector[MRI] != NULL ) {
                 loadedImage = this->dataVector[MRI];
             }
             if( loadedImage != NULL ) {
