@@ -290,13 +290,17 @@ void svkOverlayViewController::SetInput( svkImageData* data, int index)
             this->view->SetInput(data, 1);
             this->SetSlice( this->GetView()->GetSlice() );
         }
-    } else if( index == MET && data != NULL && dataVector[MRI] != NULL ) {
-        if( dataVector[MET] != NULL ) {
-            dataVector[MET]->Delete();
+    } else if( index == svkOverlayView::OVERLAY != NULL && dataVector[MRI] != NULL ) {
+        if( dataVector[svkOverlayView::OVERLAY] != NULL ) {
+            dataVector[svkOverlayView::OVERLAY]->Delete();
         }
         data->Register( this );
-        dataVector[MET] = data;
-        this->view->SetInput( data, MET );
+        dataVector[svkOverlayView::OVERLAY] = data;
+        this->view->SetInput( data, svkOverlayView::OVERLAY );
+    } else if( index == svkOverlayView::OVERLAY_CONTOUR != NULL && dataVector[MRI] != NULL ) {
+        data->Register( this );
+        dataVector.push_back(data);
+        this->view->SetInput( data, svkOverlayView::OVERLAY_CONTOUR );
     } else if( data != NULL ) {
         cout<<"WARNING: svkOverlayViewController only takes two image inputs!"<<endl;
     } else {

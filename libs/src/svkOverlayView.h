@@ -77,6 +77,7 @@
 
 #include <svkBurnResearchPixels.h>
 #include <svkSincInterpolationFilter.h>
+#include <svkOverlayContourDirector.h>
 
 #define SINC_MAX_EXTENT 512
 
@@ -150,7 +151,8 @@ class svkOverlayView : public svkDataView
         enum DataInputs { 
             MRI = 0, 
             MR4D = 1,
-            OVERLAY = 2
+            OVERLAY = 2,
+            OVERLAY_CONTOUR = 3
         };
 
         //! Enum represents objects in the scene
@@ -237,6 +239,7 @@ class svkOverlayView : public svkDataView
         int*                            HighlightSelectionVoxels();
         void                            GenerateClippingPlanes( );
         void                            SetupOverlay();
+        void                            SetupOverlayContour( int contourIndex );
         void                            SetInterpolationType( int interpolationType );
         void			            	UpdateSincInterpolation();
         void                            SetLUT( svkLookupTable::svkLookupTableType type );
@@ -273,7 +276,8 @@ class svkOverlayView : public svkDataView
         static const double            CLIP_TOLERANCE;
         SelectionBoxVisibilityState    selBoxVisibility;
 
-        bool                           interpolateView; 
+        bool                           interpolateView;
+        svkOverlayContourDirector*     contourDirector;
 
 
 };

@@ -1027,7 +1027,7 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
             	// Lets make sure the first volume is currently the active scalars
             	data->GetPointData()->SetActiveScalars( data->GetPointData()->GetArray(0)->GetName());
                 this->overlayController->SetInput( data, svkOverlayView::OVERLAY );
-                resultInfo = this->plotController->GetDataCompatibility( data, svkPlotGridView::MET ); 
+                resultInfo = this->plotController->GetDataCompatibility( data, svkPlotGridView::MET );
                 string overlayDataName;
                 if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
                     this->plotController->SetInput( data, svkPlotGridView::MET );
@@ -1143,6 +1143,56 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
 }
 
 
+void vtkSivicController::OpenContour( svkImageData* data, string stringFilename )
+{
+    string resultInfo = "";
+    int toggleDraw = this->GetDraw();
+    if( toggleDraw ) {
+        this->DrawOff();
+    }
+
+    if (data == NULL) {
+        this->PopupMessage( "UNSUPPORTED FILE TYPE!");
+    } else {
+
+        resultInfo = this->overlayController->GetDataCompatibility( data, svkOverlayView::OVERLAY_CONTOUR );
+        //  Precheck to see if valdation errors should be overridden:
+        if( resultInfo.compare("") != 0 ) {
+
+            string resultInfoMsg  = "WARNING: Datasets may not be compatible! \n";
+            resultInfoMsg += "Do you want to attempt to display them anyway? \n";
+            resultInfoMsg += "Info:\n";
+            resultInfoMsg += resultInfo;
+            int dialogStatus = this->PopupMessage( resultInfoMsg, vtkKWMessageDialog::StyleYesNo );
+
+            //  If user wants to continue anyway, unset the info results
+            if ( dialogStatus == 2 ) {
+                resultInfo = "";
+                this->overlayController->GetView()->ValidationOff();
+                this->plotController->GetView()->ValidationOff();
+            }
+
+        }
+        if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
+            // Lets make sure the first volume is currently the active scalars
+            data->GetPointData()->SetActiveScalars( data->GetPointData()->GetArray(0)->GetName());
+            this->overlayController->SetInput( data, svkOverlayView::OVERLAY_CONTOUR );this->viewRenderingWidget->ResetInfoText();
+            this->UpdateModelForReslicedImage("OverlayData");
+            this->UpdateModelForReslicedImage("AnatomicalData");
+        } else {
+            string message = "ERROR: Dataset is not compatible and will not be loaded.\nInfo:\n";
+            message += resultInfo;
+            this->PopupMessage( message );
+        }
+        svkOverlayView::SafeDownCast(this->overlayController->GetView())->CheckDataOrientations();
+    }
+    if( toggleDraw ) {
+        this->DrawOn();
+    }
+    return;
+}
+
+
 /*!
  * Adds an additional 4D object.
  *
@@ -1242,6 +1292,35 @@ void vtkSivicController::OpenOverlay( const char* fileName, bool onlyReadOneInpu
             this->OpenOverlay(data, stringFilename);
         } else {
             this->PopupMessage("ERROR: Incorrect data type, data must be an image to be overlayed."); 
+            return;
+        }
+    } else {
+        this->PopupMessage( "ERROR: Currently loading of overlays before image OR spectra is not supported." );
+    }
+    this->DisableWidgets();
+    this->EnableWidgets();
+}
+
+
+void vtkSivicController::OpenContour( const char* fileName, bool onlyReadOneInputFile )
+{
+
+    // Lets check to see if the file exists
+
+    if(!svkUtils::FilePathExists(fileName)) {
+        this->PopupMessage(" File does not exist!");
+        return;
+    }
+
+
+    string stringFilename( fileName );
+    if ( this->GetActive4DImageData() || this->model->DataExists("AnatomicalData") ) {
+
+        svkImageData* data = this->model->AddFileToModel( stringFilename, stringFilename, onlyReadOneInputFile );
+        if( data != NULL && data->IsA("svkMriImageData") ) {
+            this->OpenContour(data, stringFilename );
+        } else {
+            this->PopupMessage("ERROR: Incorrect data type, data must be an image to be overlayed.");
             return;
         }
     } else {
@@ -1696,7 +1775,7 @@ int vtkSivicController::OpenFile( const char* openType, const char* startPath, b
 
             if( strcmp( openType, "image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 
                 || strcmp( openType, "add_image_dynamic" ) == 0 || strcmp( openType, "load_images_dynamic" ) == 0 
-                || strcmp( openType, "overlay" ) == 0) 
+                || strcmp( openType, "overlay" ) == 0 || strcmp( openType, "contour" ) == 0)
             {
                 lastPathString = lastPathString.substr(0,found); 
                 lastPathString += "/images";
@@ -1717,7 +1796,7 @@ int vtkSivicController::OpenFile( const char* openType, const char* startPath, b
         // Check to see which extention to filter for.
         if( strcmp( openType, "image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 
             || strcmp( openType, "add_image_dynamic" ) == 0 || strcmp( openType, "load_images_dynamic" ) == 0 
-            || strcmp( openType, "overlay" ) == 0)
+            || strcmp( openType, "overlay" ) == 0 || strcmp( openType, "contour" ) == 0)
         {
             dlg->SetFileTypes("{{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{All files} {.*}}");
         } else if( strcmp( openType,"spectra" ) == 0 || strcmp( openType, "add_spectra") == 0) {
@@ -1785,6 +1864,8 @@ int vtkSivicController::OpenFile( const char* openType, const char* startPath, b
                 }
             } else if( openTypeString.compare( "overlay" ) == 0 ) {
                 this->OpenOverlay( fileName.c_str(), onlyReadOneInputFile );
+            } else if( openTypeString.compare( "contour" ) == 0 ) {
+                this->OpenContour( fileName.c_str(), onlyReadOneInputFile );
             } else if( openTypeString.compare( "spectra" ) == 0 ) {
                 if( this->GetActive4DImageData() == NULL ) {
                     this->Open4DImage( fileName.c_str(), onlyReadOneInputFile );
