@@ -179,7 +179,9 @@ int main (int argc, char** argv)
         char numstr[10];
         sprintf(numstr, "%d", pnt);
         currentInputFile.assign(inputRoot.c_str());
-        currentInputFile.append("_real");
+        if ( handleComplex ){
+        	currentInputFile.append("_real");
+        }
         currentInputFile.append(numstr);
         currentInputFile.append(".idf");
        // currentOutputFile.append(".dcm");
