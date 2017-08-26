@@ -62,16 +62,18 @@ using namespace std;
 
 
 /*! 
- *  WARNING:  
- *  This Algorithm is a beta version for RSNA that simply adds the complex values from each coil without weighting. 
-
- *  Class that combines single coild data into a combined image.  Complex data must be in phase prior to combining for 
- *  constructive addition of complex data (see svkMultiCoilPhase).  Sum of squares outputs magnitude data and is not
- *  sensitive to the phase of the complex input data. The weighting factors used in the linear 
- *  combination may be set from a) spatially dependent coil sensitivity maps (experimentally derived or other), 
- *  b) peak amplitude (e.g. h20 peak), or constant. 
+ *  Class that combines data from multiple recive coils into a combined image.  Complex data must be in phase prior 
+ *  to combining for constructive addition of complex data (see svkMultiCoilPhase).  Sum of squares outputs 
+ *  magnitude data and is not sensitive to the phase of the complex input data. The weighting factors used in the 
+ *  linear combination may be set from 
+ *      a) spatially dependent coil sensitivity maps (experimentally derived, e.g. ASSET CAL,  or other), 
+ *      b) peak amplitude (e.g. h20 peak), or constant. 
+ *
+ *  For weighted combinations the output signal is scaled by a global 
+ *  factor (maxInputIntensity/maxOutputIntensity) to retain
+ *  the same approximate overall signal level between input and output.
  *  
- *  This is(will be) based on methodes derived and validated in 
+ *  This is based on methodes derived and validated in 
  *  the Sarah Nelson lab at UCSF, Department of Radiology and Biomedical Imaging. 
  *
  *  References:
@@ -94,7 +96,8 @@ class svkMRSCombine : public svkImageInPlaceFilter
             ADDITION,
             SUBTRACTION,
             SUM_OF_SQUARES,
-            WEIGHTED_ADDITION
+            WEIGHTED_ADDITION, 
+            WEIGHTED_ADDITION_SQRT_WT
         } CombinationMethod;
 
         typedef enum {
@@ -107,7 +110,6 @@ class svkMRSCombine : public svkImageInPlaceFilter
             SPECTRA = 0,
             WEIGHTS = 1
         } PortName;
-
 
 
         void    SetCombinationMethod( CombinationMethod method);
@@ -141,10 +143,16 @@ class svkMRSCombine : public svkImageInPlaceFilter
         void                    RequestLinearCombinationData(); 
         void                    RequestSumOfSquaresData(); 
         float                   GetTotalWeight( svkMriImageData* weightImage, int voxelID); 
+        float                   GetMaxSignalIntensity(); 
+        float                   ScaleOutputIntensity(); 
+
+
 
 
         CombinationMethod       combinationMethod; 
         CombinationDimension    combinationDimension; 
+        float                   maxSignalIntensityInput; 
+        float                   maxSignalIntensityOutput; 
 
 
 };
