@@ -92,13 +92,13 @@ int main (int argc, char** argv)
     usemsg += "                                                                                 \n";  
     usemsg += "Weighted sum: each voxel is the weighted sum of contributing voxles divided by   \n"; 
     usemsg += "the sum of squares of the weights for that voxel.                                \n"; 
+    usemsg += "For weighted combination (type = 4) the output signal is scaled by a global      \n"; 
+    usemsg += "factor (maxInputIntensity/maxOutputIntensity) to retain the same approximate     \n";  
+    usemsg += "overall signal level between the input and output.                               \n"; 
     usemsg += "                                                                                 \n";  
     usemsg += "Weighted sum sqrt: each voxel is the weighted sum of contributing voxles divided \n"; 
     usemsg += "by the square root of the sum of squares of the weights for that voxel.          \n"; 
     usemsg += "                                                                                 \n";  
-    usemsg += "For weighted combinations (type = 4, 5) the output signal is scaled by a global  \n"; 
-    usemsg += "factor (maxInputIntensity/maxOutputIntensity) to retain the same approximate     \n";  
-    usemsg += "overall signal level between the input and output.                               \n"; 
     usemsg += "                                                                                 \n";  
 
     string inputFileName; 

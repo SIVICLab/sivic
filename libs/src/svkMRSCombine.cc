@@ -117,8 +117,8 @@ int svkMRSCombine::RequestData( vtkInformation* request, vtkInformationVector** 
 
     //  scale weighted images to same intensity as input: 
     if (
-        this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION  ||
-        this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION_SQRT_WT
+        this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION  //||
+        //this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION_SQRT_WT
     )
     {
         this->maxSignalIntensityOutput = this->GetMaxSignalIntensity();
@@ -147,7 +147,7 @@ float svkMRSCombine::ScaleOutputIntensity()
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
 
     float globalScale = this->maxSignalIntensityInput/this->maxSignalIntensityOutput; 
-    //  globalScale = 100; // to validate against original "nmrsrc" implementation. 
+    //globalScale = 100; // to validate against original "nmrsrc" implementation. 
 
     for ( int cellID = 0; cellID < numCells; cellID++ ) {
 
