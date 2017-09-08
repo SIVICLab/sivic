@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -187,7 +187,11 @@ int main (int argc, char** argv)
     while ( ( i = getopt_long(argc, argv, "i:o:t:h", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
-                inputFileName.assign(optarg);
+                inputFileName.assign( optarg );
+                if( ! svkUtils::FilePathExists( inputFileName.c_str() ) ) {
+                    cerr << endl << "Input file can not be loaded (may not exist) " << inputFileName << endl << endl;
+                    exit(1);
+                }
                 break;
             case 'o':
                 outputFileName.assign(optarg);

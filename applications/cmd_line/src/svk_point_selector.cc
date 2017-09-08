@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -72,6 +72,7 @@ extern "C" {
 #include <svkDataValidator.h>
 #include <svkObliqueReslice.h>
 #include <svkTypeUtils.h>
+#include <svkVizUtils.h>
 
 #define WINDOW_SIZE 768
 
@@ -89,18 +90,20 @@ void SetupCursor();
 void UpdateCursor( double location[3]);
 static void UpdateCursorLocation(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
 static void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
+void CaptureWindow();
 void DisplayUsage( );
 
 struct globalArgs_t {
 } globalArgs;
 
-static const char *optString = "hs:o:i:a:L:P:S:";
+static const char *optString = "hs:o:i:a:L:P:S:c:";
 
 struct globalVariables {
 	string                               imageFilename;
 	string                               alternateImageFilename;
 	string                               overlayFilename;
 	string                               screenshotFilename;
+    string                               captureFile;
 	svkImageData*                        data;
 	svkImageData*                        primaryImage;
 	svkImageData*                        alternateImage;
@@ -124,6 +127,7 @@ struct globalVariables {
 	double								 alternateWindow;
 	double								 alternateLevel;
 	vtkRenderWindow*                     window;
+    svkImageWriterFactory::WriterType dataTypeOut;
 } globalVars;
 
 
@@ -150,6 +154,8 @@ int main ( int argc, char** argv )
     globalVars.inactiveCursorColor[2] = 0;
     globalVars.primaryImage = NULL;
     globalVars.alternateImage = NULL;
+    globalVars.captureFile = "";
+    globalVars.dataTypeOut = svkImageWriterFactory::TIFF;
 
     opt = getopt( argc, argv, optString);
     while( opt != -1 ) {
@@ -168,6 +174,9 @@ int main ( int argc, char** argv )
                 break;
             case 'a':
                 globalVars.alternateImageFilename.assign( optarg );
+                break;
+            case 'c':
+                globalVars.captureFile.assign( optarg );
                 break;
             case 'L':
             	startingLPS[0] = svkTypeUtils::StringToDouble(optarg);
@@ -325,6 +334,7 @@ int main ( int argc, char** argv )
 			globalVars.transformers.push_back(vtkTransform::New());
 			globalVars.colorMappers[i]->SetInputData(globalVars.overlayData);
 			globalVars.overlayActors.push_back( svkOrientedImageActor::New() );
+            globalVars.colorMappers[i]->Update();
 			globalVars.overlayActors[i]->SetInputData(globalVars.colorMappers[i]->GetOutput());
 			globalVars.overlayActors[i]->SetUserTransform( globalVars.transformers[i] );
 			globalVars.overlayActors[i]->InterpolateOn();
@@ -405,8 +415,12 @@ int main ( int argc, char** argv )
 	keypressCB->SetClientData( NULL );
 	rwi->AddObserver(vtkCommand::KeyPressEvent, keypressCB);
 
-	globalVars.window->Render();
-	rwi->Start();
+    globalVars.window->Render();
+    if( globalVars.captureFile.size() > 0 ) {
+        CaptureWindow();
+    } else {
+        rwi->Start();
+    }
 	cout << "Selected Location: L:" << globalVars.cursorPoint->GetPoint(0)[0]
 	                       << " P:" << globalVars.cursorPoint->GetPoint(0)[1]
 	                       << " S:" << globalVars.cursorPoint->GetPoint(0)[2] << endl;
@@ -770,6 +784,23 @@ void UpdateCursorLocation(vtkObject* subject, unsigned long eid, void* thisObjec
 
 
 /*!
+ *  Takes a screencapture of each window.
+ */
+void CaptureWindow()
+{
+    string extension = "tiff";
+    if (globalVars.dataTypeOut == svkImageWriterFactory::TIFF) {
+        extension = "tiff";
+    } else if (globalVars.dataTypeOut == svkImageWriterFactory::JPEG) {
+        extension = "jpeg";
+    }
+
+    if(globalVars.primaryWindow != NULL ) {
+        svkVizUtils::SaveWindow( globalVars.window, globalVars.captureFile);
+    }
+}
+
+/*!
  * Displays the usage message
  */
 void DisplayUsage( void )
@@ -779,7 +810,7 @@ void DisplayUsage( void )
     cout << "    svk_point_selector" << endl << endl;
     cout << "SYNOPSIS" << endl;
     cout << "    svk_point_selector -i reference_image [ -o overlay ] [-s screenshot ]     " << endl;
-    cout << "                                          [-a alternate_reference ]           " << endl;
+    cout << "                                          [-a alt_reference ] [-c capture]    " << endl;
     cout << "                                          [-L pos] [-P pos] [-S pos]          " << endl << endl;
     cout << "DESCRIPTION" << endl;
     cout << "    svk_point_selector is used to examine an image with an overlay in the     " << endl;

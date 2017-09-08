@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -81,6 +81,7 @@ int main (int argc, char** argv)
     usemsg += "                                 2 = subtract channels (edited data)             \n";
     usemsg += "                                 3 = sum of squares (Magnitude result)           \n";
     usemsg += "                                 4 = weighted sum (requires --wts volume)        \n";
+    usemsg += "                                 5 = weighted sum sqrt (requires --wts volume)   \n";
     usemsg += "   --wts Weight_volume_name  Name of file containing weights to use for algo 4.  \n";
     usemsg += "   -v    Verbose output.                                                         \n";
     usemsg += "   -h    Print help mesage.                                                      \n";  
@@ -88,6 +89,16 @@ int main (int argc, char** argv)
     usemsg += "Combines MRS data sets using specified algorithm.  Typically used to combine     \n"; 
     usemsg += "multiple channels of data from a multi-coil acquisition.  Also used for adding   \n";  
     usemsg += "subtracting data sets.                                                           \n";  
+    usemsg += "                                                                                 \n";  
+    usemsg += "Weighted sum: each voxel is the weighted sum of contributing voxles divided by   \n"; 
+    usemsg += "the sum of squares of the weights for that voxel.                                \n"; 
+    usemsg += "For weighted combination (type = 4) the output signal is scaled by a global      \n"; 
+    usemsg += "factor (maxInputIntensity/maxOutputIntensity) to retain the same approximate     \n";  
+    usemsg += "overall signal level between the input and output.                               \n"; 
+    usemsg += "                                                                                 \n";  
+    usemsg += "Weighted sum sqrt: each voxel is the weighted sum of contributing voxles divided \n"; 
+    usemsg += "by the square root of the sum of squares of the weights for that voxel.          \n"; 
+    usemsg += "                                                                                 \n";  
     usemsg += "                                                                                 \n";  
 
     string inputFileName; 
@@ -163,9 +174,11 @@ int main (int argc, char** argv)
     }
 
     /*  
-     *  If using algo 4 (weighted addition), then a weight file must be provided. 
+     *  If using algo 4 or 5 (weighted addition), then a weight file must be provided. 
      */
-    if ( combinationType == svkMRSCombine::WEIGHTED_ADDITION ) {
+    if ( combinationType == svkMRSCombine::WEIGHTED_ADDITION || 
+        combinationType == svkMRSCombine::WEIGHTED_ADDITION_SQRT_WT
+    ) {
         if ( 
             weightsFileName.length() == 0 ||  
             ! svkUtils::FilePathExists( weightsFileName.c_str() ) 
@@ -219,7 +232,10 @@ int main (int argc, char** argv)
     coilCombine->SetInputData( reader->GetOutput() );
     coilCombine->SetCombinationDimension( svkMRSCombine::COIL );   
     coilCombine->SetCombinationMethod( combinationType );          
-    if ( combinationType == svkMRSCombine::WEIGHTED_ADDITION ) {
+    if ( 
+        combinationType == svkMRSCombine::WEIGHTED_ADDITION || 
+        combinationType == svkMRSCombine::WEIGHTED_ADDITION_SQRT_WT
+    ) {
         coilCombine->SetInputConnection( 1, wtsReader->GetOutputPort() ); // input 1 is the weights volume 
     }
     coilCombine->Update();

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -249,8 +249,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrids[0]->GetPlotGridActor()  );
             this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor( this->GetProp( svkPlotGridView::PLOT_LINES ) );
             if( data->IsA("svkMrsImageData")) {
-                string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-                if( acquisitionType == "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(data)->HasSelectionBox()) {
+                if( this->dataVector[MR4D]->GetNumberOfCells() == 1 && svkMrsImageData::SafeDownCast(data)->HasSelectionBox()) {
                     this->TurnPropOff( svkPlotGridView::PLOT_GRID );
                 } else {
                     this->TurnPropOn( svkPlotGridView::PLOT_GRID );
@@ -273,8 +272,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
                 if( selectionBoxTopology != NULL ) {
                     selectionBoxTopology->InitTraversal();
                     this->SetProp( VOL_SELECTION , selectionBoxTopology->GetNextActor());
-                    string acquisitionType = this->dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-                    if( acquisitionType != "SINGLE VOXEL" ) {
+                    if( this->dataVector[MR4D]->GetNumberOfCells() != 1 ) {
                         this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor( this->GetProp( VOL_SELECTION ) );
                     }
                     selectionBoxTopology->Delete();
@@ -436,9 +434,8 @@ void svkPlotGridView::SetSlice(int slice)
             if( this->GetProp( VOL_SELECTION ) != NULL ) {
                 if( svkMrsImageData::SafeDownCast( this->dataVector[MR4D])
                           ->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
-                    string acquisitionType = this->dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
                     if( !this->GetRenderer( svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( svkPlotGridView::VOL_SELECTION) )
-                         && acquisitionType != "SINGLE VOXEL" ) {
+                         &&  this->dataVector[MR4D]->GetNumberOfCells() != 1) {
                         this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor(
                                        this->GetProp( svkPlotGridView::VOL_SELECTION) );
                     }
@@ -545,12 +542,11 @@ void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
             this->detailedPlotDirector->RemoveOnMouseMoveObserver( this->rwi );
             if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( VOL_SELECTION ))
                  && this->dataVector[MR4D]->IsA("svkMrsImageData") ) {
-                string acquisitionType = this->dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-                if( acquisitionType != "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
+                if( this->dataVector[MR4D]->GetNumberOfCells() != 1 && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
                     this->GetRenderer(svkPlotGridView::PRIMARY)->AddViewProp( this->GetProp( VOL_SELECTION ) );
                 }
             }
-            if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( OVERLAY_IMAGE ) ) ) {
+            if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( OVERLAY_IMAGE ) ) && this->dataVector[MET]!= NULL) {
                 this->GetRenderer(svkPlotGridView::PRIMARY)->AddViewProp( this->GetProp( OVERLAY_IMAGE ) );
             }
             if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( OVERLAY_TEXT ) )
@@ -1570,21 +1566,22 @@ void svkPlotGridView::ShowView()
         acquisitionType = activeData->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
     }
     // We don't want to turn on the press box if its single voxel
-    if( acquisitionType != "SINGLE VOXEL" ) {
+    if( this->dataVector[MR4D]->GetNumberOfCells() != 1) {
         this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
                                        this->GetProp(svkPlotGridView::VOL_SELECTION));
-    }
-    if( this->tlcBrc[0] != this->tlcBrc[1] ) {
         this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor( this->GetProp(svkPlotGridView::PLOT_LINES));
+    }
+
         this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
                                            this->GetProp(svkPlotGridView::PLOT_GRID));
         this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
                                            this->GetProp(svkPlotGridView::OVERLAY_IMAGE));
         this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
                                            this->GetProp(svkPlotGridView::OVERLAY_TEXT));
-    } else {
         this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
-                                           this->GetProp(svkPlotGridView::DETAILED_PLOT));
+                this->GetProp(svkPlotGridView::DETAILED_PLOT));
+    if( this->tlcBrc[0] != this->tlcBrc[1] ) {
+        this->TurnPropOff(svkPlotGridView::DETAILED_PLOT);
 
     }
 
@@ -1657,7 +1654,7 @@ void svkPlotGridView::GenerateClippingPlanes()
         if( this->dataVector[MR4D]->IsA("svkMrsImageData")) {
             acquisitionType = this->dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         }
-        if( acquisitionType != "SINGLE VOXEL" ) {
+        if( this->dataVector[MR4D]->GetNumberOfCells() != 1) {
             this->ClipMapperToTlcBrc( dataVector[MR4D],
                                  vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID ))->GetMapper(), tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
             for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
@@ -1723,10 +1720,9 @@ void svkPlotGridView::AlignCamera( )
         this->dataVector[MR4D]->GetSliceNormal( normal, this->orientation );
         double zoom;
         string acquisitionType;
-        if( this->dataVector[MR4D]->IsA("svkMrsImageData")) {
-            string acquisitionType = dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        }
-        if( acquisitionType == "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->HasSelectionBox() ) {
+        if( this->dataVector[MR4D]->GetNumberOfCells() == 1
+            && this->dataVector[MR4D]->IsA("svkMrsImageData")
+            && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->HasSelectionBox()) {
             memcpy( bounds, this->GetProp( VOL_SELECTION )->GetBounds(), sizeof(double)*6 );
         } else {
             this->plotGrids[0]->CalculateTlcBrcBounds( bounds, this->tlcBrc );
@@ -1928,12 +1924,19 @@ string svkPlotGridView::GetDecimalFormat( int digits )
  */
 void svkPlotGridView::TurnPropOn(int propIndex)
 {
-    Superclass::TurnPropOn(propIndex);
+    bool turnPropOn = true;
     if( propIndex == OVERLAY_IMAGE ) {
         this->detailedPlotDirector->SetBackgroundVisibility(true);
     } else if (propIndex == OVERLAY_TEXT ) {
         this->detailedPlotDirector->SetAnnotationTextVisibility(true);
+    } else if (propIndex == VOL_SELECTION && this->dataVector[MR4D] != NULL
+            && this->dataVector[MR4D]->GetNumberOfCells() == 1) {
+        turnPropOn = false;
     }
+    if( turnPropOn ) {
+        Superclass::TurnPropOn(propIndex);
+    }
+
 }
 
 

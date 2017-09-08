@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,7 @@
 #include <svkPlotGridViewController.h>
 #include <svkImageReader2.h>
 #include <svkImageReaderFactory.h>
+#include <svkImageWriterFactory.h>
 #include <svkUtils.h>
 #include <svkTypeUtils.h>
 #include <svkVizUtils.h>
@@ -75,7 +76,7 @@ using namespace svk;
 void Usage( );
 void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int xPos, int yPos );
 void DisplaySpectra( );
-void LoadOverlay( vector<string> overlayFileNames );
+void LoadOverlay( vector<string> overlayFileNames, bool isContour = false );
 void LoadSpectra( vector<string> spectraFileNames );
 bool InitializeIndexArray( vector<int>& indexArray, int size );
 void UpdateSpectraSliceAnnotation( );
@@ -90,6 +91,7 @@ struct globalVariables {
     vtkCornerAnnotation** annotations;
     vtkCornerAnnotation* spectraAnnotation;
     vector<svkImageData*> overlay;
+    vector<svkImageData*> overlayContour;
     vector<svkImageData*> spectra;
     vector<svkImageData*> referenceImage;
     svkPlotGridViewController* spectraController; 
@@ -115,10 +117,11 @@ struct globalVariables {
     string justCapture;
     double threshold;
     bool thresholdSet;
+    svkImageWriterFactory::WriterType dataTypeOut;
 } globalVars;
 
 // For getopt
-static const char *optString = "s:o:w:hdu:l:b:e:t:c:p:j:i:r:";
+static const char *optString = "s:o:w:hdu:l:b:e:t:c:p:j:i:r:x:n:";
 
 
 /*!
@@ -136,6 +139,7 @@ void Usage( void )
     cout << "                   -d debug       Turn on debug messages." << endl;
     cout << "                   -s spectra     A spectra file to load. This can be used multiple times to overlay traces." << endl;
     cout << "                   -o overlay     An overlay image to load. This can be used multiple times." << endl;
+    cout << "                   -n overlay     An overlay image to load. Rendered as contours. This can be used multiple times." << endl;
     cout << "                   -l lowerBound  Minimum for Y axis of traces." << endl;
     cout << "                   -u upperBound  Maximum for Y axis of traces." << endl;
     cout << "                   -b beginPoint  First point (index starting at 1) of traces to display." << endl;
@@ -146,6 +150,9 @@ void Usage( void )
     cout << "                   -i slice       Slice (index starting at 1) to display. Refers to image slice if present." << endl;
     cout << "                   -j captureRoot Just load the data and take screen captures. Results saved with root captureRoot." << endl;
     cout << "                   -r threshold   Overlay threshold by percentage of window (0-1)." << endl;
+    cout << "                   -x type        Output data format:" << endl;
+    cout << "                                         0 = JPEG" << endl;
+    cout << "                                         1 = TIFF" << endl;
     cout << "DESCRIPTION" << endl;
     cout << "    svk_multi_view is a quick way of seeing an arbitrary number of images synced by slice number." << endl;
     cout << "    If multiple overlays are specified then the first will appear on the spectra, the next on the first image etc." << endl;
@@ -178,11 +185,13 @@ int main ( int argc, char** argv )
     globalVars.model = svkDataModel::New();
     vector<string> spectraFileNames;
     vector<string> overlayFileNames;
+    vector<string> overlayContourFileNames;
     /* This varibale will change to a value of 1 if there is a spectra loaded */
     globalVars.imageWindowOffset = 0;
     globalVars.spectraController = NULL;
     globalVars.orientation = svkDcmHeader::UNKNOWN_ORIENTATION;
     bool startSliceSet = false;
+    globalVars.dataTypeOut = svkImageWriterFactory::TIFF;
 
     int opt = 0;
     opt = getopt( argc, argv, optString);
@@ -239,6 +248,12 @@ int main ( int argc, char** argv )
             case 'o':
                 overlayFileNames.push_back( optarg );
                 break;
+            case 'n':
+                overlayContourFileNames.push_back( optarg );
+                break;
+            case 'x':
+                globalVars.dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
+                break;
             default:
                 cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
                 cout<< endl <<" ERROR: Unrecognized option... " << endl << endl;
@@ -281,6 +296,8 @@ int main ( int argc, char** argv )
     vtkRenderWindow** renderWindows = new vtkRenderWindow*[ globalVars.numberOfImages ]; 
 
     LoadOverlay( overlayFileNames );
+    bool isContour = true;
+    LoadOverlay( overlayContourFileNames, isContour );
 
     LoadSpectra( spectraFileNames );
 
@@ -411,6 +428,11 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
     if( globalVars.spectra.size() > 0 ) {
         dataViewer->SetInput( globalVars.spectra[0], 1  );
     }
+    if( globalVars.overlayContour.size() > 0 ) {
+        for( int i = 0; i < globalVars.overlayContour.size(); i++) {
+            dataViewer->SetInput(globalVars.overlayContour[i], svkOverlayView::OVERLAY_CONTOUR);
+        }
+    }
     if( globalVars.orientation == svkDcmHeader::UNKNOWN_ORIENTATION ) { 
         globalVars.orientation = data->GetDcmHeader()->GetOrientationType();
     } else if ( globalVars.orientation != data->GetDcmHeader()->GetOrientationType() ) {
@@ -434,7 +456,7 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
     if( globalVars.slice == -1 ){
         globalVars.slice = (extent[5]-extent[4])/2;
     }
-    svkOverlayViewController::SafeDownCast(dataViewer)->SetSlice( globalVars.slice, svkDcmHeader::AXIAL );
+    svkOverlayViewController::SafeDownCast(dataViewer)->SetSlice( globalVars.slice, globalVars.orientation );
     if( globalVars.spectraController != NULL ) {
         globalVars.spectraController->SetSlice( dataViewer->GetSlice() );
         UpdateSpectraSliceAnnotation();
@@ -579,7 +601,7 @@ void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, v
             text<< "SLICE: " << globalVars.slice + 1 << "/" << globalVars.numberOfSlices;
             for( int i= 0; i < globalVars.numberOfImages; i++ ) {
                 globalVars.annotations[i]->SetText(1, text.str().c_str() );
-               ((static_cast<svkOverlayViewController**>(thisObject))[i])->SetSlice(globalVars.slice, svkDcmHeader::AXIAL);
+               ((static_cast<svkOverlayViewController**>(thisObject))[i])->SetSlice(globalVars.slice, globalVars.orientation);
                ((static_cast<svkDataViewController**>(thisObject))[i])->GetView()->Refresh();
             }
             if( globalVars.spectraController!=NULL) {
@@ -625,11 +647,17 @@ void SelectionCallback(vtkObject* subject, unsigned long eid, void* thisObject, 
  */
 void CaptureWindows()
 {
+    string extension = "tiff"; 
+    if (globalVars.dataTypeOut == svkImageWriterFactory::TIFF) {
+        extension = "tiff"; 
+    } else if (globalVars.dataTypeOut == svkImageWriterFactory::JPEG) {
+        extension = "jpeg"; 
+    }
 
     if(globalVars.spectraWindow != NULL ) {
         stringstream filename;
         filename << globalVars.justCapture;
-        filename << "_traces.tiff" ;
+        filename << "_traces." << extension;
         globalVars.spectraController->GetView()->Refresh();
         globalVars.spectraWindow->Render();
         svkVizUtils::SaveWindow( globalVars.spectraWindow, filename.str());
@@ -639,7 +667,7 @@ void CaptureWindows()
         globalVars.viewers[i]->GetRWInteractor()->GetRenderWindow()->Render();
         stringstream filename;
         filename << globalVars.justCapture;
-        filename << "_image_" << i << ".tiff" ;
+        filename << "_image_" << i << "." << extension; 
         svkVizUtils::SaveWindow(globalVars.viewers[i]->GetRWInteractor()->GetRenderWindow(), filename.str());
     }
 }
@@ -650,25 +678,35 @@ void CaptureWindows()
  *  NOTE: The overlay on the spectra requires the extent to match and
  *        you must include a spectra file when loading an overlay.
  */
-void LoadOverlay( vector<string> overlayFileNames ) {
-    
+void LoadOverlay( vector<string> overlayFileNames, bool isContour ) {
 
+    svkImageData* overlayImage = NULL;
     for( int i = 0; i < overlayFileNames.size(); i++ ) {
-        globalVars.overlay.push_back(globalVars.model->LoadFile( overlayFileNames[i] ));
-        if( globalVars.overlay[i] == NULL ) {
+        if( isContour ) {
+            globalVars.overlayContour.push_back(globalVars.model->LoadFile(overlayFileNames[i] ));
+            overlayImage = globalVars.overlayContour[i];
+        } else {
+            globalVars.overlay.push_back(globalVars.model->LoadFile(overlayFileNames[i] ));
+            overlayImage = globalVars.overlay[i];
+        }
+        if(overlayImage == NULL ) {
             cerr << "ERROR: Could not read input file: " << overlayFileNames[i] << endl;
             exit(1);
         }
-        globalVars.overlay[i]->Register(NULL);
+        overlayImage->Register(NULL);
         //globalVars.overlay->Update();
-        if( !globalVars.overlay[i]->IsA("svkMriImageData")) {
+        if( !overlayImage->IsA("svkMriImageData")) {
             cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
-            cout << "Error: -o flag must be followed by an image file!" << endl;
+            cout << "Error: -o and -n flag must be followed by an image file!" << endl;
             cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
             exit(1);
         }
         if( globalVars.debug ) {
-            cout << "Overlay: " << *globalVars.overlay[i] << endl;
+            cout << "Overlay: " << *overlayImage;
+            if( isContour ) {
+                cout << " will be rendered as a contour.";
+            }
+            cout << endl;
         }
 
     }

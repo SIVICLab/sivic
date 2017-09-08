@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -183,10 +183,15 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     string domainSlice = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain"); 
     double kZeroShiftWindow[3] = {0,0,0};
     if( this->mode == REVERSE ) {
-        if ( !domainCol.compare("SPACE") || !domainRow.compare("SPACE") || !domainSlice.compare("SPACE") ) {
+        // REVERSE should take to space domain, so if the data is already in space then skip the FT 
+        if (  ( domainCol.compare("SPACE")   == 0 ) 
+           || ( domainRow.compare("SPACE")   == 0 ) 
+           || ( domainSlice.compare("SPACE") == 0 ) 
+        ){
             cout << "svkMrsImageFFT: Already in target domain, not transforming " << endl; 
             return 1; 
         }; 
+        //  if K0 not sampled, e.g. even number of samples, even symmetry then apply half voxel shift.  
         string k0Sampled = data->GetDcmHeader()->GetStringValue( "SVK_K0Sampled");
         if ( k0Sampled.compare( "NO" ) == 0 ) { 
             for( int i = 0; i < 3; i++ ) {
@@ -194,7 +199,11 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
             }
         }
     } else {
-        if ( !domainCol.compare("KSPACE") || !domainRow.compare("KSPACE") || !domainSlice.compare("KSPACE") ) {
+        // FORWARD should take to kspace domain, so if the data is already in kspace then skip the FT 
+        if (  ( domainCol.compare("KSPACE")   == 0 )  
+           || ( domainRow.compare("KSPACE")   == 0 )  
+           || ( domainSlice.compare("KSPACE") == 0 )
+        ){
             cout << "svkMrsImageFFT: Already in target domain, not transforming " << endl; 
             return 1; 
         }; 
@@ -222,7 +231,6 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
         }
         return 1; 
     }
-
 
 
     vtkImageData* currentData = NULL;
@@ -263,7 +271,8 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
         this->SetProgressText( progressStream.str().c_str() );
 
         int completed = 100 * ( static_cast<float>(cellID) / static_cast<float>(numCells) ); 
-        //cout << completed << " " << cellID << " " << numCells << " " << static_cast<float>(cellID) / static_cast<float>(numCells) << endl;
+        //cout << completed << " " << cellID << " " << numCells << " " 
+            //  << static_cast<float>(cellID) / static_cast<float>(numCells) << endl;
         if( completed % 5 == 0 && completed != lastPrint ) {
             cout << "spatial fft vols " << completed << " %" << endl;
             lastPrint = completed; 
@@ -284,6 +293,14 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
             if( kZeroShiftWindow[0] != 0
                 && kZeroShiftWindow[1] != 0
                 && kZeroShiftWindow[2] != 0 ) {
+                if (this->GetDebug()) {
+                    double pixelSpacing[3] = {0,0,0};
+                    data->GetDcmHeader()->GetPixelSpacing( pixelSpacing ); 
+                    cout << " SHIFT WINDOW(MRSFFT):          " << kZeroShiftWindow[0] 
+                        << " " << kZeroShiftWindow[1] << " " << kZeroShiftWindow[2] << endl;
+                    cout << " SHIFT WINDOW(MRSFFT) (PixSize):" << pixelSpacing[0] 
+                        << " " << pixelSpacing[1] << " " << pixelSpacing[2] << endl;
+                }
                 preKZeroShifter->SetShiftWindow( kZeroShiftWindow );
                 preKZeroShifter->SetInputData( currentData );
                 preKZeroShifter->Update( );

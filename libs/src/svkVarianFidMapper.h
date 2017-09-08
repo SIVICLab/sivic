@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -127,6 +127,7 @@ class svkVarianFidMapper : public vtkObject
         string          GetHeaderValueAsString(
                             string keyString, int valueIndex = 0, int procparRow = 0
                         );
+        bool            HeaderFieldExists( string keyString ); 
 
         virtual void    SetCellSpectrum(
                             vtkImageData* data, 
@@ -134,6 +135,7 @@ class svkVarianFidMapper : public vtkObject
                             int timePt, 
                             int coilNum
                         );
+
 
 
         map <string, vector < vector<string> > >    

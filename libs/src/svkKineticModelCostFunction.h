@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2016 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -198,11 +198,16 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
 
 
         /*!
-         *
+         *  Sets the TR, and as this is tied to the param scale factors, this gets
+         *  reinitizlized at this time as well as a side effect. 
          */
         void SetTR( float TR )
         {
             this->TR = TR; 
+
+            int numModelParams = this->GetNumberOfParameters();
+            this->paramScaleFactors.resize(numModelParams);
+            this->InitParamScaleFactors(); 
         }
 
 
@@ -240,6 +245,7 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
 
         /*!
          *  Get the number of outputs
+         *  defined in sub class, but for example: 
          *  This is fitted signals (first), them parameter maps, e.g.:
          *      Outputports:  0 for fitted pyruvate kinetics
          *      Outputports:  1 for fitted lactate kinetics
@@ -286,23 +292,115 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
          */
         virtual void InitOutputDescriptionVector(vector<string>* outputDescriptionVector ) const = 0; 
 
+        /*!
+         *  Initialize the parameter uppler and lower bounds for this model and scale them to be
+         *  dimensionless. 
+         */
+        virtual void InitScaledParamBounds( 
+            vector<float>* lowerBounds, 
+            vector<float>* upperBounds,
+            vector<vtkFloatArray*>* averageSigVector = NULL
+        ) {
+            this->InitParamBounds( lowerBounds, upperBounds, averageSigVector); 
+            this->MakeBoundsDimensionless( lowerBounds, upperBounds);
+        }; 
+
 
         /*!
          *  Initialize the parameter uppler and lower bounds for this model. 
          */
-        virtual void InitParamBounds( float* lowerBounds, float* upperBounds ) = 0; 
+        virtual void InitParamBounds( 
+            vector<float>* lowerBounds, 
+            vector<float>* upperBounds,
+            vector<vtkFloatArray*>* averageSigVector = NULL
+        ) = 0; 
 
 
         /*!
-         *  Initialize the parameter initial values (unitless)
+         *  Initialize the parameter initial values (dimensionless, scaled by TR)
+         *  Initial guesses are the mid point of the param bounds. 
          */
-        virtual void InitParamInitialPosition( ParametersType* initialPosition ) = 0; 
+        virtual void InitParamInitialPosition( ParametersType* initialPosition,
+            vector<float>* lowerBounds, vector<float>* upperBounds)
+        {
+            if (this->TR == 0 )  {
+                cout << "ERROR: TR Must be set before initializing parameters" << endl;
+                exit(1);
+            }
+
+            for ( int param = 0; param < this->GetNumberOfParameters(); param++ ) {
+                (*initialPosition)[param] =  ( (*upperBounds)[param] + (*lowerBounds)[param]) / 2. ;
+            }
+        }
+
+
+       /*!
+        *   Get the scaled (with time units) final fitted param values.  This applies 
+        *   the revese scaling by TR back to the dimensioned time space. 
+        */
+        virtual void GetParamFinalScaledPosition( ParametersType* finalPosition )
+        {
+            if (this->TR == 0 )  {
+                cout << "ERROR: TR Must be set before scaling final parameters" << endl;
+                exit(1);
+            }
+
+            float scaleFactor; 
+            for ( int i = 0; i < this->GetNumberOfParameters(); i++ ) { 
+                scaleFactor = this->paramScaleFactors[i];
+                (*finalPosition)[i] /= scaleFactor;
+            }
+        }
 
 
         /*!
-         *  Get the scaled (with units) values of final fitted parameter values. 
+         *  Print param bounds and init point in real time dimension
          */
-        virtual void GetParamFinalScaledPosition( ParametersType* finalPosition ) = 0; 
+        void PrintParmBounds( ParametersType* initialPosition, vector<float>* lowerBounds, vector<float>* upperBounds, 
+            vector<string>* outputDescriptionVector )
+        {
+            cout << endl;
+            cout << "======================================================" << endl;
+            cout << "Model Parameter Bounds => lower: upper (initial value)" << endl;
+            cout << "======================================================" << endl;
+            float scaleFactor;
+            float startGuess;
+            float lowerBound;
+            float upperBound;
+            int numSigs = this->GetNumberOfSignals(); 
+            for ( int i = 0; i < this->GetNumberOfParameters(); i++ ) { 
+                scaleFactor = this->paramScaleFactors[i];
+                startGuess = (*initialPosition)[i] / scaleFactor; 
+                lowerBound = (*lowerBounds)[i] / scaleFactor; 
+                upperBound = (*upperBounds)[i] / scaleFactor; 
+                cout << setw(3) << right << i << ". " << setw(10) << left 
+                    <<  (*outputDescriptionVector)[i + numSigs] << " => " << setw(12) << lowerBound << " :  " 
+                    << setw(12) << upperBound <<  " (" << startGuess << ")" << endl;
+            }   
+            cout << "======================================================" << endl;
+            cout << endl;
+        }
+
+
+        /*!
+         *  Override the default param bounds with custom settings
+         */
+        void SetCustomizedScaledParamBounds( 
+            vector<float>* lowerBounds, 
+            vector<float>* upperBounds, 
+            vector<int>    customBoundsParamNumbers,
+            vector<float>  customLowerBounds, 
+            vector<float>  customUpperBounds  
+        ) {
+            this->MakeBoundsVectorsDimensionless( &customBoundsParamNumbers, &customLowerBounds, &customUpperBounds);
+
+            for (int i = 0; i < customBoundsParamNumbers.size(); i++ ) {
+
+                int paramNumber = customBoundsParamNumbers[i]; 
+                (*lowerBounds)[paramNumber] = customLowerBounds[i]; 
+                (*upperBounds)[paramNumber] = customUpperBounds[i];  
+            }
+        }
 
 
 
@@ -326,7 +424,60 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
                 }
             }
             MeasureType measure = residual ;
+            //cout << "MEASURE" << measure << endl;
+            //for ( int t = 0; t < 8; t++ ) {
+                //for  (int sigNumber = 0; sigNumber < this->GetNumberOfSignals(); sigNumber++ ) {
+                    //cout << "DIFF( " << sigNumber << "): " << this->GetSignalAtTime(sigNumber, t)  << " - " <<  this->GetModelSignal(sigNumber)[t]  << " = " << ( this->GetSignalAtTime(sigNumber, t) - this->GetModelSignal(sigNumber)[t] ) << endl;   
+                //}
+            //}
             return measure;
+        }
+
+
+        /*
+         *  factors to convert time domain params into dimensionless (point) space
+         */
+        virtual void InitParamScaleFactors() = 0; 
+
+    
+        /*!
+         *  Wrapper method to add the boundsParamNumbers vector before passing to maek dimensionless. 
+         */
+        virtual void MakeBoundsDimensionless( vector<float>* lowerBounds, vector<float>* upperBounds)
+        {
+            vector<int> boundsParamNumbers;
+            for ( int param = 0; param < this->GetNumberOfParameters(); param++ ) {
+                boundsParamNumbers.push_back(param);
+            }
+
+            if ( this->TR == 0 )  {
+                cout << "ERROR: TR Must be set before making bounds dimensionless " << endl;
+                exit(1);
+            }
+            this->MakeBoundsVectorsDimensionless( &boundsParamNumbers, lowerBounds, upperBounds);
+        }  
+
+
+        /*!
+         *  Make the bounds dimensionless (i.e. convert from tine domain 
+         *  to point domain units).  These are the user specified bounds provided on the 
+         *  command line
+         *      rates are multilied by TR, 
+         *      times are divided by TR 
+         */
+        virtual void MakeBoundsVectorsDimensionless( vector<int>*  boundsParamNumbers,
+            vector<float>* lowerBounds, vector<float>* upperBounds)
+        {
+            //  loop over the bounds the user specified
+            float scaleFactor;
+            for (int i = 0; i < boundsParamNumbers->size(); i++ ) {
+
+                int paramNumber = (*boundsParamNumbers)[i]; 
+                scaleFactor = this->paramScaleFactors[paramNumber];
+
+                (*lowerBounds)[i] *= scaleFactor; 
+                (*upperBounds)[i] *= scaleFactor; 
+            }
         }
 
 
@@ -340,7 +491,7 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         int                                 numTimePoints;
         int                                 numSignals;
         float                               TR;
-
+        vector< float >                     paramScaleFactors;
 
 
 };

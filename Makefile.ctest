@@ -20,17 +20,18 @@ SIVIC_ROOT      	= $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 SVK_TEST_ROOT   	= ${SIVIC_ROOT}/test_data
 OUTPUT_LOG      	= ${PWD}/ctest_logs/atom 
 CMAKE_DIR       	= /usr/bin
-CMAKE_DIR_GE    	= /usr/local/bin
+CMAKE_DIR_GE    	= /usr/bin
 XVFB_RUN        	= ${SIVIC_ROOT}/tests/scripts/xvfb-run
 SVN_COMMAND     	= /netopt/bin/svn 
 CLAPACK_DIR     	= /opt/src/freeware/clapack/clapack-3.2.1-CMAKE
 ITK_DIR         	= /netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4
 ADD_LINK_DIRS   	= 
 CMAKE_PREFIX_PATH 	= ${VTK_DIR}
+NUM_JOBS		    = 16
 	
 #   Mac OS X
 ifeq ($(OSTYPE),Darwin)
-	CMAKE_DIR               := /opt/local/bin
+	CMAKE_DIR               := /usr/local/bin
 	DCMTK_DIR               := /usr/local/dicom
 	CLAPACK_DIR             := /usr/local/clapack-3.2.1-CMAKE
 	VTK6_DIR_DBG            := /usr/local/vtk6.3/lib/cmake/vtk-6.3
@@ -100,10 +101,20 @@ CONFIG_OPTS       		= \
                     	  -DBUILD_SIVIC=ON                         \
                     	  -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}     \
                     	  -DSVNCOMMAND=${SVN_COMMAND}              \
-                    	  -DCMAKE_VERBOSE_MAKEFILE=ON              \
-                    	  -DMAKECOMMAND="/usr/bin/gmake -i -j4"    \
+                    	  -DCMAKE_VERBOSE_MAKEFILE=ON              			\
+                    	  -DMAKECOMMAND="/usr/bin/gmake -i -j${NUM_JOBS}"	\
 						  -DSVK_USE_GL2PS=ON
 
+ifeq ($(OSTYPE),Darwin)
+	CONFIG_OPTS_VTK6_DIST += -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
+                             -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	      \
+                             -DOPENGL_gl_LIBRARY="${OPENGL_gl_LIBRARY}"           \
+                             -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
+    CONFIG_OPTS_VTK6_DBG += -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
+                            -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	      \
+                            -DOPENGL_gl_LIBRARY="${OPENGL_gl_LIBRARY}"           \
+                            -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
+endif
 
 CONFIG_OPTS_DBG   		= \
 				          ${CONFIG_OPTS_VTK6_DBG}			 \
@@ -122,17 +133,7 @@ CONFIG_BASE_GE         	 = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_DIST}
 CONFIG_BASE_VTK6_DBG   	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_DBG}
 CONFIG_BASE_VTK6_DIST  	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_DIST}
 CONFIG_BASE_VTK6_EPIC32	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_EPIC32}
-CONFIG_BASE_GE_VTK6_DIST = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_VTK6_DIST}
-ifeq ($(OSTYPE),Darwin)
-	CONFIG_BASE_VTK6_DIST += -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
-                             -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	      \
-                             -DOPENGL_gl_LIBRARY="${OPENGL_gl_LIBRARY}"           \
-                             -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
-	CONFIG_BASE_VTK6_DBG  += -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
-                             -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	      \
-                             -DOPENGL_gl_LIBRARY="${OPENGL_gl_LIBRARY}"           \
-                             -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
-endif
+CONFIG_BASE_GE_VTK6_DIST = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_DIST}
 
 CONFIG_TEST_ON      	 = -DUSE_OFF_SCREEN_TESTING=ON               \
                       	   -DBUILD_TESTING=ON                        \
@@ -216,7 +217,7 @@ configure_epic32: clean_results
 # configure and build on ESE host
 #
 configure_GE_dist: clean_results 
-	(${RM_CACHE} ${CONFIG_BASE_GE_VTK6} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_GE_CONSOLE} ${CONFIG_RELEASE} ${SIVIC_ROOT}/) 
+	(${RM_CACHE} ${CONFIG_BASE_GE_VTK6_DIST} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_GE_CONSOLE} ${CONFIG_RELEASE} ${SIVIC_ROOT}/) 
 
 
 
@@ -249,7 +250,7 @@ experimental: configure_testing
 experimental_fast_vtk5: configure_testing_vtk5
 	${XVFB_RUN} ${CMAKE_DIR}/ctest -D Experimental --output-log ${OUTPUT_LOG} 
 experimental_fast: configure_testing
-	${XVFB_RUN} ${CMAKE_DIR}/ctest -D Experimental --output-log ${OUTPUT_LOG} 
+	${XVFB_RUN} ${CMAKE_DIR}/ctest -j${NUM_JOBS} -D Experimental --output-log ${OUTPUT_LOG} 
 
 clion_options: 
 	$(info CMAKE BUILD OPTIONS FOR CLION:)

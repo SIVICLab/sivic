@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -146,7 +146,7 @@ void svkDcmMrsVolumeReader::LoadData( svkImageData* data )
 
     this->numFreqPts = this->GetOutput()->GetDcmHeader()->GetIntValue( "DataPointColumns" ); 
 
-//==============================
+    //==============================
     svkDcmHeader::DimensionVector dimVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
     svkDcmHeader::DimensionVector loopVector = dimVector;
     int numCells = svkDcmHeader::GetNumberOfCells( &dimVector );
@@ -159,11 +159,11 @@ void svkDcmMrsVolumeReader::LoadData( svkImageData* data )
         svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimVector, &loopVector, cellID);
         SetCellSpectrum( data, &loopVector, numComponents, specData );
     }
-//==============================
+    //==============================
 
 
-//==============================
-/*
+    //==============================
+    /*
     this->numTimePts = this->GetOutput()->GetDcmHeader()->GetNumberOfTimePoints();
     int numCoils = this->GetOutput()->GetDcmHeader()->GetNumberOfCoils();
 
@@ -190,9 +190,8 @@ void svkDcmMrsVolumeReader::LoadData( svkImageData* data )
             }
         }
     }
-*/
-//==============================
-
+    */
+    //==============================
 
 
     svkFastCellData::SafeDownCast(data->GetCellData())->FinishFastAdd();

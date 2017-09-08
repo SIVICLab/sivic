@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -263,7 +263,11 @@ svkPhilipsSMapper* svkPhilipsSReader::GetPhilipsSMapper()
     svkPhilipsSMapper* aMapper = NULL;
 
     string scanID = this->sparMap["scan_id"];
-    if ( ( scanID.find("PRESS") != string::npos ) || ( scanID.find("csifid") != string::npos ) ) {
+    if ( 
+        ( scanID.find("PRESS") != string::npos ) || 
+        ( scanID.find("csifid") != string::npos ) ||
+        ( scanID.find("CSI_2D") != string::npos ) 
+    ) {
 
         aMapper = svkPhilipsSMapper::New();
 
@@ -349,7 +353,7 @@ void svkPhilipsSReader::ParseSPAR( string path )
         cerr << "ERROR opening or reading Philips spar file( " << path << ": " << e.what() << endl;
         exit(1); 
     }
-    this->PrintSparKeyValuePairs(); 
+    //this->PrintSparKeyValuePairs(); 
 
 }
 

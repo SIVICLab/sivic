@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -43,25 +43,58 @@
 #include <svkImageReaderFactory.h>
 #include <svkDataModel.h>
 #include <svkImageData.h>
+#ifdef WIN32
+extern "C" {
+#include <getopt.h>
+}
+#else
+#include <getopt.h>
+#include <unistd.h>
+#endif
 
 using namespace svk;
-
+static const char *optString = "v";
 void DisplayUsage();
 
 int main ( int argc, char** argv )
 {
     svkDataModel* model = svkDataModel::New();
-    if( argc != 2 ) {
+
+    bool printVtkObject = false;
+    int opt = 0;
+    opt = getopt( argc, argv, optString);
+    while( opt != -1 ) {
+        switch (opt) {
+            case 'v':
+                 printVtkObject = true;
+                break;
+            default:
+                cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
+                cout<< endl <<" ERROR: Unrecognized option... " << endl << endl;
+                cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
+                DisplayUsage();
+                break;
+        }
+        opt = getopt( argc, argv, optString );
+    }
+    char* filename = NULL;
+    if( printVtkObject && argc == 3) {
+        filename = argv[2];
+    } else if ( argc == 2 ) {
+        filename = argv[1];
+    } else {
         DisplayUsage();
-    }   
+    }
     bool readOnlyOneFile = true; 
-    svkImageData* data = model->LoadFile(argv[1], readOnlyOneFile);
+    svkImageData* data = model->LoadFile(filename, readOnlyOneFile);
     if( data == NULL ) {
-        cout << "Cannot read file: " << argv[1] << endl;
+        cout << "Cannot read file: " << filename << endl;
         exit(1);
     }
-    cout << "File: " << argv[0] << endl <<  "VTK Object: " << endl << *data << endl;
-    cout << "SVK DICOM Header: " << endl;
+    if( printVtkObject ) {
+        cout << "File: " << filename << endl <<  "VTK Object: " << endl << *data << endl;
+        cout << "SVK DICOM Header: " << endl;
+    }
     data->GetDcmHeader()->PrintDcmHeader();
     return 0;
   

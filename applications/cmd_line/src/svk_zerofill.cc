@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -68,14 +68,33 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";   
     usemsg += "svk_zerofill -i input_file_name -o output_root                                   \n"; 
-    usemsg += "                 --custom num_pts   [-vh]                                        \n";
+    usemsg += "                 --custom num_pts                                                \n";
+    usemsg += "                 --customx num_pts --customy num_pts --customz num_pts           \n";
+    usemsg += "                 --double --doublex --doubley --doublez                          \n";
+    usemsg += "                 --pow2 --pow2x --pow2y --pow2z                                  \n";
+    usemsg += "                 [-vh]                                                           \n";
     usemsg += "                                                                                 \n";  
     usemsg += "   -i        input_file_name   Name of file to convert.                          \n"; 
     usemsg += "   -o        output_root       Root name of outputfile.                          \n";  
     usemsg += "   -t        type              Target data type:                                 \n";
     usemsg += "                                     2 = UCSF DDF                                \n";
     usemsg += "                                     4 = DICOM_MRS (default)                     \n";
+    usemsg += "                                                                                 \n";  
     usemsg += "   --custom  num_pts           Total number of spectral points to fill to.       \n";
+    usemsg += "   --customx num_pts           Total number of spatial points to fill to in X.   \n";
+    usemsg += "   --customy num_pts           Total number of spatial points to fill to in Y.   \n";
+    usemsg += "   --customz num_pts           Total number of spatial points to fill to in Z.   \n";
+    usemsg += "                                                                                 \n";  
+    usemsg += "   --double                    Double the number of spectral ponits.             \n";
+    usemsg += "   --doublex                   Double the number of spatial points in X.         \n";
+    usemsg += "   --doubley                   Double the number of spatial points in Y.         \n";
+    usemsg += "   --doublez                   Double the number of spatial points in Z.         \n";
+    usemsg += "                                                                                 \n";  
+    usemsg += "   --pow2                      Increse spectral ponits to next power of 2.       \n";
+    usemsg += "   --pow2x                     Increase spatial points to next power of 2 in X.  \n";
+    usemsg += "   --pow2y                     Increase spatial points to next power of 2 in Y.  \n";
+    usemsg += "   --pow2z                     Increase spatial points to next power of 2 in Z.  \n";
+    usemsg += "                                                                                 \n";  
     usemsg += "   -v                          Verbose output.                                   \n";
     usemsg += "   -h                          Print help mesage.                                \n";  
     usemsg += "                                                                                 \n";  
@@ -84,20 +103,53 @@ int main (int argc, char** argv)
 
     string inputFileName; 
     string outputFileName; 
-    int customPts = -1;  
+    int customPtsSpec  = -1;  
+    int customPtsX     = -1;  
+    int customPtsY     = -1;  
+    int customPtsZ     = -1;  
+    bool doublePtsSpec  = false;  
+    bool doublePtsX     = false;  
+    bool doublePtsY     = false;  
+    bool doublePtsZ     = false;  
+    bool pow2PtsSpec    = false;  
+    bool pow2PtsX       = false;  
+    bool pow2PtsY       = false;  
+    bool pow2PtsZ       = false;  
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS; 
     bool   verbose = false;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
-        FLAG_CUSTOM_PTS = 0 
+        FLAG_CUSTOM_PTS_SPEC = 0,  
+        FLAG_CUSTOM_PTS_X, 
+        FLAG_CUSTOM_PTS_Y, 
+        FLAG_CUSTOM_PTS_Z, 
+        FLAG_DOUBLE_SPEC, 
+        FLAG_DOUBLE_X, 
+        FLAG_DOUBLE_Y,  
+        FLAG_DOUBLE_Z,  
+        FLAG_POW2_SPEC, 
+        FLAG_POW2_X, 
+        FLAG_POW2_Y,  
+        FLAG_POW2_Z  
     };
 
 
     static struct option long_options[] =
     {
-        {"custom",      required_argument, NULL,  FLAG_CUSTOM_PTS},
+        {"custom",      required_argument, NULL,  FLAG_CUSTOM_PTS_SPEC},
+        {"customx",     required_argument, NULL,  FLAG_CUSTOM_PTS_X},
+        {"customy",     required_argument, NULL,  FLAG_CUSTOM_PTS_Y},
+        {"customz",     required_argument, NULL,  FLAG_CUSTOM_PTS_Z},
+        {"double",      no_argument,       NULL,  FLAG_DOUBLE_SPEC},
+        {"doublex",     no_argument,       NULL,  FLAG_DOUBLE_X},
+        {"doubley",     no_argument,       NULL,  FLAG_DOUBLE_Y},
+        {"doublez",     no_argument,       NULL,  FLAG_DOUBLE_Z},
+        {"pow2",        no_argument,       NULL,  FLAG_POW2_SPEC},
+        {"pow2x",       no_argument,       NULL,  FLAG_POW2_X},
+        {"pow2y",       no_argument,       NULL,  FLAG_POW2_Y},
+        {"pow2z",       no_argument,       NULL,  FLAG_POW2_Z},
         {0, 0, 0, 0}
     };
 
@@ -119,8 +171,41 @@ int main (int argc, char** argv)
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
                 break;
-            case FLAG_CUSTOM_PTS:
-                customPts = atoi( optarg);
+            case FLAG_CUSTOM_PTS_SPEC:
+                customPtsSpec = atoi( optarg);
+                break;
+            case FLAG_CUSTOM_PTS_X:
+                customPtsX = atoi( optarg);
+                break;
+            case FLAG_CUSTOM_PTS_Y:
+                customPtsY = atoi( optarg);
+                break;
+            case FLAG_CUSTOM_PTS_Z:
+                customPtsZ = atoi( optarg);
+                break;
+            case FLAG_DOUBLE_SPEC:
+                doublePtsSpec = true; 
+                break;
+            case FLAG_DOUBLE_X:
+                doublePtsX = true; 
+                break;
+            case FLAG_DOUBLE_Y:
+                doublePtsY = true; 
+                break;
+            case FLAG_DOUBLE_Z:
+                doublePtsZ = true; 
+                break;
+            case FLAG_POW2_SPEC:
+                pow2PtsSpec = true; 
+                break;
+            case FLAG_POW2_X:
+                pow2PtsX = true; 
+                break;
+            case FLAG_POW2_Y:
+                pow2PtsY = true; 
+                break;
+            case FLAG_POW2_Z:
+                pow2PtsZ = true; 
                 break;
             case 'v':
                 verbose = true;
@@ -182,7 +267,46 @@ int main (int argc, char** argv)
     //  ===============================================
     svkMrsZeroFill* zeroFill = svkMrsZeroFill::New();
     zeroFill->SetInputData( reader->GetOutput() );
-    zeroFill->SetNumberOfSpecPoints( customPts ); 
+
+    if ( customPtsSpec != -1 ) {
+        zeroFill->SetNumberOfSpecPoints( customPtsSpec ); 
+    }
+    if ( customPtsX != -1 ) {
+        zeroFill->SetNumberOfColumns( customPtsX ); 
+    }
+    if ( customPtsY != -1 ) {
+        zeroFill->SetNumberOfRows( customPtsY ); 
+    }
+    if ( customPtsZ != -1 ) {
+        zeroFill->SetNumberOfSlices( customPtsZ ); 
+    }
+
+    if ( doublePtsSpec == true ) {
+        zeroFill->SetNumberOfSpecPointsToDouble( ); 
+    }
+    if ( doublePtsX == true ) {
+        zeroFill->SetNumberOfColumnsToDouble( ); 
+    }
+    if ( doublePtsY == true ) {
+        zeroFill->SetNumberOfRowsToDouble( ); 
+    }
+    if ( doublePtsZ == true ) {
+        zeroFill->SetNumberOfSlicesToDouble( ); 
+    }
+
+    if ( pow2PtsSpec == true ) {
+        zeroFill->SetNumberOfSpecPointsToNextPower2( ); 
+    }
+    if ( pow2PtsX == true ) {
+        zeroFill->SetNumberOfColumnsToNextPower2( ); 
+    }
+    if ( pow2PtsY == true ) {
+        zeroFill->SetNumberOfRowsToNextPower2( ); 
+    }
+    if ( pow2PtsZ == true ) {
+        zeroFill->SetNumberOfSlicesToNextPower2( ); 
+    }
+
     zeroFill->Update();
 
     //  ===============================================

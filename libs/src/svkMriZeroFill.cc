@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -63,7 +63,8 @@ svkMriZeroFill::svkMriZeroFill()
     // By default we will not operate in place
     this->operateInPlace = false;
 
-    // Initialize output image extent to INVALID
+    // Initialize output image extent to INVALID:
+    //  0 -> -1 in each dimension
     for (int i = 0; i < 3; i++) {
         this->outputWholeExtent[i * 2] = 0;
         this->outputWholeExtent[i * 2 + 1] = -1;
@@ -251,6 +252,12 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     newSpacing[0] = spacing[0]*((double)(inExtent[1]-inExtent[0] + 1))/(this->outputWholeExtent[1] - this->outputWholeExtent[0] + 1);
     newSpacing[1] = spacing[1]*((double)(inExtent[3]-inExtent[2] + 1))/(this->outputWholeExtent[3] - this->outputWholeExtent[2] + 1);
     newSpacing[2] = spacing[2]*((double)(inExtent[5]-inExtent[4] + 1))/(this->outputWholeExtent[5] - this->outputWholeExtent[4] + 1);
+    if (this->GetDebug()) {
+        cout << "NEW SPACING: " << newSpacing[0] 
+            << " old " << inExtent[1] - inExtent[0]  
+            << " new " << this->outputWholeExtent[1] - this->outputWholeExtent[0] << endl;
+    }
+
     ostringstream* oss = new ostringstream();
     *oss << newSpacing[0];
     string pixelSpacingString( oss->str() + "\\" );
@@ -275,6 +282,10 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     originShift[0] = newSpacing[0]/2 - spacing[0]/2;
     originShift[1] = newSpacing[1]/2 - spacing[1]/2;
     originShift[2] = newSpacing[2]/2 - spacing[2]/2;
+    if (this->GetDebug()) {
+        cout << "ORIG SPC: " << spacing[0] << endl;
+        cout << "NEW  SPC: " << newSpacing[0] << endl;
+    }
 
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
@@ -301,8 +312,15 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     shiftWindow[0] = -originShift[0]/newSpacing[0];
     shiftWindow[1] = -originShift[1]/newSpacing[1];
     shiftWindow[2] = -originShift[2]/newSpacing[2];
+    //shiftWindow[0] = 0; 
+    //shiftWindow[1] = 0; 
+    //shiftWindow[2] = 0; 
 
     // Apply a half voxel phase shift. This is because the sampled points of the data has changed.
+    if (this->GetDebug()) {
+        cout << "SHIFT kspace  MRI ZF: " << shiftWindow[0] << " " << shiftWindow[1] << " "<<  shiftWindow[2] << endl;
+    }
+
     svkImageLinearPhase* linearShift = svkImageLinearPhase::New();
     linearShift->SetShiftWindow( shiftWindow );
     linearShift->SetInputData( targetData );

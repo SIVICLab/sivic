@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -80,8 +80,8 @@ int main (int argc, char** argv)
     usemsg += "   -i            input_file_name     Name of file to convert.                \n"; 
     usemsg += "   -o            output_file_name    Name of outputfile.                     \n";  
     usemsg += "   -t            output_data_type    Target data type:                       \n";  
-    usemsg += "                                         2 = UCSF DDF                        \n";  
-    usemsg += "                                         3 = UCSF IDF                        \n";  
+    usemsg += "                                         2 = UCSF DDF (MRS)                  \n";  
+    usemsg += "                                         3 = UCSF IDF (MRI)                  \n";  
     usemsg += "                                         4 = DICOM_MRS                       \n";  
     usemsg += "                                         5 = DICOM_MRI                       \n";  
     usemsg += "                                         6 = DICOM_Enhanced MRI              \n";  
@@ -103,7 +103,42 @@ int main (int argc, char** argv)
     usemsg += "   -v                                Verbose output.                         \n";
     usemsg += "   -h                                Print help mesage.                      \n";  
     usemsg += "                                                                             \n";  
-    usemsg += "Converts the input file to the specified target file type                    \n";  
+    usemsg += "============================================================================ \n";  
+    usemsg += "Converts the input file to the specified target file type.                   \n";  
+    usemsg += "Supported input formats:                                                     \n";  
+    usemsg += "     Bruker raw MRS (ser, fid)                                               \n";  
+    usemsg += "     Bruker DICOM MRS                                                        \n";  
+    usemsg += "     Varian raw MRS (fid)                                                    \n";  
+    usemsg += "     Varian fdf MRI                                                          \n";  
+    usemsg += "     GE PFiles                                                               \n";  
+    usemsg += "     GE SDBM                                                                 \n";  
+    usemsg += "     GE Postage Stamp                                                        \n";  
+    usemsg += "     Philips raw MRS (spar, sdat)                                            \n";  
+    usemsg += "     Siemens rda raw MRS                                                     \n";  
+    usemsg += "     DICOM MRS                                                               \n";  
+    usemsg += "     DICOM MRI                                                               \n";  
+    usemsg += "     DICOM Enhanced MRI                                                      \n";  
+    usemsg += "     DICOM PET                                                               \n";  
+    usemsg += "     DICOM CT                                                                \n";  
+    usemsg += "     DICOM Segmentation Storage                                              \n";  
+    usemsg += "     UCSF DDF (MRS)                                                          \n";  
+    usemsg += "     UCSF IDF (MRI)                                                          \n";  
+    usemsg += "                                                                             \n";  
+    usemsg += "Examples:                                                                    \n";  
+    usemsg += "Bruker raw (fid or ser) to DICOM MRS examples:                               \n";  
+    usemsg += "    svk_file_convert -i fid -o bruker_raw_mrs -t4                            \n";  
+    usemsg += "    svk_file_convert -i ser -o bruker_raw_mrs -t4                            \n";  
+    usemsg += "Varian fid to DICOM MRS example:                                             \n";  
+    usemsg += "    svk_file_convert -i fid -o varian_raw_mrs -t4                            \n";  
+    usemsg += "Philips SPAR/SDAT to DICOM MRS example:                                      \n";  
+    usemsg += "    svk_file_convert -i csi.SPAR -o philips_mrs -t4                          \n";  
+    usemsg += "GE PFIles to DICOM MRS example (see also svk_gepfile_reader for more         \n";  
+    usemsg += "options):                                                                    \n";  
+    usemsg += "    svk_file_convert -i p1234.7 -o ge_raw_mrs -t4                            \n";  
+    usemsg += "DICOM MRI (specify any single file from the series and the entire series     \n";  
+    usemsg += "will get loaded and converted to the targer format):                         \n";  
+    usemsg += "    svk_file_convert -i E1S1I1.DCM  -o dicom_volume -t6                      \n";  
+    usemsg += "============================================================================ \n";  
     usemsg += "                                                                             \n";  
 
     string inputFileName; 

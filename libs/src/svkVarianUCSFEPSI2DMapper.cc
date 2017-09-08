@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -257,7 +257,10 @@ void svkVarianUCSFEPSI2DMapper::InitMRSpectroscopyDataModule()
     this->dcmHeader->SetValue( "SVK_ColumnsDomain", "KSPACE" );
     this->dcmHeader->SetValue( "SVK_RowsDomain", "KSPACE" );
     this->dcmHeader->SetValue( "SVK_SliceDomain", "KSPACE" );
-    this->dcmHeader->SetValue( "SVK_ECHO_CENTER_PT", this->GetHeaderValueAsFloat("epsiorigin")); 
+
+    if ( this->HeaderFieldExists("epsiorigin") == true ) {
+        this->dcmHeader->SetValue( "SVK_ECHO_CENTER_PT", this->GetHeaderValueAsFloat("epsiorigin")); 
+    }
 }
 
 
@@ -355,15 +358,26 @@ void svkVarianUCSFEPSI2DMapper::InitMRSpectroscopyModule()
 {
     this->Superclass::InitMRSpectroscopyModule(); 
 
+    float swf = 0; 
+    if ( this->HeaderFieldExists("swf") == true ) {
+        swf = this->GetHeaderValueAsFloat( "swf" ); 
+    }
+
     this->dcmHeader->SetValue(
         "SpectralWidth",
-        this->GetHeaderValueAsFloat( "swf" )
+        swf
     );
 
     //  sp is the frequency in Hz at left side (downfield/High freq) 
     //  side of spectrum: 
     //
-    float ppmRef = this->GetHeaderValueAsFloat( "spcenter" ) /  this->GetHeaderValueAsFloat( "sfrq" );
+    float ppmRef = 0;  
+    if (
+        ( this->HeaderFieldExists("spcenter") == true ) &&
+        ( this->HeaderFieldExists("sfrq") == true ) 
+    ) {
+        ppmRef = this->GetHeaderValueAsFloat( "spcenter" ) /  this->GetHeaderValueAsFloat( "sfrq" );
+    }
     this->dcmHeader->SetValue(
         "ChemicalShiftReference",
         ppmRef 

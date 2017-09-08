@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -90,7 +90,8 @@ class svkImageThreshold : public svkImageAlgorithmWithPortMapper
             THRESHOLD_BY_MODE_SMOOTH_BINS,
             THRESHOLD_BY_MODE_BIN_SIZE,
             THRESHOLD_BY_MODE_NUM_BINS,
-            OUTPUT_SCALAR_TYPE
+            OUTPUT_SCALAR_TYPE,
+            VOLUME
         } svkImageThresholdParameters;
 
         static svkImageThreshold* New();
@@ -107,6 +108,9 @@ class svkImageThreshold : public svkImageAlgorithmWithPortMapper
 
         void        SetMaskOutputValue( int value );
         svkInt*     GetMaskOutputValue( );
+    
+        void        SetVolume( int value );
+        svkInt*     GetVolume( );
 
         void        SetOutputScalarType( int outputScalarType );
         svkInt*     GetOutputScalarType( );

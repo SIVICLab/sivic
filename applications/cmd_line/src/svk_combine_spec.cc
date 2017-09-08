@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -70,7 +70,9 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_combine_spec -i inputMRI_DCMs_root -t originalDDF -o output_ddf -c\n";
-    usemsg += "Combines the spectra found in the MRI_DCMs and uses the header from original DDF to create a combination DDF and save this in output_ddf. Per default only real files are handled, if -c option not specified.\n";  
+    usemsg += "Combines the spectra found in the MRI_DCMs and uses the header from original \n"; 
+    usemsg += "DDF to create a combination DDF and save this in output_ddf. Per default only \n"; 
+    usemsg += "real files are handled, if -c option not specified.\n";  
     usemsg += "\n";  
 
     bool    handleComplex = false;
@@ -120,9 +122,7 @@ int main (int argc, char** argv)
 
     // ===============================================  
     //  validate that: 
-    //      an target name was supplied
-
-    //      
+    //      a target name was supplied
     // ===============================================  
     if ( argc != 0 ||  inputRoot.length() == 0  
          || outputFileName.length() == 0 
@@ -150,7 +150,6 @@ int main (int argc, char** argv)
         cerr << "Can not determine appropriate reader for test data: " << originalDDF << endl;
         exit(1);
     }
-    
 
     mrsReader->SetFileName( originalDDF.c_str() );
     mrsReader->Update(); 
@@ -170,7 +169,7 @@ int main (int argc, char** argv)
         
     // include check for the channels
     string currentInputFile;
-  //  vtkSmartPointer< svkImageReaderFactory > readerFactory2 = vtkSmartPointer< svkImageReaderFactory >::New(); 
+    //  vtkSmartPointer< svkImageReaderFactory > readerFactory2 = vtkSmartPointer< svkImageReaderFactory >::New(); 
 
    // numSpecPts = 1024; 
 
@@ -180,7 +179,9 @@ int main (int argc, char** argv)
         char numstr[10];
         sprintf(numstr, "%d", pnt);
         currentInputFile.assign(inputRoot.c_str());
-        currentInputFile.append("_real");
+        if ( handleComplex ){
+        	currentInputFile.append("_real");
+        }
         currentInputFile.append(numstr);
         currentInputFile.append(".idf");
        // currentOutputFile.append(".dcm");
@@ -193,11 +194,11 @@ int main (int argc, char** argv)
         }
         mriReader->SetFileName( currentInputFile.c_str() );
         mriReader->OnlyReadOneInputFile();
- //       cout << currentInputFile <<endl;
+        //cout << currentInputFile <<endl;
         mriReader->Update(); 
 
         svkMriImageData* mriData = svkMriImageData::SafeDownCast( mriReader->GetOutput() ); 
-         // just real for now
+        // just real for now
         mrsData->SetImageComponent(mriData, pnt, 0, 0, 0); 
         mriReader->Delete();
        

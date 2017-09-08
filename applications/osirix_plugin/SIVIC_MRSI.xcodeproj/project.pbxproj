@@ -901,7 +901,7 @@
 				PRODUCT_NAME = SIVIC_MRSI;
 				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
-				USER_HEADER_SEARCH_PATHS = "/Users/jasonc/freeware/clapack-3.2.1-CMAKE/INCLUDE /usr/X11R6/include /usr/local/kwwidgets_vtk6/include/KWWidgets /usr/local/vtk6.3/include/vtk-5.6 /usr/local/dicom/include /Users/jasonc/github/sivic/libs/src /Users/jasonc/github/sivic/applications/sivic_app/src";
+				USER_HEADER_SEARCH_PATHS = "/usr/local/clapack-3.2.1-CMAKE/INCLUDE /usr/X11R6/include /usr/local/kwwidgets_vtk6/include/KWWidgets /usr/local/vtk6.3/include/vtk-5.6 /usr/local/dicom/include /Users/jcrane10/git/sivic/libs/src /Users/jcrane10/git/sivic/applications/sivic_app/src";
 				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = (
 					"-Wmost",

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -76,7 +76,7 @@ svkDetailedPlotDirector::svkDetailedPlotDirector()
     this->xyPlotActor->GetChartBoxProperty()->SetColor(0,0,0);
 #endif
 
-    this->xyPlotActor->LegendOn();
+    this->xyPlotActor->LegendOff();
     this->xyPlotActor->SetLegendPosition(0.70, 0.70);
     this->xyPlotActor->SetLegendPosition2(0.25, 0.2);
     this->glyphGenerator = vtkGlyphSource2D::New();
@@ -629,10 +629,16 @@ void svkDetailedPlotDirector::UpdateCursorLocation( vtkObject* subject, unsigned
                     yValue << "+";
                 }
                 yValue << std::scientific << plotValue;
+                director->GetPlotActor()->LegendOn();
                 director->GetPlotActor()->GetLegendActor()->SetEntryString(i, yValue.str().c_str());
             }
         } else {
             director->GetRuler()->SetVisibility( false );
+            int numPlots = director->GetPlotActor()->GetDataObjectInputConnectionHolder()->GetNumberOfInputConnections(0);
+            for( int i = 0; i < numPlots; i++ ) {
+                director->GetPlotActor()->LegendOff();
+            }
+
         }
     }
 }

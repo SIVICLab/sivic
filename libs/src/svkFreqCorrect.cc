@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -66,6 +66,7 @@ svkFreqCorrect::svkFreqCorrect()
     this->globalShift   = 0.0;
 
     this->SetNumberOfInputPorts(2); //1 mandatory, 1 optional 
+    this->circularShift = false; 
 
 }
 
@@ -77,6 +78,15 @@ svkFreqCorrect::~svkFreqCorrect()
 {
 }
 
+
+/*!
+ *  By default the sift leaves 0s at the end unless it's specified to be
+ *  a circular shift in which case the data wraps around. 
+ */
+void svkFreqCorrect::SetCircularShift()
+{
+    this->circularShift = true; 
+}    
 
 /*! 
  *
@@ -172,6 +182,8 @@ int svkFreqCorrect::ApplyGlobalCorrection( )
     float* specPtr;
     float* origSpecPtr;
 
+    //cout << "NFP: " << numFrequencyPoints << endl;
+
     for (int cellID = 0; cellID < numMRSCells; cellID++) {
 
         vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( cellID ) ); 
@@ -184,15 +196,26 @@ int svkFreqCorrect::ApplyGlobalCorrection( )
         for (int i = 0; i < numFrequencyPoints; i++) {
 
             int shiftedIndex = i - this->globalShift; 
-            if ( shiftedIndex > 0 && shiftedIndex < numFrequencyPoints ) {
+            if ( shiftedIndex >= 0 && shiftedIndex < numFrequencyPoints ) {
                 newRe = origSpecPtr[ 2*shiftedIndex ]; 
                 newIm = origSpecPtr[ 2*shiftedIndex + 1];
             } else {
-                newRe = 0.; 
-                newIm = 0.; 
+                if ( this->circularShift ) {
+                    if ( shiftedIndex + numFrequencyPoints < numFrequencyPoints ) {
+                        shiftedIndex += numFrequencyPoints ; 
+                    } else {
+                        shiftedIndex -= numFrequencyPoints; 
+                    } 
+                    // if circular shift, then wrap values around: 
+                    newRe = origSpecPtr[ 2*shiftedIndex ]; 
+                    newIm = origSpecPtr[ 2*shiftedIndex + 1]; 
+                } else {
+                    newRe = 0.; 
+                    newIm = 0.; 
+                }
             }    
 
-            // And apply the phase values
+            // And set the shifted value into the spectrum. 
             specPtr[2*i]   = newRe; 
             specPtr[2*i+1] = newIm;  
         }

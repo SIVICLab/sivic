@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -118,12 +118,20 @@ int svkMriImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
         domainSlice = data->GetDcmHeader()->GetStringValue( "SVK_SliceDomain"); 
     }
     if( this->mode == REVERSE ) {
-        if ( !domainCol.compare("SPACE") || !domainRow.compare("SPACE") || !domainSlice.compare("SPACE") ) {
+        // REVERSE should take to space domain, so if the data is already in space then skip the FT 
+        if (  ( domainCol.compare("SPACE")   == 0 ) 
+           || ( domainRow.compare("SPACE")   == 0 ) 
+           || ( domainSlice.compare("SPACE") == 0 ) 
+        ){
             cout << "svkMriImageFFT: Already in target domain, not transforming " << endl; 
             return 1; 
         }; 
     } else {
-        if ( !domainCol.compare("KSPACE") || !domainRow.compare("KSPACE") || !domainSlice.compare("KSPACE") ) {
+        // FORWARD should take to kspace domain, so if the data is already in kspace then skip the FT 
+        if (  ( domainCol.compare("KSPACE")   == 0 ) 
+           || ( domainRow.compare("KSPACE")   == 0 ) 
+           || ( domainSlice.compare("KSPACE") == 0 ) 
+        ){
             cout << "svkMriImageFFT: Already in target domain, not transforming " << endl; 
             return 1; 
         }; 

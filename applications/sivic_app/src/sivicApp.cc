@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -233,6 +233,13 @@ vtkSivicController* sivicApp::GetView()
  */
 int sivicApp::Build( int argc, char* argv[] )
 {
+    // Kludge to avoid Tcl/TK initialization error when requesting help message.
+    if( argc == 2) {
+        string firstArgument = argv[1];
+        if( firstArgument.compare("-h") == 0){
+            return 1;
+        }
+    }
     // First we have to initialize the tcl interpreter...
     Tcl_Interp *interp = vtkKWApplication::InitializeTcl(argc, argv, &cerr);
     if (!interp)
@@ -723,6 +730,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vtkKWMenu* openOverlayMenu = openOverlayButton->GetWidget()->GetMenu();
     openOverlayMenu->AddRadioButton("Load Data", this->sivicController, "OpenFile overlay NULL 0 0");
     openOverlayMenu->AddRadioButton("Load Data Single File", this->sivicController, "OpenFile overlay NULL 0 1");
+    openOverlayMenu->AddRadioButton("Load Data As Contours", this->sivicController, "OpenFile contour NULL 0 1");
     toolbar->AddWidget( openOverlayButton );
 
 

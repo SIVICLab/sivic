@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2014 The Regents of the University of California.
+ *  Copyright © 2009-2017 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -1169,6 +1169,19 @@ float svkVarianFidMapper::GetHeaderValueAsFloat(string keyString, int valueIndex
     delete iss; 
 
     return value;
+}
+
+
+/*!
+ *  Check to see if a key exists in the header (procparMap)
+ */
+bool svkVarianFidMapper::HeaderFieldExists(string keyString)
+{
+    bool exists = false; 
+    if ( this->procparMap.find( keyString ) != this->procparMap.end() ) {
+        exists = true; 
+    }
+    return exists; 
 }
 
 
