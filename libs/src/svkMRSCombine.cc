@@ -265,7 +265,7 @@ void svkMRSCombine::RequestLinearCombinationData( )
                             weightTotal = pow( (float)weightTotal, (float)0.5); 
                         }
                     }
-                    cout << "WT TOTAL: " << weightTotal << endl;
+                    //cout << "WT TOTAL: " << weightTotal << endl;
 
                     //  for each frequency point, combine channels using specified combination method.
                     for (int freq = 0; freq < numFrequencyPoints; freq++) {
