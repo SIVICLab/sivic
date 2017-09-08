@@ -791,11 +791,19 @@ void svkMrsImageFFT::ValidateRequest()
 
 
 /*!
- *
+ *  This method tries to get the most number of voxels with > .5 inside box
+ *  Reimplement logic from set_parameters_v6 
+ *      1. numVoxInBox = selected volume size / pixel size
+ *      2. nearestNumVoxInBox =  round that to the nearest int
+ *      3.  if nearestNumInBox > 2 * (int)nearestNumVoxInBox/2     
+ *              shift by 1/2 voxel
+ *          else 
+ *              do not shift 
  */
 void svkMrsImageFFT::MaximizeVoxelsInSelectionBox()
 {
-    //  for each dimension divide the selected volume by the pixel size in that dimension.  That's the number of complete voxels in the box.
+    //  For each dimension divide the selected volume by the pixel size in that 
+    //  dimension.  That's the number of complete voxels in the box.
     //  add the remainder and
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
@@ -805,6 +813,7 @@ void svkMrsImageFFT::MaximizeVoxelsInSelectionBox()
     double selBoxSpacing[3];
     data->GetSelectionBoxSpacing( selBoxSpacing );
 
+    /* 
     double selBoxCenter[3];
     data->GetSelectionBoxCenter( selBoxCenter );
 
@@ -815,7 +824,6 @@ void svkMrsImageFFT::MaximizeVoxelsInSelectionBox()
     //  Get the LPS center of the voxel containing the selectionBox center (from it's cell index)
     double boxCenterVoxelLPS[3];
     data->GetPositionFromIndex( boxCenterVoxelIndex, boxCenterVoxelLPS );
-
 
     //  Get the distance along the col, row or slice from the voxel center to the center of the selection box:
     //  LPS to row,col,slice space ( convert LPS to cols, rows slices displacement)
@@ -838,7 +846,7 @@ void svkMrsImageFFT::MaximizeVoxelsInSelectionBox()
     double voxelShift[3];
     for ( int dim = 0; dim < 3; dim++ ) {
 
-        //  Get number of whole voxels in the box
+        //  Get max number of whole voxels in the box
         int numWholeVoxels = static_cast<int>(selBoxSpacing[dim] / pixelSpacing[dim]);
 
         // Even number of whole voxels: box center is between two voxels
@@ -857,7 +865,24 @@ void svkMrsImageFFT::MaximizeVoxelsInSelectionBox()
                 voxelShift[dim] = voxelShiftAbsolute / pixelSpacing[dim];
             }
         }
+    }
+    */
 
+
+    double voxelShift[3];
+    for ( int dim = 0; dim < 3; dim++ ) {
+
+        //  Get max number of whole voxels in the box
+        float numVoxelsInBox = selBoxSpacing[dim] / pixelSpacing[dim];
+        int nearestNumVoxelsInBox = static_cast<int>( roundf( numVoxelsInBox ) ); 
+        if ( 
+            ( nearestNumVoxelsInBox > 1 ) && 
+            ( nearestNumVoxelsInBox > 2 * static_cast<int>( nearestNumVoxelsInBox / 2 ) )
+        ) {
+            voxelShift[dim] = 0.5 * pixelSpacing[dim];  
+        } else {
+            voxelShift[dim] = 0.0;  
+        }
     }
 
     this->SetVoxelShift( voxelShift );

@@ -101,7 +101,7 @@ int main (int argc, char** argv)
     //usemsg += "   --voxL        voxL        L position to center nearest voxel on                   \n";
     //usemsg += "   --voxP        voxP        P position to center nearest voxel on                   \n";
     //usemsg += "   --voxS        voxS        S position to center nearest voxel on                   \n";
-    usemsg += "   --maxVoxels               Maximize full voxels in selection box                   \n";
+    usemsg += "   --maxVoxels               Maximize num voxels > .5 in selection box               \n";
     usemsg += "   --single                  Only transform specified file if multiple in series     \n";
     usemsg += "   -b                        Only transform data in selection box, only valid for    \n";
     usemsg += "                             --spec transforms. Ignored otherwise                    \n";
