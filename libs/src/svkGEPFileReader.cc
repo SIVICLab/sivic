@@ -3800,9 +3800,9 @@ void svkGEPFileReader::Deidentify()
             //  These fields are not removed from PHI_LIMITED data sets
             if (this->phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
                 string deidDate = svkTypeUtils::IntToString(VTK_INT_MIN);
-                this->DeidentifyField( fs, "rhr.rh_scan_time",  "");
+                this->DeidentifyField( fs, "rhr.rh_scan_time",  "00:00");
                 this->DeidentifyField( fs, "rhe.dateofbirth",   "");
-                this->DeidentifyField( fs, "rhr.rh_scan_date",  "");
+                this->DeidentifyField( fs, "rhr.rh_scan_date",  "01/01/070");
                 this->DeidentifyField( fs, "rhe.ex_datetime",  deidDate );
             }
 

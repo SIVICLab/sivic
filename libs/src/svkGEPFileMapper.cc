@@ -1642,9 +1642,10 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
      *  MR Image and Spectroscopy Instance Macro
      *  ======================================= */
 
+    string dcmDate = this->ConvertGEDateToDICOM(this->GetHeaderValueAsString( "rhr.rh_scan_date" ));
     this->dcmHeader->SetValue(
         "AcquisitionDateTime",
-        this->GetHeaderValueAsString( "rhr.rh_scan_date" ) + "000000" 
+        svkImageReader2::RemoveDelimFromDate( &dcmDate ) + "000000"
     );
 
     this->dcmHeader->SetValue(
