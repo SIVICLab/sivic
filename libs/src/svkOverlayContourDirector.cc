@@ -90,34 +90,13 @@ vtkActor* svkOverlayContourDirector::AddInput(svkMriImageData *image)
     vtkActor* contourActor = vtkActor::New();
     contourActor->SetMapper(contourMapper);
     contourMapper->Delete();
-    switch( this->contourFilters.size()) {
-        case 1:
-            contourActor->GetProperty()->SetEdgeColor(0,1,0);
-            break;
-        case 2:
-            contourActor->GetProperty()->SetEdgeColor(1,0,0);
-            break;
-        case 3:
-            contourActor->GetProperty()->SetEdgeColor(0,0,1);
-            break;
-        case 4:
-            contourActor->GetProperty()->SetEdgeColor(0,1,1);
-            break;
-        case 5:
-            contourActor->GetProperty()->SetEdgeColor(1,0,1);
-            break;
-        case 6:
-            contourActor->GetProperty()->SetEdgeColor(1,1,0);
-            break;
-        default :
-            contourActor->GetProperty()->SetEdgeColor(1,1,1);
 
-
-    }
 
     contourActor->GetProperty()->SetLineWidth(3);
     contourActor->GetProperty()->SetEdgeVisibility(1);
     this->contourActors.push_back(contourActor);
+    ContourColor color = ContourColor(((this->contourFilters.size())-1)%(LAST_COLOR+1));
+    this->SetContourColor(this->contourFilters.size()-1, color );
     this->dataVector.push_back(image);
     return contourActor;
 }
@@ -251,4 +230,33 @@ int svkOverlayContourDirector::FindOverlayContourSlice( int referenceSlice, svkD
     tolerance = this->dataVector[overlayIndex]->GetSpacing()[index]/2.0;
     overlaySlice = this->dataVector[overlayIndex]->GetClosestSlice( sliceCenter, orientation, tolerance );
     return overlaySlice;
+}
+
+void svkOverlayContourDirector::SetContourColor(int index, ContourColor color)
+{
+        switch( color ) {
+            case GREEN:
+                this->contourActors[index]->GetProperty()->SetEdgeColor(0, 1, 0);
+                break;
+            case RED:
+                this->contourActors[index]->GetProperty()->SetEdgeColor(1, 0, 0);
+                break;
+            case BLUE:
+                this->contourActors[index]->GetProperty()->SetEdgeColor(0, 0, 1);
+                break;
+            case PINK:
+                this->contourActors[index]->GetProperty()->SetEdgeColor(242.0/256.0,135.0/256.0, 233.0/246.0);
+                break;
+            case YELLOW:
+                this->contourActors[index]->GetProperty()->SetEdgeColor(1, 1, 0.5);
+                break;
+            case CYAN:
+                this->contourActors[index]->GetProperty()->SetEdgeColor(0.5, 1, 1);
+                break;
+            case ORANGE:
+                this->contourActors[index]->GetProperty()->SetEdgeColor(1, 0.5, 0);
+                break;
+            default :
+                this->contourActors[index]->GetProperty()->SetEdgeColor(1, 1, 1);
+        }
 }

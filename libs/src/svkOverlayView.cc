@@ -2378,3 +2378,8 @@ void svkOverlayView::SetSelectionBoxVisibility(svkOverlayView::SelectionBoxVisib
 svkOverlayView::SelectionBoxVisibilityState svkOverlayView::GetSelectionBoxVisibility( ) {
     return  this->selBoxVisibility;
 }
+
+void svkOverlayView::SetContourColor(int index, svkOverlayContourDirector::ContourColor color)
+{
+    this->contourDirector->SetContourColor(index, color);
+}

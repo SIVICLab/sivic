@@ -63,6 +63,7 @@ extern "C" {
 #include <getopt.h>
 }
 #else
+#include <getopt.h>
 #include <unistd.h>
 #endif
 #include <string.h>
@@ -118,6 +119,7 @@ struct globalVariables {
     double threshold;
     bool thresholdSet;
     svkImageWriterFactory::WriterType dataTypeOut;
+    vector<string> contourColors;
 } globalVars;
 
 // For getopt
@@ -193,10 +195,21 @@ int main ( int argc, char** argv )
     bool startSliceSet = false;
     globalVars.dataTypeOut = svkImageWriterFactory::TIFF;
 
-    int opt = 0;
-    opt = getopt( argc, argv, optString);
-    while( opt != -1 ) {
-        switch( opt ) {
+    enum FLAG_NAME {
+        COLORS
+    };
+
+    static struct option long_options[] =
+    {
+            {"colors",   required_argument, NULL,  COLORS},
+            {0, 0, 0, 0}
+    };
+
+
+    int i;
+    int option_index = 0;
+    while ((i = getopt_long(argc, argv, optString, long_options, &option_index)) != EOF) {
+        switch( i ) {
             case 'd':
                 globalVars.debug = true;
                 break;
@@ -254,6 +267,9 @@ int main ( int argc, char** argv )
             case 'x':
                 globalVars.dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
                 break;
+            case COLORS:
+                globalVars.contourColors = svkUtils::SplitString(optarg, ",");
+                break;
             default:
                 cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
                 cout<< endl <<" ERROR: Unrecognized option... " << endl << endl;
@@ -261,8 +277,8 @@ int main ( int argc, char** argv )
                 Usage();
                 break;
         }
-        opt = getopt( argc, argv, optString );
     }
+
     if( globalVars.debug ) {
         for( int i = 0; i < spectraFileNames.size(); i++ ) {
             cout << "spectraFileNames: " << spectraFileNames[i] << endl;
@@ -431,6 +447,29 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
     if( globalVars.overlayContour.size() > 0 ) {
         for( int i = 0; i < globalVars.overlayContour.size(); i++) {
             dataViewer->SetInput(globalVars.overlayContour[i], svkOverlayView::OVERLAY_CONTOUR);
+            if( globalVars.contourColors.size() > i) {
+                svkOverlayContourDirector::ContourColor color;
+                string colorString = globalVars.contourColors[i];
+                if( colorString.compare("GREEN") == 0) {
+                    color = svkOverlayContourDirector::GREEN;
+                } else if ( colorString.compare("RED") == 0) {
+                    color = svkOverlayContourDirector::RED;
+                } else if ( colorString.compare("BLUE") == 0) {
+                    color = svkOverlayContourDirector::BLUE;
+                } else if ( colorString.compare("PINK") == 0) {
+                    color = svkOverlayContourDirector::PINK;
+                } else if ( colorString.compare("YELLOW") == 0) {
+                    color = svkOverlayContourDirector::YELLOW;
+                } else if ( colorString.compare("CYAN") == 0) {
+                    color = svkOverlayContourDirector::CYAN;
+                } else if ( colorString.compare("ORANGE") == 0) {
+                    color = svkOverlayContourDirector::ORANGE;
+                } else {
+                    cout << "ERROR: Unrecognized color \"" << colorString << "\". Please choose from: ";
+                    cout << "GREEN,RED,BLUE,PINK,YELLOW,CYAN,ORANGE" << endl;
+                }
+                svkOverlayView::SafeDownCast(dataViewer->GetView())->SetContourColor(i, color);
+            }
         }
     }
     if( globalVars.orientation == svkDcmHeader::UNKNOWN_ORIENTATION ) { 

@@ -79,6 +79,17 @@ class svkOverlayContourDirector : public vtkObject
 
     public:
 
+        typedef enum {
+            GREEN = 0,
+            RED,
+            BLUE,
+            PINK,
+            YELLOW,
+            CYAN,
+            ORANGE,
+            LAST_COLOR = ORANGE
+        } ContourColor ;
+
         // vtk type revision macro
         vtkTypeMacro( svkOverlayContourDirector, vtkObject );
 
@@ -89,11 +100,14 @@ class svkOverlayContourDirector : public vtkObject
         void                                 SetReferenceImage(svkMriImageData* referenceImage );
 
         //  Methods:
+        void                                 SetContourColor(int overlayIndex, ContourColor color);
+
 
     protected:
 
         svkOverlayContourDirector();
         ~svkOverlayContourDirector();
+
 
 
     private:
