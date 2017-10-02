@@ -85,6 +85,8 @@ void UpdateSpectraSliceAnnotation( );
 vtkCornerAnnotation* GetNewAnnotation( );
 static void KeypressCallback( vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
 static void SelectionCallback(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
+static void RenderRefreshCallback(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
+
 void CaptureWindows();
 
 // We are going to use this struct to hold our global vars. This makes it clearer which args are global.
@@ -324,6 +326,9 @@ int main ( int argc, char** argv )
         globalVars.annotations[index] = GetNewAnnotation();
         renderWindows[index] = vtkRenderWindow::New(); 
         globalVars.viewers[index] = svkOverlayViewController::New();
+        if( index > 0 ) {
+            globalVars.viewers[index]->GetView()->GetRenderer(0)->SetActiveCamera( globalVars.viewers[0]->GetView()->GetRenderer(0)->GetActiveCamera( ) );
+        }
         if( globalVars.debug ) {
             cout <<"Loading image: " << argv[ i ] << endl;
         }
@@ -491,7 +496,11 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
     vtkCallbackCommand* selectionCallbackCommand = vtkCallbackCommand::New();
     selectionCallbackCommand->SetCallback( SelectionCallback );
     selectionCallbackCommand->SetClientData( (void*)dataViewer );
+    vtkCallbackCommand* renderRefreshCallbackCommand = vtkCallbackCommand::New();
+    renderRefreshCallbackCommand->SetCallback( RenderRefreshCallback );
+    renderRefreshCallbackCommand->SetClientData( (void*)dataViewer );
     rwi->AddObserver(vtkCommand::SelectionChangedEvent, selectionCallbackCommand );
+    rwi->AddObserver(vtkCommand::RenderEvent, renderRefreshCallbackCommand );
     if( globalVars.slice == -1 ){
         globalVars.slice = (extent[5]-extent[4])/2;
     }
@@ -677,6 +686,29 @@ void SelectionCallback(vtkObject* subject, unsigned long eid, void* thisObject, 
     }
     if( globalVars.spectraController != NULL ) {
         globalVars.spectraController->SetTlcBrc( tlcBrc );
+    }
+}
+
+
+/*
+ *   Catches render events. Ensures all windows are refreshed.
+ */
+void RenderRefreshCallback(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata) {
+    if (globalVars.debug) {
+        cout << "Refreshing... " << endl;
+    }
+    svkOverlayViewController* activeController = static_cast<svkOverlayViewController *>(thisObject);
+    if( activeController != NULL ) {
+        vtkRenderer* activeRenderer = static_cast<svkOverlayViewController *>(thisObject)->GetView()->GetRenderer(svkOverlayView::PRIMARY);
+        for (int i = 0; i < globalVars.numberOfImages; i++) {
+            if (globalVars.viewers[i] != NULL) {
+                vtkRenderer*renderer = static_cast<svkOverlayViewController *>(globalVars.viewers[i])->GetView()->GetRenderer(svkOverlayView::PRIMARY);
+                if( activeRenderer->GetMTime() > renderer->GetMTime() ) {
+                    (static_cast<svkOverlayViewController *>(globalVars.viewers[i]))->GetView()->Refresh();
+                }
+            }
+        }
+
     }
 }
 
