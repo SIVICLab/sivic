@@ -158,6 +158,7 @@ void Usage( void )
     cout << "                   -x type        Output data format:" << endl;
     cout << "                                         0 = JPEG" << endl;
     cout << "                                         1 = TIFF" << endl;
+    cout << "                    --colors      Comma separated ordered list of colors used for contours." << endl;
     cout << "DESCRIPTION" << endl;
     cout << "    svk_multi_view is a quick way of seeing an arbitrary number of images synced by slice number." << endl;
     cout << "    If multiple overlays are specified then the first will appear on the spectra, the next on the first image etc." << endl;
