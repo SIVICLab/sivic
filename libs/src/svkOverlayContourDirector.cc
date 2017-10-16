@@ -256,6 +256,9 @@ void svkOverlayContourDirector::SetContourColor(int index, ContourColor color)
             case ORANGE:
                 this->contourActors[index]->GetProperty()->SetEdgeColor(1, 0.5, 0);
                 break;
+            case GRAY:
+                this->contourActors[index]->GetProperty()->SetEdgeColor(0.5, 0.5, 0.5);
+                break;
             default :
                 this->contourActors[index]->GetProperty()->SetEdgeColor(1, 1, 1);
         }

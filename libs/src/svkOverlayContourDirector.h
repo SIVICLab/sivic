@@ -87,7 +87,8 @@ class svkOverlayContourDirector : public vtkObject
             YELLOW,
             CYAN,
             ORANGE,
-            LAST_COLOR = ORANGE
+            GRAY,
+            LAST_COLOR = GRAY
         } ContourColor ;
 
         // vtk type revision macro

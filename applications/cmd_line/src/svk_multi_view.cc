@@ -95,6 +95,7 @@ struct globalVariables {
     vtkCornerAnnotation* spectraAnnotation;
     vector<svkImageData*> overlay;
     vector<svkImageData*> overlayContour;
+    vector<string> overlayContourFileNames;
     vector<svkImageData*> spectra;
     vector<svkImageData*> referenceImage;
     svkPlotGridViewController* spectraController; 
@@ -189,7 +190,6 @@ int main ( int argc, char** argv )
     globalVars.model = svkDataModel::New();
     vector<string> spectraFileNames;
     vector<string> overlayFileNames;
-    vector<string> overlayContourFileNames;
     /* This varibale will change to a value of 1 if there is a spectra loaded */
     globalVars.imageWindowOffset = 0;
     globalVars.spectraController = NULL;
@@ -264,7 +264,7 @@ int main ( int argc, char** argv )
                 overlayFileNames.push_back( optarg );
                 break;
             case 'n':
-                overlayContourFileNames.push_back( optarg );
+                globalVars.overlayContourFileNames.push_back( optarg );
                 break;
             case 'x':
                 globalVars.dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
@@ -315,7 +315,7 @@ int main ( int argc, char** argv )
 
     LoadOverlay( overlayFileNames );
     bool isContour = true;
-    LoadOverlay( overlayContourFileNames, isContour );
+    LoadOverlay( globalVars.overlayContourFileNames, isContour );
 
     LoadSpectra( spectraFileNames );
 
@@ -384,7 +384,8 @@ int main ( int argc, char** argv )
 void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int xPos, int yPos )
 {
 
-    bool readOnlyOneFile = true; 
+    bool readOnlyOneFile = true;
+    stringstream contourText;
     svkImageData* data = globalVars.model->LoadFile( filename, readOnlyOneFile );
     if( data == NULL ) {
         cerr << "ERROR: Could not read input file: " << filename << endl;
@@ -469,10 +470,14 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
                     color = svkOverlayContourDirector::CYAN;
                 } else if ( colorString.compare("ORANGE") == 0) {
                     color = svkOverlayContourDirector::ORANGE;
+                } else if ( colorString.compare("GRAY") == 0) {
+                    color = svkOverlayContourDirector::GRAY;
                 } else {
                     cout << "ERROR: Unrecognized color \"" << colorString << "\". Please choose from: ";
-                    cout << "GREEN,RED,BLUE,PINK,YELLOW,CYAN,ORANGE" << endl;
+                    cout << "GREEN,RED,BLUE,PINK,YELLOW,CYAN,ORANGE,GRAY" << endl;
+                    exit(1);
                 }
+                contourText << endl << colorString << ":" << svkUtils::GetFilenameFromFullPath(globalVars.overlayContourFileNames[i]);
                 svkOverlayView::SafeDownCast(dataViewer->GetView())->SetContourColor(i, color);
             }
         }
@@ -518,7 +523,12 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
     globalVars.annotations[id]->SetText(1, text.str().c_str() ); 
 
     if( globalVars.justCapture == "") {
-        globalVars.annotations[id]->SetText(2, filename ); 
+        string contourTextString = contourText.str();
+        stringstream fileAnnotationText;
+        fileAnnotationText << filename;
+        fileAnnotationText << contourText.str().c_str();
+        string fileAnnotationTextString = fileAnnotationText.str().c_str();
+        globalVars.annotations[id]->SetText(2, fileAnnotationTextString.c_str() );
     }
 
     window->GetRenderers()->GetFirstRenderer()->AddViewProp( globalVars.annotations[id] );
