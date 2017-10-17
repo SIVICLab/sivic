@@ -72,6 +72,8 @@ svkGEPFileMapper::svkGEPFileMapper()
 
     this->chopVal = 1;     
     this->progress = 0;
+    this->acqDad = NULL; 
+
 }
 
 
@@ -512,6 +514,13 @@ void svkGEPFileMapper::InitPixelMeasuresMacro()
         if ( localizationType.compare("PRESS") == 0 )  { 
             //  Get Thickness Values
             this->GetSelBoxSize( voxelSpacing );
+        } else {
+            // Single voxel, not press set size to full FOV
+            float fov[3]; 
+            this->GetFOV( fov ); 
+            for ( int i = 0; i < 3; i++ ) {
+                voxelSpacing[i] = fov[i]; 
+            }
         }
 
     }
