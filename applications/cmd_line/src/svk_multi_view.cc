@@ -121,6 +121,7 @@ struct globalVariables {
     string justCapture;
     double threshold;
     bool thresholdSet;
+    long cameraMTime;
     svkImageWriterFactory::WriterType dataTypeOut;
     vector<string> contourColors;
 } globalVars;
@@ -188,6 +189,7 @@ int main ( int argc, char** argv )
     globalVars.slice = -1;
     globalVars.thresholdSet = false;
     globalVars.threshold = 0;
+    globalVars.cameraMTime = 0;
     globalVars.model = svkDataModel::New();
     vector<string> spectraFileNames;
     vector<string> overlayFileNames;
@@ -311,6 +313,9 @@ int main ( int argc, char** argv )
 
 
     globalVars.viewers = new svkDataViewController*[ globalVars.numberOfImages ];
+    for( int i = 0; i < globalVars.numberOfImages; i++ ) {
+        globalVars.viewers[i] = NULL;
+    }
     globalVars.annotations = new vtkCornerAnnotation*[ globalVars.numberOfImages ];
     vtkRenderWindow** renderWindows = new vtkRenderWindow*[ globalVars.numberOfImages ]; 
 
@@ -711,11 +716,15 @@ void RenderRefreshCallback(vtkObject* subject, unsigned long eid, void* thisObje
     svkOverlayViewController* activeController = static_cast<svkOverlayViewController *>(thisObject);
     if( activeController != NULL ) {
         vtkRenderer* activeRenderer = static_cast<svkOverlayViewController *>(thisObject)->GetView()->GetRenderer(svkOverlayView::PRIMARY);
-        for (int i = 0; i < globalVars.numberOfImages; i++) {
-            if (globalVars.viewers[i] != NULL) {
-                vtkRenderer*renderer = static_cast<svkOverlayViewController *>(globalVars.viewers[i])->GetView()->GetRenderer(svkOverlayView::PRIMARY);
-                if( activeRenderer->GetMTime() > renderer->GetMTime() ) {
-                    (static_cast<svkOverlayViewController *>(globalVars.viewers[i]))->GetView()->Refresh();
+        if( activeRenderer->GetActiveCamera()->GetMTime() > globalVars.cameraMTime) {
+            globalVars.cameraMTime = activeRenderer->GetActiveCamera()->GetMTime();
+            for (int i = 0; i < globalVars.numberOfImages; i++) {
+                if (globalVars.viewers[i] != NULL) {
+                    vtkRenderer *renderer = static_cast<svkOverlayViewController *>(globalVars.viewers[i])->GetView()->GetRenderer(
+                            svkOverlayView::PRIMARY);
+                    if (renderer != activeRenderer) {
+                        (static_cast<svkOverlayViewController *>(globalVars.viewers[i]))->GetView()->Refresh();
+                    }
                 }
             }
         }
