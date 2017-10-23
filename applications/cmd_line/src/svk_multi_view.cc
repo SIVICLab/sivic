@@ -63,6 +63,7 @@ extern "C" {
 #include <getopt.h>
 }
 #else
+#include <getopt.h>
 #include <unistd.h>
 #endif
 #include <string.h>
@@ -84,6 +85,8 @@ void UpdateSpectraSliceAnnotation( );
 vtkCornerAnnotation* GetNewAnnotation( );
 static void KeypressCallback( vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
 static void SelectionCallback(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
+static void RenderRefreshCallback(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
+
 void CaptureWindows();
 
 // We are going to use this struct to hold our global vars. This makes it clearer which args are global.
@@ -92,6 +95,7 @@ struct globalVariables {
     vtkCornerAnnotation* spectraAnnotation;
     vector<svkImageData*> overlay;
     vector<svkImageData*> overlayContour;
+    vector<string> overlayContourFileNames;
     vector<svkImageData*> spectra;
     vector<svkImageData*> referenceImage;
     svkPlotGridViewController* spectraController; 
@@ -118,6 +122,7 @@ struct globalVariables {
     double threshold;
     bool thresholdSet;
     svkImageWriterFactory::WriterType dataTypeOut;
+    vector<string> contourColors;
 } globalVars;
 
 // For getopt
@@ -153,6 +158,7 @@ void Usage( void )
     cout << "                   -x type        Output data format:" << endl;
     cout << "                                         0 = JPEG" << endl;
     cout << "                                         1 = TIFF" << endl;
+    cout << "                    --colors      Comma separated ordered list of colors used for contours." << endl;
     cout << "DESCRIPTION" << endl;
     cout << "    svk_multi_view is a quick way of seeing an arbitrary number of images synced by slice number." << endl;
     cout << "    If multiple overlays are specified then the first will appear on the spectra, the next on the first image etc." << endl;
@@ -185,7 +191,6 @@ int main ( int argc, char** argv )
     globalVars.model = svkDataModel::New();
     vector<string> spectraFileNames;
     vector<string> overlayFileNames;
-    vector<string> overlayContourFileNames;
     /* This varibale will change to a value of 1 if there is a spectra loaded */
     globalVars.imageWindowOffset = 0;
     globalVars.spectraController = NULL;
@@ -193,10 +198,21 @@ int main ( int argc, char** argv )
     bool startSliceSet = false;
     globalVars.dataTypeOut = svkImageWriterFactory::TIFF;
 
-    int opt = 0;
-    opt = getopt( argc, argv, optString);
-    while( opt != -1 ) {
-        switch( opt ) {
+    enum FLAG_NAME {
+        COLORS
+    };
+
+    static struct option long_options[] =
+    {
+            {"colors",   required_argument, NULL,  COLORS},
+            {0, 0, 0, 0}
+    };
+
+
+    int i;
+    int option_index = 0;
+    while ((i = getopt_long(argc, argv, optString, long_options, &option_index)) != EOF) {
+        switch( i ) {
             case 'd':
                 globalVars.debug = true;
                 break;
@@ -249,10 +265,13 @@ int main ( int argc, char** argv )
                 overlayFileNames.push_back( optarg );
                 break;
             case 'n':
-                overlayContourFileNames.push_back( optarg );
+                globalVars.overlayContourFileNames.push_back( optarg );
                 break;
             case 'x':
                 globalVars.dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
+                break;
+            case COLORS:
+                globalVars.contourColors = svkUtils::SplitString(optarg, ",");
                 break;
             default:
                 cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
@@ -261,8 +280,8 @@ int main ( int argc, char** argv )
                 Usage();
                 break;
         }
-        opt = getopt( argc, argv, optString );
     }
+
     if( globalVars.debug ) {
         for( int i = 0; i < spectraFileNames.size(); i++ ) {
             cout << "spectraFileNames: " << spectraFileNames[i] << endl;
@@ -297,7 +316,7 @@ int main ( int argc, char** argv )
 
     LoadOverlay( overlayFileNames );
     bool isContour = true;
-    LoadOverlay( overlayContourFileNames, isContour );
+    LoadOverlay( globalVars.overlayContourFileNames, isContour );
 
     LoadSpectra( spectraFileNames );
 
@@ -308,6 +327,9 @@ int main ( int argc, char** argv )
         globalVars.annotations[index] = GetNewAnnotation();
         renderWindows[index] = vtkRenderWindow::New(); 
         globalVars.viewers[index] = svkOverlayViewController::New();
+        if( index > 0 ) {
+            globalVars.viewers[index]->GetView()->GetRenderer(0)->SetActiveCamera( globalVars.viewers[0]->GetView()->GetRenderer(0)->GetActiveCamera( ) );
+        }
         if( globalVars.debug ) {
             cout <<"Loading image: " << argv[ i ] << endl;
         }
@@ -363,7 +385,8 @@ int main ( int argc, char** argv )
 void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int xPos, int yPos )
 {
 
-    bool readOnlyOneFile = true; 
+    bool readOnlyOneFile = true;
+    stringstream contourText;
     svkImageData* data = globalVars.model->LoadFile( filename, readOnlyOneFile );
     if( data == NULL ) {
         cerr << "ERROR: Could not read input file: " << filename << endl;
@@ -431,6 +454,33 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
     if( globalVars.overlayContour.size() > 0 ) {
         for( int i = 0; i < globalVars.overlayContour.size(); i++) {
             dataViewer->SetInput(globalVars.overlayContour[i], svkOverlayView::OVERLAY_CONTOUR);
+            if( globalVars.contourColors.size() > i) {
+                svkOverlayContourDirector::ContourColor color;
+                string colorString = globalVars.contourColors[i];
+                if( colorString.compare("GREEN") == 0) {
+                    color = svkOverlayContourDirector::GREEN;
+                } else if ( colorString.compare("RED") == 0) {
+                    color = svkOverlayContourDirector::RED;
+                } else if ( colorString.compare("BLUE") == 0) {
+                    color = svkOverlayContourDirector::BLUE;
+                } else if ( colorString.compare("PINK") == 0) {
+                    color = svkOverlayContourDirector::PINK;
+                } else if ( colorString.compare("YELLOW") == 0) {
+                    color = svkOverlayContourDirector::YELLOW;
+                } else if ( colorString.compare("CYAN") == 0) {
+                    color = svkOverlayContourDirector::CYAN;
+                } else if ( colorString.compare("ORANGE") == 0) {
+                    color = svkOverlayContourDirector::ORANGE;
+                } else if ( colorString.compare("GRAY") == 0) {
+                    color = svkOverlayContourDirector::GRAY;
+                } else {
+                    cout << "ERROR: Unrecognized color \"" << colorString << "\". Please choose from: ";
+                    cout << "GREEN,RED,BLUE,PINK,YELLOW,CYAN,ORANGE,GRAY" << endl;
+                    exit(1);
+                }
+                contourText << endl << colorString << ":" << svkUtils::GetFilenameFromFullPath(globalVars.overlayContourFileNames[i]);
+                svkOverlayView::SafeDownCast(dataViewer->GetView())->SetContourColor(i, color);
+            }
         }
     }
     if( globalVars.orientation == svkDcmHeader::UNKNOWN_ORIENTATION ) { 
@@ -452,7 +502,11 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
     vtkCallbackCommand* selectionCallbackCommand = vtkCallbackCommand::New();
     selectionCallbackCommand->SetCallback( SelectionCallback );
     selectionCallbackCommand->SetClientData( (void*)dataViewer );
+    vtkCallbackCommand* renderRefreshCallbackCommand = vtkCallbackCommand::New();
+    renderRefreshCallbackCommand->SetCallback( RenderRefreshCallback );
+    renderRefreshCallbackCommand->SetClientData( (void*)dataViewer );
     rwi->AddObserver(vtkCommand::SelectionChangedEvent, selectionCallbackCommand );
+    rwi->AddObserver(vtkCommand::RenderEvent, renderRefreshCallbackCommand );
     if( globalVars.slice == -1 ){
         globalVars.slice = (extent[5]-extent[4])/2;
     }
@@ -470,7 +524,12 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
     globalVars.annotations[id]->SetText(1, text.str().c_str() ); 
 
     if( globalVars.justCapture == "") {
-        globalVars.annotations[id]->SetText(2, filename ); 
+        string contourTextString = contourText.str();
+        stringstream fileAnnotationText;
+        fileAnnotationText << filename;
+        fileAnnotationText << contourText.str().c_str();
+        string fileAnnotationTextString = fileAnnotationText.str().c_str();
+        globalVars.annotations[id]->SetText(2, fileAnnotationTextString.c_str() );
     }
 
     window->GetRenderers()->GetFirstRenderer()->AddViewProp( globalVars.annotations[id] );
@@ -638,6 +697,29 @@ void SelectionCallback(vtkObject* subject, unsigned long eid, void* thisObject, 
     }
     if( globalVars.spectraController != NULL ) {
         globalVars.spectraController->SetTlcBrc( tlcBrc );
+    }
+}
+
+
+/*
+ *   Catches render events. Ensures all windows are refreshed.
+ */
+void RenderRefreshCallback(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata) {
+    if (globalVars.debug) {
+        cout << "Refreshing... " << endl;
+    }
+    svkOverlayViewController* activeController = static_cast<svkOverlayViewController *>(thisObject);
+    if( activeController != NULL ) {
+        vtkRenderer* activeRenderer = static_cast<svkOverlayViewController *>(thisObject)->GetView()->GetRenderer(svkOverlayView::PRIMARY);
+        for (int i = 0; i < globalVars.numberOfImages; i++) {
+            if (globalVars.viewers[i] != NULL) {
+                vtkRenderer*renderer = static_cast<svkOverlayViewController *>(globalVars.viewers[i])->GetView()->GetRenderer(svkOverlayView::PRIMARY);
+                if( activeRenderer->GetMTime() > renderer->GetMTime() ) {
+                    (static_cast<svkOverlayViewController *>(globalVars.viewers[i]))->GetView()->Refresh();
+                }
+            }
+        }
+
     }
 }
 
