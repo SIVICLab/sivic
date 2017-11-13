@@ -71,7 +71,7 @@ int main (int argc, char** argv)
     usemsg += "svk_mrs_combine -i input_file_name -o output_root -t output_data_type            \n"; 
     usemsg += "                 -a type [-h]                                                    \n";
     usemsg += "                                                                                 \n";  
-    usemsg += "   -i    input_file_name     Name of file to convert.                            \n"; 
+    usemsg += "   -i    input_file_name     Name of input file.                                 \n"; 
     usemsg += "   -o    output_root         Root name of outputfile.                            \n";  
     usemsg += "   -t    output_data_type    Target data type:                                   \n";  
     usemsg += "                                 2 = UCSF DDF                                    \n";  
@@ -86,7 +86,7 @@ int main (int argc, char** argv)
     usemsg += "   -v    Verbose output.                                                         \n";
     usemsg += "   -h    Print help mesage.                                                      \n";  
     usemsg += "                                                                                 \n";  
-    usemsg += "Combines MRS data sets using specified algorithm.  Typically used to combine     \n"; 
+    usemsg += "Combines MRS channels using specified algorithm.  Typically used to combine      \n"; 
     usemsg += "multiple channels of data from a multi-coil acquisition.  Also used for adding   \n";  
     usemsg += "subtracting data sets.                                                           \n";  
     usemsg += "                                                                                 \n";  
