@@ -253,6 +253,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         svkPSD
         svkTypeUtils
         svkadapt 
+        svkXMLUtils
         #   this needs to be refined since includeing all the libs quadruples the static binary size
         ${VTK_LIBRARIES}
         vtkImagingSources-6.3.a
@@ -379,6 +380,7 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin)
         svkPSD
         svkTypeUtils
         svkadapt 
+        svkXMLUtils
         #   this needs to be refined since includeing all the libs quadruples the static binary size
         ${VTK_LIBRARIES}
         dcmdata
@@ -793,7 +795,6 @@ TARGET_LINK_LIBRARIES(
     svk_image_stats
 	${SVK_LIBS}
     ${SVK_INFOVIS_LIBS}
-    svkXMLUtils
 )
 
 ADD_EXECUTABLE(
@@ -804,7 +805,6 @@ TARGET_LINK_LIBRARIES(
     svk_image_pipeline
 	${SVK_LIBS}
     ${SVK_INFOVIS_LIBS}
-    svkXMLUtils
 )
 
 ADD_EXECUTABLE(

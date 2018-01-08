@@ -414,6 +414,77 @@ ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${T
 SET_TESTS_PROPERTIES(SVK_MULTI_VIEW_TEST_6_DIFF PROPERTIES DEPENDS SVK_MULTI_VIEW_TEST_6_MCHK)
 
 #############################################################
+# Test for the svk_multi_view axial contour display
+#############################################################
+SET( TEST_NAME AXIAL_CONTOUR_RENDER_TEST_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -n  ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImageMask.idf -n ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -j ${TEST_RESULTS_PATH}/out ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImage.idf )
+
+SET( TEST_NAME AXIAL_CONTOUR_RENDER_TEST_DIFF)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/axial_contour_output )
+SET_TESTS_PROPERTIES(AXIAL_CONTOUR_RENDER_TEST_DIFF PROPERTIES DEPENDS AXIAL_CONTOUR_RENDER_TEST_MCHK)
+
+#############################################################
+# Test for the svk_multi_view axial contour_2 display
+#############################################################
+SET( TEST_NAME AXIAL_CONTOUR_2_RENDER_TEST_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -i 23 -n  ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImageMask.idf -n ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -j ${TEST_RESULTS_PATH}/out ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImage.idf )
+
+SET( TEST_NAME AXIAL_CONTOUR_2_RENDER_TEST_DIFF)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/axial_contour_2_output )
+SET_TESTS_PROPERTIES(AXIAL_CONTOUR_2_RENDER_TEST_DIFF PROPERTIES DEPENDS AXIAL_CONTOUR_2_RENDER_TEST_MCHK)
+
+#############################################################
+# Test for the svk_multi_view axial contour_3 display
+#############################################################
+SET( TEST_NAME AXIAL_CONTOUR_3_RENDER_TEST_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -i 36 -n  ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImageMask.idf -n ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -j ${TEST_RESULTS_PATH}/out ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImage.idf )
+
+SET( TEST_NAME AXIAL_CONTOUR_3_RENDER_TEST_DIFF)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/axial_contour_3_output )
+SET_TESTS_PROPERTIES(AXIAL_CONTOUR_3_RENDER_TEST_DIFF PROPERTIES DEPENDS AXIAL_CONTOUR_3_RENDER_TEST_MCHK)
+
+#############################################################
+# Test for the svk_multi_view sagittal contour display
+#############################################################
+SET( TEST_NAME SAGITTAL_CONTOUR_RENDER_TEST_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -i 44 -n  ${SVK_TEST_ROOT}/svk_multi_view/sagittal_contour_input/refImageMask.idf -n ${SVK_TEST_ROOT}/svk_multi_view/sagittal_contour_input/met.idf -o ${SVK_TEST_ROOT}/svk_multi_view/sagittal_contour_input/met.idf -j ${TEST_RESULTS_PATH}/out ${SVK_TEST_ROOT}/svk_multi_view/sagittal_contour_input/refImage.idf )
+
+SET( TEST_NAME SAGITTAL_CONTOUR_RENDER_TEST_DIFF)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/sagittal_contour_output )
+SET_TESTS_PROPERTIES(SAGITTAL_CONTOUR_RENDER_TEST_DIFF PROPERTIES DEPENDS SAGITTAL_CONTOUR_RENDER_TEST_MCHK)
+
+#############################################################
+# Test for the svk_multi_view color contour display
+#############################################################
+SET( TEST_NAME COLOR_CONTOUR_RENDER_TEST_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -n  ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImageMask.idf -n ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf --colors ORANGE,GREEN -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -j ${TEST_RESULTS_PATH}/out ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImage.idf )
+
+SET( TEST_NAME COLOR_CONTOUR_RENDER_TEST_DIFF)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/color_contour_output )
+SET_TESTS_PROPERTIES(COLOR_CONTOUR_RENDER_TEST_DIFF PROPERTIES DEPENDS COLOR_CONTOUR_RENDER_TEST_MCHK)
+
+
+#############################################################
 # Test for the svk_multi_view command line tool for multiple
 # overlays.
 #############################################################

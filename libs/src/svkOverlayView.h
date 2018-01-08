@@ -77,6 +77,7 @@
 
 #include <svkBurnResearchPixels.h>
 #include <svkSincInterpolationFilter.h>
+#include <svkOverlayContourDirector.h>
 
 #define SINC_MAX_EXTENT 512
 
@@ -99,6 +100,12 @@ class svkOverlayView : public svkDataView
     friend class svkOverlayViewController;
     
     public:
+
+    enum SelectionBoxVisibilityState {
+        VISIBLE = 0,
+        HIDDEN = 1,
+        VISIBLE_WHEN_CONTAINS_CURRENT_SLICE
+    };
         // vtk type revision macro
         vtkTypeMacro( svkOverlayView, svkDataView );
 
@@ -122,8 +129,6 @@ class svkOverlayView : public svkDataView
         void                TurnOrthogonalImagesOff();
         bool                AreOrthogonalImagesOn();
         void                SetOrientation( svkDcmHeader::Orientation orientation );
-        void                ToggleSelBoxVisibilityOn();
-        void                ToggleSelBoxVisibilityOff();
         void                AlignCamera();
         bool                IsImageInsideSpectra();
         void                SetLevel(double level);
@@ -135,7 +140,10 @@ class svkOverlayView : public svkDataView
         double              GetColorOverlayWindow( ); 
         double              GetColorOverlayLevel( );
         bool                CheckDataOrientations();
-        void                SetCameraZoom( double zoom ); 
+        void                SetCameraZoom( double zoom );
+        void                SetSelectionBoxVisibility( SelectionBoxVisibilityState visibility );
+        void                SetContourColor(int index, svkOverlayContourDirector::ContourColor color);
+        SelectionBoxVisibilityState GetSelectionBoxVisibility( );
 
 
         svkLookupTable*     GetLookupTable( );
@@ -144,7 +152,8 @@ class svkOverlayView : public svkDataView
         enum DataInputs { 
             MRI = 0, 
             MR4D = 1,
-            OVERLAY = 2
+            OVERLAY = 2,
+            OVERLAY_CONTOUR = 3
         };
 
         //! Enum represents objects in the scene
@@ -201,7 +210,6 @@ class svkOverlayView : public svkDataView
         vtkRenderWindow*                myRenderWindow;
 
 
-        bool                            toggleSelBoxVisibility;
         bool                            imageInsideSpectra;
 
         //! Object used to window livel the overlay 
@@ -232,6 +240,7 @@ class svkOverlayView : public svkDataView
         int*                            HighlightSelectionVoxels();
         void                            GenerateClippingPlanes( );
         void                            SetupOverlay();
+        void                            SetupOverlayContour( int contourIndex );
         void                            SetInterpolationType( int interpolationType );
         void			            	UpdateSincInterpolation();
         void                            SetLUT( svkLookupTable::svkLookupTableType type );
@@ -266,6 +275,10 @@ class svkOverlayView : public svkDataView
 
         // Determines how close to the voxels things are clipped
         static const double            CLIP_TOLERANCE;
+        SelectionBoxVisibilityState    selBoxVisibility;
+
+        bool                           interpolateView;
+        svkOverlayContourDirector*     contourDirector;
 
 
 };

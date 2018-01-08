@@ -349,6 +349,7 @@ IF( BUILD_VIZ_LIBRARY )
         svkOverlayView.cc
         svkOverlayViewController.cc
         svkDetailedPlotDirector.cc
+        svkOverlayContourDirector.cc
         ${SVK_ORIENTED_IMAGE_ACTOR_SRC}
     )
 ENDIF( BUILD_VIZ_LIBRARY )
