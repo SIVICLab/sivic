@@ -1173,6 +1173,19 @@ float svkVarianFidMapper::GetHeaderValueAsFloat(string keyString, int valueIndex
 
 
 /*!
+ *  Check to see if a key exists in the header (procparMap)
+ */
+bool svkVarianFidMapper::HeaderFieldExists(string keyString)
+{
+    bool exists = false; 
+    if ( this->procparMap.find( keyString ) != this->procparMap.end() ) {
+        exists = true; 
+    }
+    return exists; 
+}
+
+
+/*!
  *
  */
 string svkVarianFidMapper::GetHeaderValueAsString(string keyString, int valueIndex, int procparRow)

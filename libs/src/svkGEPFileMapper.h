@@ -49,6 +49,7 @@
 #include <svkDcmHeader.h>
 #include <svkImageReader2.h>
 #include <svkMRSIOD.h>
+#include <svkDataAcquisitionDescriptionXML.h> 
 
 #include <map>
 #include <vector>
@@ -146,7 +147,7 @@ class svkGEPFileMapper : public vtkObject
         virtual void            GetNumVoxels( int numVoxels[3] ); 
         virtual int             GetNumKSpacePoints(); 
         virtual void            GetVoxelSpacing( double voxelSpacing[3] ); 
-        void                    GetFOV( float fov[3] ); 
+        virtual void            GetFOV( float fov[3] ); 
         int                     GetNumCoils(); 
         int                     GetNumFrames(); 
         virtual int             GetNumTimePoints(); 
@@ -210,6 +211,8 @@ class svkGEPFileMapper : public vtkObject
         void                                    ModifyForPatientEntry( double dcos[3][3] ); 
 
         string                                  pfileName;      
+
+        svkDataAcquisitionDescriptionXML*       acqDad; 
 
 };
 

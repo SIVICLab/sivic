@@ -840,10 +840,15 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->overlayThresholdSlider->Focus(); 
     } else if( caller == this->volSelButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         if ( this->volSelButton->GetSelectedState() ) {
-            svkOverlayView::SafeDownCast(this->overlayController->GetView())->ToggleSelBoxVisibilityOn();
+            if( this->overlayController->GetCurrentStyle() == svkOverlayViewController::ROTATION ) {
+                svkOverlayView::SafeDownCast(this->overlayController->GetView())->SetSelectionBoxVisibility(svkOverlayView::VISIBLE);
+            } else {
+                svkOverlayView::SafeDownCast(this->overlayController->GetView())->SetSelectionBoxVisibility(
+                        svkOverlayView::VISIBLE_WHEN_CONTAINS_CURRENT_SLICE);
+            }
             this->plotController->TurnPropOn( svkPlotGridView::VOL_SELECTION );
         } else {
-            svkOverlayView::SafeDownCast(this->overlayController->GetView())->ToggleSelBoxVisibilityOn();
+            svkOverlayView::SafeDownCast(this->overlayController->GetView())->SetSelectionBoxVisibility(svkOverlayView::HIDDEN);
             this->plotController->TurnPropOff( svkPlotGridView::VOL_SELECTION );
         }
         this->overlayController->GetView()->Refresh();

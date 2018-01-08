@@ -730,6 +730,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vtkKWMenu* openOverlayMenu = openOverlayButton->GetWidget()->GetMenu();
     openOverlayMenu->AddRadioButton("Load Data", this->sivicController, "OpenFile overlay NULL 0 0");
     openOverlayMenu->AddRadioButton("Load Data Single File", this->sivicController, "OpenFile overlay NULL 0 1");
+    openOverlayMenu->AddRadioButton("Load Data As Contours", this->sivicController, "OpenFile contour NULL 0 1");
     toolbar->AddWidget( openOverlayButton );
 
 

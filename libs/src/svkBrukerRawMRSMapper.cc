@@ -86,7 +86,7 @@ svkBrukerRawMRSMapper::~svkBrukerRawMRSMapper()
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
 
     if ( this->specData != NULL )  {
-        delete [] specData;
+        delete [] (char*)specData;
         this->specData = NULL;
     }
 
@@ -1459,10 +1459,28 @@ void svkBrukerRawMRSMapper::GetBrukerPixelSize( float pixelSize[3] )
     string fovStr = this->GetHeaderValueAsString("PVM_Fov", 0); 
     char* cstr = new char [fovStr.length()+1];
     strcpy( cstr, fovStr.c_str() );
-    float fov[3]; 
+
     for ( int i = 0; i < 3; i++ ) {    
-        string tmp = string( strtok( cstr, " ") ); 
-        fov[i] = svkTypeUtils::StringToFloat( strtok( cstr, " ") ); 
-        pixelSize[i] = fov[i] / numPixels[i];     
+        pixelSize[i] = 0; 
     }
+
+    char*  pch;
+    pch = strtok (cstr," ");
+    int i = 0; 
+    float fov; 
+    while (pch != NULL)
+    {
+        fov = svkTypeUtils::StringToFloat ( string(pch) ); 
+        pixelSize[i] = fov / numPixels[i]; 
+        pch = strtok (NULL, " ");
+        i++; 
+    }
+    //  2D so should require gettting the 3rd dimension fromthe slice thickness
+    if ( i == 2 ) {
+         pixelSize[i] = this->GetHeaderValueAsFloat("ACQ_slice_thick");
+    }
+    //for ( int i = 0; i < 3; i++ ) {    
+        //cout << "PS: " << pixelSize[i] << endl;; 
+    //}
+
 }

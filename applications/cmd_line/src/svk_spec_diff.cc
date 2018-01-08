@@ -83,8 +83,9 @@ int main (int argc, char** argv)
     usemsg += "   -t    output_data_type    Output data type:                           \n";
     usemsg += "                                     2 = UCSF DDF (default)              \n";
     usemsg += "                                     4 = DICOM_MRS                       \n";
-    usemsg += "   -v           verbose  print diff pixels                               \n"; 
-    usemsg += "   -h           Print this help mesage.                                  \n";  
+    usemsg += "   --sum                     sum rather than diff spectra                \n"; 
+    usemsg += "   -v                        verbose  print diff pixels                  \n"; 
+    usemsg += "   -h                        Print this help mesage.                     \n";  
     usemsg += "                                                                         \n";  
     usemsg += "Application that diffs two MRS data files: s2 - s1.                      \n"; 
     usemsg += "                                                                         \n";  
@@ -94,13 +95,15 @@ int main (int argc, char** argv)
     string refFileName; 
     string outputFileName;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DDF;
+    bool sumSpectra = false; 
     bool isVerbose = false; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
         FLAG_SPEC_1 = 0,
-        FLAG_SPEC_2 
+        FLAG_SPEC_2,
+        FLAG_SUM 
     }; 
 
 
@@ -109,6 +112,7 @@ int main (int argc, char** argv)
         /* This option sets a flag. */
         {"s1",          required_argument, NULL,  FLAG_SPEC_1},
         {"s2",          required_argument, NULL,  FLAG_SPEC_2},
+        {"sum",         no_argument,       NULL,  FLAG_SUM},
         {0, 0, 0, 0}
     };
 
@@ -130,6 +134,9 @@ int main (int argc, char** argv)
                 break;
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
+                break;
+            case 'FLAG_SUM':
+                sumSpectra = true; 
                 break;
             case 'v':
                 isVerbose = true; 
@@ -207,7 +214,7 @@ int main (int argc, char** argv)
         numComponents = 2;
     }
 
-    //  diff each coil separately
+    //  diff(sum) each coil separately
     for ( int channel = 0; channel < numChannels; channel++ ) {
         cout << "diff channel " << channel << endl;
 
@@ -230,8 +237,12 @@ int main (int argc, char** argv)
             testPtr = testSpectrum->GetPointer(0);
             
             bool cellDiff = false; 
+            int sign = -1; 
+            if ( sumSpectra ) {
+                sign = 1; 
+            }
             for (int i = 0; i < numSpecPts * numComponents; i++) {
-                testPtr[i] = testPtr[i] - refPtr[i]; 
+                testPtr[i] = testPtr[i] + sign * refPtr[i]; 
                 if ( isVerbose ) {
                     if (testPtr[i] != 0 ) { 
                         cout << "diff: " <<  i  << " " << testPtr[i] << " - " << refPtr[i] << " = " << testPtr[i] << endl;

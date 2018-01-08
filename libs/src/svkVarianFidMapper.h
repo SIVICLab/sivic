@@ -127,6 +127,7 @@ class svkVarianFidMapper : public vtkObject
         string          GetHeaderValueAsString(
                             string keyString, int valueIndex = 0, int procparRow = 0
                         );
+        bool            HeaderFieldExists( string keyString ); 
 
         virtual void    SetCellSpectrum(
                             vtkImageData* data, 
@@ -134,6 +135,7 @@ class svkVarianFidMapper : public vtkObject
                             int timePt, 
                             int coilNum
                         );
+
 
 
         map <string, vector < vector<string> > >    
