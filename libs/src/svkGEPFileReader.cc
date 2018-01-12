@@ -170,7 +170,8 @@ int svkGEPFileReader::CanReadFile(const char* fname)
                          offset.compare("145908") == 0 || 
                          offset.compare("149788") == 0 ||
                          offset.compare("150336") == 0 ||
-                         offset.compare("157276") == 0 
+                         offset.compare("157276") == 0 ||
+                         offset.compare("213684") == 0 
                     ) {
                         isGEPFile = true; 
                     }
