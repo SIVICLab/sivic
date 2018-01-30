@@ -170,7 +170,8 @@ int svkGEPFileReader::CanReadFile(const char* fname)
                          offset.compare("145908") == 0 || 
                          offset.compare("149788") == 0 ||
                          offset.compare("150336") == 0 ||
-                         offset.compare("157276") == 0 
+                         offset.compare("157276") == 0 ||
+                         offset.compare("213684") == 0 
                     ) {
                         isGEPFile = true; 
                     }
@@ -1523,6 +1524,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhi.nex                            , FLOAT_4, 1   , 39164,\
             rhi.numecho                        , INT_2  , 1   , 39156,\
             rhi.image_uid                      , UID    , 32  , 39708,\
+            rhi.rawrunnum                      , INT_4  , 1   , 39340,\
             rhe.ex_datetime                    , INT_4  , 1   , 37084,\
             rhe.ex_no                          , UINT_2 , 1   , 36880,\
             rhe.magstrength                    , INT_4  , 1   , 36956,\
@@ -1706,6 +1708,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhi.nex                            , FLOAT_4, 1   , 60152,\
             rhi.numecho                        , INT_2  , 1   , 60144,\
             rhi.image_uid                      , UID    , 32  , 60696,\
+            rhi.rawrunnum                      , INT_4  , 1   , 60328,\
             rhe.ex_datetime                    , INT_4  , 1   , 57564,\
             rhe.ex_no                          , UINT_2 , 1   , 57360,\
             rhe.magstrength                    , INT_4  , 1   , 57436,\
@@ -1890,6 +1893,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhi.nex                            , FLOAT_4, 1   , 64564,\
             rhi.numecho                        , INT_2  , 1   , 65206,\
             rhi.image_uid                      , UID    , 32  , 65559,\
+            rhi.rawrunnum                      , INT_4  , 1   , 65076,\
             rhe.ex_datetime                    , INT_4  , 1   , 61568,\
             rhe.ex_no                          , UINT_2 , 1   , 61576,\
             rhe.magstrength                    , INT_4  , 1   , 61560,\
@@ -2074,6 +2078,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhi.nex                            , FLOAT_4, 1   , 143952,\
             rhi.numecho                        , INT_2  , 1   , 144890,\
             rhi.image_uid                      , UID    , 32  , 145317,\
+            rhi.rawrunnum                      , INT_4  , 1   , 144624,\
             rhe.ex_datetime                    , INT_4  , 1   , 140988,\
             rhe.ex_no                          , UINT_2 , 1   , 141044,\
             rhe.magstrength                    , INT_4  , 1   , 140980,\
@@ -2258,6 +2263,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhi.nex                            , FLOAT_4, 1   , 143952,\
             rhi.numecho                        , INT_2  , 1   , 144890,\
             rhi.image_uid                      , UID    , 32  , 145317,\
+            rhi.rawrunnum                      , INT_4  , 1   , 144624,\
             rhe.ex_datetime                    , INT_4  , 1   , 140988,\
             rhe.ex_no                          , UINT_2 , 1   , 141044,\
             rhe.magstrength                    , INT_4  , 1   , 140980,\
@@ -2442,6 +2448,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhi.nex                            , FLOAT_4, 1   , 144000,\
             rhi.numecho                        , INT_2  , 1   , 144938,\
             rhi.image_uid                      , UID    , 32  , 145365,\
+            rhi.rawrunnum                      , INT_4  , 1   , 144672,\
             rhe.ex_datetime                    , INT_4  , 1   , 140988,\
             rhe.ex_no                          , UINT_2 , 1   , 141044,\
             rhe.magstrength                    , INT_4  , 1   , 140980,\
@@ -2627,6 +2634,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhi.nex                            , FLOAT_4, 1   , 147672,\
             rhi.numecho                        , INT_2  , 1   , 148718,\
             rhi.image_uid                      , UID    , 32  , 149157,\
+            rhi.rawrunnum                      , INT_4  , 1   , 148448,\
             rhe.ex_datetime                    , INT_4  , 1   , 143400,\
             rhe.ex_no                          , UINT_2 , 1   , 143516,\
             rhe.magstrength                    , INT_4  , 1   , 143392,\
@@ -2808,6 +2816,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhi.nex                            , FLOAT_4, 1   , 148220,\
             rhi.numecho                        , INT_2  , 1   , 149266,\
             rhi.image_uid                      , UID    , 32  , 149705,\
+            rhi.rawrunnum                      , INT_4  , 1   , 148996,\
             rhe.ex_datetime                    , INT_4  , 1   , 143948,\
             rhe.ex_no                          , UINT_2 , 1   , 144064,\
             rhe.magstrength                    , INT_4  , 1   , 143940,\
@@ -2989,6 +2998,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhi.nex                            , FLOAT_4, 1   , 147672,\
             rhi.numecho                        , INT_2  , 1   , 148718,\
             rhi.image_uid                      , UID    , 32  , 149157,\
+            rhi.rawrunnum                      , INT_4  , 1   , 148448,\
             rhe.ex_datetime                    , INT_4  , 1   , 143400,\
             rhe.ex_no                          , UINT_2 , 1   , 143516,\
             rhe.magstrength                    , INT_4  , 1   , 143392,\
@@ -3170,6 +3180,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhi.nex                            , FLOAT_4, 1   , 147672,\
             rhi.numecho                        , INT_2  , 1   , 148718,\
             rhi.image_uid                      , UID    , 32  , 149157,\
+            rhi.rawrunnum                      , INT_4  , 1   , 148448,\
             rhe.ex_datetime                    , INT_4  , 1   , 143400,\
             rhe.ex_no                          , UINT_2 , 1   , 143516,\
             rhe.magstrength                    , INT_4  , 1   , 143392,\
@@ -3351,6 +3362,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhi.nex                            , FLOAT_4, 1   , 198512,\
             rhi.numecho                        , INT_2  , 1   , 199558,\
             rhi.image_uid                      , UID    , 32  , 199997,\
+            rhi.rawrunnum                      , INT_4  , 1   , 199288,\
             rhe.ex_datetime                    , INT_4  , 1   , 194240,\
             rhe.ex_no                          , UINT_2 , 1   , 194356,\
             rhe.magstrength                    , INT_4  , 1   , 194232,\
@@ -3800,9 +3812,9 @@ void svkGEPFileReader::Deidentify()
             //  These fields are not removed from PHI_LIMITED data sets
             if (this->phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
                 string deidDate = svkTypeUtils::IntToString(VTK_INT_MIN);
-                this->DeidentifyField( fs, "rhr.rh_scan_time",  "");
+                this->DeidentifyField( fs, "rhr.rh_scan_time",  "00:00");
                 this->DeidentifyField( fs, "rhe.dateofbirth",   "");
-                this->DeidentifyField( fs, "rhr.rh_scan_date",  "");
+                this->DeidentifyField( fs, "rhr.rh_scan_date",  "01/01/070");
                 this->DeidentifyField( fs, "rhe.ex_datetime",  deidDate );
             }
 

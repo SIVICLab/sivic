@@ -172,11 +172,11 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     int   epsiIndex; 
     vtkImageComplex* ktCorrection = new vtkImageComplex[2]; 
 
-    //  Inverse Fourier Transform spectral data to frequency domain to 
-    //  apply linear phase shift:
+    //  Inverse Fourier Transform spectral data to time domain to 
+    //  apply linear phase shift for EPSI correction:
     string specDomain = hdr->GetStringValue( "SignalDomainColumns");
     bool applySpecFFTs = false;
-    if ( specDomain.compare("TIME") == 0 ) {
+    if ( specDomain.compare("FREQUENCY") == 0 ) {
         applySpecFFTs = true;
     }
     if ( applySpecFFTs == true ) {
@@ -213,7 +213,6 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
         for ( int freq = 0; freq < numSpecPts; freq++ ) {
                     
             spectrum->GetTupleValue(freq, cmplxPtIn);
-            //cout << "confirm spec values: " << cmplxPtIn[0] << ", " << cmplxPtIn[1] << endl;
 
             epsiPhase[0] = epsiPhaseArray[epsiIndex][freq].Real; 
             epsiPhase[1] = epsiPhaseArray[epsiIndex][freq].Imag; 
@@ -278,8 +277,9 @@ void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** ep
 
     double numKPts = this->numEPSIkRead;
     double kOrigin = this->GetEPSIOrigin(); 
-    float  fOrigin = (numSpecPts)/2.; 
-    //float  fOrigin = (numSpecPts-1)/2.; 
+    //float  fOrigin = (numSpecPts)/2.; 
+    //float  fOrigin = (numSpecPts - 1)/2.; 
+    float  fOrigin = (numSpecPts)/2. - 1; 
     double Pi      = vtkMath::Pi();
     double kIncrement;
     double freqIncrement;
@@ -290,21 +290,22 @@ void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** ep
     cout << " FREQ ORIGIN: " << fOrigin << endl;
     double dtBs = 1./static_cast<float>(this->numEPSIkRead);
     //  certainly need a factor of 2 for interleaved, but a factor of 4?  Not sure
-    dtBs *= 4;
+    cout << "Need to resolve this factor in different implementations" << endl;
+    //dtBs *= 4;
     cout << "DTBS: " << dtBs << endl;
-    //cout << "DENOM " << numSpecPts * numKPts * 2 << endl;
     for( int k = 0; k < numKPts ; k++ ) {
         for( int f = 0; f <  numSpecPts; f++ ) {
-            //kIncrement = ( k - kOrigin ) / ( numKPts );
-            kIncrement = ( k - kOrigin ) ;
+            kIncrement = ( k - kOrigin );
             freqIncrement = ( f - fOrigin ) / ( numSpecPts );
-            mult = 2 * Pi * dtBs * kIncrement * freqIncrement ;
+            mult = 2 * Pi * dtBs * kIncrement * freqIncrement;
+            //mult = -1 * 2 * Pi * dtBs * kIncrement * freqIncrement;
             epsiPhaseArray[k][f].Real = cos( mult );
             epsiPhaseArray[k][f].Imag = sin( mult );
 
-            cout << "KI: " << kIncrement << endl;
-            cout << "fI: " << freqIncrement << endl;
-            cout << "FACTOR: " << mult << " " <<  epsiPhaseArray[k][f].Real << endl;
+            //cout << "fI: " << freqIncrement << endl;
+            //cout << "FACTOR( " << k << "," << f << "): " << mult << " " <<  epsiPhaseArray[k][f].Real << " " << epsiPhaseArray[k][f].Imag << endl;
+            //cout << "   Korigin: " << kOrigin << " numKPts " << numKPts << endl; 
+            //cout << "   KI: " << -1 * 360 * kIncrement * dtBs << endl;
         }
     }
 

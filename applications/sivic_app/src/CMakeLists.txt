@@ -309,6 +309,7 @@ TARGET_LINK_LIBRARIES(
     svkPSD
     svkTypeUtils
     svkadapt
+    svkXMLUtils
     ${KWWidgets_LIBRARIES}
     ${VTK_LIBRARIES} 
     dcmdata

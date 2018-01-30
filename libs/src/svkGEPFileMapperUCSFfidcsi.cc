@@ -42,6 +42,8 @@
 
 #include <svkGEPFileMapperUCSFfidcsi.h>
 #include <vtkDebugLeaks.h>
+#include <svkDataAcquisitionDescriptionXML.h>
+#include <svkTypeUtils.h>
 
 
 using namespace svk;
@@ -102,13 +104,118 @@ void svkGEPFileMapperUCSFfidcsi::GetCenterFromRawFile( double* center )
 } 
 
 
-
 /*
  *  Returns the volume localization type = NONE. 
  */
-vtkstd::string  svkGEPFileMapperUCSFfidcsi::GetVolumeLocalizationTechnique()
+string  svkGEPFileMapperUCSFfidcsi::GetVolumeLocalizationTechnique()
 {
-    vtkstd::string localizationType("NONE");
+    string localizationType("NONE");
     return localizationType;
 }
 
+
+/*!
+ *  Get the voxel spacing in 3D. Note that the slice spacing may 
+ *  include a skip. 
+ *  Swaps the FOV if necessary based on freq_dir setting. 
+ */
+void svkGEPFileMapperUCSFfidcsi::GetFOV( float fov[3] )
+{
+    //  read from DAD file
+    cout << "Question: " << endl;
+    cout << "Is SWAP still relevant, or would that have been reflected already in the DAD content? " << endl;
+    cout << "see parent class GetFOV logic" << endl;
+
+
+    int status = this->InitAcqDad(); 
+
+    if ( status == 1 ) {
+        this->Superclass::GetFOV( fov ); 
+        return; 
+    } else {
+        fov[0] = svkTypeUtils::StringToFloat( this->acqDad->GetDataWithPath(
+                "encoding/encodedSpace/fieldOfView_mm/x")); 
+        fov[1] = svkTypeUtils::StringToFloat( this->acqDad->GetDataWithPath(
+                "encoding/encodedSpace/fieldOfView_mm/y")); 
+        fov[2] = svkTypeUtils::StringToFloat( this->acqDad->GetDataWithPath(
+                "encoding/encodedSpace/fieldOfView_mm/z")); 
+        if ( this->GetDebug() ) {
+            cout << "FOV( " << fov[0] << ", " << fov[1] << ", " << fov[2] << ")" <<  endl;
+        }
+    }
+
+}
+
+
+void svkGEPFileMapperUCSFfidcsi::GetVoxelSpacing( double voxelSpacing[3] )
+{
+    float fov[3]; 
+    this->GetFOV( fov );
+
+    int status = this->InitAcqDad(); 
+
+    if ( status == 1 ) {
+
+        this->Superclass::GetVoxelSpacing( voxelSpacing ); 
+        return; 
+
+    } else {
+
+        float fov[3]; 
+        this->GetFOV( fov ); 
+
+        float numVoxels[3]; 
+        numVoxels[0] = svkTypeUtils::StringToInt( this->acqDad->GetDataWithPath(
+                "encoding/encodedSpace/matrixSize/x")); 
+        numVoxels[1] = svkTypeUtils::StringToInt( this->acqDad->GetDataWithPath(
+                "encoding/encodedSpace/matrixSize/y")); 
+        numVoxels[2] = svkTypeUtils::StringToInt( this->acqDad->GetDataWithPath(
+                "encoding/encodedSpace/matrixSize/z")); 
+
+        for ( int i = 0; i < 3; i++ ) {
+            voxelSpacing[i] = fov[i]/numVoxels[i]; 
+        }
+    }
+
+    if ( this->GetDebug() ) {
+        cout << "VOX SIZE( " << voxelSpacing[0] << ", " << voxelSpacing[1] << ", " << voxelSpacing[2] << ")" <<  endl;
+    }
+}
+
+
+/*!
+ *  Initialize the acqDad object
+ *  return 
+ *      0 OK, DAD was initialized
+ *      1 NO DAD available
+ */
+int svkGEPFileMapperUCSFfidcsi::InitAcqDad( )
+{
+    int status = 0; 
+    if ( this->acqDad == NULL ) {
+        this->acqDad = svkDataAcquisitionDescriptionXML::New();
+        string acqDadFileName = this->GetAcqDADFileName(); 
+        status = this->acqDad->SetXMLFileName( acqDadFileName ); 
+        if (status != 0)  {
+            cout << "WARNING: Could not find DAD file: " << acqDadFileName << endl;
+            cout << "using legacy GetFOV method. " << endl;
+            this->acqDad->Delete();
+            this->acqDad = NULL; 
+        }
+    }
+    return status; 
+}
+
+
+//
+string svkGEPFileMapperUCSFfidcsi::GetAcqDADFileName( )
+{
+    cout << "Issue: " << endl;
+    cout << "xml file name is difficult to systematically determine" << endl;
+    cout << "should be something like: run_num_acq_dad.xml" << endl;
+    string dadFileName  = this->pfileName;
+    string sequenceName = this->GetHeaderValueAsString( "rhi.psdname" );
+    //dadFileName.append("_dad_" + sequenceName + ".xml");
+    dadFileName.append("_dad_fidcsi_ucsf.xml");
+    return dadFileName; 
+}

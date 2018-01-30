@@ -142,6 +142,7 @@ class svkOverlayView : public svkDataView
         bool                CheckDataOrientations();
         void                SetCameraZoom( double zoom );
         void                SetSelectionBoxVisibility( SelectionBoxVisibilityState visibility );
+        void                SetContourColor(int index, svkOverlayContourDirector::ContourColor color);
         SelectionBoxVisibilityState GetSelectionBoxVisibility( );
 
 

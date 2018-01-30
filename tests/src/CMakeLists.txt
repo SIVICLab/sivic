@@ -203,6 +203,7 @@ SET(SVK_LIBS
     svkPSD
     svkTypeUtils
     svkadapt 
+    svkXMLUtils
     ${VTK_LIBRARIES}
     vtkFiltersHybrid-6.3
     vtkFiltersGeneral-6.3
@@ -571,7 +572,6 @@ IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(
         svkDadSatsXMLTest_c
         ${SVK_LIBS}
-        svkXMLUtils
     )
     ADD_EXECUTABLE(
         svkDadTrajectoryXMLTest_c
@@ -581,7 +581,6 @@ IF(NOT WIN32)
         svkDadTrajectoryXMLTest_c
         ${SVK_LIBS}
         vtkIOCore-6.3
-        svkXMLUtils
     )
 ENDIF(NOT WIN32)
 
