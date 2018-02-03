@@ -876,9 +876,13 @@ void svkMrsImageFFT::MaximizeVoxelsInSelectionBox()
 
         //  Get max number of whole voxels in the box
         float numVoxelsInBox = selBoxSpacing[dim] / pixelSpacing[dim];
-        cout << "vox in box : " << numVoxelsInBox << endl;
+        if (this->GetDebug()) {
+            cout << "vox in box : " << numVoxelsInBox << endl;
+        }
         int nearestNumVoxelsInBox = static_cast<int>( roundf( numVoxelsInBox ) ); 
-        cout << "nn in box : " << nearestNumVoxelsInBox << endl;
+        if (this->GetDebug()) {
+            cout << "nn in box : " << nearestNumVoxelsInBox << endl;
+        }
         if ( 
             ( nearestNumVoxelsInBox > 1 ) && 
             ( nearestNumVoxelsInBox > 2 * static_cast<int>( nearestNumVoxelsInBox / 2 ) )
@@ -888,46 +892,60 @@ void svkMrsImageFFT::MaximizeVoxelsInSelectionBox()
             voxelShift[dim] = 0.0;  
         }
     }
-    cout << "MAX VS(shift)    : " << voxelShift[0] << " " << voxelShift[1] << " " << voxelShift[2] << endl;
-    cout << "MAX VS(boxcenter): " << selBoxCenter[0] << " " << selBoxCenter[1] << " " << selBoxCenter[2] << endl;
+    if (this->GetDebug()) {
+        cout << "Voxel shift to maximize: " << voxelShift[0] << " " << voxelShift[1] << " " << voxelShift[2] << endl;
+    }
 
+    //  Get the center of the toplc voxel:
     double toplc[3];
     data->GetDcmHeader()->GetOrigin(toplc, 0); 
-    cout << "MAX VS(toplc)    : " << toplc[0] << " " << toplc[1] << " " << toplc[2] << endl;
 
     double dcos[3][3];
     data->GetDcos(dcos);
 
+    //  LPS to XYZ (cols,rows,slices)
+    //  LPS distance from centerLPS of the selBox to toplcLPS in terms of cols, rows, slices frame (XYZ)
+    //      calculate the distance from the topLC to the origin in LPS coordinates in terms of the 
+    //      xyz(cols,rows,slices) data frame by projecting the distance in the cols, rows slices 
+    //      farme (selBoxCtr - toplc) to LPS:
     float temp; 
-    double xyzCenter[3];
+    double toplcToSelBoxCenterXYZ[3];
     for (int i = 0; i < 3; i++) {
         temp = 0.0; 
         for (int j = 0; j < 3; j++) {
             temp = temp + dcos[i][j] * ( selBoxCenter[j] - toplc[j] ); 
         }
-        xyzCenter[i] = temp; 
+        toplcToSelBoxCenterXYZ[i] = temp; 
     }
-    cout << "MAX VS(xyzcenter): " << xyzCenter[0] << " " << xyzCenter[1] << " " << xyzCenter[2] << endl;
+    if (this->GetDebug()) {
+        cout << "MAX VS(xyzcenter): " << toplcToSelBoxCenterXYZ[0] << " " 
+            << toplcToSelBoxCenterXYZ[1] << " " << toplcToSelBoxCenterXYZ[2] << endl;
+    }
+    double shiftedDistanceToplcToSelBoxCenterXYZ[3];
     for (int i = 0; i < 3; i++) {
-        voxelShift[i] += xyzCenter[i]; 
+        shiftedDistanceToplcToSelBoxCenterXYZ[i] = voxelShift[i] + toplcToSelBoxCenterXYZ[i];
     }
-    
+
+    //  Convert the shifted distance to the center in xyz(col,row,slices) back to LPS frame and 
+    //  add to the toplc:  
+    //  temp = shiftedDistanceToplcToSelBoxCenterLPS; 
     double centerLPS[3];
     for (int i = 0; i < 3; i++) {
         temp = 0.0; 
         for (int j = 0; j < 3; j++) {
-            temp = temp + dcos[j][i] * ( voxelShift[j] ); 
+            temp = temp + dcos[j][i] * ( shiftedDistanceToplcToSelBoxCenterXYZ[j] ); 
         }
         centerLPS[i] = toplc[i] + temp; 
     }
 
-    //  This is the target spatial center and should be subtracte from 
-    //  the original center to get the voxel shift size
-    for (int i = 0; i < 3; i++) {
-        voxelShift[i] = centerLPS[i]; 
-    }
-    cout << "MAX VS(lpscenter): " << centerLPS[0] << " " << centerLPS[1] << " " << centerLPS[2] << endl;
+    ////  This is the target spatial center and should be subtracte from 
+    ////  the original center to get the voxel shift size
+    //for (int i = 0; i < 3; i++) {
+        //voxelShift[i] = centerLPS[i]; 
+    //}
+    //cout << "MAX VS(lpscenter): " << centerLPS[0] << " " << centerLPS[1] << " " << centerLPS[2] << endl;
 
+    //  center data at this location
     this->SetVolumeCenter( centerLPS );
 
 }
