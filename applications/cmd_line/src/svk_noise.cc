@@ -70,11 +70,15 @@ int main (int argc, char** argv)
     usemsg += "svk_noise -i input_file_name                                             \n"; 
     usemsg += "         [ -b ] [ -h ]                                                   \n"; 
     usemsg += "                                                                         \n";  
-    usemsg += "   -i                name   Name of file to convert.                     \n"; 
-    usemsg += "   -b                       only include spectra in selection box.       \n"; 
+    usemsg += "   -i                name   Name of input file                           \n"; 
+    usemsg += "   -b                       Only include spectra in selection box.       \n"; 
     usemsg += "   -h                       Print this help mesage.                      \n";  
     usemsg += "                                                                         \n";  
-    usemsg += "Determines noise in baseline of MRS data set.                            \n";  
+    usemsg += "Determines noise in baseline of an MRS data set:                         \n";  
+    usemsg += "Determines the frequency range to use by identifying a window in the     \n"; 
+    usemsg += "average magnitude spectum comprising 5% of the total spectrum with the   \n"; 
+    usemsg += "smallest SD.  Then uses that point range to compute the average value of \n"; 
+    usemsg += "the SD from the complex spectra.                                         \n"; 
     usemsg += "\n";  
 
 
