@@ -96,6 +96,7 @@ int main (int argc, char** argv)
     usemsg += "                         lobes and skips if not set.                                 \n";
     usemsg += "   --epsi_origin num     EPSI k-space point at origin, after reordering this may     \n";
     usemsg += "                         differ from the center of \"sample\" if ramps are cut off.  \n";
+    usemsg += "                         (based on 0 index array)                                    \n";
     usemsg += "   --skip        num     Num samples to skip between in each cycle of waveform       \n";
     usemsg += "   --first       num     First input sample to write out, represents an initial      \n"; 
     usemsg += "                         offset of skipped samples (samples start at 1). By          \n"; 
