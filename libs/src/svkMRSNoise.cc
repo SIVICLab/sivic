@@ -220,13 +220,15 @@ void svkMRSNoise::FindNoiseWindow()
     int numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
 
     //  Now analyze this spectrum for the region of smallest noise that is at least 5 percent of data points. 
-    int noiseWindow = static_cast<int>(numTimePoints/this->noiseWindowPercent); 
+    int noiseWindow = static_cast<int>(numTimePoints * this->noiseWindowPercent); 
 
     float tuple[2];
     int startPoint = 0; 
     double noise = FLT_MAX; 
     double mean; 
     //cout << "window size: " << noiseWindow << endl;
+    this->noiseWindowStartPt = 0; 
+    this->noiseWindowEndPt = 0; 
     for ( int i = startPoint; i < numTimePoints - noiseWindow; i++ ) {
 
         double noiseTmp = 0; 
@@ -398,6 +400,12 @@ void svkMRSNoise::OnlyUseSelectionBox()
  */
 void svkMRSNoise::SetNoiseWindowPercent(float percent)
 {
+    if ( percent > 1 ) {
+        percent = 1.0; 
+    } 
+    if ( percent < 0 ) {
+        percent = 0; 
+    } 
     this->noiseWindowPercent = percent;
 }
 
