@@ -84,6 +84,7 @@ class svkMRSNoise : public svkImageInPlaceFilter
         virtual void    PrintSelf( ostream &os, vtkIndent indent );
         int             GetNoiseStartPoint(); 
         int             GetNoiseEndPoint(); 
+        void            SetNoiseWindowPercent(float percent); 
 
 
     protected:
