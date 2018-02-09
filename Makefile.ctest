@@ -39,6 +39,7 @@ ifeq ($(OSTYPE),Darwin)
 	KWWidgets_DIR           := /usr/local/kwwidgets_vtk6/lib/KWWidgets
 	KWW_DIR                 := /usr/local/kwwidgets_vtk6/lib/KWWidgets
 	KWW6_DIR_DIST           := /usr/local/kwwidgets_vtk6/lib/KWWidgets
+	KWW6_DIR_DBG            := /usr/local/kwwidgets_vtk6/lib/KWWidgets
 	ITK_DIR                 := /usr/local/ITK4.9/lib/cmake/ITK-4.9
 	ADD_LINK_DIRS           := -DADD_LINK_DIRS=/opt/local/lib
 	CMAKE_CXX_FLAGS         := -I/usr/X11R6/include
@@ -158,6 +159,7 @@ TEST_ROOT 			= ${SVK_TEST_ROOT}/results_tmp
 
 CLION_OPTS_DBG      = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_OPTS_DBG}  ${CONFIG_DEBUG}   ${CONFIG_TEST_ON}  ${CONFIG_UCSF_ON}
 CLION_OPTS_REL      = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_OPTS_DIST} ${CONFIG_RELEASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON}
+CLION_OPTS_REL_OSX  = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_BASE_VTK6_DIST} ${CONFIG_RELEASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON} ${ADD_LINK_DIRS}
 
 clean_results:
 	${RM} -rf ${TEST_ROOT}/
@@ -259,6 +261,10 @@ clion_options:
 	$(info Release:) 
 	$(info ----------------------------------------------------------------------------------)
 	$(info ${CLION_OPTS_REL})
+	$(info ----------------------------------------------------------------------------------)
+	$(info Release_OSX:) 
+	$(info ----------------------------------------------------------------------------------)
+	$(info ${CLION_OPTS_REL_OSX})
 	$(info ----------------------------------------------------------------------------------)
 	$(warning This target does only prints the cmake options for Clion.)
 	$(warning Please configure your project from the GUI.)

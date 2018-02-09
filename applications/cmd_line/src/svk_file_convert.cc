@@ -92,7 +92,7 @@ int main (int argc, char** argv)
     usemsg += "                                         1 = limited (default)               \n";
     usemsg += "                                         2 = deidentified                    \n";
     usemsg += "   --deid_id     id                  Replace PHI with this identifier        \n"; 
-    usemsg += "   --single                          Only converts specified file if         \n"; 
+    usemsg += "   --single                          Only converts specified file            \n";
     usemsg += "   --list_files                      Only list files comprising the data set.\n"; 
     usemsg += "                                     multiple in series.                     \n";
     usemsg += "   --info                            Print info about the images, only       \n";                                        

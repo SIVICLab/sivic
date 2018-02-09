@@ -74,30 +74,49 @@ int main (int argc, char** argv)
 {
 
     string usemsg("\n") ; 
-    usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_fft -i input_file_name -o output_root_name [ -t output_data_type ]           \n"; 
-    usemsg += "                   [ --spec ] [ --spatial ] [ --single ]                         \n";
-    usemsg += "                   [ --vsx sihftX ] [ --vsy shiftY ] [ --vsz shiftZ ] [ -h ]     \n";
-    usemsg += "                                                                                 \n";  
-    usemsg += "   -i            name        Name of file to convert.                            \n"; 
-    usemsg += "   -o            root        Root name of outputfile.                            \n";
-    usemsg += "   -t            type        Target data type:                                   \n";
-    usemsg += "                                 2 = UCSF DDF                                    \n";
-    usemsg += "                                 4 = DICOM_MRS (default)                         \n";
-    usemsg += "   --spec                    transform spectral domain only                      \n"; 
-    usemsg += "   --spatial                 transform spatial domain only                       \n"; 
-    usemsg += "   --vsx         shiftX      Fractional voxel shift in X                         \n"; 
-    usemsg += "   --vsy         shiftY      Fractional voxel shift in Y                         \n"; 
-    usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z                         \n"; 
-    usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z                         \n"; 
-    usemsg += "   --single                  Only transform specified file if multiple in series \n"; 
-    usemsg += "   -b                        Only transform data in selection box, only valid for\n"; 
-    usemsg += "                             --spec transforms. Ignored otherwise                \n"; 
-    usemsg += "   -h                        Print this help mesage.                             \n";  
-    usemsg += "                                                                                 \n";  
-    usemsg += "Performs spatial/spectral FFTs.  If --spec or --spatial is specified,            \n"; 
-    usemsg += "will transform only the specified domain.                                        \n";  
-    usemsg += "\n";  
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                           "\n";
+    usemsg += "svk_fft -i input_file_name -o output_root_name [ -t output_data_type ]               \n";
+    usemsg += "        [ --spec ] [ --spatial ] [ --single ]                                        \n";
+    usemsg += "        [                                                                            \n";
+    usemsg += "             ( --vsx sihftX  --vsy shiftY  --vsz shiftZ )                            \n";
+    usemsg += "          || (--ctrL ctrL --ctrP ctrP --ctrS ctrS )                                  \n";
+    //usemsg += "          || (--voxL voxL --P voxP --S voxS )                                        \n";
+    usemsg += "          || ( --maxVoxels )                                                         \n";
+    usemsg += "        )                                                                            \n";
+    usemsg += "        [ -h ]                                                                       \n";
+    usemsg += "                                                                                     \n";
+    usemsg += "   -i            name        Name of file to convert.                                \n";
+    usemsg += "   -o            root        Root name of outputfile.                                \n";
+    usemsg += "   -t            type        Target data type:                                       \n";
+    usemsg += "                                 2 = UCSF DDF                                        \n";
+    usemsg += "                                 4 = DICOM_MRS (default)                             \n";
+    usemsg += "   --spec                    transform spectral domain only                          \n";
+    usemsg += "   --spatial                 transform spatial domain only                           \n";
+    usemsg += "   --vsx         shiftX      Fractional voxel shift in X                             \n";
+    usemsg += "   --vsy         shiftY      Fractional voxel shift in Y                             \n";
+    usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z                             \n";
+    usemsg += "   --ctrL        ctrL        center of volume (L position)                           \n";
+    usemsg += "   --ctrP        ctrP        center of volume (P position)                           \n";
+    usemsg += "   --ctrS        ctrS        center of volume (S position)                           \n";
+    //usemsg += "   --voxL        voxL        L position to center nearest voxel on                   \n";
+    //usemsg += "   --voxP        voxP        P position to center nearest voxel on                   \n";
+    //usemsg += "   --voxS        voxS        S position to center nearest voxel on                   \n";
+    usemsg += "   --maxVoxels               Maximize num voxels > .5 in selection box               \n";
+    usemsg += "   --single                  Only transform specified file if multiple in series     \n";
+    usemsg += "   -b                        Only transform data in selection box, only valid for    \n";
+    usemsg += "                             --spec transforms. Ignored otherwise                    \n";
+    usemsg += "   -h                        Print this help mesage.                                 \n";
+    usemsg += "                                                                                     \n";
+    usemsg += "Performs spatial and spectral FFTs by default.  If --spec or --spatial is specified, \n";
+    usemsg += "will transform only the specified domain.                                            \n";
+    usemsg += "\n";
+    usemsg += "Voxel Shift options:                                                                 \n";
+    usemsg += "\tFractional voxel shifts can be specified (--vs*) to reconstruct at a shifted position. \n";
+    usemsg += "\t\tShifts are given in fractions of a voxel along the data axes (cols, rows, slices). \n";
+    usemsg += "\tThe LPS position of the MRS grid can be specified wiht the --ctrL/P/S flags.         \n";
+    //usemsg += "\tThe LPS position to center a voxel on can be specified with the --voxL/P/S flags.    \n";
+    usemsg += "\tTo maximize the number of whole voxels in the selction box use the --maxVoxels flag. \n";
+    usemsg += "\n";
 
 
     string inputFileName; 
@@ -105,11 +124,21 @@ int main (int argc, char** argv)
     bool transformSpecDomain = true; 
     bool transformSpatialDomain = true; 
     bool onlyTransformSingle = false; 
-    bool onlyTransformSelectionBox = false; 
+    bool onlyTransformSelectionBox = false;
+
     double voxelShift[3]; 
     voxelShift[0] = 0.; 
     voxelShift[1] = 0.; 
     voxelShift[2] = 0.; 
+    double centerLPS[3]; 
+    centerLPS[0] = VTK_DOUBLE_MIN;
+    centerLPS[1] = VTK_DOUBLE_MIN;
+    centerLPS[2] = VTK_DOUBLE_MIN;
+    double voxelLPS[3];
+    voxelLPS[0] = VTK_DOUBLE_MIN;
+    voxelLPS[1] = VTK_DOUBLE_MIN;
+    voxelLPS[2] = VTK_DOUBLE_MIN;
+    bool maximizeVoxelsInBox = false;
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
@@ -121,6 +150,10 @@ int main (int argc, char** argv)
         FLAG_VOXEL_SHIFT_X, 
         FLAG_VOXEL_SHIFT_Y, 
         FLAG_VOXEL_SHIFT_Z, 
+        FLAG_CENTER_L, 
+        FLAG_CENTER_P, 
+        FLAG_CENTER_S,
+        FLAG_MAX_VOXELS,
         FLAG_SINGLE
     }; 
 
@@ -133,7 +166,11 @@ int main (int argc, char** argv)
         {"vsx",       required_argument, NULL,  FLAG_VOXEL_SHIFT_X},
         {"vsy",       required_argument, NULL,  FLAG_VOXEL_SHIFT_Y},
         {"vsz",       required_argument, NULL,  FLAG_VOXEL_SHIFT_Z},
-        {"single",    no_argument,       NULL,  FLAG_SINGLE}, 
+        {"ctrL",      required_argument, NULL,  FLAG_CENTER_L},
+        {"ctrP",      required_argument, NULL,  FLAG_CENTER_P},
+        {"ctrS",      required_argument, NULL,  FLAG_CENTER_S},
+        {"maxVoxels", no_argument,       NULL,  FLAG_MAX_VOXELS},
+        {"single",    no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
 
@@ -143,7 +180,8 @@ int main (int argc, char** argv)
     //  Process flags and arguments
     // ===============================================  
     int i;
-    int option_index = 0; 
+    int option_index;
+    option_index = 0;
     while ( ( i = getopt_long(argc, argv, "i:o:t:bh", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
@@ -179,7 +217,19 @@ int main (int argc, char** argv)
             case FLAG_VOXEL_SHIFT_Z:
                 voxelShift[2] = atof( optarg );
                 break;
-            case FLAG_SINGLE: 
+            case FLAG_CENTER_L:
+                centerLPS[0] = atof( optarg );
+                break;
+            case FLAG_CENTER_P:
+                centerLPS[1] = atof( optarg );
+                break;
+            case FLAG_CENTER_S:
+                centerLPS[2] = atof( optarg );
+                break;
+            case FLAG_MAX_VOXELS:
+                maximizeVoxelsInBox = true;
+                break;
+            case FLAG_SINGLE:
                 onlyTransformSingle = true;
                 break;
             case 'h':
@@ -273,14 +323,38 @@ int main (int argc, char** argv)
         }
         spatialFFT->SetPreCorrectCenter( true );
         spatialFFT->SetPostCorrectCenter( true );
+
+        //  Voxel Shift Options
+        //  use following bool to ensure that only 1 method is used
+        bool voxelShiftAlreadySpecified = false;
         if ( voxelShift[0] != 0 ||  voxelShift[1] != 0 || voxelShift[2] != 0 ) {
             spatialFFT->SetVoxelShift( voxelShift );
+            voxelShiftAlreadySpecified = true;
+        }
+        if ( centerLPS[0] != VTK_DOUBLE_MIN ||  centerLPS[1] != VTK_DOUBLE_MIN || centerLPS[2] != VTK_DOUBLE_MIN ) {
+            if ( voxelShiftAlreadySpecified == true ) {
+                cout << "ERROR, only specify one voxel shift method!" << endl;
+                cout << usemsg << endl;
+                exit(1);
+            } else {
+                spatialFFT->SetVolumeCenter(centerLPS);
+                voxelShiftAlreadySpecified = true;
+            }
+        }
+        if ( maximizeVoxelsInBox == true ) {
+            if ( voxelShiftAlreadySpecified == true ) {
+                cout << "ERROR, only specify one voxel shift method!" << endl;
+                cout << usemsg << endl;
+                exit(1);
+            } else {
+                spatialFFT->MaximizeVoxelsInSelectionBox();
+                voxelShiftAlreadySpecified = true;
+            }
         }
         spatialFFT->Update();
         spatialFFT->Delete();
 
     }
-
 
 
     // ===============================================  

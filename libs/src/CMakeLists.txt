@@ -219,6 +219,7 @@ ADD_LIBRARY(
     svkImageInPlaceFilter.cc    
     svkThreadedImageAlgorithm.cc
     svkPhaseSpec.cc
+    svkFreqCorrect.cc
     svkAlgoTemplate.cc
     svkEPSIPhaseCorrect.cc
     svkEPSIReorder.cc

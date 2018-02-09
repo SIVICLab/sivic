@@ -74,9 +74,6 @@ svkMrsImageFFT::svkMrsImageFFT()
     this->voxelShift[0] = 0;
     this->voxelShift[1] = 0;
     this->voxelShift[2] = 0;
-    this->voxelShift[0] = 0;
-    this->voxelShift[1] = 0;
-    this->voxelShift[2] = 0;
     this->onlyUseSelectionBox = false;
     this->selectionBoxMask = NULL;
 }
@@ -410,7 +407,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
 
 
 /*! 
- *  Given a fractional voxel shift (voxelShift)  along each of the axes,
+ *  Given a fractional voxel shift (voxelShift) along each of the axes,
  *  calculate a new TOPLC and reset the PerFrameFunctionalGroups.
  */
 void svkMrsImageFFT::UpdateOrigin() 
@@ -433,13 +430,17 @@ void svkMrsImageFFT::UpdateOrigin()
     data->GetDcmHeader()->GetOrigin( toplc, 0 ); 
 
     //  Calculate new toplc
-    double shift[3] = {0,0,0};
     for (int i = 0; i < 3; i++ ){
-        shift[i] = this->voxelShift[i];
         for(int j = 0; j < 3; j++ ){
-            toplc[i] -= ( dcos[j][i] * shift[j] * pixelSpacing[j] );
+            toplc[i] -= ( dcos[j][i] * this->voxelShift[j] * pixelSpacing[j] );
         }
     }
+    //cout << "Voxel Shifto: " << this->voxelShift[0] << " " << this->voxelShift[1] << " " << this->voxelShift[2]<< endl;
+    //cout << "PSo        : " << pixelSpacing[0] << " " << pixelSpacing[1] << " " << pixelSpacing[2] << endl;
+    //cout << "dcoso      : " << dcos[0][0] << " " << dcos[0][1] << " " << dcos[0][2] << endl;
+    //cout << "dcoso      : " << dcos[1][0] << " " << dcos[1][1] << " " << dcos[1][2] << endl;
+    //cout << "dcoso      : " << dcos[2][0] << " " << dcos[2][1] << " " << dcos[2][2] << endl;
+    //cout << "TOPLC      : " << toplc[0] << " " << toplc[1] << " " << toplc[2]<< endl;
 
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
     svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices-1);
@@ -457,20 +458,23 @@ void svkMrsImageFFT::UpdateOrigin()
         }
     }
     data->SetOrigin( toplc );
+    double cen[3];
+    data->GetImageCenter(cen);
+    cout << "center?: " << cen[0] << " " << cen[1] << " " << cen[2]<< endl;
 }
 
 
-/*! 
+/*!
  *
  */
 int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector, vtkImageFourierFilter* fourierFilter )
 {
     //  Iterate through spectral data from all cells.  Eventually for performance I should do this by visible
 
-    svkImageData* data = this->GetImageDataInput(0); 
+    svkImageData* data = this->GetImageDataInput(0);
 
-    //  Extent initially, and catch up with invisible extents after rerendering (modified update).    
-    int spatialDims[3]; 
+    //  Extent initially, and catch up with invisible extents after rerendering (modified update).
+    int spatialDims[3];
     data->GetDimensions( spatialDims );
     spatialDims[0] -= 1;
     spatialDims[1] -= 1;
@@ -485,23 +489,23 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
     int denominator = ranges[2] * ranges[0] * ranges[1] + ranges[1] * ranges[0] + ranges[0];
 
 
-    //  Get the Dimension Index and index values  
+    //  Get the Dimension Index and index values
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
-    svkDcmHeader::DimensionVector indexVector = dimensionVector; 
+    svkDcmHeader::DimensionVector indexVector = dimensionVector;
 
     //  GetNumber of cells in the image:
-    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector ); 
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
 
-    for (int cellID = 0; cellID < numCells; cellID++ ) { 
+    for (int cellID = 0; cellID < numCells; cellID++ ) {
 
-        //  Get the dimensionVector index for current cell -> indexVector: 
-        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &indexVector, cellID ); 
+        //  Get the dimensionVector index for current cell -> indexVector:
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &indexVector, cellID );
 
         if ( this->onlyUseSelectionBox == true ) {
-            //  Get the 3D spatial index for comparing if a given cell is in the spatial selectin box maks:   
-            int spatialCellIndex = svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &dimensionVector, &indexVector); 
+            //  Get the 3D spatial index for comparing if a given cell is in the spatial selectin box maks:
+            int spatialCellIndex = svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &dimensionVector, &indexVector);
             if ( this->selectionBoxMask[spatialCellIndex] == 0 ) {
-                continue; 
+                continue;
             }
         }
 
@@ -513,45 +517,45 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
         this->UpdateProgress( progress );
 
         if ( ! svk4DImageData::IsIndexInExtent( this->updateExtent, &indexVector) ) {
-            continue; 
+            continue;
         }
 
         vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
-            svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID ) 
-        ); 
+            svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID )
+        );
 
         vtkImageComplex* imageComplexTime      = new vtkImageComplex[ numFrequencyPoints ];
         vtkImageComplex* imageComplexFrequency = new vtkImageComplex[ numFrequencyPoints ];
-        vtkImageComplex* imageOut; 
+        vtkImageComplex* imageOut;
 
-        //  time to frequency: 
+        //  time to frequency:
         if ( this->mode == FORWARD ) {
 
             this->ConvertArrayToImageComplex( spectrum, imageComplexTime );
 
-            fourierFilter->ExecuteFft( imageComplexTime, imageComplexFrequency, numFrequencyPoints ); 
+            fourierFilter->ExecuteFft( imageComplexTime, imageComplexFrequency, numFrequencyPoints );
 
             // For a FORWARD FFT, shift the frequency data to put 0 frequency at the center index point.
-            this->FFTShift( imageComplexFrequency, numFrequencyPoints ); 
+            this->FFTShift( imageComplexFrequency, numFrequencyPoints );
 
-            imageOut = imageComplexFrequency; 
+            imageOut = imageComplexFrequency;
 
         } else if (this->mode == REVERSE ) {
 
             this->ConvertArrayToImageComplex( spectrum, imageComplexFrequency);
 
-            //  For a Reverse FFT, shift the frequency data to put 0 frequency at the first index point 
+            //  For a Reverse FFT, shift the frequency data to put 0 frequency at the first index point
             //  prior to RFFT.
-            this->IFFTShift( imageComplexFrequency, numFrequencyPoints ); 
+            this->IFFTShift( imageComplexFrequency, numFrequencyPoints );
 
-            fourierFilter->ExecuteRfft( imageComplexFrequency, imageComplexTime, numFrequencyPoints ); 
+            fourierFilter->ExecuteRfft( imageComplexFrequency, imageComplexTime, numFrequencyPoints );
 
-            imageOut = imageComplexTime; 
+            imageOut = imageComplexTime;
 
         }
 
         for (int i = 0; i < numFrequencyPoints; i++) {
-            spectrum->SetTuple2( i, imageOut[i].Real, imageOut[i].Imag ); 
+            spectrum->SetTuple2( i, imageOut[i].Real, imageOut[i].Imag );
         }
 
         delete[] imageComplexTime;
@@ -571,8 +575,8 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
 
-    return 1; 
-} 
+    return 1;
+}
 
 
 /*
@@ -581,74 +585,74 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
 void svkMrsImageFFT::PrintSpectrum( vtkImageComplex* data, int numPoints, vtkstd::string msg )
 {
     for( int i = 0; i < numPoints; i++ ) {
-        float abs = ( data[i].Real * data[i].Real ) 
-                  + ( data[i].Imag * data[i].Imag ); 
+        float abs = ( data[i].Real * data[i].Real )
+                  + ( data[i].Imag * data[i].Imag );
         cout << msg << i << " = " << data[i].Real << " " << data[i].Imag << " -> " << abs << endl;
     }
 }
 
 
 /*!
- *  Shifts the zero frequency component in output of FFT operation to center of the spectrum. 
- *  Behaves differently for even and odd data lengths. 
+ *  Shifts the zero frequency component in output of FFT operation to center of the spectrum.
+ *  Behaves differently for even and odd data lengths.
  */
 void svkMrsImageFFT::FFTShift( vtkImageComplex* dataIn, int numPoints )
 {
 
-    float origin =  static_cast<float>(numPoints - 1) / 2. ; 
-    int shiftSize = static_cast<int>( ceil( origin ) ); 
-    int oddCorrection = numPoints%2; 
+    float origin =  static_cast<float>(numPoints - 1) / 2. ;
+    int shiftSize = static_cast<int>( ceil( origin ) );
+    int oddCorrection = numPoints%2;
 
     vtkImageComplex* dataTmp = new vtkImageComplex[ numPoints ];
 
     for (int i = 0; i < numPoints; i++) {
         if( i > origin ) {
-            dataTmp[i - shiftSize - oddCorrection].Real = dataIn[i].Real;  
-            dataTmp[i - shiftSize - oddCorrection].Imag = dataIn[i].Imag;  
+            dataTmp[i - shiftSize - oddCorrection].Real = dataIn[i].Real;
+            dataTmp[i - shiftSize - oddCorrection].Imag = dataIn[i].Imag;
         } else {
-            dataTmp[i + shiftSize].Real = dataIn[i].Real;  
-            dataTmp[i + shiftSize].Imag = dataIn[i].Imag;  
+            dataTmp[i + shiftSize].Real = dataIn[i].Real;
+            dataTmp[i + shiftSize].Imag = dataIn[i].Imag;
         }
     }
     for (int i = 0; i < numPoints; i++) {
-        dataIn[i].Real = dataTmp[i].Real;  
-        dataIn[i].Imag = dataTmp[i].Imag;  
+        dataIn[i].Real = dataTmp[i].Real;
+        dataIn[i].Imag = dataTmp[i].Imag;
     }
 
-    delete [] dataTmp; 
+    delete [] dataTmp;
 }
 
 
 /*!
- *  Shifts the zero frequency component from center to origin, for example 
- *  in preparation for an IFFT. 
- *  Behaves differently for even and odd data lengths. 
- *  Assumes that the data is ordered from low to high frequency. 
+ *  Shifts the zero frequency component from center to origin, for example
+ *  in preparation for an IFFT.
+ *  Behaves differently for even and odd data lengths.
+ *  Assumes that the data is ordered from low to high frequency.
  */
 void svkMrsImageFFT::IFFTShift( vtkImageComplex* dataIn, int numPoints )
 {
 
-    float origin =  static_cast<float>(numPoints - 1)/ 2. ; 
-    int shiftSize = static_cast<int>( ceil( origin ) ); 
-    int oddCorrection = numPoints%2; 
+    float origin =  static_cast<float>(numPoints - 1)/ 2. ;
+    int shiftSize = static_cast<int>( ceil( origin ) );
+    int oddCorrection = numPoints%2;
 
     vtkImageComplex* dataTmp = new vtkImageComplex[ numPoints ];
 
     for (int i = 0; i < numPoints; i++) {
         if( i >= origin ) {
-            dataTmp[i - shiftSize].Real = dataIn[i].Real;  
-            dataTmp[i - shiftSize].Imag = dataIn[i].Imag;  
+            dataTmp[i - shiftSize].Real = dataIn[i].Real;
+            dataTmp[i - shiftSize].Imag = dataIn[i].Imag;
         } else {
-            dataTmp[i + shiftSize + oddCorrection].Real = dataIn[i].Real;  
-            dataTmp[i + shiftSize + oddCorrection].Imag = dataIn[i].Imag;  
+            dataTmp[i + shiftSize + oddCorrection].Real = dataIn[i].Real;
+            dataTmp[i + shiftSize + oddCorrection].Imag = dataIn[i].Imag;
         }
     }
     for (int i = 0; i < numPoints; i++) {
-        dataIn[i].Real = dataTmp[i].Real;  
-        dataIn[i].Imag = dataTmp[i].Imag;  
+        dataIn[i].Real = dataTmp[i].Real;
+        dataIn[i].Imag = dataTmp[i].Imag;
     }
 
-    delete [] dataTmp; 
+    delete [] dataTmp;
 
 }
 
@@ -672,7 +676,7 @@ void svkMrsImageFFT::SetFFTMode( FFTMode mode )
 
 
 /*!
- *  Should we correct for an offset center before FT? 
+ *  Should we correct for an offset center before FT?
  */
 void svkMrsImageFFT::SetPreCorrectCenter( bool preCorrectCenter )
 {
@@ -681,7 +685,7 @@ void svkMrsImageFFT::SetPreCorrectCenter( bool preCorrectCenter )
 
 
 /*!
- *  Should we correct for an offset center after FT? 
+ *  Should we correct for an offset center after FT?
  */
 void svkMrsImageFFT::SetPostCorrectCenter( bool postCorrectCenter )
 {
@@ -690,7 +694,8 @@ void svkMrsImageFFT::SetPostCorrectCenter( bool postCorrectCenter )
 
 
 /*!
- *
+ * Set the fractional voxel shift along cols, rows, slices
+ * @param voxelShift
  */
 void svkMrsImageFFT::SetVoxelShift( double voxelShift[3] )
 {
@@ -698,13 +703,15 @@ void svkMrsImageFFT::SetVoxelShift( double voxelShift[3] )
     this->voxelShift[0] = voxelShift[0];
     this->voxelShift[1] = voxelShift[1];
     this->voxelShift[2] = voxelShift[2];
+    cout << "Normalized Voxel Shift: " 
+        << this->voxelShift[0] << " " << this->voxelShift[1] << " " << this->voxelShift[2] << endl;
 }
 
 
 /*!
- * This method will normalize the input shift to map to a +0.5 to -0.5
- * range. This is the only type of phase shift supported by this class.
- * @param shift
+ *  This method will normalize the input shift to map to a +0.5 to -0.5
+ *  range. This is the only type of phase shift supported by this class.
+ *  @param shift
  */
 void svkMrsImageFFT::NormalizePhaseShift( double shift[3] )
 {
@@ -716,34 +723,33 @@ void svkMrsImageFFT::NormalizePhaseShift( double shift[3] )
             shift[i] += 1;
         }
     }
-
 }
 
 
-/*! 
- *  Sets the extent over which the phasing should be applied.      
- *  Takes 2 sets of x,y,z indices that specify the extent range 
- *  in 3D.  
+/*!
+ *  Sets the extent over which the phasing should be applied.
+ *  Takes 2 sets of x,y,z indices that specify the extent range
+ *  in 3D.
  */
 void svkMrsImageFFT::SetUpdateExtent(int* start, int* end)
 {
-    this->updateExtent[0] =  start[0];  
-    this->updateExtent[1] =  end[0];  
-    this->updateExtent[2] =  start[1];  
-    this->updateExtent[3] =  end[1];  
-    this->updateExtent[4] =  start[2];  
-    this->updateExtent[5] =  end[2];  
+    this->updateExtent[0] =  start[0];
+    this->updateExtent[1] =  end[0];
+    this->updateExtent[2] =  start[1];
+    this->updateExtent[3] =  end[1];
+    this->updateExtent[4] =  start[2];
+    this->updateExtent[5] =  end[2];
 
-    /*  
-     *  set modified time so that subsequent calls to Update() call RequestInformation() 
-     *  and refresh the extent 
+    /*
+     *  set modified time so that subsequent calls to Update() call RequestInformation()
+     *  and refresh the extent
      */
     this->Modified();
 }
 
 
 /*
- *  For spectral only transforms, limit to selection box.  This will be ignored if 
+ *  For spectral only transforms, limit to selection box.  This will be ignored if
  *  the data is in KSPACE, or if a spatial transform was requested.
  */
 void svkMrsImageFFT::OnlyUseSelectionBox()
@@ -753,31 +759,31 @@ void svkMrsImageFFT::OnlyUseSelectionBox()
 
 
 /*
- *  For spectral only transforms, limit to selection box.  This will be ignored if 
+ *  For spectral only transforms, limit to selection box.  This will be ignored if
  *  the data requires a spatial transform.
  */
 void svkMrsImageFFT::ValidateRequest()
 {
-    //  If the data is in k-space or the transform is spatial then ignore use selection box setting:  
+    //  If the data is in k-space or the transform is spatial then ignore use selection box setting:
     if ( this->onlyUseSelectionBox == true ) {
         svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
         string domainCol = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
         string domainRow = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
-        string domainSlice = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain"); 
+        string domainSlice = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
         if ( !domainCol.compare("KSPACE") || !domainRow.compare("KSPACE") || !domainSlice.compare("KSPACE") ) {
             cout << "Ignore request to only transform selection box for kspace data" << endl;
             this->onlyUseSelectionBox = false;
-            return; 
+            return;
         }
         if ( this->domain == SPATIAL ) {
             cout << "Ignore request to only transform selection box for spatial transform" << endl;
             this->onlyUseSelectionBox = false;
-            return; 
+            return;
         }
 
-        //  If validated, then initialize the mask: 
+        //  If validated, then initialize the mask:
         svkDcmHeader::DimensionVector dimVec = data->GetDcmHeader()->GetDimensionIndexVector();
-        int numSpatialVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVec); 
+        int numSpatialVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVec);
 
         float tolerance = .5;
         this->selectionBoxMask = new short[numSpatialVoxels];
@@ -785,6 +791,213 @@ void svkMrsImageFFT::ValidateRequest()
     }
 }
 
+
+/*!
+ *  This method tries to get the most number of voxels with > .5 inside box
+ *  Reimplement logic from set_parameters_v6 
+ *      1. numVoxInBox = selected volume size / pixel size
+ *      2. nearestNumVoxInBox =  round that to the nearest int
+ *      3.  if nearestNumInBox > 2 * (int)nearestNumVoxInBox/2     
+ *              shift by 1/2 voxel
+ *          else 
+ *              do not shift 
+ */
+void svkMrsImageFFT::MaximizeVoxelsInSelectionBox()
+{
+    //  For each dimension divide the selected volume by the pixel size in that 
+    //  dimension.  That's the number of complete voxels in the box.
+    //  add the remainder and
+
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+    double pixelSpacing[3] = {0,0,0};
+    data->GetDcmHeader()->GetPixelSpacing( pixelSpacing );
+
+    double selBoxSpacing[3];
+    data->GetSelectionBoxSpacing( selBoxSpacing );
+
+    double selBoxCenter[3];
+    data->GetSelectionBoxCenter( selBoxCenter );
+
+    /* 
+    //  Get the index of the voxel at the center of the press box:
+    int boxCenterVoxelIndex[3];
+    data->GetIndexFromPosition( selBoxCenter, boxCenterVoxelIndex );
+
+    //  Get the LPS center of the voxel containing the selectionBox center (from it's cell index)
+    double boxCenterVoxelLPS[3];
+    data->GetPositionFromIndex( boxCenterVoxelIndex, boxCenterVoxelLPS );
+
+    //  Get the distance along the col, row or slice from the voxel center to the center of the selection box:
+    //  LPS to row,col,slice space ( convert LPS to cols, rows slices displacement)
+    double displacementAlongLPSAxes[3];
+    for (int i = 0; i < 3; i++) {
+        displacementAlongLPSAxes[i] = boxCenterVoxelLPS[i] - selBoxCenter[i];
+    }
+    // this is the displacemnt from the center of the voxel containing the sel box center to the center of the sel box
+    double displacementAlongDataAxes[3];
+    double dcos[3][3];
+    data->GetDcos(dcos);
+    for (int i = 0; i < 3; i++) {
+        displacementAlongDataAxes[i] = 0.;
+        for (int j = 0; j < 3; j++) {
+            displacementAlongDataAxes[i] -= dcos[i][j] * displacementAlongLPSAxes[j];
+        }
+    }
+
+    //  loop over data dimension (cols, rows slices)
+    double voxelShift[3];
+    for ( int dim = 0; dim < 3; dim++ ) {
+
+        //  Get max number of whole voxels in the box
+        int numWholeVoxels = static_cast<int>(selBoxSpacing[dim] / pixelSpacing[dim]);
+
+        // Even number of whole voxels: box center is between two voxels
+        // Odd number of whole voxels:  box center is at center of voxel
+        //      compare boxCenterLPS  and boxelCenterLPS and figure out if it's
+        //      at a boundry or center.
+        if ( numWholeVoxels % 2 == 0 ) {
+            // displacement should be 1/2 pixel spacing
+            if ( abs( displacementAlongDataAxes[dim] ) != pixelSpacing[dim] /2. ) {
+                double voxelShiftAbsolute = 0.5 - displacementAlongDataAxes[dim];
+                voxelShift[dim] = voxelShiftAbsolute / pixelSpacing[dim];
+            }
+        } else if ( numWholeVoxels % 2 == 1 ) {
+            if ( abs( displacementAlongDataAxes[dim] ) != 0. ) {
+                double voxelShiftAbsolute = -1 * displacementAlongDataAxes[dim];
+                voxelShift[dim] = voxelShiftAbsolute / pixelSpacing[dim];
+            }
+        }
+    }
+    */
+
+
+    double voxelShift[3];
+    for ( int dim = 0; dim < 3; dim++ ) {
+
+        //  Get max number of whole voxels in the box
+        float numVoxelsInBox = selBoxSpacing[dim] / pixelSpacing[dim];
+        if (this->GetDebug()) {
+            cout << "vox in box : " << numVoxelsInBox << endl;
+        }
+        int nearestNumVoxelsInBox = static_cast<int>( roundf( numVoxelsInBox ) ); 
+        if (this->GetDebug()) {
+            cout << "nn in box : " << nearestNumVoxelsInBox << endl;
+        }
+        if ( 
+            ( nearestNumVoxelsInBox > 1 ) && 
+            ( nearestNumVoxelsInBox > 2 * static_cast<int>( nearestNumVoxelsInBox / 2 ) )
+        ) {
+            voxelShift[dim] = 0.5 * pixelSpacing[dim];  
+        } else {
+            voxelShift[dim] = 0.0;  
+        }
+    }
+    if (this->GetDebug()) {
+        cout << "Voxel shift to maximize: " << voxelShift[0] << " " << voxelShift[1] << " " << voxelShift[2] << endl;
+    }
+
+    //  Get the center of the toplc voxel:
+    double toplc[3];
+    data->GetDcmHeader()->GetOrigin(toplc, 0); 
+
+    double dcos[3][3];
+    data->GetDcos(dcos);
+
+    //  LPS to XYZ (cols,rows,slices)
+    //  LPS distance from centerLPS of the selBox to toplcLPS in terms of cols, rows, slices frame (XYZ)
+    //      calculate the distance from the topLC to the origin in LPS coordinates in terms of the 
+    //      xyz(cols,rows,slices) data frame by projecting the distance in the cols, rows slices 
+    //      farme (selBoxCtr - toplc) to LPS:
+    float temp; 
+    double toplcToSelBoxCenterXYZ[3];
+    for (int i = 0; i < 3; i++) {
+        temp = 0.0; 
+        for (int j = 0; j < 3; j++) {
+            temp = temp + dcos[i][j] * ( selBoxCenter[j] - toplc[j] ); 
+        }
+        toplcToSelBoxCenterXYZ[i] = temp; 
+    }
+    if (this->GetDebug()) {
+        cout << "MAX VS(xyzcenter): " << toplcToSelBoxCenterXYZ[0] << " " 
+            << toplcToSelBoxCenterXYZ[1] << " " << toplcToSelBoxCenterXYZ[2] << endl;
+    }
+    double shiftedDistanceToplcToSelBoxCenterXYZ[3];
+    for (int i = 0; i < 3; i++) {
+        shiftedDistanceToplcToSelBoxCenterXYZ[i] = voxelShift[i] + toplcToSelBoxCenterXYZ[i];
+    }
+
+    //  Convert the shifted distance to the center in xyz(col,row,slices) back to LPS frame and 
+    //  add to the toplc:  
+    //  temp = shiftedDistanceToplcToSelBoxCenterLPS; 
+    double centerLPS[3];
+    for (int i = 0; i < 3; i++) {
+        temp = 0.0; 
+        for (int j = 0; j < 3; j++) {
+            temp = temp + dcos[j][i] * ( shiftedDistanceToplcToSelBoxCenterXYZ[j] ); 
+        }
+        centerLPS[i] = toplc[i] + temp; 
+    }
+
+    ////  This is the target spatial center and should be subtracte from 
+    ////  the original center to get the voxel shift size
+    //for (int i = 0; i < 3; i++) {
+        //voxelShift[i] = centerLPS[i]; 
+    //}
+    //cout << "MAX VS(lpscenter): " << centerLPS[0] << " " << centerLPS[1] << " " << centerLPS[2] << endl;
+
+    //  center data at this location
+    this->SetVolumeCenter( centerLPS );
+
+}
+
+
+/*!
+ *  Set the center of the volume to the specified LPS value.
+ *  This method sets the member voxelShif variable required to achieve the shift to the
+ *  centerLPS value specified.
+ *  @param centerLPS    This is the target LPS value for the data after applying a voxel shift
+ *
+ */
+void svkMrsImageFFT::SetVolumeCenter( double centerLPS[3] )
+{
+    // Get the current volume center and voxel size.
+    // Determine the shift in terms of voxel units
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+    double currentCenterLPS[3];
+    data->GetImageCenter(currentCenterLPS);
+    double pixelSize[3];
+    data->GetDcmHeader()->GetPixelSize(pixelSize);
+
+    double dcos[3][3];
+    data->GetDcos(dcos);
+
+    //  shift must be applied in the data frame, which can be oblique to the LPS frame
+    //  the target is in the LPS frame and the Deltas in LPS must be projected into the
+    //  the data frame defined by the dcos.
+    double lpsShift[3];
+    double voxelShiftAbsolute[3];
+
+    cout << "Current center: " << currentCenterLPS[0] << " " << currentCenterLPS[1] << " " << currentCenterLPS[2] << endl;
+    for (int i = 0; i < 3; i++) {
+        lpsShift[i] = -(currentCenterLPS[i] - centerLPS[i]);
+        cout << "LPSSHIFT: "  << lpsShift[i] << endl;
+        cout << "center: "  << currentCenterLPS[i] << endl;
+    }
+    //  LPS to row,col,slice space
+    for (int i = 0; i < 3; i++) {
+        voxelShiftAbsolute[i] = 0.;
+        for (int j = 0; j < 3; j++) {
+            voxelShiftAbsolute[i] -=  dcos[i][j] * lpsShift[j];
+        }
+        //  now convert the absolute voxel shift into fractions of voxels
+        this->voxelShift[i] =  voxelShiftAbsolute[i] / pixelSize[i];
+    }
+    //cout << "Voxel Shift: " << this->voxelShift[0] << " " << this->voxelShift[1] << " " << this->voxelShift[2]<< endl;
+    //cout << "PS         : " << pixelSize[0] << " " << pixelSize[1] << " " << pixelSize[2] << endl;
+    //cout << "dcos       : " << dcos[0][0] << " " << dcos[0][1] << " " << dcos[0][2] << endl;
+    //cout << "dcos       : " << dcos[1][0] << " " << dcos[1][1] << " " << dcos[1][2] << endl;
+    //cout << "dcos       : " << dcos[2][0] << " " << dcos[2][1] << " " << dcos[2][2] << endl;
+}
 
 
 /*!

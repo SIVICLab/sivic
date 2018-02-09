@@ -102,6 +102,8 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         static void      FFTShift( vtkImageComplex* dataIn, int numPoints ); 
         static void      IFFTShift( vtkImageComplex* dataIn, int numPoints ); 
         void             OnlyUseSelectionBox();
+        void             MaximizeVoxelsInSelectionBox();
+        void             SetVolumeCenter( double centerLPS[3] );
 
 
     protected:
