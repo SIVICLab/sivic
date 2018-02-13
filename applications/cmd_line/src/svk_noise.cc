@@ -74,6 +74,7 @@ int main (int argc, char** argv)
     usemsg += "   -p                       Percent of spectrum to use for noise calc.   \n"; 
     usemsg += "                            number between 0 and 1 (default = .05).      \n"; 
     usemsg += "   -b                       Only include spectra in selection box.       \n"; 
+    usemsg += "   --single                 Only operates on the single specified file   \n";
     usemsg += "   -h                       Print this help mesage.                      \n";  
     usemsg += "                                                                         \n";  
     usemsg += "Determines noise in baseline of an MRS data set:                         \n";  
@@ -87,21 +88,23 @@ int main (int argc, char** argv)
     string inputFileName; 
     bool limitToSelectionBox = false; 
     float noiseWindowPercent = -1; 
+    bool onlyLoadSingleFile = false;
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
+        FLAG_SINGLE
     }; 
 
 
     static struct option long_options[] =
     {
         /* This option sets a flag. */
+        {"single",                  no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
-
 
 
     // ===============================================  
@@ -119,6 +122,9 @@ int main (int argc, char** argv)
                 break;
             case 'b':
                 limitToSelectionBox = true; 
+                break;
+            case FLAG_SINGLE:
+                onlyLoadSingleFile = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -159,6 +165,9 @@ int main (int argc, char** argv)
     }
 
     reader->SetFileName( inputFileName.c_str() );
+    if ( onlyLoadSingleFile == true ) {
+        reader->OnlyReadOneInputFile();
+    }
     reader->Update(); 
 
     svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader(); 
