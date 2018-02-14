@@ -72,36 +72,39 @@ int main (int argc, char** argv)
     usemsg += "                                                                         \n";  
     usemsg += "   -i                name   Name of input file                           \n"; 
     usemsg += "   -p                       Percent of spectrum to use for noise calc.   \n"; 
-    usemsg += "                            number between 0 and 1.                      \n"; 
+    usemsg += "                            number between 0 and 1 (default = .05).      \n"; 
     usemsg += "   -b                       Only include spectra in selection box.       \n"; 
+    usemsg += "   --single                 Only operates on the single specified file   \n";
     usemsg += "   -h                       Print this help mesage.                      \n";  
     usemsg += "                                                                         \n";  
     usemsg += "Determines noise in baseline of an MRS data set:                         \n";  
     usemsg += "Determines the frequency range to use by identifying a window in the     \n"; 
-    usemsg += "average magnitude spectum comprising 5% of the total spectrum with the   \n"; 
-    usemsg += "smallest SD.  Then uses that point range to compute the average value of \n"; 
-    usemsg += "the SD from the complex spectra.                                         \n"; 
+    usemsg += "average magnitude spectum comprising 5% (default) of the total spectrum  \n"; 
+    usemsg += "with the smallest SD.  Then uses that point range to compute the average \n"; 
+    usemsg += "value of the SD from the complex spectra.                                \n"; 
     usemsg += "\n";  
 
 
     string inputFileName; 
     bool limitToSelectionBox = false; 
     float noiseWindowPercent = -1; 
+    bool onlyLoadSingleFile = false;
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
+        FLAG_SINGLE
     }; 
 
 
     static struct option long_options[] =
     {
         /* This option sets a flag. */
+        {"single",                  no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
-
 
 
     // ===============================================  
@@ -119,6 +122,9 @@ int main (int argc, char** argv)
                 break;
             case 'b':
                 limitToSelectionBox = true; 
+                break;
+            case FLAG_SINGLE:
+                onlyLoadSingleFile = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -159,6 +165,9 @@ int main (int argc, char** argv)
     }
 
     reader->SetFileName( inputFileName.c_str() );
+    if ( onlyLoadSingleFile == true ) {
+        reader->OnlyReadOneInputFile();
+    }
     reader->Update(); 
 
     svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader(); 

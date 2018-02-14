@@ -60,7 +60,7 @@ svkMRSAverageSpectra::svkMRSAverageSpectra()
 
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 
-    this->useMaskFile = true;
+    this->useMaskFile = false;
     this->useSelectionBoxMask = false;
     this->useMagnitudeSpectra = false;
     this->SetNumberOfInputPorts(2); // the 2nd is optional
@@ -218,7 +218,9 @@ void svkMRSAverageSpectra::InitAverageSpectrum()
  */
 void svkMRSAverageSpectra::InitMask()
 {
-    if ( this->useMaskFile == true ) {
+    if( this->GetImageDataInput(1) != NULL) {
+        this->useMaskFile == true; 
+        this->useSelectionBoxMask = false;
 
         svkMriImageData* maskImage = svkMriImageData::SafeDownCast( this->GetImageDataInput(1) );
         this->maskROI = maskImage->GetPointData()->GetArray(0); 
@@ -235,7 +237,17 @@ void svkMRSAverageSpectra::InitMask()
         this->maskROI = vtkShortArray::New(); 
         for ( int i = 0; i < numCells; i++ ) {
             float maskVal = static_cast<float>(mask[i]);
-            this->maskROI->SetTuple(i, &maskVal );
+            this->maskROI->InsertTuple(i, &maskVal );
+        }
+    } else {
+        // default is use all cells: 
+        svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+        svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+        int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
+        this->maskROI = vtkShortArray::New(); 
+        for ( int i = 0; i < numCells; i++ ) {
+            float maskVal = 1;
+            this->maskROI->InsertTuple(i, &maskVal );
         }
     }
 
