@@ -1,0 +1,8 @@
+#   create image from dockerfile:
+docker build -t sivic_centos68 ./
+
+docker create sivic_centos68
+
+docker run -v /Users/jcrane10/docker/sivic_ge_dist/freeware:/data/freeware -v /Users/jcrane10/docker/sivic_ge_dist/netopt:/netopt -i -t sivic_centos68 /bin/bash
+
+
