@@ -72,7 +72,7 @@ int main (int argc, char** argv)
     usemsg += "                 --customx num_pts --customy num_pts --customz num_pts           \n";
     usemsg += "                 --double --doublex --doubley --doublez                          \n";
     usemsg += "                 --pow2 --pow2x --pow2y --pow2z                                  \n";
-    usemsg += "                 [-vh]                                                           \n";
+    usemsg += "                 [ --single ] [-vh]                                              \n";
     usemsg += "                                                                                 \n";  
     usemsg += "   -i        input_file_name   Name of file to convert.                          \n"; 
     usemsg += "   -o        output_root       Root name of outputfile.                          \n";  
@@ -95,6 +95,8 @@ int main (int argc, char** argv)
     usemsg += "   --pow2y                     Increase spatial points to next power of 2 in Y.  \n";
     usemsg += "   --pow2z                     Increase spatial points to next power of 2 in Z.  \n";
     usemsg += "                                                                                 \n";  
+    usemsg += "   --single                    Only process specified file if multiple in series.\n";
+    usemsg += "                                                                                 \n";  
     usemsg += "   -v                          Verbose output.                                   \n";
     usemsg += "   -h                          Print help mesage.                                \n";  
     usemsg += "                                                                                 \n";  
@@ -103,20 +105,21 @@ int main (int argc, char** argv)
 
     string inputFileName; 
     string outputFileName; 
-    int customPtsSpec  = -1;  
-    int customPtsX     = -1;  
-    int customPtsY     = -1;  
-    int customPtsZ     = -1;  
-    bool doublePtsSpec  = false;  
-    bool doublePtsX     = false;  
-    bool doublePtsY     = false;  
-    bool doublePtsZ     = false;  
-    bool pow2PtsSpec    = false;  
-    bool pow2PtsX       = false;  
-    bool pow2PtsY       = false;  
-    bool pow2PtsZ       = false;  
+    int customPtsSpec       = -1;  
+    int customPtsX          = -1;  
+    int customPtsY          = -1;  
+    int customPtsZ          = -1;  
+    bool doublePtsSpec      = false;  
+    bool doublePtsX         = false;  
+    bool doublePtsY         = false;  
+    bool doublePtsZ         = false;  
+    bool pow2PtsSpec        = false;  
+    bool pow2PtsX           = false;  
+    bool pow2PtsY           = false;  
+    bool pow2PtsZ           = false;  
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS; 
-    bool   verbose = false;
+    bool   verbose          = false;
+    bool onlyProcessSingle  = false;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -132,7 +135,8 @@ int main (int argc, char** argv)
         FLAG_POW2_SPEC, 
         FLAG_POW2_X, 
         FLAG_POW2_Y,  
-        FLAG_POW2_Z  
+        FLAG_POW2_Z, 
+        FLAG_SINGLE
     };
 
 
@@ -150,6 +154,7 @@ int main (int argc, char** argv)
         {"pow2x",       no_argument,       NULL,  FLAG_POW2_X},
         {"pow2y",       no_argument,       NULL,  FLAG_POW2_Y},
         {"pow2z",       no_argument,       NULL,  FLAG_POW2_Z},
+        {"single",      no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
 
@@ -207,6 +212,9 @@ int main (int argc, char** argv)
             case FLAG_POW2_Z:
                 pow2PtsZ = true; 
                 break;
+            case FLAG_SINGLE:
+                onlyProcessSingle = true;
+                break;
             case 'v':
                 verbose = true;
                 break;
@@ -255,6 +263,9 @@ int main (int argc, char** argv)
         exit(1);
     }
     reader->SetFileName( inputFileName.c_str() );
+    if ( onlyProcessSingle == true ) {
+        reader->OnlyReadOneInputFile();
+    }
     reader->Update(); 
 
     //  ===============================================

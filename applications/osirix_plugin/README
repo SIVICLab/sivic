@@ -1,69 +1,33 @@
-1. configure and build dist: 
-    make -f ../../Makefile.ctest configure_dist
+1. configure and build sivic dist for OsX, horos and oririx: 
+    make -f ../../Makefile.ctest configure_dist_horos
+    make -j4
+    make -f ../../Makefile.ctest configure_dist_osirix
     make -j4
 
-    create pkg for OsiriX plugin
+    - update project revision number
     
-    0.  update project revision number
-    
-    1.  build sivic libs and sivic_app
-    
-    cd sivic/trunk
-    ccmake ./
-    
-    BUILD_APPS                       ON 
-    BUILD_CLAPACK                    ON
-    BUILD_CREATE_RAW                 OFF
-    BUILD_EXAMPLES                   OFF
-    BUILD_GE_CONSOLE                 OFF
-    BUILD_ITK                        ON 
-    BUILD_LIBRARY                    ON 
-    BUILD_OSIRIX                     ON 
-    BUILD_PROFILER                   OFF
-    BUILD_SIVIC                      ON 
-    BUILD_SLICER                     OFF 
-    BUILD_TESTS                      OFF 
-    BUILD_VIZ_LIBRARY                ON 
-    CLAPACK_DIR                      /Users/jasonc/freeware/clapack-3.2.1-CMAKE
-    CMAKE_BACKWARDS_COMPATIBILITY    2.4                                      
-    CMAKE_BUILD_TYPE                 Release                                 
-    CMAKE_INSTALL_PREFIX             /usr/local                             
-    CMAKE_OSX_ARCHITECTURES          i386; x86_64                          
-    CMAKE_OSX_DEPLOYMENT_TARGET                                           
-    CMAKE_OSX_SYSROOT                /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX1
-    DCMTK_DIR                        /usr/local/dicom
-    EXECUTABLE_OUTPUT_PATH                          
-    ITK_DIR                          /usr/local/ITK_UNIVERSAL/lib/cmake/ITK-4.4
-    KWWidgets_DIR                    /usr/local/lib/KWWidgets
-    LIBRARY_OUTPUT_PATH                                                       
-    SVK_USE_GL2PS                    OFF                                     
-    UCSF_INTERNAL                    OFF                                    
-    VTK_DIR                          /usr/local/lib/vtk-5.6   
     
 2.  build plugin in XCode:
-cd sivic/trunk/applications/osirix_plugin
-build "Deployment" release from xcode
+    cd sivic/trunk/applications/osirix_plugin
+    build "Deployment" release from xcode
 
 3.  pre packaging dependencies:
-create_modified_libs_for_plugin.sh
+    create_modified_libs_for_plugin.sh
 
 4.  Make standalone version (to bundle command line tools): 
-    #################################
-    make the standalone version:
-    #################################
-
-    make_standalone.csh
+    make_standalone.csh horos
+    make_standalone.csh osirix
 
 5.  Create the DMG: 
-    rm SIVIC.dmg
-    hdiutil create ./SIVIC.dmg -volname "SIVIC" -size 610MB -format UDRW -srcfolder SIVIC_DISTRIBUTION/
-
-
+    rm SIVIC_horos.dmg
+    rm SIVIC_osirix.dmg
+    hdiutil create ./SIVIC_horos.dmg  -volname "SIVIC_HOROS"  -size 610MB -format UDRW -srcfolder SIVIC_DISTRIBUTION_horos/
+    hdiutil create ./SIVIC_osirix.dmg -volname "SIVIC_OSIRIX" -size 610MB -format UDRW -srcfolder SIVIC_DISTRIBUTION_osirix/
 
     #/Users/jasonc/xcode-build/Build/Products/Deployment/SIVIC_MRSI.bundle ./SIVIC_OSIRIX_PLUGIN/SIVIC_MRSI.osirixplugin
 
 
-
 6. upload via scp: 
-scp -r ./SIVIC.dmg jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.49/
+    scp -r ./SIVIC_horos.dmg jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.49/
+    scp -r ./SIVIC_osirix.dmg jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.49/
 
