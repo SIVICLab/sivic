@@ -140,7 +140,7 @@ cp -r ~/Library/Developer/Xcode/DerivedData/SIVIC_MRSI-gfzhgwmtudqatzemvsdhqbsdo
 #   add alias
 cp /Applications\ alias                                                         ./SIVIC_DISTRIBUTION_${plugin}/Applications
 if (${plugin} == "osirix") then
-    cp ~/Library/Application\ Support/OsiriX/Sivic_Plugins\ alias                   ./SIVIC_DISTRIBUTION_${plugin}/Sivic_Plugins
+    cp ~/Library/Application\ Support/OsiriX/Osirix_Plugins\ alias                   ./SIVIC_DISTRIBUTION_${plugin}/Osirix_Plugins
 endif
 if (${plugin} == "horos") then
     cp ~/Library/Application\ Support/Horos/Horos_Plugins\ alias                    ./SIVIC_DISTRIBUTION_${plugin}/Horos_Plugins
