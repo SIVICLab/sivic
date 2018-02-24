@@ -1,12 +1,27 @@
 #!/bin/csh
 
+if ($#argv != 1) then
+    echo
+    echo "Usage: $0 horos | osirix"
+    echo
+    exit(1)
+endif
+set plugin=$1
+
+if (${plugin} != "osirix" && ${plugin} != "horos") then
+    echo
+    echo "Usage: $0 horos | osirix"
+    echo
+    exit(1)
+endif
 
 #   Add Resources, e.g for tcl/tk, dicom, icons, X11 libs: 
+rm -rf ./SIVIC.app
 mkdir -p SIVIC.app/Contents/Resources
 
 cp -rp plugin_depends/tk8.5                                         SIVIC.app/Contents/Resources
 cp -rp plugin_depends/tcl8.5                                        SIVIC.app/Contents/Resources
-cp ../../working/release/applications/sivic_app/Darwin_i386/sivic   SIVIC.app/Contents/Resources
+cp ../../working/${plugin}/applications/sivic_app/Darwin_i386/sivic SIVIC.app/Contents/Resources
 cp detect_xquartz.scpt                                              SIVIC.app/Contents/Resources
 cp sivic.sh                                                         SIVIC.app/Contents/Resources
 cp SIVIC                                                            SIVIC.app/SIVIC.sh
@@ -115,13 +130,19 @@ cp ../../working/release/applications/cmd_line/src/svk_reorder_epsi             
 cp ../../working/release/applications/cmd_line/src/svk_variable_flip_scaler     SIVIC.app/Contents/sivic/local/bin/
 
 chmod -R 775 SIVIC.app
-rm -rf   ./SIVIC_DISTRIBUTION
-mkdir -p ./SIVIC_DISTRIBUTION 
-mkdir -p ./SIVIC_DISTRIBUTION/.background
-mv ./SIVIC.app                                                                  ./SIVIC_DISTRIBUTION/
-cp -r sivic_logo.icns                                                           ./SIVIC_DISTRIBUTION/.background/
-cp /Applications\ alias                                                         ./SIVIC_DISTRIBUTION/Applications
-cp -r ~/Library/Developer/Xcode/DerivedData/SIVIC_MRSI-gfzhgwmtudqatzemvsdhqbsdogzb/Build/Products/Deployment/SIVIC_MRSI.bundle                 ./SIVIC_DISTRIBUTION/SIVIC_MRSI.osirixplugin
-cp ~/Library/Application\ Support/OsiriX/Plugins\ alias                         ./SIVIC_DISTRIBUTION/Plugins
+rm -rf   ./SIVIC_DISTRIBUTION_${plugin}
+mkdir -p ./SIVIC_DISTRIBUTION_${plugin} 
+mkdir -p ./SIVIC_DISTRIBUTION_${plugin}/.background
+mv ./SIVIC.app                                                                  ./SIVIC_DISTRIBUTION_${plugin}/
+cp -r sivic_logo.icns                                                           ./SIVIC_DISTRIBUTION_${plugin}/.background/
+cp -r ~/Library/Developer/Xcode/DerivedData/SIVIC_MRSI-gfzhgwmtudqatzemvsdhqbsdogzb/Build/Products/Deployment/SIVIC_MRSI.bundle ./SIVIC_DISTRIBUTION_${plugin}/SIVIC_MRSI.osirixplugin
 
+#   add alias
+cp /Applications\ alias                                                         ./SIVIC_DISTRIBUTION_${plugin}/Applications
+if (${plugin} == "osirix") then
+    cp ~/Library/Application\ Support/OsiriX/Sivic_Plugins\ alias                   ./SIVIC_DISTRIBUTION_${plugin}/Sivic_Plugins
+endif
+if (${plugin} == "horos") then
+    cp ~/Library/Application\ Support/Horos/Horos_Plugins\ alias                    ./SIVIC_DISTRIBUTION_${plugin}/Horos_Plugins
+endif
 

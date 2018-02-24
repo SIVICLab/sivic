@@ -199,6 +199,18 @@ configure_dist: clean_results
 
 
 #
+# 	configure for external release 
+#
+configure_dist_osirix: clean_results
+	(${RM_CACHE} ${CONFIG_BASE_VTK6_DIST} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} -DOSX_PLUGIN_OSIRIX=ON  ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
+
+#
+# 	configure for external release 
+#
+configure_dist_horos: clean_results
+	(${RM_CACHE} ${CONFIG_BASE_VTK6_DIST} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} -DOSX_PLUGIN_HOROS=ON  ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
+
+#
 # 	configure for UCSF release 
 #
 configure_dist_UCSF: clean_results

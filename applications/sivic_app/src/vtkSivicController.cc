@@ -1920,7 +1920,11 @@ void vtkSivicController::SaveData()
 
 string vtkSivicController::GetOsiriXInDir()
 {
+#if defined (OSX_PLUGIN_OSIRIX)
 	string inDir("/Users/" + svkUtils::GetUserName() + "/Documents/OsiriX Data/INCOMING.noindex/");
+#elif defined (OSX_PLUGIN_HOROS)
+	string inDir("/Users/" + svkUtils::GetUserName() + "/Documents/Horos Data/INCOMING.noindex/");
+#endif
     return inDir; 
 }
 

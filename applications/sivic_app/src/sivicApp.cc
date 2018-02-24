@@ -831,7 +831,11 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vtkKWPushButton* osirixSCButton = vtkKWPushButton::New();
     osirixSCButton->SetParent( toolbar->GetFrame() );
     osirixSCButton->Create();
+#if defined (OSX_PLUGIN_OSIRIX)
     osirixSCButton->SetText( "OsiriX SC");
+#elif defined (OSX_PLUGIN_HOROS)
+    osirixSCButton->SetText( "Horos SC");
+#endif
     osirixSCButton->SetCommand( this->sivicController, "SaveSecondaryCaptureOsiriX"); 
     osirixSCButton->SetBalloonHelpString( "Save DICOM Secondary Capture data to OsiriX" );
     toolbar->AddWidget( osirixSCButton );
@@ -839,7 +843,11 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vtkKWPushButton* osirixMRSButton = vtkKWPushButton::New();
     osirixMRSButton->SetParent( toolbar->GetFrame() );
     osirixMRSButton->Create();
+#if defined (OSX_PLUGIN_OSIRIX)
     osirixMRSButton->SetText( "OsiriX MRS");
+#elif defined (OSX_PLUGIN_HOROS)
+    osirixMRSButton->SetText( "Horos MRS");
+#endif
     osirixMRSButton->SetCommand( this->sivicController, "SaveDataOsiriX"); 
     osirixMRSButton->SetBalloonHelpString( "Save DICOM MRS data to OsiriX" );
     toolbar->AddWidget( osirixMRSButton );
@@ -847,7 +855,11 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vtkKWPushButton* osirixMetMapButton = vtkKWPushButton::New();
     osirixMetMapButton->SetParent( toolbar->GetFrame() );
     osirixMetMapButton->Create();
+#if defined (OSX_PLUGIN_OSIRIX)
     osirixMetMapButton->SetText( "OsiriX Met Maps");
+#elif defined (OSX_PLUGIN_HOROS)
+    osirixMetMapButton->SetText( "Horos Met Maps");
+#endif
     osirixMetMapButton->SetCommand( this->sivicController, "SaveMetMapDataOsiriX"); 
     osirixMetMapButton->SetBalloonHelpString( "Save DICOM metabolite map data to OsiriX" );
     toolbar->AddWidget( osirixMetMapButton );
