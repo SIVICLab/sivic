@@ -135,6 +135,7 @@ mkdir -p ./SIVIC_DISTRIBUTION_${plugin}
 mkdir -p ./SIVIC_DISTRIBUTION_${plugin}/.background
 mv ./SIVIC.app                                                                  ./SIVIC_DISTRIBUTION_${plugin}/
 cp -r sivic_logo.icns                                                           ./SIVIC_DISTRIBUTION_${plugin}/.background/
+cp -r dmg_background.png                                                        ./SIVIC_DISTRIBUTION_${plugin}/.background/
 cp -r ~/Library/Developer/Xcode/DerivedData/SIVIC_MRSI-gfzhgwmtudqatzemvsdhqbsdogzb/Build/Products/Deployment/SIVIC_MRSI.bundle ./SIVIC_DISTRIBUTION_${plugin}/SIVIC_MRSI.osirixplugin
 
 #   add alias
