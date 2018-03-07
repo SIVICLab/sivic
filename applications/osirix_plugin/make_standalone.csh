@@ -135,12 +135,13 @@ mkdir -p ./SIVIC_DISTRIBUTION_${plugin}
 mkdir -p ./SIVIC_DISTRIBUTION_${plugin}/.background
 mv ./SIVIC.app                                                                  ./SIVIC_DISTRIBUTION_${plugin}/
 cp -r sivic_logo.icns                                                           ./SIVIC_DISTRIBUTION_${plugin}/.background/
+cp -r dmg_background.png                                                        ./SIVIC_DISTRIBUTION_${plugin}/.background/
 cp -r ~/Library/Developer/Xcode/DerivedData/SIVIC_MRSI-gfzhgwmtudqatzemvsdhqbsdogzb/Build/Products/Deployment/SIVIC_MRSI.bundle ./SIVIC_DISTRIBUTION_${plugin}/SIVIC_MRSI.osirixplugin
 
 #   add alias
 cp /Applications\ alias                                                         ./SIVIC_DISTRIBUTION_${plugin}/Applications
 if (${plugin} == "osirix") then
-    cp ~/Library/Application\ Support/OsiriX/Sivic_Plugins\ alias                   ./SIVIC_DISTRIBUTION_${plugin}/Sivic_Plugins
+    cp ~/Library/Application\ Support/OsiriX/Osirix_Plugins\ alias                   ./SIVIC_DISTRIBUTION_${plugin}/Osirix_Plugins
 endif
 if (${plugin} == "horos") then
     cp ~/Library/Application\ Support/Horos/Horos_Plugins\ alias                    ./SIVIC_DISTRIBUTION_${plugin}/Horos_Plugins
