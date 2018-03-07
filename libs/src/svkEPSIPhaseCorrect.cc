@@ -172,11 +172,11 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     int   epsiIndex; 
     vtkImageComplex* ktCorrection = new vtkImageComplex[2]; 
 
-    //  Inverse Fourier Transform spectral data to time domain to 
+    //  Inverse Fourier Transform spectral data to frequency domain to 
     //  apply linear phase shift for EPSI correction:
     string specDomain = hdr->GetStringValue( "SignalDomainColumns");
     bool applySpecFFTs = false;
-    if ( specDomain.compare("FREQUENCY") == 0 ) {
+    if ( specDomain.compare("TIME") == 0 ) {
         applySpecFFTs = true;
     }
     if ( applySpecFFTs == true ) {
