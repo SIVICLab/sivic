@@ -7,30 +7,28 @@
 
 OSTYPE := $(shell uname -s)
 
-XSEDE_TEST_DIR = /xsede_volume/library
-
-VTK_DIR             = /netopt/lib/vtk-5.6
-VTK6_DIR_DIST       = ${XSEDE_TEST_DIR}/VTK/VTK-6.3.0/lib/cmake/vtk-6.3/
-VTK6_DIR_DBG        = /netopt/VTK/VTK-6.3.0_debug/lib/cmake/vtk-6.3/
-VTK6_DIR_M32_EPIC   = /netopt/VTK/VTK-6.3.0_m32_epic/lib/cmake/vtk-6.3/
-KWW_DIR             = /netopt/kwwidgets_2.0_56/lib/KWWidgets/
-KWW6_DIR_DIST       = ${XSEDE_TEST_DIR}/kwwidgets_vtk6/
-KWW6_DIR_DBG        = /netopt/kwwidgets_vtk6_debug/
-DCMTK_DIR           = ${XSEDE_TEST_DIR}/dicom
+VTK_DIR         	= /netopt/lib/vtk-5.6
+VTK6_DIR_DIST   	= /netopt/VTK/VTK-6.3.0/lib/cmake/vtk-6.3/
+VTK6_DIR_DBG    	= /netopt/VTK/VTK-6.3.0_debug/lib/cmake/vtk-6.3/
+VTK6_DIR_M32_EPIC	= /netopt/VTK/VTK-6.3.0_m32_epic/lib/cmake/vtk-6.3/
+KWW_DIR     		= /netopt/kwwidgets_2.0_56/lib/KWWidgets/
+KWW6_DIR_DIST		= /netopt/kwwidgets_vtk6/
+KWW6_DIR_DBG 		= /netopt/kwwidgets_vtk6_debug/
+DCMTK_DIR       	= /netopt/dicom
 # check test_data out of radiology trac into test_data
-SIVIC_ROOT          = $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
-SVK_TEST_ROOT       = ${SIVIC_ROOT}/test_data
-OUTPUT_LOG          = ${PWD}/ctest_logs/atom
-CMAKE_DIR           = /usr/bin
-CMAKE_DIR_GE        = /usr/local/bin
-XVFB_RUN            = ${SIVIC_ROOT}/tests/scripts/xvfb-run
-SVN_COMMAND         = /netopt/bin/svn
-CLAPACK_DIR         = ${XSEDE_TEST_DIR}/clapack-3.2.1-CMAKE
-ITK_DIR             = ${XSEDE_TEST_DIR}/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4
-ADD_LINK_DIRS       =
-CMAKE_PREFIX_PATH   = ${VTK_DIR}
-
-
+SIVIC_ROOT      	= $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+SVK_TEST_ROOT   	= ${SIVIC_ROOT}/test_data
+OUTPUT_LOG      	= ${PWD}/ctest_logs/atom 
+CMAKE_DIR       	= /usr/bin
+CMAKE_DIR_GE    	= /usr/bin
+XVFB_RUN        	= ${SIVIC_ROOT}/tests/scripts/xvfb-run
+SVN_COMMAND     	= /netopt/bin/svn 
+CLAPACK_DIR     	= /opt/src/freeware/clapack/clapack-3.2.1-CMAKE
+ITK_DIR         	= /netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4
+ADD_LINK_DIRS   	= 
+CMAKE_PREFIX_PATH 	= ${VTK_DIR}
+NUM_JOBS		    = 16
+	
 #   Mac OS X
 ifeq ($(OSTYPE),Darwin)
 	CMAKE_DIR               := /usr/local/bin
@@ -59,7 +57,7 @@ endif
 
 
 #
-#   Add flags for source code coverage determination
+#   Add flags for source code coverage determination 
 #
 
 CMAKE_CXX_FLAGS_TEST = "-g -O0 -fprofile-arcs -ftest-coverage"

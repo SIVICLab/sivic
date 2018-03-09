@@ -12,9 +12,16 @@ RUN yum install zlib-devel  -y
 RUN yum install zlib -y
 RUN yum install fontconfig -y
 RUN yum install libXScrnSaver -y
-RUN ln -s /xsede_volume/ /netopt
+RUN mkdir /netopt
+RUN mkdir /netopt/tcltk
+RUN mkdir -p /opt/src/freeware/clapack
+ADD xsede_volume/library /netopt
+ADD xsede_volume/tcltk /netopt/tcltk
+RUN ln -s /netopt/clapack-3.2.1-CMAKE /opt/src/freeware/clapack/clapack-3.2.1-CMAKE
 RUN ln -s /usr/lib64/libXss.so.1 /usr/lib64/libXss.so
 RUN ln -s /usr/lib64/libpython2.7.so.1.0 /usr/lib64/libpython2.7.so
 RUN ln -s /usr/lib64/libXft.so.2 /usr/lib64/libXft.so
 RUN ln -s /usr/lib64/libfontconfig.so.1 /usr/lib64/libfontconfig.so
+ENV DCMDICTPATH /netopt/dicom/share/dcmtk/dicom.dic
+ENV PATH="/sivic/applications/cmd_line/Linux_x86_64/:${PATH}"
 CMD ["/usr/sbin/init"]

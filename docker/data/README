@@ -1,0 +1,2 @@
+This is a placeholder directory for sharing data with the sivic docker image.
+This path will be mounted as /data in the docker container.
