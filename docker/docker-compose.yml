@@ -2,11 +2,10 @@ version: '2'
 services:  
   sivic_centos7:
     build:
-      context: .
-      dockerfile: centos7/Dockerfile
-    image: sivic_centos7
+      context: ./centos7
+      dockerfile: Dockerfile
+    image: sivic_centos7:latest
     container_name: sivic_centos7_01
     volumes:
-      - /home/beck/Projects/HMTRC/2018/xsede_volume:/xsede_volume
-      - /home/beck/CLionProjects/sivic/:/sivic
-      - /home/beck/Projects/HMTRC/2018/development_tuturial:/tutorial
+      - ../../sivic/:/sivic
+      - ./data:/data
