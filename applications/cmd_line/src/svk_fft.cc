@@ -101,6 +101,7 @@ int main (int argc, char** argv)
     //usemsg += "   --voxL        voxL        L position to center nearest voxel on                   \n";
     //usemsg += "   --voxP        voxP        P position to center nearest voxel on                   \n";
     //usemsg += "   --voxS        voxS        S position to center nearest voxel on                   \n";
+    usemsg += "   --nst                     apply factor of N normalization to spatial IFFT         \n";
     usemsg += "   --maxVoxels               Maximize num voxels > .5 in selection box               \n";
     usemsg += "   --single                  Only transform specified file if multiple in series     \n";
     usemsg += "   -b                        Only transform data in selection box, only valid for    \n";
@@ -125,6 +126,7 @@ int main (int argc, char** argv)
     bool transformSpatialDomain = true; 
     bool onlyTransformSingle = false; 
     bool onlyTransformSelectionBox = false;
+    bool normalizeSpatialTransform = false; 
 
     double voxelShift[3]; 
     voxelShift[0] = 0.; 
@@ -154,6 +156,7 @@ int main (int argc, char** argv)
         FLAG_CENTER_P, 
         FLAG_CENTER_S,
         FLAG_MAX_VOXELS,
+        FLAG_NST,
         FLAG_SINGLE
     }; 
 
@@ -171,6 +174,7 @@ int main (int argc, char** argv)
         {"ctrS",      required_argument, NULL,  FLAG_CENTER_S},
         {"maxVoxels", no_argument,       NULL,  FLAG_MAX_VOXELS},
         {"single",    no_argument,       NULL,  FLAG_SINGLE},
+        {"nst",       no_argument,       NULL,  FLAG_NST},
         {0, 0, 0, 0}
     };
 
@@ -231,6 +235,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_SINGLE:
                 onlyTransformSingle = true;
+                break;
+            case FLAG_NST:
+                normalizeSpatialTransform = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -302,6 +309,10 @@ int main (int argc, char** argv)
         
         if ( onlyTransformSelectionBox == true) { 
             imageFFT->OnlyUseSelectionBox();
+        }
+
+        if (normalizeSpatialTransform == true) {
+            imageFFT->NormalizeTransform();
         }
 
         imageFFT->Update();
