@@ -78,6 +78,7 @@ int main (int argc, char** argv)
     usemsg += "                                         3 = *                               \n";  
     usemsg += "                                         4 = /                               \n";  
     usemsg += "                                         5 = * k (Scale by constant)         \n";  
+    usemsg += "                                         6 = + k (Add a constant)            \n";  
     usemsg += "   -s            scale_factor        float scaling factor                    \n";
     usemsg += "   --output_type typeID              Optional output type:                   \n";
     usemsg += "                                         1 = Unsigned Integer                \n";  
@@ -160,7 +161,7 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
-    if ( operation < 1 || operation > 5 ) {
+    if ( operation < 1 || operation > 6 ) {
         cout << "Invalid operation: " << operation << endl;
         cout << usemsg << endl;
         exit(1); 
@@ -230,6 +231,9 @@ int main (int argc, char** argv)
     } else if ( operation == 5 ) {
         math->SetOperationToMultiplyByK();   
         math->SetConstantK( scalingFactor );
+    } else if ( operation == 6 ) {
+        math->SetOperationToAddConstant();   
+        math->SetConstantC( scalingFactor );
     }
 
     //  By default, output is the greater of the input datatypes
