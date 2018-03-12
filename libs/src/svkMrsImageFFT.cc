@@ -76,6 +76,7 @@ svkMrsImageFFT::svkMrsImageFFT()
     this->voxelShift[2] = 0;
     this->onlyUseSelectionBox = false;
     this->selectionBoxMask = NULL;
+    this->normalizeTranform = false;
 }
 
 
@@ -86,6 +87,13 @@ svkMrsImageFFT::~svkMrsImageFFT()
         this->selectionBoxMask = NULL;
     }
 }
+
+
+void svkMrsImageFFT::NormalizeTransform()
+{
+    this->normalizeTranform = true;
+}
+
 
 
 /*!
@@ -359,6 +367,17 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                 currentData = voxelShifter->GetOutput();
             }
 
+            //  if normalize if specified: 
+            if ( this->normalizeTranform == true) {
+                vtkDataArray* metMapArray = currentData->GetPointData()->GetArray(0);
+                for ( int v = 0; v < numVoxels; v++) {
+                    double tuple[2];
+                    currentData->GetPointData()->GetArray(0)->GetTuple(v, tuple);
+                    tuple[0] *= numVoxels; 
+                    tuple[1] *= numVoxels; 
+                    currentData->GetPointData()->GetArray(0)->SetTuple(v, tuple);
+                }
+            }
             data->SetImage( currentData, point, &loopVector ); 
         }
     }
