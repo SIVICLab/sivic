@@ -31,6 +31,13 @@
 
     #/Users/jasonc/xcode-build/Build/Products/Deployment/SIVIC_MRSI.bundle ./SIVIC_OSIRIX_PLUGIN/SIVIC_MRSI.osirixplugin
 
+6.  After creating the dmg: 
+    - open disk utility 
+        File >> "Open Disk Image" and select the new .dmg file
+        File >> "New Image" >> "Image from SIVIC_HOROS"
+                - select new file name "SIVIC_HOROS_DIST.dmg" 
+                - select new file name "SIVIC_OSIRIX_DIST.dmg" 
+
 
 6. upload via scp: 
     scp -r ./SIVIC_horos.dmg jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.49/
