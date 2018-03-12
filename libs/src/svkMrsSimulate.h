@@ -95,6 +95,7 @@ class svkMrsSimulate : public svkImageInPlaceFilter
     private:
         
         vtkFloatArray* window;
+        int     type; 
 
 };
 
