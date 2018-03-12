@@ -83,6 +83,9 @@ int main (int argc, char** argv)
     usemsg += "   --output_type typeID              Optional output type:                   \n";
     usemsg += "                                         1 = Unsigned Integer                \n";  
     usemsg += "                                         2 = Float                           \n";
+    usemsg += "   --single                          Only operates on the specified files.   \n";
+    usemsg += "                                     in the case of dynamic series comprised \n";
+    usemsg += "                                     of multiple volumes.                    \n";
     usemsg += "   -v                                Verbose output.                         \n";
     usemsg += "   -h                                Print help mesage.                      \n";  
     usemsg += "                                                                             \n";  
@@ -96,6 +99,7 @@ int main (int argc, char** argv)
     int    operation     = 0;  
     float  scalingFactor = 1;
     bool   verbose       = false;
+    bool   onlyLoadSingleFile = false;
     int    outputType = 0;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
@@ -105,7 +109,8 @@ int main (int argc, char** argv)
     enum FLAG_NAME {
         FLAG_FILE_1 = 0, 
         FLAG_FILE_2,
-        OUTPUT_TYPE
+        OUTPUT_TYPE, 
+        FLAG_SINGLE
     };
 
     static struct option long_options[] =
@@ -113,6 +118,7 @@ int main (int argc, char** argv)
         {"i1",          required_argument, NULL,  FLAG_FILE_1},
         {"i2",          required_argument, NULL,  FLAG_FILE_2},
         {"output_type", required_argument, NULL,  OUTPUT_TYPE},
+        {"single",      no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
 
@@ -140,6 +146,9 @@ int main (int argc, char** argv)
                 break;
             case OUTPUT_TYPE:
                 outputType = atoi(optarg);
+                break;
+            case FLAG_SINGLE:
+                onlyLoadSingleFile = true;
                 break;
             case 'v':
                 verbose = true;
@@ -203,9 +212,17 @@ int main (int argc, char** argv)
         exit(1);
     }
     reader1->SetFileName( inputFileName1.c_str() );
+    if ( onlyLoadSingleFile == true ) {
+        cout << "ONLY LOAD 1" << endl;
+        reader1->OnlyReadOneInputFile();
+    }
     reader1->Update(); 
     if ( reader2 != NULL ) {
         reader2->SetFileName( inputFileName2.c_str() );
+        if ( onlyLoadSingleFile == true ) {
+            cout << "ONLY LOAD 1" << endl;
+            reader2->OnlyReadOneInputFile();
+        }
         reader2->Update();
     }
 
