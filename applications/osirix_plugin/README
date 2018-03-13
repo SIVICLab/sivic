@@ -1,6 +1,8 @@
 1. configure and build sivic dist for OsX, horos and oririx: 
+    cd sivic/working/horos
     make -f ../../Makefile.ctest configure_dist_horos
     make -j4
+    cd sivic/working/osirix
     make -f ../../Makefile.ctest configure_dist_osirix
     make -j4
 
@@ -35,8 +37,8 @@
     - open disk utility 
         File >> "Open Disk Image" and select the new .dmg file
         File >> "New Image" >> "Image from SIVIC_HOROS"
-                - select new file name "SIVIC_HOROS_DIST.dmg" 
-                - select new file name "SIVIC_OSIRIX_DIST.dmg" 
+                - select new file name "SIVIC_WITH_HOROS_PLUGIN.dmg" 
+                - select new file name "SIVIC_WITH_OSIRIX_PLUGIN.dmg" 
 
 
 6. upload via scp: 
