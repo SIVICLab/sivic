@@ -886,7 +886,7 @@ int svkDataAcquisitionDescriptionXML_SetDataWithPath( void* xml, const char* pat
 /*!
  * Add an xml element with the given parent path and name. The element will be
  * initially empty but its value should be set with
- * svkDataAcquisitionDescriptionXML_SetDataWitfhPath().
+ * svkDataAcquisitionDescriptionXML_SetDataWithPath().
  *
  * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML object
  * \param path the xpath of the parent to which you wish add the element to
