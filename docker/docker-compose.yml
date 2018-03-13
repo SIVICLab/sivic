@@ -1,0 +1,11 @@
+version: '2'  
+services:  
+  sivic_centos7:
+    build:
+      context: ./centos7
+      dockerfile: Dockerfile
+    image: sivic_centos7:latest
+    container_name: sivic_centos7_01
+    volumes:
+      - ../:/sivic
+      - ./data:/data
