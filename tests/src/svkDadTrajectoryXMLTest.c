@@ -180,11 +180,11 @@ int epsi_test(const int argc, const char **argv) {
 
     svkDataAcquisitionDescriptionXML_SetTrajectoryDoubleParameter("myDoubleParam", 0, dadXml );
 
-    svkDataAcquisitionDescriptionXML_WriteXMLFile( argv[1], dadXml );
+    svkDataAcquisitionDescriptionXML_WriteXMLFile( argv[2], dadXml );
     svkDataAcquisitionDescriptionXML_Delete( dadXml );
     dadXml = NULL;
     // Read the dad file back in
-    dadXml =  svkDataAcquisitionDescriptionXML_Read(argv[1], &status);
+    dadXml =  svkDataAcquisitionDescriptionXML_Read(argv[2], &status);
     int numberOfDimensions = svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeNumberOfDimensions(dadXml);
     int xDim = svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionValue(0, dadXml);
     if(xDim != 8) {
