@@ -121,7 +121,12 @@ struct globalVariables {
     string justCapture;
     double threshold;
     bool thresholdSet;
+    double overlayMax;
+    bool overlayMaxSet;
+    double overlayMin;
+    bool overlayMinSet;
     long cameraMTime;
+    bool skipValidation;
     svkImageWriterFactory::WriterType dataTypeOut;
     vector<string> contourColors;
 } globalVars;
@@ -142,24 +147,27 @@ void Usage( void )
     cout << "    svk_multi_view [-s spectra ] [-o overlay ] [-d] imageOne imageTwo imageThree ..." << endl << endl;
     cout << "                   [-l lowerBound ] [-u upperBound ] [-b beginPoint] [-e endPoint]" << endl;
     cout << "                   [-c channel ] [-t timepoint ] [-p component] [-j captureRoot]" << endl << endl;
-    cout << "                   -d debug       Turn on debug messages." << endl;
-    cout << "                   -s spectra     A spectra file to load. This can be used multiple times to overlay traces." << endl;
-    cout << "                   -o overlay     An overlay image to load. This can be used multiple times." << endl;
-    cout << "                   -n overlay     An overlay image to load. Rendered as contours. This can be used multiple times." << endl;
-    cout << "                   -l lowerBound  Minimum for Y axis of traces." << endl;
-    cout << "                   -u upperBound  Maximum for Y axis of traces." << endl;
-    cout << "                   -b beginPoint  First point (index starting at 1) of traces to display." << endl;
-    cout << "                   -e endPoint    Final point (index starting at 1) of traces to display." << endl;
-    cout << "                   -c channel     Channel (index starting at 1) of traces to display." << endl;
-    cout << "                   -t timepoint   Timepoint (index starting at 1) of traces to display." << endl;
-    cout << "                   -p component   Component of traces to display. 0=real (default), 1=imag, 2=mag" << endl;
-    cout << "                   -i slice       Slice (index starting at 1) to display. Refers to image slice if present." << endl;
-    cout << "                   -j captureRoot Just load the data and take screen captures. Results saved with root captureRoot." << endl;
-    cout << "                   -r threshold   Overlay threshold by percentage of window (0-1)." << endl;
-    cout << "                   -x type        Output data format:" << endl;
-    cout << "                                         0 = JPEG" << endl;
-    cout << "                                         1 = TIFF" << endl;
-    cout << "                    --colors      Comma separated ordered list of colors used for contours." << endl;
+    cout << "                   -d debug          Turn on debug messages." << endl;
+    cout << "                   -s spectra        A spectra file to load. This can be used multiple times to overlay traces." << endl;
+    cout << "                   -o overlay        An overlay image to load. This can be used multiple times." << endl;
+    cout << "                   -n overlay        An overlay image to load. Rendered as contours. This can be used multiple times." << endl;
+    cout << "                   -l lowerBound     Minimum for Y axis of traces." << endl;
+    cout << "                   -u upperBound     Maximum for Y axis of traces." << endl;
+    cout << "                   -b beginPoint     First point (index starting at 1) of traces to display." << endl;
+    cout << "                   -e endPoint       Final point (index starting at 1) of traces to display." << endl;
+    cout << "                   -c channel        Channel (index starting at 1) of traces to display." << endl;
+    cout << "                   -t timepoint      Timepoint (index starting at 1) of traces to display." << endl;
+    cout << "                   -p component      Component of traces to display. 0=real (default), 1=imag, 2=mag" << endl;
+    cout << "                   -i slice          Slice (index starting at 1) to display. Refers to image slice if present." << endl;
+    cout << "                   -j captureRoot    Just load the data and take screen captures. Results saved with root captureRoot." << endl;
+    cout << "                   -r threshold      Overlay threshold by percentage of window (0-1)." << endl;
+    cout << "                   -x type           Output data format:" << endl;
+    cout << "                                            0 = JPEG" << endl;
+    cout << "                                            1 = TIFF" << endl;
+    cout << "                    --colors         Comma separated ordered list of colors used for contours." << endl;
+    cout << "                    --overlayMax     Maximum value for overlay LUT. Must set minimum as well." << endl;
+    cout << "                    --overlayMin     Minimum value for overlay LUT. Must set maximum as well." << endl;
+    cout << "                    --skipValidation Skip validation of overlays." << endl;
     cout << "DESCRIPTION" << endl;
     cout << "    svk_multi_view is a quick way of seeing an arbitrary number of images synced by slice number." << endl;
     cout << "    If multiple overlays are specified then the first will appear on the spectra, the next on the first image etc." << endl;
@@ -191,6 +199,7 @@ int main ( int argc, char** argv )
     globalVars.threshold = 0;
     globalVars.cameraMTime = 0;
     globalVars.model = svkDataModel::New();
+    globalVars.skipValidation = false;
     vector<string> spectraFileNames;
     vector<string> overlayFileNames;
     /* This varibale will change to a value of 1 if there is a spectra loaded */
@@ -201,12 +210,18 @@ int main ( int argc, char** argv )
     globalVars.dataTypeOut = svkImageWriterFactory::TIFF;
 
     enum FLAG_NAME {
-        COLORS
+        COLORS,
+        OVERLAY_MAX,
+        OVERLAY_MIN,
+        SKIP_VALIDATION
     };
 
     static struct option long_options[] =
     {
             {"colors",   required_argument, NULL,  COLORS},
+            {"overlayMax", required_argument, NULL,  OVERLAY_MAX},
+            {"overlayMin", required_argument, NULL,  OVERLAY_MIN},
+            {"skipValidation", no_argument, NULL, SKIP_VALIDATION},
             {0, 0, 0, 0}
     };
 
@@ -274,6 +289,17 @@ int main ( int argc, char** argv )
                 break;
             case COLORS:
                 globalVars.contourColors = svkUtils::SplitString(optarg, ",");
+                break;
+            case OVERLAY_MAX:
+                globalVars.overlayMax = svkTypeUtils::StringToFloat(optarg);
+                globalVars.overlayMaxSet = true;
+                break;
+            case OVERLAY_MIN:
+                globalVars.overlayMin = svkTypeUtils::StringToFloat(optarg);
+                globalVars.overlayMinSet = true;
+                break;
+            case SKIP_VALIDATION:
+                globalVars.skipValidation = true;
                 break;
             default:
                 cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
@@ -448,9 +474,18 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
     }
 
     if( globalVars.overlay.size() > overlayId) {
+        if(globalVars.skipValidation) {
+            dataViewer->GetView()->ValidationOff();
+        }
         dataViewer->SetInput( globalVars.overlay[overlayId], 2  );
         if( globalVars.thresholdSet ) {
             svkOverlayViewController::SafeDownCast(dataViewer)->SetOverlayThreshold( globalVars.threshold );
+        }
+        if( globalVars.overlayMaxSet && globalVars.overlayMinSet ) {
+            double window = globalVars.overlayMax - globalVars.overlayMin;
+            double level = window/2.0 + globalVars.overlayMin;
+            svkOverlayView::SafeDownCast(dataViewer->GetView())->SetColorOverlayWindow(window);
+            svkOverlayView::SafeDownCast(dataViewer->GetView())->SetColorOverlayLevel(level);
         }
     }
     if( globalVars.spectra.size() > 0 ) {

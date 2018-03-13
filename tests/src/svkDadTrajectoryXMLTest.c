@@ -43,11 +43,22 @@
 #include <svkSatBandsXML.h>
 #include <svkDataAcquisitionDescriptionXML.h>
 #include <stdio.h>
-#include <stdlib.h>     
+#include <stdlib.h>
+#include <string.h>
 
  
-int main(const int argc, const char **argv)
-{
+int main(const int argc, const char **argv) {
+
+    if( base_test(argc, argv) != 0 || epsi_test(argc, argv) != 0) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
+
+
+
+int base_test(const int argc, const char **argv) {
     int   status = 0;
 
     // Create a new data acquisition description object
@@ -150,4 +161,62 @@ int main(const int argc, const char **argv)
     return status;
 }
 
+int epsi_test(const int argc, const char **argv) {
+    int status = 0;
+    printf("This is my new test start\n");
+    // Create a new data acquisition description object
+    void* dadXml = svkDataAcquisitionDescriptionXML_New( );
+    // Set the trajectory type, id, and comment
+    const char* trajectoryType = "epsi";
+    const char* trajectoryID = "epsi2342";
+    const char* trajectoryComment = "This is an epsi dataset..";
+    svkDataAcquisitionDescriptionXML_SetTrajectory(trajectoryType, trajectoryID, trajectoryComment, dadXml );
+
+    svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension("x", 8, dadXml);
+    svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension("y", 7, dadXml);
+    svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension("z", 6, dadXml);
+    svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension("time_spec", 59, dadXml);
+    svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension("time_dynamic", 10, dadXml);
+
+    svkDataAcquisitionDescriptionXML_SetTrajectoryDoubleParameter("myDoubleParam", 0, dadXml );
+
+    svkDataAcquisitionDescriptionXML_WriteXMLFile( argv[1], dadXml );
+    svkDataAcquisitionDescriptionXML_Delete( dadXml );
+    dadXml = NULL;
+    // Read the dad file back in
+    dadXml =  svkDataAcquisitionDescriptionXML_Read(argv[1], &status);
+    int numberOfDimensions = svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeNumberOfDimensions(dadXml);
+    int xDim = svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionValue(0, dadXml);
+    if(xDim != 8) {
+        printf("Incorrect x matrix size. %d != 8\n", xDim);
+    } else {
+        printf("Correct x matrix size: %d\n", xDim);
+    }
+    const char* xDimName = svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionName(0, dadXml);
+    if(strcmp(xDimName, "x") != 0 ) {
+        printf("Incorrect x matrix size dimension name. %s != x\n", xDimName);
+    } else {
+        printf("Correct x matrix size name: %s\n", xDimName);
+    }
+    int yDim = svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionValue(1, dadXml);
+    if(yDim != 7) {
+        printf("Incorrect x matrix size. %d != 7\n", yDim);
+    } else {
+        printf("Correct x matrix size: %d\n", yDim);
+    }
+    const char* yDimName = svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionName(1, dadXml);
+    if(strcmp(yDimName, "y") != 0 ) {
+        printf("Incorrect y matrix size dimension name. %s != y\n", yDimName);
+    } else {
+        printf("Correct y matrix size name: %s\n", yDimName);
+    }
+    if( numberOfDimensions != 5) {
+        printf("Incorrect number of dimension %d != 5\n", numberOfDimensions);
+        return -1;
+    }
+
+
+
+    return status;
+}
 
