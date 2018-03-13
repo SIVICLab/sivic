@@ -566,6 +566,39 @@ const char * svkDataAcquisitionDescriptionXML::GetDataWithPath( const char* xmlP
 
 
 /*!
+ *
+ * @param index
+ * @param parentPath
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML::GetIntByIndexWithParentPath( int index, const char* parentPath )
+{
+    string data = this->GetDataWithPath( parentPath );
+    vtkXMLDataElement* parentElement = svkXMLUtils::FindNestedElementWithPath(this->GetRootXMLDataElement(), parentPath);
+    vtkXMLDataElement* element = parentElement->GetNestedElement(index);
+    data = element->GetCharacterData();
+    if( data.compare("") != 0 ){
+        return svkTypeUtils::StringToInt(data);
+    }
+    return -1;
+}
+
+
+/*!
+ *
+ * @param index
+ * @param parentPath
+ * @return
+ */
+const char * svkDataAcquisitionDescriptionXML::GetDataByIndexWithParentPath( int index, const char* parentPath )
+{
+    string data = this->GetDataWithPath( parentPath );
+    vtkXMLDataElement* parentElement = svkXMLUtils::FindNestedElementWithPath(this->GetRootXMLDataElement(), parentPath);
+    vtkXMLDataElement* element = parentElement->GetNestedElement(index);
+    return element->GetName();
+}
+
+/*!
  *  Sets the character data for an xml element. Reports an error and returns
  *  null if nothing is found at the given xpath.
  *  \param xmlPath the xpath to the element
@@ -652,6 +685,94 @@ vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetRootXMLDataElement()
 {
     return this->dataAcquisitionDescriptionXML;
 }
+
+
+/*!
+ *
+ * @return
+ */
+svkEPSIReorder::EPSIType svkDataAcquisitionDescriptionXML::GetEPSIType()
+{
+    string epsiTypeFromDad = this->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/epsiType");
+    svkEPSIReorder::EPSIType epsiType = svkEPSIReorder::UNDEFINED_EPSI_TYPE;
+    if( epsiTypeFromDad.compare("SYMMETRIC") == 0 ){
+        epsiType = svkEPSIReorder::SYMMETRIC;
+    } else if ( epsiTypeFromDad.compare("FLYBACK") == 0 ) {
+        epsiType = svkEPSIReorder::FLYBACK;
+    } else if (epsiTypeFromDad.compare("INTERLEAVED") == 0 ) {
+        epsiType = svkEPSIReorder::INTERLEAVED;
+    }
+
+    return epsiType;
+}
+
+
+/*!
+ *
+ * @return
+ */
+const char* svkDataAcquisitionDescriptionXML::GetEPSITypeString()
+{
+    string epsiTypeFromDad = this->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/epsiType");
+    return epsiTypeFromDad.c_str();
+}
+
+
+/*!
+ *
+ * @param name
+ * @param value
+ */
+void svkDataAcquisitionDescriptionXML::AddEncodedMatrixSizeDimension( string name, int value  )
+{
+    string parentPath = "encoding/encodedSpace/matrixSize";
+    string elementName = parentPath;
+    elementName.append("/");
+    elementName.append(name);
+    vtkXMLDataElement* elem = this->FindNestedElementWithPath(elementName);
+    if (elem == NULL ) {
+        this->AddElementWithParentPath(parentPath.c_str(), name.c_str());
+
+    }
+    this->SetDataWithPath(elementName.c_str(), svkTypeUtils::IntToString(value).c_str());
+}
+
+
+/*!
+ *
+ * @param index
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML::GetEncodedMatrixSizeDimensionValue(int index)
+{
+    string parentPath = "encoding/encodedSpace/matrixSize";
+    return this->GetIntByIndexWithParentPath(index, parentPath.c_str());
+}
+
+
+/*!
+ *
+ * @param index
+ * @return
+ */
+const char* svkDataAcquisitionDescriptionXML::GetEncodedMatrixSizeDimensionName(int index)
+{
+    string parentPath = "encoding/encodedSpace/matrixSize";
+    return this->GetDataByIndexWithParentPath(index, parentPath.c_str());
+}
+
+
+/*!
+ *
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML::GetEncodedMatrixSizeNumberOfDimensions()
+{
+    string parentPath = "encoding/encodedSpace/matrixSize";
+    vtkXMLDataElement* parentElement = svkXMLUtils::FindNestedElementWithPath(this->GetRootXMLDataElement(), parentPath);
+    return parentElement->GetNumberOfNestedElements();
+}
+
 
 
 /*!
@@ -968,5 +1089,70 @@ double svkDataAcquisitionDescriptionXML_GetTrajectoryDoubleParameter(const char*
     } else {
         printf(NULL_XML_ERROR);
         return VTK_DOUBLE_MIN;
+    }
+}
+
+
+/*!
+ *
+ * @param name
+ * @param value
+ */
+void svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension(const char* name, int value, void* xml)
+{
+    if( xml != NULL ) {
+        ((svkDataAcquisitionDescriptionXML*)xml)->AddEncodedMatrixSizeDimension( name, value );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+}
+
+
+/*!
+ *
+ * @param xml
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeNumberOfDimensions(void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEncodedMatrixSizeNumberOfDimensions();
+    } else {
+        printf(NULL_XML_ERROR);
+        return -1;
+    }
+}
+
+
+/*!
+ * 
+ * @param index
+ * @param xml
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionValue(int index, void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEncodedMatrixSizeDimensionValue(index);
+    } else {
+        printf(NULL_XML_ERROR);
+        return -1;
+    }
+}
+
+
+/*!
+ *
+ * @param index
+ * @param xml
+ * @return
+ */
+const char* svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionName(int index, void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEncodedMatrixSizeDimensionName(index);
+    } else {
+        printf(NULL_XML_ERROR);
+        return NULL;
     }
 }

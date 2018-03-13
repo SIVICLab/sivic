@@ -56,7 +56,9 @@
 #include <vtkObject.h>
 #include <vtkXMLDataElement.h>
 #include <svkSatBandsXML.h>
+#include <svkEPSIReorder.h>
 #include <svkXMLUtils.h>
+#include <svkInt.h>
 
 #include "svkTypes.h"
 
@@ -106,6 +108,9 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         int                         GetXMLVersion(); 
         vtkXMLDataElement*          FindNestedElementWithPath( string xmlPath);
         const char*                 GetDataWithPath( const char* xmlPath );
+        int                         GetIntByIndexWithParentPath( int index, const char* parentPath );
+        const char*                 GetDataByIndexWithParentPath( int index, const char* parentPath );
+
         int                         SetDataWithPath( const char* xmlPath, const char* value );
         vtkXMLDataElement*          AddElementWithParentPath( const char* xmlPath, const char* name );
         int                         RemoveElementWithParentPath( const char* xmlPath, const char* name );
@@ -130,6 +135,12 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         void                        SetTrajectoryParameter( string name, double value  );
         double                      GetTrajectoryDoubleParameter( string name );
 
+        svkEPSIReorder::EPSIType    GetEPSIType();
+        const char*                 GetEPSITypeString();
+        void                        AddEncodedMatrixSizeDimension( string name, int value);
+        int                         GetEncodedMatrixSizeNumberOfDimensions();
+        const char*                 GetEncodedMatrixSizeDimensionName(int index);
+        int                         GetEncodedMatrixSizeDimensionValue(int index);
 
         int                         WriteXMLFile( string xmlFileName );
 
@@ -192,8 +203,11 @@ void        svkDataAcquisitionDescriptionXML_SetTrajectoryLongParameter(const ch
 long        svkDataAcquisitionDescriptionXML_GetTrajectoryLongParameter(const char* name, void* xml); 
 void        svkDataAcquisitionDescriptionXML_SetTrajectoryDoubleParameter(const char* name, 
                 double value, void* xml); 
-double      svkDataAcquisitionDescriptionXML_GetTrajectoryDoubleParameter(const char* name, void* xml); 
-
+double      svkDataAcquisitionDescriptionXML_GetTrajectoryDoubleParameter(const char* name, void* xml);
+void        svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension(const char* name, int value, void* xml);
+int         svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionValue(int index, void* xml);
+const char* svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionName(int index, void* xml);
+int         svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeNumberOfDimensions(void* xml);
 
 #ifdef __cplusplus
 }
