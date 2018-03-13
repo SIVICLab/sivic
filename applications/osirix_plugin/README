@@ -44,6 +44,6 @@
 
 
 6. upload via scp: 
-    scp -r ./SIVIC_WITH_HOROS_PLUGIN.dmg  jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.83/
-    scp -r ./SIVIC_WITH_OSIRIX_PLUGIN.dmg jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.83/
+    scp -r ./SIVIC_WITH_HOROS_PLUGIN_0.9.83.dmg  jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.83/
+    scp -r ./SIVIC_WITH_OSIRIX_PLUGIN_0.9.83.dmg jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.83/
 
