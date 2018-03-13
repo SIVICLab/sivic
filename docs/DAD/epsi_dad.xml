@@ -53,6 +53,7 @@
                 <acquisition_delay_ms>1.2</acquisition_delay_ms>                    // this would be the delay from the zero crossing to the 
                                                                                     // first sampled point.   Aligning sampling to the gradient.
 
+                <num_epsi_trains>1</num_epsi_trains>                                new parameter for acquireing multiple epsi trains
                 <gradient_axis>dim3</gradient_axis>                                 // example, epsi axis is along kz (slice) 
 
                 ---------------------------------

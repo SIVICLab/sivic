@@ -161,6 +161,8 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
                                     vtkstd::string comment 
                                 ); 
         void                    CombineLobes(svkImageData* data);
+        void                    LoadDataAcquisitionDescriptionFile( string pfileName);
+        svkDataAcquisitionDescriptionXML* dadFile;
 
 
 

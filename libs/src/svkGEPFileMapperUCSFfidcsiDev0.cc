@@ -68,7 +68,7 @@ svkGEPFileMapperUCSFfidcsiDev0::svkGEPFileMapperUCSFfidcsiDev0()
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
-
+    this->dadFile = NULL;
 }
 
 
@@ -78,6 +78,9 @@ svkGEPFileMapperUCSFfidcsiDev0::svkGEPFileMapperUCSFfidcsiDev0()
 svkGEPFileMapperUCSFfidcsiDev0::~svkGEPFileMapperUCSFfidcsiDev0()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
+    if( this->dadFile != NULL ) {
+        this->dadFile->Delete();
+    }
 }
 
 
@@ -165,7 +168,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
         cout << "list raw files EPSI: " << pFileNames->GetValue(fileNumber) << endl;  	 	 
         vtkStringArray* tmpArray = vtkStringArray::New();
         tmpArray->InsertNextValue( pFileNames->GetValue(fileNumber) );
-
+        this->LoadDataAcquisitionDescriptionFile( pFileNames->GetValue(fileNumber) );
         svkImageData* tmpImage = svkMrsImageData::New();
         tmpImage->DeepCopy( data ); 
 
@@ -432,8 +435,13 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     tmpReorderData->DeepCopy( data ); 
 
     svkEPSIReorder* reorder = svkEPSIReorder::New();    
-    reorder->SetInputData( tmpReorderData ); 
-    reorder->SetEPSIType( svkEPSIReorder::SYMMETRIC ); 
+    reorder->SetInputData( tmpReorderData );
+
+    svkEPSIReorder::EPSIType epsiType = svkEPSIReorder::SYMMETRIC;
+    if( this->dadFile != NULL ) {
+        epsiType = this->dadFile->GetEPSIType();
+    }
+    reorder->SetEPSIType( epsiType );
 
     //  between lobes, throw out the last and first point before resuming sampling
     //  These are the zero crossings in symmetric EPSI. 
@@ -1616,4 +1624,40 @@ void svkGEPFileMapperUCSFfidcsiDev0::InitMRSpectroscopyModule()
 float svkGEPFileMapperUCSFfidcsiDev0::GetPPMRef()
 {
     return 178; 
+}
+
+void svkGEPFileMapperUCSFfidcsiDev0::LoadDataAcquisitionDescriptionFile( string pfileName )
+{
+    if( this->dadFile == NULL ) {
+        size_t lastPath = pfileName.find_last_of("/");
+        string pfileDirectory = svkUtils::GetCurrentWorkingDirectory();
+        if ( lastPath != pfileName.npos ) {
+            pfileDirectory = pfileName.substr(0, lastPath);
+        } else {
+            pfileDirectory = svkUtils::GetCurrentWorkingDirectory();
+        }
+        string dadFileName = pfileDirectory;
+        dadFileName.append("/epsi_dad.xml");
+        if ( svkUtils::FilePathExists( dadFileName.c_str() )){
+            this->dadFile = svkDataAcquisitionDescriptionXML::New();
+            this->dadFile->SetXMLFileName( dadFileName );
+            cout << "Loading parameters from Data Acquistion Description file... " << endl;
+            cout << "Trajectory ID           : " << this->dadFile->GetTrajectoryID() << endl;
+            cout << "EPSI Type               : " << this->dadFile->GetEPSITypeString() << endl;
+            cout << "Interleaves             : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/numInterleaves") << endl;
+            cout << "gradientAmplitudeOddMTM : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/gradientAmplitudeOddMTM") << " mT/m" << endl;
+            cout << "gradientAmplitudeEvenMTM: " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/gradientAmplitudeEvenMTM") << " mT/m" << endl;
+            cout << "rampDurationOddMs       : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/rampDurationOddMs") << " ms" << endl;
+            cout << "rampDurationEvenMs      : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/rampDurationEvenMs") << " ms" << endl;
+            cout << "plateauDurationOddMs    : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/plateauDurationOddMs") << " ms" << endl;
+            cout << "plateauDurationEvenMs   : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/plateauDurationEvenMs") << " ms" << endl;
+            cout << "numLobesOdd             : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/numLobesOdd") << endl;
+            cout << "numLobesEven            : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/numLobesEven") << endl;
+            cout << "sampleSpacing_timeMs    : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/sampleSpacing_timeMs") << " ms" << endl;
+            cout << "acquisitionDelayMs      : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/acquisitionDelayMs") << " ms" << endl;
+            cout << "gradientAxis            : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/gradientAxis") << " ms" << endl;
+            cout << "echoDelayMs             : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/echoDelayMs") << " ms" << endl;
+
+        }
+    }
 }

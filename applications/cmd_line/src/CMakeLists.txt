@@ -922,6 +922,7 @@ SET(APPS
     svk_point_selector 
     svk_phase_spec 
     svk_fft
+    svk_freq_correct
     svk_scale_image
     svk_image_mathematics
     svk_average_spec

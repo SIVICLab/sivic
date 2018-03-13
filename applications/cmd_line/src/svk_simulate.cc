@@ -75,8 +75,6 @@ int main (int argc, char** argv)
     usemsg += "   -t        type              Target data type:                                 \n";
     usemsg += "                                     2 = UCSF DDF                                \n";
     usemsg += "                                     4 = DICOM_MRS (default)                     \n";
-    usemsg += "   -f        filter_type       Type of apodization .  Options:                   \n";
-    usemsg += "                                     1 = Lorentzian                              \n";
     usemsg += "   -v                          Verbose output.                                   \n";
     usemsg += "   -h                          Print help mesage.                                \n";  
     usemsg += "                                                                                 \n";  

@@ -19,12 +19,24 @@
     make_standalone.csh osirix
 
 5.  Create the DMG: 
+
     rm SIVIC_horos.dmg
-    rm SIVIC_osirix.dmg
     hdiutil create ./SIVIC_horos.dmg  -volname "SIVIC_HOROS"  -size 610MB -format UDRW -srcfolder SIVIC_DISTRIBUTION_horos/
+    device=$(hdiutil attach -readwrite -noverify -noautoopen "./SIVIC_horos.dmg" | \egrep '^/dev/' | sed 1q | awk '{print $1}')
+    set_dmg_layout_horos
+
+    rm SIVIC_osirix.dmg
     hdiutil create ./SIVIC_osirix.dmg -volname "SIVIC_OSIRIX" -size 610MB -format UDRW -srcfolder SIVIC_DISTRIBUTION_osirix/
+    device=$(hdiutil attach -readwrite -noverify -noautoopen "./SIVIC_osirix.dmm" | \egrep '^/dev/' | sed 1q | awk '{print $1}')
 
     #/Users/jasonc/xcode-build/Build/Products/Deployment/SIVIC_MRSI.bundle ./SIVIC_OSIRIX_PLUGIN/SIVIC_MRSI.osirixplugin
+
+6.  After creating the dmg: 
+    - open disk utility 
+        File >> "Open Disk Image" and select the new .dmg file
+        File >> "New Image" >> "Image from SIVIC_HOROS"
+                - select new file name "SIVIC_HOROS_DIST.dmg" 
+                - select new file name "SIVIC_OSIRIX_DIST.dmg" 
 
 
 6. upload via scp: 

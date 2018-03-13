@@ -104,6 +104,7 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         void             OnlyUseSelectionBox();
         void             MaximizeVoxelsInSelectionBox();
         void             SetVolumeCenter( double centerLPS[3] );
+        void             NormalizeTransform(); 
 
 
     protected:
@@ -158,6 +159,8 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         void            PrintSpectrum( vtkImageComplex* data, int numPoints, vtkstd::string msg ); 
         void            NormalizePhaseShift( double shift[3] );
         void            ValidateRequest(); 
+        bool            normalizeTranform;
+
 
 
 };

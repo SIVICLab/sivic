@@ -78,10 +78,14 @@ int main (int argc, char** argv)
     usemsg += "                                         3 = *                               \n";  
     usemsg += "                                         4 = /                               \n";  
     usemsg += "                                         5 = * k (Scale by constant)         \n";  
+    usemsg += "                                         6 = + k (Add a constant)            \n";  
     usemsg += "   -s            scale_factor        float scaling factor                    \n";
     usemsg += "   --output_type typeID              Optional output type:                   \n";
     usemsg += "                                         1 = Unsigned Integer                \n";  
     usemsg += "                                         2 = Float                           \n";
+    usemsg += "   --single                          Only operates on the specified files.   \n";
+    usemsg += "                                     in the case of dynamic series comprised \n";
+    usemsg += "                                     of multiple volumes.                    \n";
     usemsg += "   -v                                Verbose output.                         \n";
     usemsg += "   -h                                Print help mesage.                      \n";  
     usemsg += "                                                                             \n";  
@@ -95,6 +99,7 @@ int main (int argc, char** argv)
     int    operation     = 0;  
     float  scalingFactor = 1;
     bool   verbose       = false;
+    bool   onlyLoadSingleFile = false;
     int    outputType = 0;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
@@ -104,7 +109,8 @@ int main (int argc, char** argv)
     enum FLAG_NAME {
         FLAG_FILE_1 = 0, 
         FLAG_FILE_2,
-        OUTPUT_TYPE
+        OUTPUT_TYPE, 
+        FLAG_SINGLE
     };
 
     static struct option long_options[] =
@@ -112,6 +118,7 @@ int main (int argc, char** argv)
         {"i1",          required_argument, NULL,  FLAG_FILE_1},
         {"i2",          required_argument, NULL,  FLAG_FILE_2},
         {"output_type", required_argument, NULL,  OUTPUT_TYPE},
+        {"single",      no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
 
@@ -140,6 +147,9 @@ int main (int argc, char** argv)
             case OUTPUT_TYPE:
                 outputType = atoi(optarg);
                 break;
+            case FLAG_SINGLE:
+                onlyLoadSingleFile = true;
+                break;
             case 'v':
                 verbose = true;
                 break;
@@ -160,7 +170,7 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
-    if ( operation < 1 || operation > 5 ) {
+    if ( operation < 1 || operation > 6 ) {
         cout << "Invalid operation: " << operation << endl;
         cout << usemsg << endl;
         exit(1); 
@@ -202,9 +212,17 @@ int main (int argc, char** argv)
         exit(1);
     }
     reader1->SetFileName( inputFileName1.c_str() );
+    if ( onlyLoadSingleFile == true ) {
+        cout << "ONLY LOAD 1" << endl;
+        reader1->OnlyReadOneInputFile();
+    }
     reader1->Update(); 
     if ( reader2 != NULL ) {
         reader2->SetFileName( inputFileName2.c_str() );
+        if ( onlyLoadSingleFile == true ) {
+            cout << "ONLY LOAD 1" << endl;
+            reader2->OnlyReadOneInputFile();
+        }
         reader2->Update();
     }
 
@@ -230,6 +248,9 @@ int main (int argc, char** argv)
     } else if ( operation == 5 ) {
         math->SetOperationToMultiplyByK();   
         math->SetConstantK( scalingFactor );
+    } else if ( operation == 6 ) {
+        math->SetOperationToAddConstant();   
+        math->SetConstantC( scalingFactor );
     }
 
     //  By default, output is the greater of the input datatypes
