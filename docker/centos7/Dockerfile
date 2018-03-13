@@ -23,5 +23,7 @@ RUN ln -s /usr/lib64/libpython2.7.so.1.0 /usr/lib64/libpython2.7.so
 RUN ln -s /usr/lib64/libXft.so.2 /usr/lib64/libXft.so
 RUN ln -s /usr/lib64/libfontconfig.so.1 /usr/lib64/libfontconfig.so
 ENV DCMDICTPATH /netopt/dicom/share/dcmtk/dicom.dic
+RUN mkdir -p /HMTRC/development_tutorial
+ADD development_tutorial /HMTRC/development_tutorial
 ENV PATH="/sivic/applications/cmd_line/Linux_x86_64/:${PATH}"
 CMD ["/usr/sbin/init"]
