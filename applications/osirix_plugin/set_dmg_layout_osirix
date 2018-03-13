@@ -1,0 +1,33 @@
+echo '
+   tell application "Finder"
+     tell disk "'SIVIC_osirix'"
+        open
+        set current view of container window to icon view
+        set toolbar visible of container window to false
+        set statusbar visible of container window to false
+        set the bounds of container window to {400, 100, 885, 430}
+        set theViewOptions to the icon view options of container window
+        set arrangement of theViewOptions to not arranged
+        set icon size of theViewOptions to 62
+        set background picture of theViewOptions to file ".background:'dmg_background.png'"
+        #set the position of background to {200, 100}
+        #make new alias file at container window to POSIX file "/Applications" with properties {name:"Applications"}
+        #set position of item "Applications"      of container window to {475, 100}
+        set file_list to every file
+        repeat with i in file_list
+            if the name of i is "Applications" then
+                set the position of i to {270, 50}
+            else if the name of i ends with "plugins" then
+                set the position of i to {270, 150}
+            else if the name of i ends with ".app" then
+                set the position of i to {40, 50}
+            else if the name of i ends with ".osirixplugin" then
+                set the position of i to {40, 150}
+            end if  
+        end repeat
+        update without registering applications
+        delay 10 
+        close
+     end tell
+   end tell
+' | osascript

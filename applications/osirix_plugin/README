@@ -1,6 +1,8 @@
 1. configure and build sivic dist for OsX, horos and oririx: 
+    cd sivic/working/horos
     make -f ../../Makefile.ctest configure_dist_horos
     make -j4
+    cd sivic/working/osirix
     make -f ../../Makefile.ctest configure_dist_osirix
     make -j4
 
@@ -27,19 +29,21 @@
 
     rm SIVIC_osirix.dmg
     hdiutil create ./SIVIC_osirix.dmg -volname "SIVIC_OSIRIX" -size 610MB -format UDRW -srcfolder SIVIC_DISTRIBUTION_osirix/
-    device=$(hdiutil attach -readwrite -noverify -noautoopen "./SIVIC_osirix.dmm" | \egrep '^/dev/' | sed 1q | awk '{print $1}')
+    device=$(hdiutil attach -readwrite -noverify -noautoopen "./SIVIC_osirix.dmg" | \egrep '^/dev/' | sed 1q | awk '{print $1}')
+    set_dmg_layout_osirix
 
     #/Users/jasonc/xcode-build/Build/Products/Deployment/SIVIC_MRSI.bundle ./SIVIC_OSIRIX_PLUGIN/SIVIC_MRSI.osirixplugin
 
 6.  After creating the dmg: 
     - open disk utility 
         File >> "Open Disk Image" and select the new .dmg file
+        select the image on the sidebar
         File >> "New Image" >> "Image from SIVIC_HOROS"
-                - select new file name "SIVIC_HOROS_DIST.dmg" 
-                - select new file name "SIVIC_OSIRIX_DIST.dmg" 
+                - select new file name "SIVIC_WITH_HOROS_PLUGIN.dmg" 
+                - select new file name "SIVIC_WITH_OSIRIX_PLUGIN.dmg" 
 
 
 6. upload via scp: 
-    scp -r ./SIVIC_horos.dmg jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.49/
-    scp -r ./SIVIC_osirix.dmg jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.49/
+    scp -r ./SIVIC_WITH_HOROS_PLUGIN.dmg  jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.83/
+    scp -r ./SIVIC_WITH_OSIRIX_PLUGIN.dmg jccrane@frs.sourceforge.net:/home/frs/project/sivic/0.9.83/
 
