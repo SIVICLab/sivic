@@ -46,7 +46,6 @@
 using namespace svk;
 
 
-//vtkCxxRevisionMacro(svkImageThreshold, "$Rev$");
 vtkStandardNewMacro(svkImageThreshold);
 
 
@@ -321,9 +320,10 @@ int svkImageThreshold::RequestData( vtkInformation* request,
         executer->Update();
 
         // Copy the output of the vtk algorithm
-        this->GetOutput()->GetPointData()->AddArray(executer->GetOutput()->GetPointData()->GetScalars() );
+        this->GetOutput()->GetPointData()->AddArray( executer->GetOutput()->GetPointData()->GetScalars() );
         executer->Delete();
         threshold->Delete();
+
     }
     this->GetOutput()->GetPointData()->SetActiveScalars(activeScalarName.c_str());
     this->GetOutput()->GetDcmHeader()->SetValue("SeriesDescription", description );

@@ -51,20 +51,11 @@ extern "C" {
 #endif
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
-#include <svkDICOMImageWriter.h>
-#include <svkIdfVolumeReader.h>
-#include <svkDdfVolumeReader.h>
-#include <svkDcmVolumeReader.h>
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
-#include <svkDICOMMRSWriter.h>
-#include <svkIdfVolumeWriter.h>
 #include <svkDcmHeader.h>
-#include <svkBurnResearchPixels.h>
-#include <svkImageThreshold.h>
+#include <svkImageDilateErode.h>
 #include <svkTypeUtils.h>
-#include <vtkIndent.h>
-#include <vtkXMLImageDataWriter.h>
 
 
 using namespace svk;
@@ -75,8 +66,9 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_image_threshold -i input_file_name -o output_file_name -t output_data_type   \n";
-    usemsg += "                 [ -v mask_value ][-l lower_bound] [-u upper_bound][-b][-V][-h]  \n";
+    usemsg += "svk_dilate_erode -i input_file_name -o output_file_name -t output_data_type      \n";
+    usemsg += "                   -d dilate_value  -e erode_value -k kernel_size                \n";  
+    usemsg += "                   [ --single ] [ -vh ]                                          \n";
     usemsg += "                                                                                 \n";  
     usemsg += "   -i            input_file_name     Name of file to convert.                    \n"; 
     usemsg += "   -o            output_file_name    Name of outputfile.                         \n";  
@@ -84,48 +76,35 @@ int main (int argc, char** argv)
     usemsg += "                                         3 = UCSF IDF                            \n";  
     usemsg += "                                         5 = DICOM_MRI                           \n";  
     usemsg += "                                         6 = DICOM_Enhanced MRI                  \n";  
-    usemsg += "   -v            mask_value          The integer output pixel value(default=1).  \n";
-    usemsg += "   -r            mask_volume         Restrict the mask to the given volume.      \n";
-    usemsg += "   -l            lower_bound         The lower bound for thresholding.           \n";
-    usemsg += "                                     Intensities greater than this value will    \n";
-    usemsg += "                                     be included in the mask.                    \n";
-    usemsg += "   -u            upper_bound         The upper bound for thresholding.           \n";
-    usemsg += "                                     Intensities less than this value will       \n";
-    usemsg += "                                     be included in the mask.                    \n";
-    usemsg += "   --pm          percent             threshold is 'percent' of intensity range   \n"; 
-    usemsg += "                                     above minimum intensity                     \n"; 
-    usemsg += "   -b                                Set output data type to byte.               \n";
+    usemsg += "   -d            dilate_value        Dilate pix val                              \n";
+    usemsg += "   -e            erode_value         Erode pix val                               \n";
+    usemsg += "   -k            size                Kernel size                                 \n";
     usemsg += "   --single                          Only converts specified file if multi vol.  \n";
-    usemsg += "   -V                                Verbose output.                             \n";
+    usemsg += "   -v                                Verbose output.                             \n";
     usemsg += "   -h                                Print help mesage.                          \n";  
     usemsg += "                                                                                 \n";  
-    usemsg += "Applies a thresholding to an input image.                                        \n";
+    usemsg += "Dilates and erodes an image                                                      \n";
     usemsg += "                                                                                 \n";  
 
     string inputFileName; 
     string outputFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
-    bool    convertToByteMask = false;
-    double  upperValue = VTK_DOUBLE_MAX;
-    double  lowerValue = VTK_DOUBLE_MIN;
-    double  percentOfRange = VTK_DOUBLE_MIN; 
-    int     outputValue = 1;
+    int     dilateValue = -1;
+    int     erodeValue = -1;
+    int     kernelSize = 0;
     bool    verbose = false;
     bool    onlyLoadSingleFile = false;
     int     volume = -1;
 
-
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
-        FLAG_SINGLE, 
-        FLAG_PERCENT_OF_RANGE
+        FLAG_SINGLE 
     };
 
     static struct option long_options[] =
     {
         {"single",      no_argument,       NULL,  FLAG_SINGLE},
-        {"pm",          required_argument, NULL,  FLAG_PERCENT_OF_RANGE},
         {0, 0, 0, 0}
     };
 
@@ -135,7 +114,7 @@ int main (int argc, char** argv)
      */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:o:t:v:l:u:r:bhV", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:o:t:d:e:k:hv", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -146,28 +125,19 @@ int main (int argc, char** argv)
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
                 break;
-            case 'b':
-                convertToByteMask = true;
+            case 'd':
+                dilateValue = svkTypeUtils::StringToInt(optarg);
                 break;
-            case 'l':
-                lowerValue = svkTypeUtils::StringToDouble(optarg);
+            case 'e':
+                erodeValue = svkTypeUtils::StringToInt(optarg);
                 break;
-            case 'u':
-                upperValue = svkTypeUtils::StringToDouble(optarg);
-                break;            
-            case 'r':
-                volume = svkTypeUtils::StringToInt(optarg) - 1;
+            case 'k':
+                kernelSize = svkTypeUtils::StringToInt(optarg);
                 break;
             case FLAG_SINGLE:
                 onlyLoadSingleFile = true;
                 break;
-            case FLAG_PERCENT_OF_RANGE:
-                percentOfRange = svkTypeUtils::StringToDouble(optarg);
-                break;
             case 'v':
-                outputValue = svkTypeUtils::StringToInt(optarg);
-                break;
-            case 'V':
                 verbose = true;
                 break;
             case 'h':
@@ -183,7 +153,9 @@ int main (int argc, char** argv)
     argv += optind;
 
     if ( argc != 0 || inputFileName.length() == 0 || outputFileName.length() == 0 ||
-        dataTypeOut < 0 || dataTypeOut > svkImageWriterFactory::LAST_TYPE ) {
+        dataTypeOut < 0 || dataTypeOut > svkImageWriterFactory::LAST_TYPE || 
+        kernelSize == 0 || dilateValue == -1 || erodeValue == -1
+    ) {
         cout << usemsg << endl;
         exit(1); 
     }
@@ -234,33 +206,25 @@ int main (int argc, char** argv)
 
 		writerFactory->Delete();
 		writer->SetFileName( outputFileName.c_str() );
-        svkImageThreshold* thresholder = svkImageThreshold::New();
-        thresholder->SetInputData(currentImage);
+
+        svkImageDilateErode* dilateErode = svkImageDilateErode::New();
+        dilateErode->SetInputData(currentImage);
         if( volume >= 0 ) {
-            thresholder->SetVolume( volume );
+            dilateErode->SetVolume( volume );
         }
-        if( convertToByteMask ) {
-            thresholder->SetOutputScalarType( VTK_UNSIGNED_CHAR );
-        }
-        if ( percentOfRange != VTK_DOUBLE_MIN ) {
-            double* range; 
-            range = reader->GetOutput()->GetScalarRange(); 
-            lowerValue = range[0] + percentOfRange * (range[1] - range[0]); 
-            cout << "Threshold at " << percentOfRange << "* the intensity range above the lowest intensity:" << endl;
-            cout << "             " << range[0]  << endl;
-        }
-        cout << "Intensities within the following range will be included in the output mask" << endl;
-        cout << "   LOWER THRESHOLD: " << lowerValue << endl;
-        cout << "   UPPER THRESHOLD: " << upperValue << endl;
-        thresholder->SetThresholdMin( lowerValue );
-        thresholder->SetThresholdMax( upperValue );
-        thresholder->SetMaskOutputValue( outputValue );
-        thresholder->Update();
-        currentImage = thresholder->GetOutput();
+
+        cout << "Dilate and Erode" << endl;
+        cout << "   Dilate Value: " << dilateValue << endl;
+        cout << "   Erode Value : " << erodeValue << endl;
+        dilateErode->SetDilateValue( dilateValue );
+        dilateErode->SetErodeValue( erodeValue );
+        dilateErode->SetKernelSize( kernelSize );
+        dilateErode->Update();
+        currentImage = dilateErode->GetOutput();
 		writer->SetInputData( currentImage );
 		writer->Write();
 		writer->Delete();
-		thresholder->Delete();
+		dilateErode->Delete();
 
     } else {
         cout << usemsg << endl;
