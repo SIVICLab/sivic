@@ -247,7 +247,7 @@ int main (int argc, char** argv)
             range = reader->GetOutput()->GetScalarRange(); 
             lowerValue = range[0] + percentOfRange * (range[1] - range[0]); 
             cout << "Threshold at " << percentOfRange << "* the intensity range above the lowest intensity:" << endl;
-            cout << "             "range[0]  << endl;
+            cout << "             " << range[0]  << endl;
         }
         cout << "Intensities within the following range will be included in the output mask" << endl;
         cout << "   LOWER THRESHOLD: " << lowerValue << endl;
