@@ -134,7 +134,7 @@ int main (int argc, char** argv)
             case 'l':
                 noiseStartPoint = atoi(optarg); 
                 break;
-            case 'e':
+            case 'u':
                 noiseEndPoint = atoi(optarg); 
                 break;
             case FLAG_SINGLE:

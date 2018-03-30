@@ -226,9 +226,11 @@ float svkMRSNoise::CalcWindowMean( vtkFloatArray* spectrum, int startPt, int end
     for (int i = startPt; i <= endPt; i++ ) {   //inclusive
         spectrum->GetTupleValue(i, tuple); 
         mean += tuple[0]; 
+        //cout << "MEAN: " << i << " " << tuple[0] << endl;
     }
 
     mean = mean / (endPt - startPt + 1);    // inclusive
+    //cout << "MEAN av: " << mean << endl;
 
     return mean; 
 }
