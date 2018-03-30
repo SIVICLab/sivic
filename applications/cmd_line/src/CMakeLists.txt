@@ -340,6 +340,8 @@ IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         X11
         Xext
         Xt
+        vtkImagingMorphological-6.3
+        vtkImagingGeneral-6.3
         vtkIOXMLParser-6.3
         vtkIOXML-6.3.a
         vtkexpat-6.3
@@ -434,6 +436,17 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     svk_image_threshold 
+	${SVK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
+    svk_dilate_erode
+    svk_dilate_erode.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_dilate_erode
 	${SVK_LIBS}
 )
 
@@ -902,6 +915,7 @@ ENDIF ( BUILD_CREATE_RAW )
 SET(APPS 
     svk_file_convert 
     svk_image_threshold 
+    svk_dilate_erode
     svk_interpolate_spectra
     svk_quick_view
     svk_multi_view
