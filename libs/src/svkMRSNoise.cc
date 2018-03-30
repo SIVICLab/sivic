@@ -63,6 +63,8 @@ svkMRSNoise::svkMRSNoise()
     this->noiseSD = 0.0;
     this->onlyUseSelectionBox = false;
     this->noiseWindowPercent = .05;
+    this->noiseWindowStartPt = -1;
+    this->noiseWindowEndPt = -1;
 
 }
 
@@ -70,6 +72,25 @@ svkMRSNoise::svkMRSNoise()
 svkMRSNoise::~svkMRSNoise()
 {
 }
+
+
+/*!
+ *
+ */
+void svkMRSNoise::SetNoiseStartPoint( int startPt )
+{
+    this->noiseWindowStartPt = startPt;
+}
+
+
+/*!
+ *
+ */
+void svkMRSNoise::SetNoiseEndPoint( int endPt )
+{
+    this->noiseWindowEndPt = endPt;
+}
+
 
 
 /*! 
@@ -105,8 +126,10 @@ int svkMRSNoise::RequestData( vtkInformation* request, vtkInformationVector** in
     //  get average spectrum (in selection box)?
     //  break spectrum up into small sections and find the section with the smallest SD
     //  calculate the average SD in that region from each voxel 
-    this->InitAverageSpectrum(); 
-    this->FindNoiseWindow();
+    if ( this->noiseWindowStartPt < 0 || this->noiseWindowEndPt < 0 ) {
+        this->InitAverageSpectrum(); 
+        this->FindNoiseWindow();
+    }
     this->CalculateNoiseSD(); 
 
     delete [] this->selectionBoxMask; 
