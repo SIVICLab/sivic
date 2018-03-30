@@ -84,10 +84,14 @@ int main (int argc, char** argv)
     usemsg += "                                         3 = UCSF IDF                            \n";  
     usemsg += "                                         5 = DICOM_MRI                           \n";  
     usemsg += "                                         6 = DICOM_Enhanced MRI                  \n";  
-    usemsg += "   -v            mask_value          The integer output pixel value.             \n";
+    usemsg += "   -v            mask_value          The integer output pixel value(default=1).  \n";
     usemsg += "   -r            mask_volume         Restrict the mask to the given volume.      \n";
     usemsg += "   -l            lower_bound         The lower bound for thresholding.           \n";
+    usemsg += "                                     Intensities greater than this value will    \n";
+    usemsg += "                                     be included in the mask.                    \n";
     usemsg += "   -u            upper_bound         The upper bound for thresholding.           \n";
+    usemsg += "                                     Intensities less than this value will       \n";
+    usemsg += "                                     be included in the mask.                    \n";
     usemsg += "   --pm          percent             threshold is 'percent' of intensity range   \n"; 
     usemsg += "                                     above minimum intensity                     \n"; 
     usemsg += "   -b                                Set output data type to byte.               \n";
@@ -239,10 +243,11 @@ int main (int argc, char** argv)
             thresholder->SetOutputScalarType( VTK_UNSIGNED_CHAR );
         }
         if ( percentOfRange != VTK_DOUBLE_MIN ) {
-            double range[2]; 
-            reader->GetOutput()->GetDataRange(range, 0); 
+            double* range; 
+            range = reader->GetOutput()->GetScalarRange(); 
             lowerValue = range[0] + percentOfRange * (range[1] - range[0]); 
             cout << "Threshold at " << percentOfRange << "* the intensity range above the lowest intensity:" << endl;
+            cout << "             "range[0]  << endl;
         }
         cout << "Intensities within the following range will be included in the output mask" << endl;
         cout << "   LOWER THRESHOLD: " << lowerValue << endl;
