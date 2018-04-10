@@ -216,6 +216,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
 
             epsiPhase[0] = epsiPhaseArray[epsiIndex][freq].Real; 
             epsiPhase[1] = epsiPhaseArray[epsiIndex][freq].Imag; 
+            //cout << freq << " " << cmplxPtIn[0] << " " << epsiPhase[0] << " " << epsiPhase[1] << endl;
 
             cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] + cmplxPtIn[1] * epsiPhase[1]; 
             cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] - cmplxPtIn[0] * epsiPhase[1]; 
@@ -277,9 +278,9 @@ void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** ep
 
     double numKPts = this->numEPSIkRead;
     double kOrigin = this->GetEPSIOrigin(); 
-    //float  fOrigin = (numSpecPts)/2.; 
+    float  fOrigin = (numSpecPts)/2; 
     //float  fOrigin = (numSpecPts - 1)/2.; 
-    float  fOrigin = (numSpecPts)/2. - 1; 
+    //float  fOrigin = (numSpecPts)/2. - 1; 
     double Pi      = vtkMath::Pi();
     double kIncrement;
     double freqIncrement;

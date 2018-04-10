@@ -76,7 +76,7 @@ svkMrsImageFFT::svkMrsImageFFT()
     this->voxelShift[2] = 0;
     this->onlyUseSelectionBox = false;
     this->selectionBoxMask = NULL;
-    this->normalizeTranform = false;
+    this->normalizeTransform = false;
 }
 
 
@@ -91,7 +91,7 @@ svkMrsImageFFT::~svkMrsImageFFT()
 
 void svkMrsImageFFT::NormalizeTransform()
 {
-    this->normalizeTranform = true;
+    this->normalizeTransform = true;
 }
 
 
@@ -368,7 +368,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
             }
 
             //  if normalize if specified: 
-            if ( this->normalizeTranform == true) {
+            if ( this->normalizeTransform == true) {
                 vtkDataArray* metMapArray = currentData->GetPointData()->GetArray(0);
                 for ( int v = 0; v < numVoxels; v++) {
                     double tuple[2];

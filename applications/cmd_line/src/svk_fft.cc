@@ -311,10 +311,6 @@ int main (int argc, char** argv)
             imageFFT->OnlyUseSelectionBox();
         }
 
-        if (normalizeSpatialTransform == true) {
-            imageFFT->NormalizeTransform();
-        }
-
         imageFFT->Update();
         imageFFT->Delete();
     }
@@ -362,6 +358,11 @@ int main (int argc, char** argv)
                 voxelShiftAlreadySpecified = true;
             }
         }
+        if (normalizeSpatialTransform == true) {
+            cout << "Normalize Transform" << endl;
+            spatialFFT->NormalizeTransform();
+        }
+
         spatialFFT->Update();
         spatialFFT->Delete();
 
