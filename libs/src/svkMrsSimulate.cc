@@ -142,7 +142,7 @@ int svkMrsSimulate::RequestData( vtkInformation* request, vtkInformationVector**
             //  DC offset in time -> single frequency at 0 hz
             for ( int w = 0; w < numPoints; w++ ) {
                 spec[0] = 1000;
-                spec[1] = 1000; 
+                spec[1] =    0; 
                 spectrum->SetTuple2( w, spec[0], spec[1] ); 
             }
         } else {
