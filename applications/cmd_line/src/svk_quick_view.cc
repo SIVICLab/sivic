@@ -120,6 +120,22 @@ void QuickView( const char* filename)
 
     svkDataModel* model = svkDataModel::New();
     bool readOnlyOneFile = true; 
+
+    //  For DICOM volumes read all files by default.  For volumetric types read only one volume
+    svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+    readerFactory->QuickParse();
+    svkImageReader2* reader = readerFactory->CreateImageReader2( filename ); 
+    readerFactory->Delete();
+    svkImageReader2::ReaderType readerType = reader->GetReaderType(); 
+    if (
+        ( readerType ==  svkImageReader2::DICOM_MRI ) ||
+        ( readerType ==  svkImageReader2::DICOM_PET) ||
+        ( readerType ==  svkImageReader2::DICOM_SEGMENTATION ) 
+    ) {
+        readOnlyOneFile = false; 
+    }
+    reader->Delete();
+
     data = model->LoadFile(filename, readOnlyOneFile );
     if( data == NULL ) {
         cerr << "ERROR: Could not read input file: " << filename << endl;
