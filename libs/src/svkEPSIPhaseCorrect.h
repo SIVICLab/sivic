@@ -111,13 +111,15 @@ class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
 
         void            CreateEPSIPhaseCorrectionFactors( vtkImageComplex** phaseArray, int numSpecPts ); 
         int             SpectralFFT( svkMrsImageFFT::FFTMode direction ); 
+        void            PhaseAlternatingSymmetricEPSILobes( int cellID ); 
 
 
-        int             numEPSIkRead;
-        int             epsiAxis;
-        float           epsiOrigin;
-        double*         epsiSpatialPhaseCorrection;
-        svkImageData*   tmpData; 
+        int                 numEPSIkRead;
+        int                 epsiAxis;
+        float               epsiOrigin;
+        double*             epsiSpatialPhaseCorrection;
+        vtkImageComplex*    symEPSIPhaseArray; 
+        svkImageData*       tmpData; 
 
 
 };
