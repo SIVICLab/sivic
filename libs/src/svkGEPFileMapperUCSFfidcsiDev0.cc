@@ -696,6 +696,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::EPSIPhaseCorrection( svkImageData* data, in
     numRead -= 2; 
     epsiPhase->SetNumEPSIkRead( numRead );
     epsiPhase->SetEPSIAxis( epsiAxis );
+    epsiPhase->SetEPSIType( svkEPSIReorder::SYMMETRIC ); 
     epsiPhase->SetInputData( tmpData ); 
     //tmpData->GetDcmHeader()->PrintDcmHeader(); 
     epsiPhase->Update(); 
