@@ -48,6 +48,7 @@
 
 #include <svkMrsImageFFT.h>
 #include <svkImageInPlaceFilter.h>
+#include <svkEPSIReorder.h>
 
 
 namespace svk {
@@ -90,6 +91,7 @@ class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
         void            SetEPSIAxis( int epsiAxis );
         void            SetEPSIOrigin( float epsiOrigin );
         float           GetEPSIOrigin();
+        void            SetEPSIType( svkEPSIReorder::EPSIType type ); 
 
 
     protected:
@@ -114,13 +116,14 @@ class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
         void            PhaseAlternatingSymmetricEPSILobes( int cellID ); 
 
 
-        int                 numEPSIkRead;
-        int                 epsiAxis;
-        float               epsiOrigin;
-        double*             epsiSpatialPhaseCorrection;
-        vtkImageComplex*    symEPSIPhaseArray; 
-        svkImageData*       tmpData; 
-
+        int                      numEPSIkRead;
+        int                      epsiAxis;
+        float                    epsiOrigin;
+        double*                  epsiSpatialPhaseCorrection;
+        vtkImageComplex*         symEPSIPhaseArray; 
+        svkImageData*            tmpData; 
+        svkEPSIReorder::EPSIType epsiType; 
+        int                      phaseSlope; 
 
 };
 
