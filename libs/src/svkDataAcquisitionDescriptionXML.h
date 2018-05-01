@@ -51,14 +51,6 @@
  *
  */
 
-enum EPSIType
-{
-    UNDEFINED_EPSI_TYPE,
-    SYMMETRIC,
-    FLYBACK,
-    INTERLEAVED
-
-};
 
 enum EPSILobe
 {
@@ -74,6 +66,7 @@ enum EPSILobe
 #include <svkEPSIReorder.h>
 #include <svkXMLUtils.h>
 #include <svkInt.h>
+#include <svkEPSIReorder.h>
 
 #include "svkTypes.h"
 
@@ -236,6 +229,7 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <svkTypes.h>
 struct svkCString
 {
     char c_str[256];
@@ -271,8 +265,8 @@ struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionDescrip
 
 void              svkDataAcquisitionDescriptionXML_SetEPSITypeToFlyback(void* xml);
 void              svkDataAcquisitionDescriptionXML_SetEPSITypeToSymmetric(void* xml);
-void              svkDataAcquisitionDescriptionXML_SetEPSIType( enum EPSIType type, void* xml);
-enum EPSIType     svkDataAcquisitionDescriptionXML_GetEPSIType(void* xml);
+void              svkDataAcquisitionDescriptionXML_SetEPSIType( EPSIType type, void* xml);
+EPSIType          svkDataAcquisitionDescriptionXML_GetEPSIType(void* xml);
 
 void              svkDataAcquisitionDescriptionXML_SetEPSINumberOfInterleaves( int numberOfInterleaves, void* xml);
 int               svkDataAcquisitionDescriptionXML_GetEPSINumberOfInterleaves( void* xml);

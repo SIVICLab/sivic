@@ -795,7 +795,7 @@ void CaptureWindow()
         extension = "jpeg";
     }
 
-    if(globalVars.primaryWindow != NULL ) {
+    if(globalVars.window != NULL ) {
         svkVizUtils::SaveWindow( globalVars.window, globalVars.captureFile);
     }
 }

@@ -472,7 +472,7 @@ void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type)
 
 /*!
  */
-void svkGEPFileReader::SetEPSIParams( svkEPSIReorder::EPSIType type, svkEPSIReorder::EPSIAxis axis, int first,
+void svkGEPFileReader::SetEPSIParams( EPSIType type, svkEPSIReorder::EPSIAxis axis, int first,
                                       int numLobes, int numSkip, int flipLobe )
 {
 

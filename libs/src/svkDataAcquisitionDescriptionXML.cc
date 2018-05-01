@@ -266,7 +266,7 @@ string svkDataAcquisitionDescriptionXML::GetTrajectoryDimensionDescription(int i
  *
  * @param type
  */
-void svkDataAcquisitionDescriptionXML::SetEPSIType( enum EPSIType type ) {
+void svkDataAcquisitionDescriptionXML::SetEPSIType( EPSIType type ) {
 
     string parentPath = "encoding/trajectoryDescription/epsiEncoding";
     // Thes meethod coll ensures the EPSI encoding element is created already.
@@ -1700,7 +1700,7 @@ void svkDataAcquisitionDescriptionXML_SetEPSITypeToSymmetric(void* xml) {
  * @param type
  * @param xml
  */
-void svkDataAcquisitionDescriptionXML_SetEPSIType( enum EPSIType type, void* xml) {
+void svkDataAcquisitionDescriptionXML_SetEPSIType( EPSIType type, void* xml) {
     if( xml != NULL ) {
         ((svkDataAcquisitionDescriptionXML*)xml)->SetEPSIType( type );
     } else {
@@ -1714,7 +1714,7 @@ void svkDataAcquisitionDescriptionXML_SetEPSIType( enum EPSIType type, void* xml
  * @param xml
  * @return
  */
-enum EPSIType svkDataAcquisitionDescriptionXML_GetEPSIType(void* xml)
+EPSIType svkDataAcquisitionDescriptionXML_GetEPSIType(void* xml)
 {
     if( xml != NULL ) {
         return ((svkDataAcquisitionDescriptionXML*)xml)->GetEPSIType( );

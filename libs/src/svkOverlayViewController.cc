@@ -290,14 +290,14 @@ void svkOverlayViewController::SetInput( svkImageData* data, int index)
             this->view->SetInput(data, 1);
             this->SetSlice( this->GetView()->GetSlice() );
         }
-    } else if( index == svkOverlayView::OVERLAY != NULL && dataVector[MRI] != NULL ) {
+    } else if( index == svkOverlayView::OVERLAY && dataVector[MRI] != NULL ) {
         if( dataVector[svkOverlayView::OVERLAY] != NULL ) {
             dataVector[svkOverlayView::OVERLAY]->Delete();
         }
         data->Register( this );
         dataVector[svkOverlayView::OVERLAY] = data;
         this->view->SetInput( data, svkOverlayView::OVERLAY );
-    } else if( index == svkOverlayView::OVERLAY_CONTOUR != NULL && dataVector[MRI] != NULL ) {
+    } else if( index == svkOverlayView::OVERLAY_CONTOUR && dataVector[MRI] != NULL ) {
         data->Register( this );
         dataVector.push_back(data);
         this->view->SetInput( data, svkOverlayView::OVERLAY_CONTOUR );

@@ -109,7 +109,7 @@ class svkGEPFileReader : public svkImageReader2
         void                PrintHeader();
         void                PrintShortHeader();
         void                SetEPSIParams( 
-                                svkEPSIReorder::EPSIType type, 
+                                EPSIType type,
                                 svkEPSIReorder::EPSIAxis axis, 
                                 int first, 
                                 int numLobes, 

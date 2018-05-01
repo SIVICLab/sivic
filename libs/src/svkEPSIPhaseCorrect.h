@@ -91,7 +91,7 @@ class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
         void            SetEPSIAxis( int epsiAxis );
         void            SetEPSIOrigin( float epsiOrigin );
         float           GetEPSIOrigin();
-        void            SetEPSIType( svkEPSIReorder::EPSIType type ); 
+        void            SetEPSIType( EPSIType type );
 
 
     protected:
@@ -122,7 +122,7 @@ class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
         double*                  epsiSpatialPhaseCorrection;
         vtkImageComplex*         symEPSIPhaseArray; 
         svkImageData*            tmpData; 
-        svkEPSIReorder::EPSIType epsiType; 
+        EPSIType                 epsiType;
         int                      phaseSlope; 
 
 };

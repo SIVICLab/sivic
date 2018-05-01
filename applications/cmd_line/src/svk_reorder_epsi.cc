@@ -149,7 +149,7 @@ int main (int argc, char** argv)
     bool  reorder            = true; // default
     bool  phaseCorrect       = false;
     bool  combineLobes       = false;
-    svkEPSIReorder::EPSIType type  = svkEPSIReorder::UNDEFINED_EPSI_TYPE;
+    EPSIType type  = UNDEFINED_EPSI_TYPE;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
@@ -226,7 +226,7 @@ int main (int argc, char** argv)
                 epsiAxis = atoi(optarg) - 1;
                 break;
             case FLAG_TYPE:
-                type = static_cast<svkEPSIReorder::EPSIType>(atoi(optarg));
+                type = static_cast<EPSIType>(atoi(optarg));
                 break;
             case FLAG_COMBINE_LOBES:
                 combineLobes = true;
@@ -270,7 +270,7 @@ int main (int argc, char** argv)
             skip == UNDEFINED ||
             first < 0 ||
             epsiAxis < 0 || epsiAxis > 2 ||
-            type == svkEPSIReorder::UNDEFINED_EPSI_TYPE ||
+            type == UNDEFINED_EPSI_TYPE ||
             outputFileName.length() == 0 ||
             inputFileName.length() == 0  ||
             ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) ||

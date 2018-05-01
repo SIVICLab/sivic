@@ -195,7 +195,7 @@ int epsi_test(const int argc, const char **argv) {
         status = -1;
     }
 
-    enum EPSIType expectedEPSIType = INTERLEAVED;
+    EPSIType expectedEPSIType = INTERLEAVED;
     svkDataAcquisitionDescriptionXML_SetEPSIType( expectedEPSIType, dadXml );
     int expectedNumberOfInterleaves = 11;
     svkDataAcquisitionDescriptionXML_SetEPSINumberOfInterleaves( expectedNumberOfInterleaves, dadXml );
@@ -269,7 +269,7 @@ int epsi_test(const int argc, const char **argv) {
     status = checkDimensionDefinition(dadXml, 2, "dim3", "kz", "") != 0 ? -1: status;
     status = checkDimensionDefinition(dadXml, 3, "dim4", "kf", "") != 0 ? -1: status;
     status = checkDimensionDefinition(dadXml, 4, "dim5", "time_dynamic", "dynamic time points") != 0 ? -1: status;
-    enum EPSIType actualEPSIType = svkDataAcquisitionDescriptionXML_GetEPSIType(dadXml);
+    EPSIType actualEPSIType = svkDataAcquisitionDescriptionXML_GetEPSIType(dadXml);
     if(   actualEPSIType != expectedEPSIType) {
         printf("Incorrect EPSI Type. Actual value <%d> is not equal to expected value <%d> \n",
                actualEPSIType, expectedEPSIType);
@@ -372,7 +372,7 @@ int epsi_test(const int argc, const char **argv) {
 }
 
 
-int checkMatrixSize(const void *dadXml, int dimIndex, const char *expectedDimName, int expectedValue) {
+int checkMatrixSize(void *dadXml, int dimIndex, const char *expectedDimName, int expectedValue) {
     int status = 0;
     if(dadXml == NULL ) {
         printf("XML is NULL!\n");
@@ -394,7 +394,7 @@ int checkMatrixSize(const void *dadXml, int dimIndex, const char *expectedDimNam
 }
 
 
-int checkDimensionDefinition(const void *dadXml, int dimIndex, const char *expectedDimId,
+int checkDimensionDefinition(void *dadXml, int dimIndex, const char *expectedDimId,
                              const char* expectedDimLogical, const char* expectedDimDescription) {
     int status = 0;
     if(dadXml == NULL ) {

@@ -2176,8 +2176,8 @@ int svkGEPFileMapper::GetNumEPSIAcquisitions()
 
     int epsiType;
     if ( it != this->inputArgs.end() ) {
-        svkEPSIReorder::EPSIType epsiType = *( static_cast< svkEPSIReorder::EPSIType* >( this->inputArgs[ it->first ] ) );
-        if ( epsiType == svkEPSIReorder::SYMMETRIC || epsiType == svkEPSIReorder::INTERLEAVED ) {
+        EPSIType epsiType = *( static_cast< EPSIType* >( this->inputArgs[ it->first ] ) );
+        if ( epsiType == SYMMETRIC || epsiType == INTERLEAVED ) {
             numAcquisitions = 2; 
         }
     } 
@@ -2815,9 +2815,9 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
         map < string, void* >::iterator  it;
 
         it = this->inputArgs.find( "epsiType" );
-        svkEPSIReorder::EPSIType epsiType;
+        EPSIType epsiType;
         if ( it != this->inputArgs.end() ) {
-            epsiType = *( static_cast< svkEPSIReorder::EPSIType* >( this->inputArgs[ it->first ] ) );
+            epsiType = *( static_cast< EPSIType* >( this->inputArgs[ it->first ] ) );
         }
 
         it = this->inputArgs.find( "epsiAxis" );
