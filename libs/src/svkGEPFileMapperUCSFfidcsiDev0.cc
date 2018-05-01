@@ -439,7 +439,16 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
     svkEPSIReorder::EPSIType epsiType = svkEPSIReorder::SYMMETRIC;
     if( this->dadFile != NULL ) {
-        epsiType = this->dadFile->GetEPSIType();
+        EPSIType epsiTypeFromDad = this->dadFile->GetEPSIType();
+        if( epsiTypeFromDad == SYMMETRIC ) {
+            epsiType = svkEPSIReorder::SYMMETRIC;
+        } else if ( epsiType == FLYBACK ) {
+            epsiType = svkEPSIReorder::FLYBACK;
+        } else if ( epsiType == INTERLEAVED ) {
+            epsiType = svkEPSIReorder::INTERLEAVED;
+        } else {
+            epsiType = svkEPSIReorder::UNDEFINED_EPSI_TYPE;
+        }
     }
     reorder->SetEPSIType( epsiType );
 
