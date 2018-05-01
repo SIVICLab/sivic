@@ -712,14 +712,14 @@ vtkXMLDataElement* svkDataAcquisitionDescriptionXML::FindOrCreateNestedElementWi
  *  \param xmlPath the xpath to the element
  *  \return the contents of the element at the given path
  */
-const char * svkDataAcquisitionDescriptionXML::GetDataWithPath( const char* xmlPath )
+string svkDataAcquisitionDescriptionXML::GetDataWithPath( const char* xmlPath )
 {
     string data = "";
     bool foundData = svkXMLUtils::GetNestedElementCharacterDataWithPath( this->dataAcquisitionDescriptionXML, xmlPath, &data );
     if( !foundData ) {
         cout << "ERROR: Could get character data at path: " << xmlPath << endl;
     }
-    return data.c_str();
+    return data;
 }
 
 
@@ -809,7 +809,7 @@ void svkDataAcquisitionDescriptionXML::SetFloatWithPath( const char* parentPath,
  * @param parentPath
  * @return
  */
-const char * svkDataAcquisitionDescriptionXML::GetDataByIndexWithParentPath( int index, const char* parentPath )
+string svkDataAcquisitionDescriptionXML::GetDataByIndexWithParentPath( int index, const char* parentPath )
 {
     vtkXMLDataElement* element = this->GetNestedElementByIndexWithParentPath(index, parentPath);
     if( element != NULL ) {
@@ -967,10 +967,10 @@ EPSIType svkDataAcquisitionDescriptionXML::GetEPSIType()
  *
  * @return
  */
-const char* svkDataAcquisitionDescriptionXML::GetEPSITypeString()
+string svkDataAcquisitionDescriptionXML::GetEPSITypeString()
 {
     string epsiTypeFromDad = this->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/epsiType");
-    return epsiTypeFromDad.c_str();
+    return epsiTypeFromDad;
 }
 
 
@@ -1303,7 +1303,7 @@ int svkDataAcquisitionDescriptionXML::GetEncodedMatrixSizeDimensionValue(int ind
  * @param index
  * @return
  */
-const char* svkDataAcquisitionDescriptionXML::GetEncodedMatrixSizeDimensionName(int index)
+string svkDataAcquisitionDescriptionXML::GetEncodedMatrixSizeDimensionName(int index)
 {
     string parentPath = "encoding/encodedSpace/matrixSize";
     return this->GetDataByIndexWithParentPath(index, parentPath.c_str());

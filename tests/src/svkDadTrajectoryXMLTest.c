@@ -182,7 +182,21 @@ int epsi_test(const int argc, const char **argv) {
     svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension("z", 6, dadXml);
     svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension("time_spec", 59, dadXml);
     svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension("time_dynamic", 10, dadXml);
-    svkDataAcquisitionDescriptionXML_SetEPSIType( FLYBACK, dadXml );
+
+    svkDataAcquisitionDescriptionXML_SetEPSITypeToSymmetric( dadXml );
+    if( svkDataAcquisitionDescriptionXML_GetEPSIType(dadXml) != SYMMETRIC) {
+        printf("ERROR: Could not set EPSI Type to flyback. <%d>\n");
+        status = -1;
+    }
+
+    svkDataAcquisitionDescriptionXML_SetEPSITypeToFlyback( dadXml );
+    if( svkDataAcquisitionDescriptionXML_GetEPSIType(dadXml) != FLYBACK) {
+        printf("ERROR: Could not set EPSI Type to symmetric. <%d>\n");
+        status = -1;
+    }
+
+    enum EPSIType expectedEPSIType = INTERLEAVED;
+    svkDataAcquisitionDescriptionXML_SetEPSIType( expectedEPSIType, dadXml );
     int expectedNumberOfInterleaves = 11;
     svkDataAcquisitionDescriptionXML_SetEPSINumberOfInterleaves( expectedNumberOfInterleaves, dadXml );
     
@@ -226,8 +240,9 @@ int epsi_test(const int argc, const char **argv) {
     svkDataAcquisitionDescriptionXML_Delete( dadXml );
     dadXml = NULL;
     // Read the dad file back in
-    dadXml =  svkDataAcquisitionDescriptionXML_Read(argv[2], &status);
-
+    int readStatus;
+    dadXml =  svkDataAcquisitionDescriptionXML_Read(argv[2], &readStatus);
+    status = readStatus != 0 ? -1: status;
     int actualNumDims = svkDataAcquisitionDescriptionXML_GetTrajectoryNumberOfDimensions(dadXml);
     int expectedNumDims = 5;
     if( actualNumDims != expectedNumDims ) {
@@ -254,7 +269,10 @@ int epsi_test(const int argc, const char **argv) {
     status = checkDimensionDefinition(dadXml, 2, "dim3", "kz", "") != 0 ? -1: status;
     status = checkDimensionDefinition(dadXml, 3, "dim4", "kf", "") != 0 ? -1: status;
     status = checkDimensionDefinition(dadXml, 4, "dim5", "time_dynamic", "dynamic time points") != 0 ? -1: status;
-    if(  svkDataAcquisitionDescriptionXML_GetEPSIType(dadXml) != FLYBACK ) {
+    enum EPSIType actualEPSIType = svkDataAcquisitionDescriptionXML_GetEPSIType(dadXml);
+    if(   actualEPSIType != expectedEPSIType) {
+        printf("Incorrect EPSI Type. Actual value <%d> is not equal to expected value <%d> \n",
+               actualEPSIType, expectedEPSIType);
         status = -1;
     }
     int actualNumberOfInterleaves = svkDataAcquisitionDescriptionXML_GetEPSINumberOfInterleaves(dadXml);

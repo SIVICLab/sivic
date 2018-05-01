@@ -124,14 +124,14 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         vtkXMLDataElement*          FindNestedElementWithPath( string xmlPath);
         vtkXMLDataElement*          FindOrCreateNestedElementWithPath( string parentPath, string elementName);
 
-        const char*                 GetDataWithPath( const char* xmlPath );
+        string                      GetDataWithPath( const char* xmlPath );
         int                         GetIntByIndexWithParentPath( int index, const char* parentPath );
         int                         GetIntWithPath( const char* elementPath );
         void                        SetIntWithPath( const char* parentPath, const char* elmentName, int value );
         float                       GetFloatWithPath( const char* elementPath );
         void                        SetFloatWithPath( const char* parentPath, const char* elmentName, float value );
 
-        const char*                 GetDataByIndexWithParentPath( int index, const char* parentPath );
+        string                      GetDataByIndexWithParentPath( int index, const char* parentPath );
         vtkXMLDataElement*          GetNestedElementByIndexWithParentPath( int index, const char* parentPath );
 
         int                         SetDataWithPath( const char* xmlPath, const char* value );
@@ -196,10 +196,10 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         double                      GetTrajectoryDoubleParameter( string name );
 
         EPSIType                    GetEPSIType();
-        const char*                 GetEPSITypeString();
+        string                      GetEPSITypeString();
         void                        AddEncodedMatrixSizeDimension( string name, int value);
         int                         GetEncodedMatrixSizeNumberOfDimensions();
-        const char*                 GetEncodedMatrixSizeDimensionName(int index);
+        string                      GetEncodedMatrixSizeDimensionName(int index);
         int                         GetEncodedMatrixSizeDimensionValue(int index);
 
         int                         WriteXMLFile( string xmlFileName );
