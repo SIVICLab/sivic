@@ -45,6 +45,7 @@
 
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
+#include <svkTypes.h>
 
 #include <svkMrsImageFFT.h>
 #include <svkImageInPlaceFilter.h>
@@ -68,20 +69,13 @@ class svkEPSIReorder : public svkImageInPlaceFilter
         vtkTypeMacro( svkEPSIReorder, svkImageInPlaceFilter);
 
        typedef enum {
-            UNDEFINED_EPSI_TYPE = 0,
-            FLYBACK,
-            SYMMETRIC, 
-            INTERLEAVED 
-        } EPSIType;
-
-       typedef enum {
             UNDEFINED_EPSI_AXIS = -1,
             COLS,
             ROWS, 
             SLICES 
         } EPSIAxis;
 
-        void                        SetEPSIType( svkEPSIReorder::EPSIType epsiType );  
+        void                        SetEPSIType( EPSIType epsiType );
         void                        SetNumEPSILobes( int numLobes );  
         void                        SetNumSamplesPerLobe( int numSamples ); 
         int                         GetNumSamplesPerLobe(); 

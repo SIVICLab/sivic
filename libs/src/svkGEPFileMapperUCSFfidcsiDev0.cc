@@ -437,8 +437,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     svkEPSIReorder* reorder = svkEPSIReorder::New();    
     reorder->SetInputData( tmpReorderData );
 
-    svkEPSIReorder::EPSIType epsiType = svkEPSIReorder::SYMMETRIC;
-    if( this->dadFile != NULL ) {
+    EPSIType epsiType = SYMMETRIC;
+    if( this->dadFile != NULL && this->dadFile->GetEPSIType() != UNDEFINED_EPSI_TYPE ) {
         epsiType = this->dadFile->GetEPSIType();
     }
     reorder->SetEPSIType( epsiType );
@@ -696,7 +696,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::EPSIPhaseCorrection( svkImageData* data, in
     numRead -= 2; 
     epsiPhase->SetNumEPSIkRead( numRead );
     epsiPhase->SetEPSIAxis( epsiAxis );
-    epsiPhase->SetEPSIType( svkEPSIReorder::SYMMETRIC ); 
+    epsiPhase->SetEPSIType( SYMMETRIC );
     epsiPhase->SetInputData( tmpData ); 
     //tmpData->GetDcmHeader()->PrintDcmHeader(); 
     epsiPhase->Update(); 

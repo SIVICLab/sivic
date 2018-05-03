@@ -45,8 +45,14 @@
 
 
 //#include <vtkObjectFactory.h>
+typedef enum {
+    UNDEFINED_EPSI_TYPE = 0,
+    FLYBACK,
+    SYMMETRIC,
+    INTERLEAVED
+} EPSIType;
 
-
+#ifdef __cplusplus
 namespace svk {
 
 
@@ -65,6 +71,8 @@ class svkTypes : public vtkObject
             ANATOMY_BRAIN = 0,
             ANATOMY_PROSTATE
         } AnatomyType;
+
+
 
         static string  GetAnatomyTypeString( AnatomyType anatomyType ) 
         {
@@ -90,6 +98,6 @@ class svkTypes : public vtkObject
 };
 
 }
-
+#endif //__cplusplus
 #endif //SVK_TYPES_H
 

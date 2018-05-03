@@ -70,7 +70,7 @@ svkEPSIPhaseCorrect::svkEPSIPhaseCorrect()
     this->epsiOrigin = -1;
     this->epsiSpatialPhaseCorrection = NULL;
     this->symEPSIPhaseArray = NULL; 
-    this->epsiType =  svkEPSIReorder::FLYBACK; 
+    this->epsiType =  FLYBACK;
     this->phaseSlope = 1;   //positive slope shifts points to left
 }
 
@@ -86,7 +86,7 @@ svkEPSIPhaseCorrect::~svkEPSIPhaseCorrect()
 /*!
  *  Set the epsi type 
  */
-void svkEPSIPhaseCorrect::SetEPSIType( svkEPSIReorder::EPSIType type )
+void svkEPSIPhaseCorrect::SetEPSIType( EPSIType type )
 {
     this->epsiType = type;
 }
@@ -270,7 +270,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
 void svkEPSIPhaseCorrect::PhaseAlternatingSymmetricEPSILobes( int cellID )
 {
 
-    if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
+    if ( this->epsiType == SYMMETRIC ) {
         //  Get pointer to input data set. 
         svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
     
@@ -375,7 +375,7 @@ void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** ep
     dtBs *= this->phaseSlope * 2 * Pi; 
     //  if sym EPSI divide mult by 2 since the cycle (num points in spectral bandwith is 
     //  twice as big)
-    if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
+    if ( this->epsiType == SYMMETRIC ) {
         dtBs /= 2; 
     }
 
