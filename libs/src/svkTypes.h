@@ -44,7 +44,6 @@
 #define  SVK_TYPES_H          
 
 
-//#include <vtkObjectFactory.h>
 typedef enum {
     UNDEFINED_EPSI_TYPE = 0,
     FLYBACK,

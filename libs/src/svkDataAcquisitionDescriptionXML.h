@@ -258,10 +258,10 @@ struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryComment(void* xm
 
 void              svkDataAcquisitionDescriptionXML_AddTrajectoryDimension(const char* id, const char* logical,
                                                                           const char* description, void *xml);
-int               svkDataAcquisitionDescriptionXML_GetTrajectoryNumberOfDimensions(void *xml);                                  // New!
-struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionId(int index, void *xml);                                // New!
-struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionLogical(int index, void *xml);                           // New!
-struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionDescription(int index, void *xml);                           // New!
+int               svkDataAcquisitionDescriptionXML_GetTrajectoryNumberOfDimensions(void *xml);                   
+struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionId(int index, void *xml);              
+struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionLogical(int index, void *xml);        
+struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionDescription(int index, void *xml);   
 
 void              svkDataAcquisitionDescriptionXML_SetEPSITypeToFlyback(void* xml);
 void              svkDataAcquisitionDescriptionXML_SetEPSITypeToSymmetric(void* xml);
