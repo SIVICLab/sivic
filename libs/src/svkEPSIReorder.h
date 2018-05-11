@@ -86,7 +86,7 @@ class svkEPSIReorder : public svkImageInPlaceFilter
         virtual int                 GetNumEPSIAcquisitions();
         virtual int                 GetNumEPSIAcquisitionsPerFID();
         virtual int                 GetNumEPSIFrequencyPoints();
-        static void                 CombineLobes(svkImageData* data); 
+        static void                 CombineLobes(svkImageData* data, bool sumOfSquares = true ); 
 
 
 
