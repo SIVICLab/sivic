@@ -455,6 +455,14 @@ int svkDataAcquisitionDescriptionXML::SetXMLFileName( string xmlFileName )
 
     }
     this->dataAcquisitionDescriptionXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
+    //  check for svk_data_acquisition_description element: 
+    string dadRootName = this->dataAcquisitionDescriptionXML->GetRoot()->GetName();
+    cout << "NAME: " <<  dadRootName << endl; 
+    if (dadRootName.compare("svk_data_acquisition_description") != 0 )  {
+        cout << "NOT A DAD FILE" << endl;
+        return 1;
+    }
+
     if (this->dataAcquisitionDescriptionXML == NULL ) { 
         cout << "ERROR: xml file could not be parsed:" << this->xmlFileName << endl;
         return 1; 
@@ -717,7 +725,7 @@ string svkDataAcquisitionDescriptionXML::GetDataWithPath( const char* xmlPath )
     string data = "";
     bool foundData = svkXMLUtils::GetNestedElementCharacterDataWithPath( this->dataAcquisitionDescriptionXML, xmlPath, &data );
     if( !foundData ) {
-        cout << "ERROR: Could get character data at path: " << xmlPath << endl;
+        cout << "ERROR: Could not get character data at path: " << xmlPath << endl;
     }
     return data;
 }
@@ -1087,9 +1095,9 @@ void svkDataAcquisitionDescriptionXML::SetEPSIPlateauDuration( float plateauDura
 {
     string element = "";
     if( lobe == ODD ) {
-        element = "plateauDurationOddMTM";
+        element = "plateauDurationOddMs";
     } else if( lobe == EVEN ) {
-        element = "plateauDurationEvenMTM";
+        element = "plateauDurationEvenMs";
     } else {
         cout << "ERROR: EPSI lobe must be either EVEN or ODD." << endl;
         return;
@@ -1108,9 +1116,9 @@ float svkDataAcquisitionDescriptionXML::GetEPSIPlateauDuration( enum EPSILobe lo
 {
     string path = "/encoding/trajectoryDescription/epsiEncoding/";
     if( lobe == ODD ) {
-        path.append("plateauDurationOddMTM");
+        path.append("plateauDurationOddMs");
     } else if( lobe == EVEN ) {
-        path.append("plateauDurationEvenMTM");
+        path.append("plateauDurationEvenMs");
     } else {
         cout << "ERROR: EPSI lobe must be either EVEN or ODD." << endl;
         return 0;
@@ -1129,9 +1137,9 @@ void svkDataAcquisitionDescriptionXML::SetEPSINumberOfLobes( int numberOfLobes, 
 {
     string element = "";
     if( lobe == ODD ) {
-        element = "numberOfLobesOddMTM";
+        element = "numberOfLobesOdd";
     } else if( lobe == EVEN ) {
-        element = "numberOfLobesEvenMTM";
+        element = "numberOfLobesEven";
     } else {
         cout << "ERROR: EPSI lobe must be either EVEN or ODD." << endl;
         return;
@@ -1150,9 +1158,9 @@ int svkDataAcquisitionDescriptionXML::GetEPSINumberOfLobes( enum EPSILobe lobe )
 {
     string path = "/encoding/trajectoryDescription/epsiEncoding/";
     if( lobe == ODD ) {
-        path.append("numberOfLobesOddMTM");
+        path.append("numberOfLobesOdd");
     } else if( lobe == EVEN ) {
-        path.append("numberOfLobesEvenMTM");
+        path.append("numberOfLobesEven");
     } else {
         cout << "ERROR: EPSI lobe must be either EVEN or ODD." << endl;
         return 0;
