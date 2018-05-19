@@ -161,6 +161,8 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
                                     vtkstd::string comment 
                                 ); 
         void                    LoadDataAcquisitionDescriptionFile( string pfileName);
+        int                     GetEPSIAxis(); 
+
         svkDataAcquisitionDescriptionXML* dadFile;
 
 }; 
