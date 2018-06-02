@@ -419,6 +419,17 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+
+ADD_EXECUTABLE(
+    svk_print_image_info
+    svk_print_image_info.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_print_image_info
+	${SVK_LIBS}
+)
+
 ADD_EXECUTABLE(
     svk_create_secondary_capture
     svk_create_secondary_capture.cc
