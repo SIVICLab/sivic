@@ -206,9 +206,8 @@ float svkMRSCombine::GetTotalWeight( svkMriImageData* weightImage, int voxelID)
     int numChannels       = hdr->GetNumberOfCoils();
     float weightSumOfSquares = 0; 
     for( int channel = 0; channel < numChannels; channel++ ) { 
-        float* weights = static_cast<vtkFloatArray*>( 
-                                        weightImage->GetPointData()->GetArray(channel) )->GetPointer(0); 
-        weightSumOfSquares += ( weights[voxelID] * weights[voxelID] ); 
+        float wt = weightImage->GetPointData()->GetAbstractArray(channel)->GetVariantValue(voxelID).ToFloat(); 
+        weightSumOfSquares += ( wt * wt ); 
     }
     return weightSumOfSquares; 
 }
@@ -243,6 +242,7 @@ void svkMRSCombine::RequestLinearCombinationData( )
     ) 
     {
         weightImage = svkMriImageData::SafeDownCast(this->GetImageDataInput( svkMRSCombine::WEIGHTS ) );
+
         this->maxSignalIntensityInput= this->GetMaxSignalIntensity(); 
     } 
 
@@ -279,16 +279,6 @@ void svkMRSCombine::RequestLinearCombinationData( )
                             vtkFloatArray* spectrumN = static_cast<vtkFloatArray*>( data->GetSpectrum( x, y, z, timePt, channel) );
                             spectrumN->GetTupleValue(freq, cmplxPtN);
 
-                            // if WEIGHTED_ADDITION, get weights for this channel
-                            float* weights;
-                            if ( 
-                                this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ||
-                                this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION_SQRT_WT
-                            ) {
-                                weights = static_cast<vtkFloatArray*>( 
-                                        weightImage->GetPointData()->GetArray(channel) )->GetPointer(0) ; 
-                            }
-    
                             if ( this->combinationMethod == svkMRSCombine::ADDITION ) {
 
                                 cmplxPt0[0] += ( cmplxPtN[0] ); 
@@ -297,7 +287,7 @@ void svkMRSCombine::RequestLinearCombinationData( )
                             } else if ( 
                                 this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION || 
                                 this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION_SQRT_WT
-                             ) {
+                            ) {
                                 
                                 //  if all weights are zero, the combination in the previous two lines wil
                                 //  be zero, but don't then divide by zero.  For WEIGHTED_ADDITION should use
@@ -305,8 +295,10 @@ void svkMRSCombine::RequestLinearCombinationData( )
                                 if ( weightTotal == 0 ) {    
                                     weightTotal = 1; 
                                 }
-                                cmplxPt0[0] += weights[voxelID] * ( cmplxPtN[0] ) / weightTotal; 
-                                cmplxPt0[1] += weights[voxelID] * ( cmplxPtN[1] ) / weightTotal; 
+                                float wt = weightImage->GetPointData()->GetAbstractArray(channel)->GetVariantValue(voxelID).ToFloat(); 
+                                //cout <<  "weights[" << voxelID << "] = " << wt << endl;
+                                cmplxPt0[0] += wt * ( cmplxPtN[0] ) / weightTotal; 
+                                cmplxPt0[1] += wt * ( cmplxPtN[1] ) / weightTotal; 
 
                             } else if ( this->combinationMethod == svkMRSCombine::SUBTRACTION ) {
 
