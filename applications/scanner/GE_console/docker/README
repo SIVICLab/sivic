@@ -1,6 +1,9 @@
 #!/bin/bash
 ddir="/Users/jcrane10/git/sivic/applications/scanner/GE_console/docker"
 echo "docker run -v ${ddir}/freeware:/data/freeware -v ${ddir}/netopt:/netopt -v ${ddir}/opt:/opt -i -t sivic_centos68 /bin/bash"
+
+echo "docker run -p 5901:5901 -v ${ddir}/freeware:/data/freeware -v ${ddir}/netopt:/netopt -v ${ddir}/opt:/opt -i -t sivic_centos68 /bin/bash"
+
 exit
 
 #   create image from dockerfile:
@@ -15,3 +18,30 @@ docker create sivic_centos68
 docker run -v ${ddir}/freeware:/data/freeware -v ${ddir}/netopt:/netopt -v ${ddir}/opt:/opt -i -t sivic_centos68 /bin/bash
 
 
+###############################
+    VIA VNC: 
+###############################
+
+1. launch into container and port map 5901: 
+docker run -p 5901:5901 -v /Users/jcrane10/git/sivic/applications/scanner/GE_console/docker/freeware:/data/freeware -v /Users/jcrane10/git/sivic/applications/scanner/GE_console/docker/netopt:/netopt -v /Users/jcrane10/git/sivic/applications/scanner/GE_console/docker/opt:/opt -i -t sivic_centos68 /bin/bash
+
+2.  start vncserver: 
+[root@8fdf7378ba31 /]# vncserver
+
+    You will require a password to access your desktops.
+
+    Password:
+    Verify:
+    xauth:  file /root/.Xauthority does not exist
+    
+    New '8fdf7378ba31:1 ()' desktop is 8fdf7378ba31:1
+    
+    Creating default startup script /root/.vnc/xstartup
+    Starting applications specified in /root/.vnc/xstartup
+    Log file is /root/.vnc/8fdf7378ba31:1.log
+
+
+3.  open VNC client and connect to localhost:5901 
+    when prompted for password enter the one just created inside the container. 
+
+4.  inside the VNC session type xterm to get a more usable terminal. 

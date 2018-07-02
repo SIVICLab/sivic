@@ -325,13 +325,18 @@ void svkDcmVolumeReader::InitFileNames()
 
     //  Get all files in the directory of the specified input image file:
     vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
-    globFileNames->AddFileNames( string( dcmFilePath + "/*").c_str() );
 
     vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
+    if ( this->readOneInputFile == true) {
+        globFileNames->AddFileNames( this->GetFileName() ); 
+    } else {
+        globFileNames->AddFileNames( string( dcmFilePath + "/*").c_str() );
+    }
     sortFileNames->SetInputFileNames( globFileNames->GetFileNames() );
     sortFileNames->NumericSortOn();
     sortFileNames->SkipDirectoriesOn();
     sortFileNames->Update();
+
 
     //  Get the reference file's SeriesInstanceUID, ImageOrientationPatient and slice normal.
     //  These are used for parsing the glob'd files.  

@@ -42,6 +42,7 @@
 #ifdef WIN32
 #include<signal.h>
 #endif
+#include<signal.h>
 #include <svkPhilipsSMapper.h>
 #include <svkSpecUtils.h>
 #include <svkImageReader2.h>

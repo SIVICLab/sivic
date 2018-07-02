@@ -51,6 +51,13 @@
  *
  */
 
+
+enum EPSILobe
+{
+    EVEN,
+    ODD,
+    UNDEFINED
+};
 #ifdef __cplusplus
 
 #include <vtkObject.h>
@@ -59,6 +66,7 @@
 #include <svkEPSIReorder.h>
 #include <svkXMLUtils.h>
 #include <svkInt.h>
+#include <svkEPSIReorder.h>
 
 #include "svkTypes.h"
 
@@ -107,11 +115,21 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         void                        SetVerbose( bool isVerbose );     
         int                         GetXMLVersion(); 
         vtkXMLDataElement*          FindNestedElementWithPath( string xmlPath);
-        const char*                 GetDataWithPath( const char* xmlPath );
+        vtkXMLDataElement*          FindOrCreateNestedElementWithPath( string parentPath, string elementName);
+
+        string                      GetDataWithPath( const char* xmlPath );
         int                         GetIntByIndexWithParentPath( int index, const char* parentPath );
-        const char*                 GetDataByIndexWithParentPath( int index, const char* parentPath );
+        int                         GetIntWithPath( const char* elementPath );
+        void                        SetIntWithPath( const char* parentPath, const char* elmentName, int value );
+        float                       GetFloatWithPath( const char* elementPath );
+        void                        SetFloatWithPath( const char* parentPath, const char* elmentName, float value );
+
+        string                      GetDataByIndexWithParentPath( int index, const char* parentPath );
+        vtkXMLDataElement*          GetNestedElementByIndexWithParentPath( int index, const char* parentPath );
 
         int                         SetDataWithPath( const char* xmlPath, const char* value );
+        void                        SetDataWithPath( const char* parentPath, const char* elmentName, string value );
+
         vtkXMLDataElement*          AddElementWithParentPath( const char* xmlPath, const char* name );
         int                         RemoveElementWithParentPath( const char* xmlPath, const char* name );
 
@@ -129,17 +147,52 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         void                        SetTrajectoryComment( string comment );
         string                      GetTrajectoryComment( );
 
+        int                         GetTrajectoryNumberOfDimensions();
+        void                        AddTrajectoryDimension(string id, string logical, string description);
+        string                      GetTrajectoryDimensionId(int index);
+        string                      GetTrajectoryDimensionLogical(int index);
+        string                      GetTrajectoryDimensionDescription(int index);
+        void                        SetEPSIType(EPSIType type);
+
+        void                        SetEPSINumberOfInterleaves( int numberOfInterleaves );
+        int                         GetEPSINumberOfInterleaves( );
+
+        void                        SetEPSIGradientAmplitude( float gradientAmplitude, EPSILobe lobe);
+        float                       GetEPSIGradientAmplitude( EPSILobe lobe );
+        
+        void                        SetEPSIRampDuration( float rampDuration, EPSILobe lobe);
+        float                       GetEPSIRampDuration( EPSILobe lobe );
+
+        void                        SetEPSIPlateauDuration( float plateauDuration, EPSILobe lobe);
+        float                       GetEPSIPlateauDuration( EPSILobe lobe );
+
+        void                        SetEPSINumberOfLobes( int numberOfLobes, EPSILobe lobe);
+        int                         GetEPSINumberOfLobes( EPSILobe lobe );
+
+        void                        SetEPSISampleSpacing( float sampleSpacing );
+        float                       GetEPSISampleSpacing( );
+
+        void                        SetEPSIAcquisitionDelay( float acquisitionDelay );
+        float                       GetEPSIAcquisitionDelay( );
+        
+        void                        SetEPSIEchoDelay( float echoDelay );
+        float                       GetEPSIEchoDelay( );
+        
+        void                        SetEPSIGradientAxis( int dimensionIndex );
+        string                      GetEPSIGradientAxisId( );
+        int                         GetEPSIGradientAxisIndex( );
+
         void                        SetTrajectoryParameter( string name, long value  );
         long                        GetTrajectoryLongParameter( string name );
 
         void                        SetTrajectoryParameter( string name, double value  );
         double                      GetTrajectoryDoubleParameter( string name );
 
-        svkEPSIReorder::EPSIType    GetEPSIType();
-        const char*                 GetEPSITypeString();
+        EPSIType                    GetEPSIType();
+        string                      GetEPSITypeString();
         void                        AddEncodedMatrixSizeDimension( string name, int value);
         int                         GetEncodedMatrixSizeNumberOfDimensions();
-        const char*                 GetEncodedMatrixSizeDimensionName(int index);
+        string                      GetEncodedMatrixSizeDimensionName(int index);
         int                         GetEncodedMatrixSizeDimensionValue(int index);
 
         int                         WriteXMLFile( string xmlFileName );
@@ -152,7 +205,7 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
 
 
     private:
-
+        vtkXMLDataElement*          GetEPSIEncodingElement();
         void                        SetTrajectoryParameter( string type, string name, string value  );
         string                      GetTrajectoryParameter( string type, string name );
         vtkXMLDataElement*          GetTrajectoryParameterElement( string type, string name );
@@ -173,42 +226,89 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
 }   //svk
 #endif
 
-#endif //SVK_DATA_ACQUISITION_DESCRIPTION_XML_H
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <svkTypes.h>
+struct svkCString
+{
+    char c_str[256];
+};
 
-void*       svkDataAcquisitionDescriptionXML_New();
-void*       svkDataAcquisitionDescriptionXML_Delete( void* dataAcquisitionDescriptionXML );
-void*       svkDataAcquisitionDescriptionXML_Read(const char* xmlFileName, int* status);
-int         svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xml );
 
-const char* svkDataAcquisitionDescriptionXML_GetDataWithPath( void* xml, const char* path );
-int         svkDataAcquisitionDescriptionXML_SetDataWithPath( void* xml, const char* path, 
-                const char* data );
-int         svkDataAcquisitionDescriptionXML_AddElementWithParentPath( void* xml, const char* path, 
-                const char* name );
-int         svkDataAcquisitionDescriptionXML_RemoveElementWithParentPath( void* xml, 
-                const char* path, const char* name );
 
-void*       svkDataAcquisitionDescriptionXML_GetSatBandsXML( void* dataAcquisitionDescriptionXML ); 
-void        svkDataAcquisitionDescriptionXML_SetTrajectory(const char* type, const char* id, 
-                const char* comment, void* xml); 
-const char* svkDataAcquisitionDescriptionXML_GetTrajectoryType(void* xml); 
-const char* svkDataAcquisitionDescriptionXML_GetTrajectoryID(void* xml); 
-const char* svkDataAcquisitionDescriptionXML_GetTrajectoryComment(void* xml); 
-void        svkDataAcquisitionDescriptionXML_SetTrajectoryLongParameter(const char* name, 
-                long value, void* xml); 
-long        svkDataAcquisitionDescriptionXML_GetTrajectoryLongParameter(const char* name, void* xml); 
-void        svkDataAcquisitionDescriptionXML_SetTrajectoryDoubleParameter(const char* name, 
-                double value, void* xml); 
-double      svkDataAcquisitionDescriptionXML_GetTrajectoryDoubleParameter(const char* name, void* xml);
-void        svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension(const char* name, int value, void* xml);
-int         svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionValue(int index, void* xml);
-const char* svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionName(int index, void* xml);
-int         svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeNumberOfDimensions(void* xml);
+void*             svkDataAcquisitionDescriptionXML_New();
+void*             svkDataAcquisitionDescriptionXML_Delete( void* dataAcquisitionDescriptionXML );
+void*             svkDataAcquisitionDescriptionXML_Read(const char* xmlFileName, int* status);
+int               svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xml );
+
+struct svkCString svkDataAcquisitionDescriptionXML_GetDataWithPath( void* xml, const char* path );
+int               svkDataAcquisitionDescriptionXML_SetDataWithPath( void* xml, const char* path, const char* data );
+int               svkDataAcquisitionDescriptionXML_AddElementWithParentPath( void* xml, const char* path,
+                                                                             const char* name );
+int               svkDataAcquisitionDescriptionXML_RemoveElementWithParentPath( void* xml,
+                                                                                const char* path, const char* name );
+
+void*             svkDataAcquisitionDescriptionXML_GetSatBandsXML( void* dataAcquisitionDescriptionXML );
+void              svkDataAcquisitionDescriptionXML_SetTrajectory(const char* type, const char* id,
+                                                                 const char* comment, void* xml);
+struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryType(void* xml);
+struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryID(void* xml);
+struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryComment(void* xml);
+
+void              svkDataAcquisitionDescriptionXML_AddTrajectoryDimension(const char* id, const char* logical,
+                                                                          const char* description, void *xml);
+int               svkDataAcquisitionDescriptionXML_GetTrajectoryNumberOfDimensions(void *xml);                   
+struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionId(int index, void *xml);              
+struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionLogical(int index, void *xml);        
+struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionDescription(int index, void *xml);   
+
+void              svkDataAcquisitionDescriptionXML_SetEPSITypeToFlyback(void* xml);
+void              svkDataAcquisitionDescriptionXML_SetEPSITypeToSymmetric(void* xml);
+void              svkDataAcquisitionDescriptionXML_SetEPSIType( EPSIType type, void* xml);
+EPSIType          svkDataAcquisitionDescriptionXML_GetEPSIType(void* xml);
+
+void              svkDataAcquisitionDescriptionXML_SetEPSINumberOfInterleaves( int numberOfInterleaves, void* xml);
+int               svkDataAcquisitionDescriptionXML_GetEPSINumberOfInterleaves( void* xml);
+
+void              svkDataAcquisitionDescriptionXML_SetEPSIGradientAmplitude(float amplitude, enum EPSILobe lobe, void* xml);
+float             svkDataAcquisitionDescriptionXML_GetEPSIGradientAmplitude(enum EPSILobe lobe, void* xml);
+
+void              svkDataAcquisitionDescriptionXML_SetEPSIRampDuration(float duration, enum EPSILobe lobe, void* xml);
+float             svkDataAcquisitionDescriptionXML_GetEPSIRampDuration(enum EPSILobe lobe, void* xml);
+
+void              svkDataAcquisitionDescriptionXML_SetEPSIPlateauDuration(float duration, enum EPSILobe lobe, void* xml);
+float             svkDataAcquisitionDescriptionXML_GetEPSIPlateauDuration(enum EPSILobe lobe, void* xml);
+
+void              svkDataAcquisitionDescriptionXML_SetEPSINumberOfLobes(int numberOfLobes, enum EPSILobe lobe, void* xml);
+float             svkDataAcquisitionDescriptionXML_GetEPSINumberOfLobes(enum EPSILobe lobe, void* xml);
+
+void              svkDataAcquisitionDescriptionXML_SetEPSISampleSpacing(float sampleSpacing, void* xml);
+float             svkDataAcquisitionDescriptionXML_GetEPSISampleSpacing(void* xml);
+
+void              svkDataAcquisitionDescriptionXML_SetEPSIAcquisitionDelay(float acquisitionDelay, void* xml);
+float             svkDataAcquisitionDescriptionXML_GetEPSIAcquisitionDelay(void* xml);
+
+void              svkDataAcquisitionDescriptionXML_SetEPSIEchoDelay(float echoDelay, void* xml);
+float             svkDataAcquisitionDescriptionXML_GetEPSIEchoDelay(void* xml);
+
+void              svkDataAcquisitionDescriptionXML_SetEPSIGradientAxis(int dimensionIndex, void* xml);
+struct svkCString svkDataAcquisitionDescriptionXML_GetEPSIGradientAxisId(void* xml);
+int               svkDataAcquisitionDescriptionXML_GetEPSIGradientAxisIndex(void* xml);
+
+void              svkDataAcquisitionDescriptionXML_SetTrajectoryLongParameter(const char* name,
+                                                                              long value, void* xml);
+long              svkDataAcquisitionDescriptionXML_GetTrajectoryLongParameter(const char* name, void* xml);
+void              svkDataAcquisitionDescriptionXML_SetTrajectoryDoubleParameter(const char* name,
+                                                                                double value, void* xml);
+double            svkDataAcquisitionDescriptionXML_GetTrajectoryDoubleParameter(const char* name, void* xml);
+void              svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension(const char* name, int value,
+                                                                                 void* xml);
+int               svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionValue(int index, void* xml);
+struct svkCString svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionName(int index, void* xml);
+int               svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeNumberOfDimensions(void* xml);
 
 #ifdef __cplusplus
 }
 #endif
+#endif //SVK_DATA_ACQUISITION_DESCRIPTION_XML_H

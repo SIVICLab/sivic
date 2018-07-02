@@ -108,6 +108,8 @@ int main (int argc, char** argv)
     usemsg += "   --phase               Phase correct EPSI samples in each lobe.                    \n";
     usemsg += "   --combine             Combine lobes using sum of squares from existing EPSI       \n";
     usemsg += "                         data set (only for type = 2 (symmetric))                    \n";
+    usemsg += "   --combine_cmplx       Combine lobes using sum cmplx data from existing EPSI       \n";
+    usemsg += "                         data set (only for type = 2 (symmetric))                    \n";
     usemsg += "   --single              Only operates on the single specified file if               \n";
     usemsg += "   -h                    Print this help mesage.                                     \n";
     usemsg += "\n";  
@@ -149,7 +151,8 @@ int main (int argc, char** argv)
     bool  reorder            = true; // default
     bool  phaseCorrect       = false;
     bool  combineLobes       = false;
-    svkEPSIReorder::EPSIType type  = svkEPSIReorder::UNDEFINED_EPSI_TYPE;
+    bool  combineLobesCmplx  = false;
+    EPSIType type  = UNDEFINED_EPSI_TYPE;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
@@ -162,6 +165,7 @@ int main (int argc, char** argv)
         FLAG_AXIS, 
         FLAG_TYPE, 
         FLAG_COMBINE_LOBES, 
+        FLAG_COMBINE_LOBES_CMPLX, 
         FLAG_PHASE,
         FLAG_REORDER,
         FLAG_SINGLE
@@ -179,6 +183,7 @@ int main (int argc, char** argv)
         {"axis",                    required_argument, NULL,  FLAG_AXIS},
         {"type",                    required_argument, NULL,  FLAG_TYPE},
         {"combine",                 no_argument,       NULL,  FLAG_COMBINE_LOBES},
+        {"combine_cmplx",           no_argument,       NULL,  FLAG_COMBINE_LOBES_CMPLX},
         {"phase",                   no_argument,       NULL,  FLAG_PHASE},
         {"reorder",                 required_argument, NULL,  FLAG_REORDER},
         {"single",                  no_argument,       NULL,  FLAG_SINGLE},
@@ -226,10 +231,13 @@ int main (int argc, char** argv)
                 epsiAxis = atoi(optarg) - 1;
                 break;
             case FLAG_TYPE:
-                type = static_cast<svkEPSIReorder::EPSIType>(atoi(optarg));
+                type = static_cast<EPSIType>(atoi(optarg));
                 break;
             case FLAG_COMBINE_LOBES:
                 combineLobes = true;
+                break;
+            case FLAG_COMBINE_LOBES_CMPLX:
+                combineLobesCmplx = true;
                 break;
             case FLAG_PHASE:
                 phaseCorrect = true;
@@ -260,9 +268,10 @@ int main (int argc, char** argv)
     //  validate input: 
     // ===============================================  
 
-    cout << "REORDER: " << reorder << endl;
-    cout << "PHASE  : " << phaseCorrect << endl;
-    cout << "COMBINE: " << combineLobes << endl;
+    cout << "REORDER:       " << reorder << endl;
+    cout << "PHASE  :       " << phaseCorrect << endl;
+    cout << "COMBINE:       " << combineLobes << endl;
+    cout << "COMBINE_CMPLX: " << combineLobesCmplx << endl;
     if ( reorder == true ) {
 
         if ( 
@@ -270,7 +279,7 @@ int main (int argc, char** argv)
             skip == UNDEFINED ||
             first < 0 ||
             epsiAxis < 0 || epsiAxis > 2 ||
-            type == svkEPSIReorder::UNDEFINED_EPSI_TYPE ||
+            type == UNDEFINED_EPSI_TYPE ||
             outputFileName.length() == 0 ||
             inputFileName.length() == 0  ||
             ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) ||
@@ -298,7 +307,7 @@ int main (int argc, char** argv)
     }
 
 
-    if ( combineLobes == true ) {
+    if ( combineLobes == true  || combineLobesCmplx == true ) {
         if (
                 outputFileName.length() == 0 ||
                 inputFileName.length() == 0  ||
@@ -399,6 +408,10 @@ int main (int argc, char** argv)
 
     if ( combineLobes == true ) {
         svkEPSIReorder::CombineLobes( currentImage );
+    }
+    if ( combineLobesCmplx == true ) {
+        bool sumOfSquares = false;
+        svkEPSIReorder::CombineLobes( currentImage, sumOfSquares);
     }
 
     // ===============================================

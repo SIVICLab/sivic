@@ -337,6 +337,13 @@ int svkBrukerRawMRSReader::GetParamKeyValuePair( )
                     } 
                 } else {
                     valueString->append( iss->str() ); 
+                    char lastCharacter = *(valueString->rbegin());
+                    // If the last character is a space, then its continued on the next line
+                    while( lastCharacter == ' ' ) {
+                        this->ReadLine(this->paramFile, iss);
+                        valueString->append( iss->str() );
+                        lastCharacter = *(valueString->rbegin());
+                    }
                 }
 
             } else { 

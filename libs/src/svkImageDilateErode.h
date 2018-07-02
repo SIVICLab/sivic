@@ -40,63 +40,79 @@
  */
 
 
-#ifndef  SVK_TYPES_H           
-#define  SVK_TYPES_H          
+#ifndef SVK_IMAGE_DILATE_ERODE_H
+#define SVK_IMAGE_DILATE_ERODE_H
 
 
-typedef enum {
-    UNDEFINED_EPSI_TYPE = 0,
-    FLYBACK,
-    SYMMETRIC,
-    INTERLEAVED
-} EPSIType;
+#include <vtkObject.h>
+#include <vtkObjectFactory.h>
+#include <vtkInformation.h>
 
-#ifdef __cplusplus
+#include <svkDcmHeader.h>
+#include <svkImageAlgorithmExecuter.h>
+#include <svkImageAlgorithmWithPortMapper.h>
+
+
 namespace svk {
 
 
 using namespace std;
 
 
-class svkTypes : public vtkObject
+/*! 
+ *  This class handles dilating and eroding images.
+ */
+class svkImageDilateErode : public svkImageAlgorithmWithPortMapper
 {
 
     public:
 
-        vtkTypeMacro( svkTypes, vtkObject);
+        enum {
+            INPUT_IMAGE = 0,
+            DILATE_VALUE,
+            ERODE_VALUE,
+            KERNEL_SIZE,
+            VOLUME, 
+            OUTPUT_SERIES_DESCRIPTION,
+        } svkImageDilateErodeParameters;
 
-        typedef enum {
-            ANATOMY_UNDEFINED = -1,
-            ANATOMY_BRAIN = 0,
-            ANATOMY_PROSTATE
-        } AnatomyType;
+        static svkImageDilateErode* New();
+        vtkTypeMacro( svkImageDilateErode, svkImageAlgorithmWithPortMapper);
+
+        void        SetDilateValue( int value );
+        svkInt*     GetDilateValue( );
+
+        void        SetErodeValue( int value );
+        svkInt*     GetErodeValue( );
+
+        void        SetKernelSize( int size );
+        svkInt*     GetKernelSize( );
+
+        void        SetSeriesDescription( string description );
+        svkString*  GetSeriesDescription( );
+
+        void        SetVolume( int value );
+        svkInt*     GetVolume( );
 
 
+    protected:
 
-        static string  GetAnatomyTypeString( AnatomyType anatomyType ) 
-        {
-            if ( anatomyType == ANATOMY_BRAIN ) {
-                return string("brain"); 
-            } else if ( anatomyType == ANATOMY_PROSTATE) {
-                return string("prostate"); 
-            }  else {
-                return "UNDEFINED"; 
-            }
-        }
+        svkImageDilateErode();
+        ~svkImageDilateErode();
 
-        static svkTypes::AnatomyType GetAnatomyType( string anatomyType) 
-        {
-            if ( anatomyType.compare("brain") == 0 ) {
-                return svkTypes::ANATOMY_BRAIN; 
-            } else if ( anatomyType.compare("prostate") == 0 ) {
-                return svkTypes::ANATOMY_PROSTATE; 
-            } else {
-                return svkTypes::ANATOMY_UNDEFINED; 
-            }
-        }
+        virtual int RequestData( 
+                        vtkInformation* request, 
+                        vtkInformationVector** inputVector, 
+                        vtkInformationVector* outputVector );
+
+
+    private:
+
 };
 
-}
-#endif //__cplusplus
-#endif //SVK_TYPES_H
+
+}   //svk
+
+
+#endif //SVK_IMAGE_DILATE_ERODE_H
 

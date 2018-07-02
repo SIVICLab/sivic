@@ -160,12 +160,10 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
                                     svkDcmHeader::DimensionVector* loopIndex, 
                                     vtkstd::string comment 
                                 ); 
-        void                    CombineLobes(svkImageData* data);
         void                    LoadDataAcquisitionDescriptionFile( string pfileName);
+        int                     GetEPSIAxis(); 
+
         svkDataAcquisitionDescriptionXML* dadFile;
-
-
-
 
 }; 
 

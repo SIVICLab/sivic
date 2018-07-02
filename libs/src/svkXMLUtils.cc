@@ -139,6 +139,26 @@ vtkXMLDataElement* svkXMLUtils::FindNestedElementWithPath( vtkXMLDataElement* ro
 
 
 /*!
+ *  Finds a nested element at a depth greater than one. Searches from the root
+ *  node, and assumes a '/' separated list of nested elements. If element is not
+ *  found then it is created and returned.
+ */
+vtkXMLDataElement* svkXMLUtils::FindOrCreateNestedElementWithPath( vtkXMLDataElement* root, string parentPath, string elementName)
+{
+    vtkXMLDataElement* elem = NULL;
+    string elementPath = parentPath;
+    elementPath.append("/");
+    elementPath.append(elementName);
+    elem = svkXMLUtils::FindNestedElementWithPath(root, elementPath);
+    if( elem == NULL ) {
+        vtkXMLDataElement* parent = svkXMLUtils::FindNestedElementWithPath(root, parentPath);
+        elem = svkXMLUtils::CreateNestedXMLDataElement( parent, elementName, "" );
+    }
+    return elem;
+}
+
+
+/*!
  * Method finds a nested element and then grabs the character data and puts it
  * into the data string provided as an argument. If the character data is
  * retrieved then the method returns true, otherwise false.

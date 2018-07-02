@@ -70,7 +70,7 @@ svkEPSIReorder::svkEPSIReorder()
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 
     //  Initialize any member variables
-    this->epsiType = svkEPSIReorder::UNDEFINED_EPSI_TYPE; 
+    this->epsiType = UNDEFINED_EPSI_TYPE;
     this->numSamplesPerLobe = UNDEFINED_NUM_SAMPLES; 
     this->numLobes = UNDEFINED_NUM_LOBES; 
     this->numSamplesToSkip = 0; 
@@ -109,7 +109,7 @@ svkEPSIReorder::EPSIAxis svkEPSIReorder::GetEPSIAxis()
 /*!
  *  Set the type of EPSI sequence 
  */ 
-void svkEPSIReorder::SetEPSIType( svkEPSIReorder::EPSIType epsiType )
+void svkEPSIReorder::SetEPSIType( EPSIType epsiType )
 {
     this->epsiType = epsiType; 
 }
@@ -180,14 +180,14 @@ void svkEPSIReorder::SetFirstSample( int firstSample )
 int svkEPSIReorder::GetNumEPSIFrequencyPoints()
 {
     int numFreqPts;
-    if ( this->epsiType == svkEPSIReorder::UNDEFINED_EPSI_TYPE ) {
+    if ( this->epsiType == UNDEFINED_EPSI_TYPE ) {
         cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
         exit(1); 
-    } else if ( this->epsiType == svkEPSIReorder::FLYBACK ) {
+    } else if ( this->epsiType == FLYBACK ) {
         numFreqPts = this->numLobes;     
-    } else if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
+    } else if ( this->epsiType == SYMMETRIC ) {
         numFreqPts = this->numLobes / 2;     
-    } else if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
+    } else if ( this->epsiType == INTERLEAVED ) {
         numFreqPts = this->numLobes;     
     } else {
         cout << "ERROR( " << this->GetClassName() << "): UNSUPPORTED EPSI TYPE " << endl;
@@ -206,14 +206,14 @@ int svkEPSIReorder::GetNumEPSIAcquisitions()
 {
     int numAcquisitions; 
 
-    if ( this->epsiType == svkEPSIReorder::UNDEFINED_EPSI_TYPE ) {
+    if ( this->epsiType == UNDEFINED_EPSI_TYPE ) {
         cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
         exit(1); 
-    } else if ( this->epsiType == svkEPSIReorder::FLYBACK ) {
+    } else if ( this->epsiType == FLYBACK ) {
         numAcquisitions = 1; 
-    } else if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
+    } else if ( this->epsiType == SYMMETRIC ) {
         numAcquisitions = 2; 
-    } else if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
+    } else if ( this->epsiType == INTERLEAVED ) {
         numAcquisitions = 2; 
     } else {
         cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
@@ -232,14 +232,14 @@ int svkEPSIReorder::GetNumEPSIAcquisitionsPerFID()
 {
     int numAcquisitionsPerFID; 
 
-    if ( this->epsiType == svkEPSIReorder::UNDEFINED_EPSI_TYPE ) {
+    if ( this->epsiType == UNDEFINED_EPSI_TYPE ) {
         cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
         exit(1); 
-    } else if ( this->epsiType == svkEPSIReorder::FLYBACK ) {
+    } else if ( this->epsiType == FLYBACK ) {
         numAcquisitionsPerFID = 1; 
-    } else if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
+    } else if ( this->epsiType == SYMMETRIC ) {
         numAcquisitionsPerFID = 2;  //for symmetric they are alternating in the same FID
-    } else if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
+    } else if ( this->epsiType == INTERLEAVED ) {
         numAcquisitionsPerFID = 1;  // here they are already separated out into 2 "time points"
     } else {
         cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
@@ -477,7 +477,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
 
             //  For symmetric EPSI, EPSI_ACQ_INDEX isn't initialized in the input data, 
             //  so set it here: 
-            if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
+            if ( this->epsiType == SYMMETRIC ) {
                 currentAcq = acq; //testing
             }
             //cout << "ACQ: " << acq << " " << currentAcq << endl;
@@ -485,7 +485,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
             //  If numAcqs Per FID = 1, then reset the currentEPSIPt being read
             //  to the start of the FID: 
             //  if ( numEPSIAcquisitionsPerFID == 1 ) 
-            if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
+            if ( this->epsiType == INTERLEAVED ) {
                 currentEPSIPt = this->firstSample;   
             }
 
@@ -561,7 +561,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //svkDcmHeader::PrintDimensionIndexVector(&outDimensionVector);
 
     //  if interleaved EPSI, then interleave here. 
-    if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
+    if ( this->epsiType == INTERLEAVED ) {
 
         //  combine interleaved data points here.  The spectra will be doubled in size, 
         //  but EPSI index will get dropped.so.. allocate a new data 
@@ -687,9 +687,11 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
 
 
 /*!
- *  Static method to compute sum of squares combination of lobes 
+ *  Static method to compute 
+ *  - cmplx sum of lobes 
+ *  - sum of squares combination of lobes 
  */
-void svkEPSIReorder::CombineLobes(svkImageData* data)
+void svkEPSIReorder::CombineLobes(svkImageData* data, bool sumOfSquares )
 {
 
     svkDcmHeader* hdr = data->GetDcmHeader();
@@ -705,7 +707,7 @@ void svkEPSIReorder::CombineLobes(svkImageData* data)
 
     float specPtLobe0[2];
     float specPtLobe1[2];
-    float specPtSOS[2];
+    float specPtSum[2];
     
     int lastPrint = -1;
     for (int cellIDLobe0 = 0; cellIDLobe0 < numCells; cellIDLobe0++ ) {
@@ -723,7 +725,6 @@ void svkEPSIReorder::CombineLobes(svkImageData* data)
                 lastPrint = completed;
             }
 
-
             //get spectrum from both lobes 
             svkDcmHeader::DimensionVector loopVectorLobe1 = loopVectorLobe0;
             svkDcmHeader::SetDimensionVectorValue( &loopVectorLobe1, svkDcmHeader::EPSI_ACQ_INDEX, 1);
@@ -740,21 +741,17 @@ void svkEPSIReorder::CombineLobes(svkImageData* data)
             for ( int freq = 0; freq < numFreqPts; freq++ ) {
                 spectrumLobe0->GetTupleValue( freq, specPtLobe0 );
                 spectrumLobe1->GetTupleValue( freq, specPtLobe1 );
-                specPtSOS[0]  = ( specPtLobe0[0] * specPtLobe0[0] + specPtLobe0[1] * specPtLobe0[1] );
-                specPtSOS[0] += ( specPtLobe1[0] * specPtLobe1[0] + specPtLobe1[1] * specPtLobe1[1] );
-                specPtSOS[0]  = pow( static_cast<float>(specPtSOS[0]), static_cast<float>(0.5) );
-                specPtSOS[1]  = 0;
-                spectrumLobe0->SetTupleValue( freq, specPtSOS );
-                //  for testing, only write out first lobe SOS: 
-                    //specPtSOS[0]  = ( specPtLobe0[0] * specPtLobe0[0] + specPtLobe0[1] * specPtLobe0[1] );
-                    //specPtSOS[0]  = pow( static_cast<float>(specPtSOS[0]), static_cast<float>(0.5) );
-                    //specPtSOS[1]  = 0;
-                    //spectrumLobe0->SetTupleValue( freq, specPtSOS );
-                //  for testing, only write out second lobe SOS: 
-                    //specPtSOS[0]  = ( specPtLobe1[0] * specPtLobe1[0] + specPtLobe1[1] * specPtLobe1[1] );
-                    //specPtSOS[0]  = pow( static_cast<float>(specPtSOS[0]), static_cast<float>(0.5) );
-                    //specPtSOS[1]  = 0;
-                    //spectrumLobe0->SetTupleValue( freq, specPtSOS );
+                if ( sumOfSquares == true ) {
+                    //  add the magnitude data from each lobe: 
+                    specPtSum[0]  = ( specPtLobe0[0] * specPtLobe0[0] + specPtLobe0[1] * specPtLobe0[1] );
+                    specPtSum[0] += ( specPtLobe1[0] * specPtLobe1[0] + specPtLobe1[1] * specPtLobe1[1] );
+                    specPtSum[0]  = pow( static_cast<float>(specPtSum[0]), static_cast<float>(0.5) );
+                    specPtSum[1]  = 0;
+                } else {
+                    specPtSum[0]  = ( specPtLobe0[0] + specPtLobe1[0] ); 
+                    specPtSum[1]  = ( specPtLobe0[1] + specPtLobe1[1] ); 
+                }
+                spectrumLobe0->SetTupleValue( freq, specPtSum );
             }
         }
     }
