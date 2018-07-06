@@ -79,6 +79,7 @@ int main (int argc, char** argv)
     usemsg += "                                         4 = /                               \n";  
     usemsg += "                                         5 = * k (Scale by constant)         \n";  
     usemsg += "                                         6 = + k (Add a constant)            \n";  
+    usemsg += "                                         7 = square root of image            \n";  
     usemsg += "   -s            scale_factor        float scaling factor                    \n";
     usemsg += "   --output_type typeID              Optional output type:                   \n";
     usemsg += "                                         1 = Unsigned Integer                \n";  
@@ -170,7 +171,7 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
-    if ( operation < 1 || operation > 6 ) {
+    if ( operation < 1 || operation > 7 ) {
         cout << "Invalid operation: " << operation << endl;
         cout << usemsg << endl;
         exit(1); 
@@ -251,6 +252,8 @@ int main (int argc, char** argv)
     } else if ( operation == 6 ) {
         math->SetOperationToAddConstant();   
         math->SetConstantC( scalingFactor );
+    } else if ( operation == 7 ) {
+        math->SetOperationToSquareRoot ();   
     }
 
     //  By default, output is the greater of the input datatypes
