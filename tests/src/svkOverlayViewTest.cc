@@ -525,7 +525,15 @@ void ColorMapTest()
     filename.str("");
     filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "CNI_FIXED.tiff" ;
     svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
-    
+
+
+    overlayController->SetOverlayThreshold( 0 );
+    overlayController->SetLUT( svkLookupTable::HURD_CNI_FIXED );
+    window->Render();
+    filename.str("");
+    filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "HURD_CNI_FIXED.tiff" ;
+    svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
+
     if( spectra != NULL ) {
         spectra->Delete();
     }

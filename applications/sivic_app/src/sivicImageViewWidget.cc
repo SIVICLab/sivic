@@ -270,6 +270,10 @@ void sivicImageViewWidget::CreateWidget()
     lutMenu->AddRadioButton("Hurd LUT", this->sivicController, invocation.str().c_str());
 
     invocation.str("");
+    invocation << "SetLUTCallback " << svkLookupTable::HURD_CNI_FIXED << endl;
+    lutMenu->AddRadioButton("Fixed Hurd CNI LUT", this->sivicController, invocation.str().c_str());
+
+    invocation.str("");
     invocation << "SetLUTCallback " << svkLookupTable::CYAN_HOT << endl;
     lutMenu->AddRadioButton("Cyan LUT", this->sivicController, invocation.str().c_str());
 

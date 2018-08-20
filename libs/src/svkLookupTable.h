@@ -64,13 +64,14 @@ class svkLookupTable : public vtkLookupTable
             COLOR = 0, 
             REVERSE_COLOR,
             GREY_SCALE, 
-            HURD, 
+            HURD,
             CYAN_HOT,
             FIRE,
             CNI_FIXED,
             CBF_FIXED,
             GREEN_SCALE,
             RED_SCALE,
+            HURD_CNI_FIXED,
             NONE
         } svkLookupTableType;
 
