@@ -3403,8 +3403,6 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_recon_ctrl                  , UINT_2 , 1   , 126,\
             rhr.rh_exec_ctrl                   , UINT_2 , 1   , 128,\
             rhr.rh_dacq_ctrl                   , INT_2  , 1   , 124,\
-            rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 264,\
-            rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 266,\
             rhr.rh_ovl                         , INT_2  , 1   , 808,\
             rhs.se_exno                        , UINT_2 , 1   , 196428,\
             rhs.start_loc                      , FLOAT_4, 1   , 195892,\
