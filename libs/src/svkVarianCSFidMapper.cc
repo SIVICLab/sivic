@@ -77,7 +77,8 @@ svkVarianCSFidMapper::svkVarianCSFidMapper()
     this->numYReordered = 16;
     this->numZReordered = 16;
     this->numTReordered = 59;
-    this->rectilinearData = NULL;  
+    this->rectilinearData = NULL;
+    this->csReorder = NULL;
 
 }
 
@@ -90,11 +91,16 @@ svkVarianCSFidMapper::~svkVarianCSFidMapper()
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
 
     if ( this->paddedData != NULL ) {
-        vtkstd::vector<int> blipVector = this->GetBlips(); 
-        int lengthX  = blipVector[0]; 
-        int lengthY  = blipVector[1];
-        int lengthF  = blipVector[2]; 
-        int numTRs   = blipVector[3]; 
+            int lengthX  = 0;
+            int lengthY  = 0;
+        if( this->GetDadFile() == NULL ) {
+            vtkstd::vector<int> blipVector = this->GetBlips();
+            lengthX  = blipVector[0];
+            lengthY  = blipVector[1];
+        } else {
+            lengthX = this->GetDadFile()->GetEncodedMatrixSizeDimensionValue(0);
+            lengthY = this->GetDadFile()->GetEncodedMatrixSizeDimensionValue(1);
+        }
 
         for (int y = 0; y < lengthY; y++ ) {
             for (int x = 0; x < lengthX; x++ ) {
@@ -889,7 +895,7 @@ void svkVarianCSFidMapper::InitMRSpectroscopyDataModule()
  */
 void svkVarianCSFidMapper::ReadFidFile( string fidFileName, svkImageData* data )
 {
-    
+    this->fidFileName = fidFileName;
     vtkDebugMacro( << this->GetClassName() << "::ReadFidFile()" );
 
     ifstream* fidDataIn = new ifstream();
@@ -969,40 +975,60 @@ void svkVarianCSFidMapper::ReadFidFile( string fidFileName, svkImageData* data )
 void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInFIDFile )
 {
 
-    float* specDataReordered = new float[ numberDataPointsInFIDFile ]; 
-    this->ReOrderSamples(specDataReordered, numberDataPointsInFIDFile ); 
+
+    if( this->GetDadFile() != NULL ) {
+        int ptsPerLobe = this->GetHeaderValueAsInt("np", 0)/2;
+        int lengthY = this->GetDadFile()->GetEncodedMatrixSizeDimensionValue(1);
+        float* specDataReordered = new float[ numberDataPointsInFIDFile ];
+        this->csReorder->ReOrderData(specDataReordered, this->specData);
+        this->paddedData       = new float**[lengthY];
+
+        this->csReorder->PadData(this->paddedData, ptsPerLobe, specDataReordered);
+        //  Now, reset the DICOM header to refect the data reorganization:
+        //  This is the target regridded dimensionality:
+        this->dcmHeader->SetValue( "Columns", this->GetHeaderValueAsInt("fullnv", 0) );
+        this->dcmHeader->SetValue( "Rows", this->GetHeaderValueAsInt("fullnv2", 0) );
+        this->dcmHeader->SetValue( "DataPointColumns",
+                                   this->GetHeaderValueAsInt("nv", 0)
+                                   *   this->GetHeaderValueAsInt("np", 0)/2
+        );
+        return;
+    }
+
+    float* specDataReordered = new float[ numberDataPointsInFIDFile ];
+    this->ReOrderSamples(specDataReordered, numberDataPointsInFIDFile );
 
     //  I think everything is ok up to here.  Not positive about the padding yet.
 
-    vtkstd::vector<int> blipVector = this->GetBlips(); 
+    vtkstd::vector<int> blipVector = this->GetBlips();
 
-    int lengthX  = blipVector[0]; 
+    int lengthX  = blipVector[0];
     int lengthY  = blipVector[1];
-    int lengthF  = blipVector[2]; 
-    int numTRs   = blipVector[3]; 
+    int lengthF  = blipVector[2];
+    int numTRs   = blipVector[3];
 
-    int**  encodeMatrix = new int*[lengthX];  
+    int**  encodeMatrix = new int*[lengthX];
     for (int i = 0; i < lengthX; i++ ) {
-        encodeMatrix[i] = new int[lengthY]; 
+        encodeMatrix[i] = new int[lengthY];
     }
 
     //  init to 0
     for (int x = 0; x < lengthX; x++ ) {
         for (int y = 0; y < lengthY; y++ ) {
-            encodeMatrix[x][y] = 0; 
+            encodeMatrix[x][y] = 0;
         }
     }
 
     //  Offset 4 to skip past meta fields (lengthX, Y, Z, TR):
     int typeIndex  = 4 + (2 * lengthX * lengthY * lengthF);
 
-    int index; 
+    int index;
     for (int y = 0; y < lengthY; y++) {
         for (int x = 0; x < lengthX; x++) {
             encodeMatrix[x][y] = blipVector[typeIndex];
-            typeIndex++; 
-        }   
-    }   
+            typeIndex++;
+        }
+    }
 
     //==================================
     //  Zero pad the data
@@ -1012,20 +1038,20 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
     //  59 samples, 16 flyback phase encodes:
     int specPts = 59*16;
 
-    this->paddedData       = new float**[lengthY];  
-    float*** paddedDataTmp = new float**[lengthY];  
-    int*** xBlips          = new int**[lengthY];  
-    int*** yBlips          = new int**[lengthY];  
+    this->paddedData       = new float**[lengthY];
+    float*** paddedDataTmp = new float**[lengthY];
+    int*** xBlips          = new int**[lengthY];
+    int*** yBlips          = new int**[lengthY];
     for (int y = 0; y < lengthY; y++ ) {
-        this->paddedData[y] = new float*[lengthX]; 
-        paddedDataTmp[y]    = new float*[lengthX]; 
-        xBlips[y]           = new int*[lengthX]; 
-        yBlips[y]           = new int*[lengthX]; 
+        this->paddedData[y] = new float*[lengthX];
+        paddedDataTmp[y]    = new float*[lengthX];
+        xBlips[y]           = new int*[lengthX];
+        yBlips[y]           = new int*[lengthX];
         for (int x = 0; x < lengthX; x++ ) {
-            this->paddedData[y][x] = new float[ specPts * 2 ]; 
-            paddedDataTmp[y][x]    = new float[ specPts * 2 ]; 
-            xBlips[y][x]           = new int[ lengthF ];  
-            yBlips[y][x]           = new int[ lengthF ];  
+            this->paddedData[y][x] = new float[ specPts * 2 ];
+            paddedDataTmp[y][x]    = new float[ specPts * 2 ];
+            xBlips[y][x]           = new int[ lengthF ];
+            yBlips[y][x]           = new int[ lengthF ];
         }
     }
 
@@ -1042,30 +1068,30 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
         }
     }
 
-    //  Initialze xBlips and yBlips: 
-    int xBlipIndex = 4; 
-    int yBlipIndex = 4 + lengthX * lengthY * lengthF ; 
+    //  Initialze xBlips and yBlips:
+    int xBlipIndex = 4;
+    int yBlipIndex = 4 + lengthX * lengthY * lengthF ;
 
     for (int y = 0; y < lengthY; y++) {
         for (int x = 0; x < lengthX; x++) {
 
-            int counter = 0;     
+            int counter = 0;
             for (int sx = xBlipIndex; sx < xBlipIndex + lengthF; sx++) {
                 xBlips[y][x][counter] = blipVector[sx];
-                counter++; 
+                counter++;
             }
-            xBlipIndex = xBlipIndex + lengthF; 
+            xBlipIndex = xBlipIndex + lengthF;
 
-            counter = 0;     
+            counter = 0;
             for (int sb = yBlipIndex; sb < yBlipIndex + lengthF; sb++) {
                 yBlips[y][x][counter] = blipVector[sb];
-                counter++; 
+                counter++;
             }
-            yBlipIndex = yBlipIndex + lengthF; 
+            yBlipIndex = yBlipIndex + lengthF;
 
-        }   
-    }   
-    
+        }
+    }
+
 
     //  Check, can I write out zero data array
     //  next, fill in with real values: 
@@ -1098,7 +1124,7 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
                 counter++;
             } 
         } 
-    } 
+    }
 
 
     /*! 
@@ -1114,8 +1140,8 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
      *  matlab function: ordered_data = 
      *      orderData(data, specpts, xlen, ylen, flen, pts_lobe, 
      *                encodeMatrix, xblips, yblips, blip_phase_correct, phi_x, phi_y);
-     */ 
-    int ptsPerLobe = this->GetHeaderValueAsInt("np", 0)/2; 
+     */
+    int ptsPerLobe = this->GetHeaderValueAsInt("np", 0)/2;
 
     for (int y = 0; y < lengthY; y++) {
         for (int x = 0; x < lengthX; x++) {
@@ -1124,12 +1150,12 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
                 int prevStateX = 0;
                 int prevStateY = 0;
 
-                int numComponents = 2; 
+                int numComponents = 2;
 
                 for (int f = 0; f < lengthF; f++) {
-    
+
                     int currStateX = prevStateX - xBlips[y][x][f];
-                    int currStateY = prevStateY - yBlips[y][x][f]; 
+                    int currStateY = prevStateY - yBlips[y][x][f];
                    
                     index =  f * (ptsPerLobe * numComponents);
 
@@ -1189,122 +1215,122 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
 
 
 /*!
- *  Reorder FID data encoding 
+ *  Reorder FID data encoding
  */
-void svkVarianCSFidMapper::ReOrderSamples( float* specDataReordered, int numberDataPointsInFIDFile ) 
+void svkVarianCSFidMapper::ReOrderSamples( float* specDataReordered, int numberDataPointsInFIDFile )
 {
 
     //  Phase encoding order for kx, ky:
-    int numKxEncodes = 16; 
-    int numKyEncodes = 16; 
+    int numKxEncodes = 16;
+    int numKyEncodes = 16;
 
     int kx[16][16] = {
-        { 8, 7, 7, 8, 9, 9, 9, 8, 7, 6, 6, 6, 6, 7, 8, 9 }, 
-        { 10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 5, 5, 5, 5, 5, 6 }, 
-        { 7, 8, 9, 10, 11, 11, 11, 11, 11, 11, 11, 10, 9, 8, 7, 6 }, 
+        { 8, 7, 7, 8, 9, 9, 9, 8, 7, 6, 6, 6, 6, 7, 8, 9 },
+        { 10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 5, 5, 5, 5, 5, 6 },
+        { 7, 8, 9, 10, 11, 11, 11, 11, 11, 11, 11, 10, 9, 8, 7, 6 },
         { 5, 4, 4, 4, 4, 4, 4, 4, 4, 5, 6, 7, 8, 9, 10, 11 },
         { 12, 12, 12, 12, 12, 12, 12, 12, 12, 11, 10, 9, 8, 7, 6, 5 },
         { 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 5, 6, 7, 8 },
-        { 9, 10, 11, 12, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 12 }, 
+        { 9, 10, 11, 12, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 12 },
         { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2, 2, 2, 2, 2, 2 },
-        { 2, 2, 2, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 }, 
-        { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 13, 12, 11 }, 
-        { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1 }, 
-        { 1, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }, 
-        { 11, 12, 13, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15 }, 
-        { 15, 15, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 }, 
-        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 
+        { 2, 2, 2, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 },
+        { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 13, 12, 11 },
+        { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1 },
+        { 1, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
+        { 11, 12, 13, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15 },
+        { 15, 15, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 },
+        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
     };
-    
-    int ky[16][16] = { 
-        { 7, 7, 8, 8, 8, 7, 6, 6, 6, 6, 7, 8, 9, 9, 9, 9 }, 
-        { 9, 8, 7, 6, 5, 5, 5, 5, 5, 5, 6, 7, 8, 9, 10, 10 }, 
-        { 10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 4, 4, 4, 4, 4 }, 
-        { 4, 4, 5, 6, 7, 8, 9, 10, 11, 11, 11, 11, 11, 11, 11, 11 }, 
-        { 11, 10, 9, 8, 7, 6, 5, 4, 3, 3, 3, 3, 3, 3, 3, 3 }, 
-        { 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 12, 12, 12, 12 }, 
-        { 12, 12, 12, 12, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2 }, 
-        { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 4, 5, 6, 7, 8 }, 
-        { 9, 10, 11, 12, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13 }, 
-        { 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1 }, 
-        { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 7 }, 
-        { 8, 9, 10, 11, 12, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, 
-        { 14, 14, 14, 14, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3 }, 
-        { 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 
-        { 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 }, 
-        { 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15 } 
+
+    int ky[16][16] = {
+        { 7, 7, 8, 8, 8, 7, 6, 6, 6, 6, 7, 8, 9, 9, 9, 9 },
+        { 9, 8, 7, 6, 5, 5, 5, 5, 5, 5, 6, 7, 8, 9, 10, 10 },
+        { 10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 4, 4, 4, 4, 4 },
+        { 4, 4, 5, 6, 7, 8, 9, 10, 11, 11, 11, 11, 11, 11, 11, 11 },
+        { 11, 10, 9, 8, 7, 6, 5, 4, 3, 3, 3, 3, 3, 3, 3, 3 },
+        { 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 12, 12, 12, 12 },
+        { 12, 12, 12, 12, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2 },
+        { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 4, 5, 6, 7, 8 },
+        { 9, 10, 11, 12, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13 },
+        { 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1 },
+        { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 7 },
+        { 8, 9, 10, 11, 12, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 },
+        { 14, 14, 14, 14, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3 },
+        { 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 },
+        { 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15 }
     };
 
-    //  See Figure Ref:  Represents Sampling blocks:  
+    //  See Figure Ref:  Represents Sampling blocks:
 
-    int A2D[16][16] = { 
-        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 }, 
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 
-        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 }, 
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 
-        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 }, 
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 
-        { 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0 }, 
-        { 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 }, 
-        { 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0 }, 
-        { 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 }, 
-        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 }, 
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 
-        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 }, 
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 
-        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 }, 
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } 
+    int A2D[16][16] = {
+        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0 },
+        { 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+        { 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0 },
+        { 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
     };
 
-     
+
     int acqOrder2D[16][16];  //((Y*nx) + X) +1 % L=order of acquisition; matrix operation
     for (int x = 0; x < numKxEncodes; x++) {
         for (int y = 0; y < numKyEncodes; y++) {
-            acqOrder2D[x][y] = ky[x][y] * numKxEncodes; 
+            acqOrder2D[x][y] = ky[x][y] * numKxEncodes;
         }
     }
     for (int x = 0; x < numKxEncodes; x++) {
         for (int y = 0; y < numKyEncodes; y++) {
             acqOrder2D[x][y] += kx[x][y] + 1;
-            //cout << acqOrder2D[x][y] << " "; 
+            //cout << acqOrder2D[x][y] << " ";
         }
-        //cout << endl; 
+        //cout << endl;
     }
 
-    int A1D[16 * 16]; 
-    int acqOrder1D[16 * 16]; 
+    int A1D[16 * 16];
+    int acqOrder1D[16 * 16];
     int i = 0;
     for (int s = 0; s < 16; s++ ) {
         for (int f = 0; f < 16; f++ ) {
             A1D[i] = A2D[s][f] * (i + 1);             //  flatten 2D=>1D array
             acqOrder1D[i] = acqOrder2D[s][f];   //  2D=>1D array  121 120 136 37 38 122 ...
             i++;
-        } 
-    } 
+        }
+    }
 
-    int L3[16 * 16]; 
+    int L3[16 * 16];
     int j = 0;
     for ( int i = 0; i < 256; i++ ) {   //  note only 76 echotrains acquired, not 256
         int index = acqOrder1D[i];      //  full centric acqn order
         if ( A1D[index -1] > 0) {          //  check if data acquired
-            //  acqn order; no zeros; 76 entries; 
+            //  acqn order; no zeros; 76 entries;
             //  L3: 121   120   136   137   138   122   106   105...
-            L3[j] = index;                  
-            j++;     
-        } 
-    } 
+            L3[j] = index;
+            j++;
+        }
+    }
 
 
-    int A3[16 * 16]; 
+    int A3[16 * 16];
     j = 0;
     for ( int i = 0; i < 256; i++ ) {   //  note only 76 echotrains acquired, not 256
         if (A1D[i] > 0) {               //  check if data acquired
-            //  linear acqn order; no zeros; 76 entries; 
+            //  linear acqn order; no zeros; 76 entries;
             //  A3: 1     3     5     7     9    11    13    15    33...
-            A3[j] = A1D[i];  
+            A3[j] = A1D[i];
             j++;
-        } 
+        }
     }
 
     int lobes = 59;             //  echoes
@@ -1313,7 +1339,7 @@ void svkVarianCSFidMapper::ReOrderSamples( float* specDataReordered, int numberD
 
     int out; 
     int offsetIn; 
-    int offsetOut; 
+    int offsetOut;
     for (int i = 0; i < 76; i++) {
         out = A3[i];                            //  output index
         for (int k = 0; k < 76; k++) {
@@ -1382,36 +1408,36 @@ void svkVarianCSFidMapper::ReOrderFlyback( )
 vtkstd::vector<int> svkVarianCSFidMapper::GetBlips()
 {
 
-    string blipString; 
-    this->GetBlipString( &blipString ); 
-    
-    vtkstd::vector<int> blipVector; 
-    istringstream* iss = new istringstream();
-    int intVal; 
+        string blipString;
+        this->GetBlipString( &blipString );
 
-    size_t pos = 0; 
-    size_t endPos = 0; 
+    vtkstd::vector<int> blipVector;
+        istringstream* iss = new istringstream();
+        int intVal;
 
-    while ( (endPos = blipString.find_first_of(" ", pos) ) != string::npos ) {
-        string tmp = blipString.substr(pos, endPos - pos); 
-        //cout << " blip: " << pos << " " << endPos << " " << tmp << endl;
-        iss->str( tmp );
-        *iss >> intVal; 
-        blipVector.push_back( intVal ); 
-        iss->clear(); 
-        pos = endPos + 1; 
-    } 
-    if ( pos != blipString.length() ) {
-        string tmp = blipString.substr(pos, blipString.length() - pos); 
-        //cout << " blip: " << tmp << endl;
-        iss->str( tmp );
-        *iss >> intVal; 
-        blipVector.push_back( intVal ); 
-    }
+        size_t pos = 0;
+        size_t endPos = 0;
 
-    delete iss; 
+        while ( (endPos = blipString.find_first_of(" ", pos) ) != string::npos ) {
+            string tmp = blipString.substr(pos, endPos - pos);
+            //cout << " blip: " << pos << " " << endPos << " " << tmp << endl;
+            iss->str( tmp );
+            *iss >> intVal;
+        blipVector.push_back( intVal );
+            iss->clear();
+            pos = endPos + 1;
+        }
+        if ( pos != blipString.length() ) {
+            string tmp = blipString.substr(pos, blipString.length() - pos);
+            //cout << " blip: " << tmp << endl;
+            iss->str( tmp );
+            *iss >> intVal;
+        blipVector.push_back( intVal );
+        }
 
-    return blipVector; 
+        delete iss;
+
+    return blipVector;
 }
 
 
@@ -1454,6 +1480,22 @@ void svkVarianCSFidMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int
     return;
 }
 
+
+svkDataAcquisitionDescriptionXML* svkVarianCSFidMapper::GetDadFile() {
+    if( this->dadFile == NULL ) {
+        string stringFileName = svkUtils::GetPathFromFilename(this->fidFileName);
+        vtkGlobFileNames* glob = vtkGlobFileNames::New();
+        stringFileName.append("*.xml");
+        glob->AddFileNames(stringFileName.c_str());
+        if( glob->GetNumberOfFileNames() == 1 ) {
+            this->csReorder = svkCSReorder::New();
+            this->csReorder->SetDADFilename(glob->GetNthFileName(0));
+            this->dadFile = svkDataAcquisitionDescriptionXML::New();
+            this->dadFile->SetXMLFileName( glob->GetNthFileName(0));
+        }
+    }
+    return this->dadFile;
+}
 
 /*!
  *  Return the blip string.  Should be read from file most likely 
