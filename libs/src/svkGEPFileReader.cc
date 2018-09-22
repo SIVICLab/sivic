@@ -3421,6 +3421,13 @@ string svkGEPFileReader::GetOffsetsString()
             rhi.norm_A                         , FLOAT_4, 1   , 198892,\
             rhi.norm_S                         , FLOAT_4, 1   , 198896,\
             rhi.dfov_rect                      , FLOAT_4, 1   , 198488,\
+            rhr.rh_ps_mps_r1                   , INT_4  , 1   , 476,\
+            rhr.rh_ps_mps_r2                   , INT_4  , 1   , 480,\
+            rhr.rh_ps_mps_tg                   , INT_4  , 1   , 484,\
+            rhr.rh_ps_aps_r1                   , INT_4  , 1   , 492,\
+            rhr.rh_ps_aps_r2                   , INT_4  , 1   , 496,\
+            rhr.rh_ps_aps_tg                   , INT_4  , 1   , 500,\
+            rhr.rh_ps_aps_freq                 , UINT_4 , 1   , 504,\
         "); 
 
     }
