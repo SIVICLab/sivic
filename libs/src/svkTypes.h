@@ -51,7 +51,7 @@ typedef enum {
     INTERLEAVED
 } EPSIType;
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && !defined(SVK_EPIC)
 namespace svk {
 
 
@@ -97,6 +97,5 @@ class svkTypes : public vtkObject
 };
 
 }
-#endif //__cplusplus
-#endif //SVK_TYPES_H
-
+#endif
+#endif
