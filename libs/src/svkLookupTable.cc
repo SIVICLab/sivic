@@ -3442,8 +3442,8 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         SetTableValue(254, 255./255, 7./255, 0./255);
         SetTableValue(255, 255./255, 0./255, 0./255);
         if( this->type == svkLookupTable::HURD_CNI_FIXED ) {
-            this->TableRange[0] = -4;
-            this->TableRange[1] = 4;
+            this->TableRange[0] = 0;
+            this->TableRange[1] = 6;
         }
     } else if ( this->type == svkLookupTable::CYAN_HOT ) {
 
