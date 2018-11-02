@@ -79,6 +79,7 @@ svkVarianCSFidMapper::svkVarianCSFidMapper()
     this->numTReordered = 59;
     this->rectilinearData = NULL;
     this->csReorder = NULL;
+    this->dadFile = NULL;
 
 }
 
@@ -979,238 +980,224 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
     if( this->GetDadFile() != NULL ) {
         int ptsPerLobe = this->GetHeaderValueAsInt("np", 0)/2;
         int lengthY = this->GetDadFile()->GetEncodedMatrixSizeDimensionValue(1);
-        float* specDataReordered = new float[ numberDataPointsInFIDFile ];
-        this->csReorder->ReOrderData(specDataReordered, this->specData);
         this->paddedData       = new float**[lengthY];
+        this->csReorder->ReOrderAndPadData(this->specData, numberDataPointsInFIDFile, this->paddedData);
+    } else {
 
-        this->csReorder->PadData(this->paddedData, ptsPerLobe, specDataReordered);
-        //  Now, reset the DICOM header to refect the data reorganization:
-        //  This is the target regridded dimensionality:
-        this->dcmHeader->SetValue( "Columns", this->GetHeaderValueAsInt("fullnv", 0) );
-        this->dcmHeader->SetValue( "Rows", this->GetHeaderValueAsInt("fullnv2", 0) );
-        this->dcmHeader->SetValue( "DataPointColumns",
-                                   this->GetHeaderValueAsInt("nv", 0)
-                                   *   this->GetHeaderValueAsInt("np", 0)/2
-        );
-        return;
-    }
+        float *specDataReordered = new float[numberDataPointsInFIDFile];
+        this->ReOrderSamples(specDataReordered, numberDataPointsInFIDFile);
 
-    float* specDataReordered = new float[ numberDataPointsInFIDFile ];
-    this->ReOrderSamples(specDataReordered, numberDataPointsInFIDFile );
+        //  I think everything is ok up to here.  Not positive about the padding yet.
 
-    //  I think everything is ok up to here.  Not positive about the padding yet.
+        vtkstd::vector<int> blipVector = this->GetBlips();
 
-    vtkstd::vector<int> blipVector = this->GetBlips();
+        int lengthX = blipVector[0];
+        int lengthY = blipVector[1];
+        int lengthF = blipVector[2];
+        int numTRs = blipVector[3];
 
-    int lengthX  = blipVector[0];
-    int lengthY  = blipVector[1];
-    int lengthF  = blipVector[2];
-    int numTRs   = blipVector[3];
-
-    int**  encodeMatrix = new int*[lengthX];
-    for (int i = 0; i < lengthX; i++ ) {
-        encodeMatrix[i] = new int[lengthY];
-    }
-
-    //  init to 0
-    for (int x = 0; x < lengthX; x++ ) {
-        for (int y = 0; y < lengthY; y++ ) {
-            encodeMatrix[x][y] = 0;
+        int **encodeMatrix = new int *[lengthX];
+        for (int i = 0; i < lengthX; i++) {
+            encodeMatrix[i] = new int[lengthY];
         }
-    }
 
-    //  Offset 4 to skip past meta fields (lengthX, Y, Z, TR):
-    int typeIndex  = 4 + (2 * lengthX * lengthY * lengthF);
-
-    int index;
-    for (int y = 0; y < lengthY; y++) {
+        //  init to 0
         for (int x = 0; x < lengthX; x++) {
-            encodeMatrix[x][y] = blipVector[typeIndex];
-            typeIndex++;
-        }
-    }
-
-    //==================================
-    //  Zero pad the data
-    //==================================
-    //  X = X(16:length(X));
-    //  Allocate space for a complex array of  lengthY * lengthX * specPts:
-    //  59 samples, 16 flyback phase encodes:
-    int specPts = 59*16;
-
-    this->paddedData       = new float**[lengthY];
-    float*** paddedDataTmp = new float**[lengthY];
-    int*** xBlips          = new int**[lengthY];
-    int*** yBlips          = new int**[lengthY];
-    for (int y = 0; y < lengthY; y++ ) {
-        this->paddedData[y] = new float*[lengthX];
-        paddedDataTmp[y]    = new float*[lengthX];
-        xBlips[y]           = new int*[lengthX];
-        yBlips[y]           = new int*[lengthX];
-        for (int x = 0; x < lengthX; x++ ) {
-            this->paddedData[y][x] = new float[ specPts * 2 ];
-            paddedDataTmp[y][x]    = new float[ specPts * 2 ];
-            xBlips[y][x]           = new int[ lengthF ];
-            yBlips[y][x]           = new int[ lengthF ];
-        }
-    }
-
-    for (int y = 0; y < lengthY; y++ ) {
-        for (int x = 0; x < lengthX; x++ ) {
-            for (int s = 0; s < specPts * 2; s++ ) {
-                this->paddedData[y][x][s] = 0.;
-                paddedDataTmp[y][x][s]    = 0.;
-            }
-            for (int s = 0; s < lengthF; s++ ) {
-                xBlips[y][x][s]    = 0;
-                yBlips[y][x][s]    = 0;
+            for (int y = 0; y < lengthY; y++) {
+                encodeMatrix[x][y] = 0;
             }
         }
-    }
 
-    //  Initialze xBlips and yBlips:
-    int xBlipIndex = 4;
-    int yBlipIndex = 4 + lengthX * lengthY * lengthF ;
+        //  Offset 4 to skip past meta fields (lengthX, Y, Z, TR):
+        int typeIndex = 4 + (2 * lengthX * lengthY * lengthF);
 
-    for (int y = 0; y < lengthY; y++) {
-        for (int x = 0; x < lengthX; x++) {
-
-            int counter = 0;
-            for (int sx = xBlipIndex; sx < xBlipIndex + lengthF; sx++) {
-                xBlips[y][x][counter] = blipVector[sx];
-                counter++;
+        int index;
+        for (int y = 0; y < lengthY; y++) {
+            for (int x = 0; x < lengthX; x++) {
+                encodeMatrix[x][y] = blipVector[typeIndex];
+                typeIndex++;
             }
-            xBlipIndex = xBlipIndex + lengthF;
-
-            counter = 0;
-            for (int sb = yBlipIndex; sb < yBlipIndex + lengthF; sb++) {
-                yBlips[y][x][counter] = blipVector[sb];
-                counter++;
-            }
-            yBlipIndex = yBlipIndex + lengthF;
-
         }
-    }
 
+        //==================================
+        //  Zero pad the data
+        //==================================
+        //  X = X(16:length(X));
+        //  Allocate space for a complex array of  lengthY * lengthX * specPts:
+        //  59 samples, 16 flyback phase encodes:
+        int specPts = 59 * 16;
 
-    //  Check, can I write out zero data array
-    //  next, fill in with real values: 
-    int startIndex = 0;
-    int lengthZ = 16;
-    int numSkip = 0;
-    int counter = 0;
+        this->paddedData = new float **[lengthY];
+        float ***paddedDataTmp = new float **[lengthY];
+        int ***xBlips = new int **[lengthY];
+        int ***yBlips = new int **[lengthY];
+        for (int y = 0; y < lengthY; y++) {
+            this->paddedData[y] = new float *[lengthX];
+            paddedDataTmp[y] = new float *[lengthX];
+            xBlips[y] = new int *[lengthX];
+            yBlips[y] = new int *[lengthX];
+            for (int x = 0; x < lengthX; x++) {
+                this->paddedData[y][x] = new float[specPts * 2];
+                paddedDataTmp[y][x] = new float[specPts * 2];
+                xBlips[y][x] = new int[lengthF];
+                yBlips[y][x] = new int[lengthF];
+            }
+        }
 
-    for (int y = 0; y < lengthY; y++) {
-        for (int x = 0; x < lengthX; x++) {
-
-            if ( encodeMatrix[x][y] > 0) {
-
-                //  loop over 59 lobes:
-                for (int f = 0; f < lengthF; f++) {
-
-                    //  each of the 59 lobe cycles has a length of (lengthZ)
-                    int padIndStart = f * ( lengthZ * 2);             // target index of zero padded matrix
-                    int dataIndStart = (counter * 2 * lengthZ * lengthF) + (f * 2 * lengthZ);
-
-                    int counter2 = dataIndStart; 
-
-                    for (int s = padIndStart; s < padIndStart + lengthZ * 2; s += 2) {
-                        //  real and imaginary values: 
-                        paddedDataTmp[y][x][s]       =  specDataReordered[ counter2 ]; 
-                        paddedDataTmp[y][x][ s + 1 ] =  specDataReordered[ counter2 + 1]; 
-                        counter2 = counter2 + 2; 
-                    } 
+        for (int y = 0; y < lengthY; y++) {
+            for (int x = 0; x < lengthX; x++) {
+                for (int s = 0; s < specPts * 2; s++) {
+                    this->paddedData[y][x][s] = 0.;
+                    paddedDataTmp[y][x][s] = 0.;
                 }
-                counter++;
-            } 
-        } 
-    }
+                for (int s = 0; s < lengthF; s++) {
+                    xBlips[y][x][s] = 0;
+                    yBlips[y][x][s] = 0;
+                }
+            }
+        }
+
+        //  Initialze xBlips and yBlips:
+        int xBlipIndex = 4;
+        int yBlipIndex = 4 + lengthX * lengthY * lengthF;
+
+        for (int y = 0; y < lengthY; y++) {
+            for (int x = 0; x < lengthX; x++) {
+
+                int counter = 0;
+                for (int sx = xBlipIndex; sx < xBlipIndex + lengthF; sx++) {
+                    xBlips[y][x][counter] = blipVector[sx];
+                    counter++;
+                }
+                xBlipIndex = xBlipIndex + lengthF;
+
+                counter = 0;
+                for (int sb = yBlipIndex; sb < yBlipIndex + lengthF; sb++) {
+                    yBlips[y][x][counter] = blipVector[sb];
+                    counter++;
+                }
+                yBlipIndex = yBlipIndex + lengthF;
+
+            }
+        }
 
 
-    /*! 
-     *  The next block of code is reimplemented from Simon Hu's func_reorder_blipped_data.m
-     *  Takes blipped data, presumably something like (16*59)x16x16 flyback data,
-     *  and based on the blips used, puts the data into the correct view
-     *  locations.
-     *  Note that unlike the matlab implementation, this version does not artificially zero
-     *  zero fill the flyback plateau to 43 points.   
-     *
-     *  This just reorders where the x and y phase encodes locations, but leaves the 
-     *  flyback ordering as is. 
-     *  matlab function: ordered_data = 
-     *      orderData(data, specpts, xlen, ylen, flen, pts_lobe, 
-     *                encodeMatrix, xblips, yblips, blip_phase_correct, phi_x, phi_y);
-     */
-    int ptsPerLobe = this->GetHeaderValueAsInt("np", 0)/2;
+        //  Check, can I write out zero data array
+        //  next, fill in with real values:
+        int startIndex = 0;
+        int lengthZ = 16;
+        int numSkip = 0;
+        int counter = 0;
 
-    for (int y = 0; y < lengthY; y++) {
-        for (int x = 0; x < lengthX; x++) {
-            if ( encodeMatrix[x][y] > 0) {
+        for (int y = 0; y < lengthY; y++) {
+            for (int x = 0; x < lengthX; x++) {
 
-                int prevStateX = 0;
-                int prevStateY = 0;
+                if (encodeMatrix[x][y] > 0) {
 
-                int numComponents = 2;
+                    //  loop over 59 lobes:
+                    for (int f = 0; f < lengthF; f++) {
 
-                for (int f = 0; f < lengthF; f++) {
+                        //  each of the 59 lobe cycles has a length of (lengthZ)
+                        int padIndStart = f * (lengthZ * 2);             // target index of zero padded matrix
+                        int dataIndStart = (counter * 2 * lengthZ * lengthF) + (f * 2 * lengthZ);
 
-                    int currStateX = prevStateX - xBlips[y][x][f];
-                    int currStateY = prevStateY - yBlips[y][x][f];
-                   
-                    index =  f * (ptsPerLobe * numComponents);
+                        int counter2 = dataIndStart;
 
-                    for (int s = index; s < (index + (ptsPerLobe * numComponents)) ; s += 2) {
+                        for (int s = padIndStart; s < padIndStart + lengthZ * 2; s += 2) {
+                            //  real and imaginary values:
+                            paddedDataTmp[y][x][s] = specDataReordered[counter2];
+                            paddedDataTmp[y][x][s + 1] = specDataReordered[counter2 + 1];
+                            counter2 = counter2 + 2;
+                        }
+                    }
+                    counter++;
+                }
+            }
+        }
 
-                        this->paddedData[y + currStateY][x + currStateX][s] =  
-                                                                paddedDataTmp[y][x][s]; 
-                        this->paddedData[y + currStateY][x + currStateX][s+1] =  
-                                                                paddedDataTmp[y][x][s+1]; 
+
+        /*!
+         *  The next block of code is reimplemented from Simon Hu's func_reorder_blipped_data.m
+         *  Takes blipped data, presumably something like (16*59)x16x16 flyback data,
+         *  and based on the blips used, puts the data into the correct view
+         *  locations.
+         *  Note that unlike the matlab implementation, this version does not artificially zero
+         *  zero fill the flyback plateau to 43 points.
+         *
+         *  This just reorders where the x and y phase encodes locations, but leaves the
+         *  flyback ordering as is.
+         *  matlab function: ordered_data =
+         *      orderData(data, specpts, xlen, ylen, flen, pts_lobe,
+         *                encodeMatrix, xblips, yblips, blip_phase_correct, phi_x, phi_y);
+         */
+        int ptsPerLobe = this->GetHeaderValueAsInt("np", 0) / 2;
+
+        for (int y = 0; y < lengthY; y++) {
+            for (int x = 0; x < lengthX; x++) {
+                if (encodeMatrix[x][y] > 0) {
+
+                    int prevStateX = 0;
+                    int prevStateY = 0;
+
+                    int numComponents = 2;
+
+                    for (int f = 0; f < lengthF; f++) {
+
+                        int currStateX = prevStateX - xBlips[y][x][f];
+                        int currStateY = prevStateY - yBlips[y][x][f];
+
+                        index = f * (ptsPerLobe * numComponents);
+
+                        for (int s = index; s < (index + (ptsPerLobe * numComponents)); s += 2) {
+
+                            this->paddedData[y + currStateY][x + currStateX][s] =
+                                    paddedDataTmp[y][x][s];
+                            this->paddedData[y + currStateY][x + currStateX][s + 1] =
+                                    paddedDataTmp[y][x][s + 1];
+
+                        }
+
+                        prevStateX = currStateX;
+                        prevStateY = currStateY;
 
                     }
-
-                    prevStateX = currStateX;
-                    prevStateY = currStateY;
-
                 }
             }
         }
-    }
 
-    //++++++++++++++++++++++++++++++++++++
+        //++++++++++++++++++++++++++++++++++++
 
-    delete [] specDataReordered; 
-    for (int i = 0; i < lengthX; i++ ) {
-        delete [] encodeMatrix[i];
-    }
-    delete [] encodeMatrix; 
-
-
-    //  Now, reset the DICOM header to refect the data reorganization:
-    //  This is the target regridded dimensionality: 
-    this->dcmHeader->SetValue( "Columns", this->GetHeaderValueAsInt("fullnv", 0) );
-    this->dcmHeader->SetValue( "Rows", this->GetHeaderValueAsInt("fullnv2", 0) );
-    this->dcmHeader->SetValue( "DataPointColumns", 
-                this->GetHeaderValueAsInt("nv", 0) 
-            *   this->GetHeaderValueAsInt("np", 0)/2
-    );
-
-
-    for (int y = 0; y < lengthY; y++ ) {
-        for (int x = 0; x < lengthX; x++ ) {
-            delete [] paddedDataTmp[y][x];
-            delete [] xBlips[y][x];
-            delete [] yBlips[y][x];
+        delete[] specDataReordered;
+        for (int i = 0; i < lengthX; i++) {
+            delete[] encodeMatrix[i];
         }
-        delete [] paddedDataTmp[y];
-        delete [] xBlips[y];
-        delete [] yBlips[y];
+        delete[] encodeMatrix;
+
+
+        for (int y = 0; y < lengthY; y++) {
+            for (int x = 0; x < lengthX; x++) {
+                delete[] paddedDataTmp[y][x];
+                delete[] xBlips[y][x];
+                delete[] yBlips[y][x];
+            }
+            delete[] paddedDataTmp[y];
+            delete[] xBlips[y];
+            delete[] yBlips[y];
+        }
+
+        delete[] paddedDataTmp;
+        delete[] xBlips;
+        delete[] yBlips;
+
     }
-
-    delete [] paddedDataTmp; 
-    delete [] xBlips;     
-    delete [] yBlips;     
-
-
+    //  Now, reset the DICOM header to refect the data reorganization:
+    //  This is the target regridded dimensionality:
+    this->dcmHeader->SetValue("Columns", this->GetHeaderValueAsInt("fullnv", 0));
+    this->dcmHeader->SetValue("Rows", this->GetHeaderValueAsInt("fullnv2", 0));
+    this->dcmHeader->SetValue("DataPointColumns",
+                              this->GetHeaderValueAsInt("nv", 0)
+                              * this->GetHeaderValueAsInt("np", 0) / 2
+    );
 }
 
 

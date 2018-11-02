@@ -56,8 +56,9 @@ namespace svk {
         static svkCSReorder* New();
 
         void SetDADFilename( string dadFilename);
+        void ReOrderAndPadData(float* originalData, int numberDataPointsInFIDFile, float*** paddedData);
         void ReOrderData(float *reorderedData, float* originalData);
-        void PadData(float*** paddedData, int ptsPerLobe, float* reorderedData);
+        void PadData(float*** paddedData, float* reorderedData);
 
     protected:
 

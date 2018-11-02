@@ -63,6 +63,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES Linux)
 	SET(PLATFORM_LIBS z
                       GLU
                       GL
+                      GLdispatch
                       SM
                       ICE
                       X11
@@ -335,6 +336,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         vtkjpeg-6.3
         GLU
         GL
+        GLdispatch
         SM
         ICE
         X11
@@ -365,6 +367,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         ${ITK_LIBS_PRE}
         GLU
         GL
+        GLdispatch
         SM
         ICE
         X11

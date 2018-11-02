@@ -21,6 +21,14 @@ svkCSReorder::~svkCSReorder()
 
 }
 
+void svkCSReorder::ReOrderAndPadData(float* originalData, int numberDataPointsInFIDFile, float*** paddedData)
+{
+    float localReorderedData[ numberDataPointsInFIDFile ];
+    this->ReOrderData(localReorderedData, originalData);
+    this->PadData(paddedData, localReorderedData);
+}
+
+
 /*!
  *  Reorder FID data encoding
  */
@@ -103,10 +111,8 @@ void svkCSReorder::ReOrderData(float* reorderedData, float* originalData)
 }
 
 
-void svkCSReorder::PadData(float*** paddedData, int ptsPerLobe, float* specDataReordered)
+void svkCSReorder::PadData(float*** paddedData, float* specDataReordered)
 {
-
-    //  I think everything is ok up to here.  Not positive about the padding yet.
 
     int lengthX = this->dadFile->GetEncodedMatrixSizeDimensionValue(0);
     int lengthY = this->dadFile->GetEncodedMatrixSizeDimensionValue(1);
@@ -247,9 +253,9 @@ void svkCSReorder::PadData(float*** paddedData, int ptsPerLobe, float* specDataR
                     currStateY = prevStateY - yBlipsDad[f];
 
 
-                    index =  f * (ptsPerLobe * numComponents);
+                    index =  f * (lengthZ * numComponents);
 
-                    for (int s = index; s < (index + (ptsPerLobe * numComponents)) ; s += 2) {
+                    for (int s = index; s < (index + (lengthZ * numComponents)) ; s += 2) {
 
                         paddedData[y + currStateY][x + currStateX][s] =
                                 paddedDataTmp[y][x][s];
@@ -269,7 +275,6 @@ void svkCSReorder::PadData(float*** paddedData, int ptsPerLobe, float* specDataR
 
     //++++++++++++++++++++++++++++++++++++
 
-    delete [] specDataReordered;
     for (int i = 0; i < lengthX; i++ ) {
         delete [] encodeMatrix[i];
     }
