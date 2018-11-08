@@ -67,6 +67,7 @@ enum EPSILobe
 #include <svkXMLUtils.h>
 #include <svkInt.h>
 #include <svkEPSIReorder.h>
+#include <svkUtils.h>
 
 #include "svkTypes.h"
 
@@ -194,6 +195,10 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         int                         GetEncodedMatrixSizeNumberOfDimensions();
         string                      GetEncodedMatrixSizeDimensionName(int index);
         int                         GetEncodedMatrixSizeDimensionValue(int index);
+
+        void                        GetSamplingIndicies( int* indicies );
+        void                        GetSamplingMask( int* samplingMask );
+        void                        GetBlips( int index, string blipDimension, int* blips);
 
         int                         WriteXMLFile( string xmlFileName );
 

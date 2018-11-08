@@ -1330,6 +1330,40 @@ int svkDataAcquisitionDescriptionXML::GetEncodedMatrixSizeNumberOfDimensions()
 }
 
 
+void svkDataAcquisitionDescriptionXML::GetSamplingIndicies(int *indicies) {
+    string indiciesString = this->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/indicies");
+    vector<string> splitString = svkUtils::SplitString(indiciesString, " ");
+
+    for( int i = 0; i < splitString.size(); i++){
+        // TODO: Make array 0 index array
+        indicies[i] = svkTypeUtils::StringToInt(splitString[i])-1;
+    }
+}
+
+void svkDataAcquisitionDescriptionXML::GetSamplingMask(int *samplingMask) {
+    string samplingMaskString = this->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/samplingMask");
+    vector<string> splitString = svkUtils::SplitString(samplingMaskString, " ");
+
+    for( int i = 0; i < splitString.size(); i++){
+        samplingMask[i] = svkTypeUtils::StringToInt(splitString[i]);
+    }
+}
+
+void svkDataAcquisitionDescriptionXML::GetBlips( int index, string blipDimension, int* blips) {
+    string xmlPath = "/encoding/trajectoryDescription/epsiEncoding/blips[index=";
+    xmlPath.append(svkTypeUtils::IntToString(index));
+    xmlPath.append("]/d");
+    xmlPath.append(blipDimension);
+    string blipsString = this->GetDataWithPath(xmlPath.c_str());
+    vector<string> splitString = svkUtils::SplitString(blipsString, " ");
+
+    for( int i = 0; i < splitString.size(); i++){
+        blips[i] = svkTypeUtils::StringToInt(splitString[i]);
+    }
+}
+
+
+
 /*!
  *
  * @return

@@ -123,10 +123,26 @@ vtkXMLDataElement* svkXMLUtils::FindNestedElementWithPath( vtkXMLDataElement* ro
 {
     vector<string> elements = svkXMLUtils::SplitString( xmlPath, "/");
     vtkXMLDataElement* elem = root;
+//    cout << "Reading element at path: " << xmlPath << endl;
     if( elements.size() > 0 ) {
         for( int i = 0; i < elements.size(); i++ ) {
             if( elem != NULL ) {
-                elem = elem->FindNestedElementWithName(elements[i].c_str());
+                vector<string> parsedName = svkXMLUtils::SplitString(elements[i], "[");
+                string attribute = "";
+                string attributeValue = "";
+                if( parsedName.size() > 1 ) {
+                    vector<string> subparsedName = svkXMLUtils::SplitString(parsedName[1], "]");
+                    vector<string> subsubparsedName = svkXMLUtils::SplitString(subparsedName[0], "=");
+                    attribute = subsubparsedName[0];
+                    attributeValue = subsubparsedName[1];
+                    int numElems = elem->GetNumberOfNestedElements();
+                    vtkXMLDataElement* it = elem->GetNestedElement(3)->FindNestedElementWithName("dx");
+
+                    elem = elem->FindNestedElementWithNameAndAttribute(parsedName[0].c_str(), attribute.c_str(), attributeValue.c_str());
+                }  else {
+                    elem = elem->FindNestedElementWithName(elements[i].c_str());
+                }
+
             } else {
                 break;
             }
@@ -136,7 +152,6 @@ vtkXMLDataElement* svkXMLUtils::FindNestedElementWithPath( vtkXMLDataElement* ro
     }
     return elem;
 }
-
 
 /*!
  *  Finds a nested element at a depth greater than one. Searches from the root
@@ -156,6 +171,7 @@ vtkXMLDataElement* svkXMLUtils::FindOrCreateNestedElementWithPath( vtkXMLDataEle
     }
     return elem;
 }
+
 
 
 /*!
