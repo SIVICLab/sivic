@@ -2272,6 +2272,20 @@ ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff --ignore-matching-lines=^SUMMARY -r ${T
 SET_TESTS_PROPERTIES(SVK_IMAGE_STATS_DIFF PROPERTIES DEPENDS SVK_IMAGE_STATS_MCHK)
 
 #############################################################
+# Test for svk_image_stats_norm
+#############################################################
+SET( TEST_NAME SVK_IMAGE_STATS_NORM_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_image_stats)
+ADD_TEST_WITH_TARGETS(${TEST_NAME} ${TEST_BIN_PATH_CMD_LINE}/svk_image_stats -sINPUT_PATH=${SVK_TEST_ROOT}/svk_image_stats/input/ -rt1234 -o ${TEST_RESULTS_PATH}/output -c ${SVK_TEST_ROOT}/svk_image_stats/config/normalization_test.xml -t -sOUTPUT_PATH=${TEST_RESULTS_PATH})
+
+SET( TEST_NAME SVK_IMAGE_STATS_NORM_DIFF)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  diff --ignore-matching-lines=^SUMMARY -r ${TEST_RESULTS_PATH}/ ${TEST_CASE_ROOT}/output_normalization)
+SET_TESTS_PROPERTIES(SVK_IMAGE_STATS_NORM_DIFF PROPERTIES DEPENDS SVK_IMAGE_STATS_NORM_MCHK)
+
+#############################################################
 # Test for svk_image_stats using integers
 #############################################################
 SET( TEST_NAME SVK_IMAGE_STATS_INTEGER_MCHK)

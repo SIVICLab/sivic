@@ -175,6 +175,7 @@ ELSE(WIN32)
     Set(PLATFORM_LIBS z
                       GLU
                       GL
+                      GLdispatch
                       SM
                       ICE
                       X11

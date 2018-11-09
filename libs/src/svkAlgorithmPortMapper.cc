@@ -336,10 +336,10 @@ void svkAlgorithmPortMapper::SetIntInputPortValue( int port, int value )
 /*!
  * Parameter port getter.
  */
-svkInt* svkAlgorithmPortMapper::GetIntInputPortValue( int port )
+svkInt* svkAlgorithmPortMapper::GetIntInputPortValue( int port, int connection )
 {
     if( this->GetInputPortType(port) == SVK_INT ) {
-        vtkDataObject* parameter =  this->GetAlgorithmInputPort( port );
+        vtkDataObject* parameter =  this->GetAlgorithmInputPort( port, connection );
         return svkInt::SafeDownCast( parameter );
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type int. " << endl;

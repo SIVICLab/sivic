@@ -499,6 +499,17 @@ int main (int argc, char** argv)
                 resultsTab << right << setprecision(4) << prescaling;
                 resultsTab << "    ";
                 resultsTab.width(10);
+                string normalizationImageIndexListPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:NORMALIZATION_IMAGE_INDEX_LIST";
+                int normalizationImageIndex = imageIndex;
+                vtkXMLDataElement* normImageListElem = svkXMLUtils::FindNestedElementWithPath(configXML, normalizationImageIndexListPath);
+                if( normImageListElem != NULL ) {
+                    vtkXMLDataElement* normImageElem = normImageListElem->GetNestedElement(imageIndex);
+                    if(normImageElem != NULL ) {
+                        normalizationImageIndex = svkTypeUtils::StringToInt(normImageElem->GetCharacterData());
+                    } else {
+                        cout << "ERROR: Could not find normalization image index for index: " << imageIndex << endl;
+                    }
+                }
                 if (defaultImages[imageIndex] == "rf"){
                     scaling = 0.01;
                     resultsTab << "    0.1000E-01  ";
@@ -515,7 +526,7 @@ int main (int argc, char** argv)
                 }
                 // This will depend on the config
                 if( defaultImages[imageIndex] != "recov" && defaultImages[imageIndex] != "invrec" &&  defaultImages[imageIndex] != "rf"){
-                    normalization =  svkTypeUtils::StringToDouble(tables[normalMeasure][normalROI][image][0]);
+                    normalization =  svkTypeUtils::StringToDouble(tables[normalMeasure][normalROI][defaultImages[normalizationImageIndex]][0]);
                 }
                 resultsTab << right << fixed << setprecision(2) << normalization;
                 resultsTab << endl;
