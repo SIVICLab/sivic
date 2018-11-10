@@ -1007,6 +1007,47 @@ SET( TEST_NAME TEST_PHASE_SPEC_FROM_FILE_DIFF )
 ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${TEST_PLATFORM}/out1 )
 SET_TESTS_PROPERTIES(TEST_PHASE_SPEC_FROM_FILE_DIFF PROPERTIES DEPENDS TEST_MCHK_PHASE_SPEC_FROM_FILE )
 
+##################################################################
+#   Test frequency Correct using PTS. 
+##################################################################
+SET( TEST_NAME TEST_MCHK_FREQ_CORRECT_TD_PTS )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+file( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_freq_correct)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_freq_correct -i ${TEST_CASE_ROOT}/input/single.dcm -o ${TEST_RESULTS_PATH}/out --fs -u 3 -s 50 -t2)
+
+SET( TEST_NAME TEST_FREQ_CORRECT_TD_PTS_DIFF )
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/output_pts )
+SET_TESTS_PROPERTIES(TEST_FREQ_CORRECT_TD_PTS_DIFF PROPERTIES DEPENDS FREQ_CORRECT_TD_PTS )
+
+##################################################################
+#   Test frequency Correct using PTS. 
+##################################################################
+SET( TEST_NAME TEST_MCHK_FREQ_CORRECT_TD_HZ )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+file( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_freq_correct)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_freq_correct -i ${TEST_CASE_ROOT}/input/single.dcm -o ${TEST_RESULTS_PATH}/out --fs -u 2 -s 50 -t2)
+
+SET( TEST_NAME TEST_FREQ_CORRECT_TD_HZ_DIFF )
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/output_hz )
+SET_TESTS_PROPERTIES(TEST_FREQ_CORRECT_TD_HZ_DIFF PROPERTIES DEPENDS FREQ_CORRECT_TD_HZ )
+
+##################################################################
+#   Test frequency Correct using PTS. 
+##################################################################
+SET( TEST_NAME TEST_MCHK_FREQ_CORRECT_TD_PPM )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+file( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_freq_correct)
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_freq_correct -i ${TEST_CASE_ROOT}/input/single.dcm -o ${TEST_RESULTS_PATH}/out --fs -u 1 -s 3 -t2)
+
+SET( TEST_NAME TEST_FREQ_CORRECT_TD_PPM_DIFF )
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/output_ppm )
+SET_TESTS_PROPERTIES(TEST_FREQ_CORRECT_TD_PPM_DIFF PROPERTIES DEPENDS FREQ_CORRECT_TD_PPM )
 
 ##################################################################
 #   Spectra zero and linear phase test in the spectral domain. 

@@ -165,24 +165,15 @@ int svkFreqCorrect::ApplyGlobalFourierShift()
         fft->Delete();
     } 
 
-    float sweepWidth = data->GetDcmHeader()->GetFloatValue("SpectralWidth"); 
-    float freqPoints = data->GetDcmHeader()->GetFloatValue("DataPointColumns"); 
-    float degrees = 0;
-    cout << "SW:      "<< sweepWidth  <<  endl;
-    cout << "freqPts: " << freqPoints << endl;
-    if ( this->units == svkSpecPoint::PTS ) {
-        degrees = this->globalShift * 360 ; 
-        degrees = this->globalShift * 2 * 3.14; 
-        cout  << "PTS: "  << degrees << endl;
-    } else if ( this->units == svkSpecPoint::Hz ) { 
-        degrees = this->globalShift/sweepWidth * ( freqPoints * 360 ); 
-        cout << "degrees " << degrees << endl;
-        cout  << "HZ: "  << endl;
-    } else if ( this->units == svkSpecPoint::PPM ) { 
-        cout  <<  "NOT IMPLEMENTED YET" << endl;
-        exit(1); 
-    }
+    float pointsToShift = 0;
 
+    svkSpecPoint* point = svkSpecPoint::New();
+    point->SetDcmHeader(data->GetDcmHeader());
+
+    float zeroInRequestedUnits = point->ConvertPosUnits( 0, svkSpecPoint::PTS, this->units);
+    float shiftInRequestedUnits =  zeroInRequestedUnits - this->globalShift;
+    pointsToShift = point->ConvertPosUnits( shiftInRequestedUnits, this->units, svkSpecPoint::PTS );
+    point->Delete();
     /*  
      * this  works in  place
      */
@@ -191,7 +182,7 @@ int svkFreqCorrect::ApplyGlobalFourierShift()
     phaser->PhaseAllChannels();
     phaser->SetPhase0( 0 );
     phaser->SetLinearPhasePivot( 0 );
-    phaser->SetLinearPhase( degrees );
+    phaser->SetLinearPhase( vtkMath::Round(pointsToShift) );
     phaser->Update();
 
     
