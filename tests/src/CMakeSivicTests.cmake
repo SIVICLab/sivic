@@ -2001,8 +2001,9 @@ SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_file_convert)
 ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_file_convert --info -i ${TEST_CASE_ROOT}/input/vol.idf -o ${TEST_RESULTS_PATH}/info.txt )
 
 SET( TEST_NAME TEST_SVK_FILE_INFO_DIFF)
-ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH}/ ${TEST_CASE_ROOT}/output/ )
+ADD_TEST_WITH_TARGETS(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} --ignore-matching-lines=svkMriImageData --ignore-matching-lines=vtkObserver --ignore-matching-lines=Command  --ignore-matching-lines=Information --ignore-matching-lines=PER_COMPONENT --ignore-matching-lines=Array -r ${TEST_RESULTS_PATH}/ ${TEST_CASE_ROOT}/output/ )
 SET_TESTS_PROPERTIES(TEST_SVK_FILE_INFO_DIFF PROPERTIES DEPENDS TEST_MCHK_SVK_FILE_INFO)
+
 
 ##############################
 #  svk_image_mathematics tests
