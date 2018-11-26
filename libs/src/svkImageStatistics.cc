@@ -217,8 +217,8 @@ int svkImageStatistics::RequestData( vtkInformation* request,
                     } else {
                         cout << "ERROR: Normalization element not found! " << endl;
                     }
+                    normalizationFactors.push_back(normalizationFactor);
                 }
-                normalizationFactors.push_back(normalizationFactor);
                 this->ComputeSmoothStatistics(image,roi, binSize, maskedPixels, statistics, normalizationFactors[normalizationImageIndex]);
                 this->ComputeAccumulateStatistics(image,roi, binSize, maskedPixels, statistics, normalizationFactors[normalizationImageIndex]);
             }
