@@ -111,6 +111,7 @@ class svkUtils : public vtkObject
         static string             ColorArrayToString( double color[3] );
         static vector<string>     SplitString( string str, string token );
         static string             GetFilenameFromFullPath( string fullPath );
+        static string             GetPathFromFilename( string filename );
         static int                NearestInt(double x);
         static bool               UncompressFiles( vtkStringArray *filenames );
         static bool               UncompressFile( vtkstd::string filename );

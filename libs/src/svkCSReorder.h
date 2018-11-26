@@ -15,6 +15,7 @@
  *      software without specific prior written permission.
  *  
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
+ *
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
  *  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
@@ -25,87 +26,53 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
  *  OF SUCH DAMAGE.
  */
+#ifndef SIVIC_SVKCSREORDER_H
+#define SIVIC_SVKCSREORDER_H
 
 
-
-/*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
- *
- *  Authors:
- *      Jason C. Crane, Ph.D.
- *      Beck Olson
- */
-
-
-#ifndef SVK_MRS_LINEAR_PHASE
-#define SVK_MRS_LINEAR_PHASE
-
-
-#include <vtkObject.h>
 #include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <svkSpecUtils.h>
-#include <svkImageInPlaceFilter.h>
-#include <vtkImageFourierFilter.h>
-
-
+#include <vtkDataObject.h>
+#include <vtkGlobFileNames.h>
+#include <svkDataAcquisitionDescriptionXML.h>
+#include <svkTypeUtils.h>
 namespace svk {
 
 
-using namespace std;
+    using namespace std;
 
-
-
-/*! 
- *  This class will apply a linear phase shift to spec datasets in the spatial (not spectral) domain. 
- *  This is the equivalent to appyling
- *  a linear phase shift to each individual single-frequency image volume. NOTE: This class will
- *  NOT change the origin of your dataset, it will simply phase the data.
+/*!
+ *  This class is a container for a primitive bool. It is a subclass of vtkDataObject so it can
+ *  be used in input ports of algorithms.
  */
-class svkMrsLinearPhase : public svkImageInPlaceFilter
-{
+    class svkCSReorder : public vtkObject
+    {
 
     public:
 
-        static svkMrsLinearPhase* New();
-        vtkTypeMacro( svkMrsLinearPhase, svkImageInPlaceFilter);
-        void SetShiftWindow( double shiftWindow[3] );
+        // vtk type revision macro
+        vtkTypeMacro( svkCSReorder, vtkObject );
+
+        // vtk initialization 
+        static svkCSReorder* New();
+
+        void SetDADFilename( string dadFilename);
+        void ReOrderAndPadData(float* originalData, int numberDataPointsInFIDFile, float*** paddedData);
+        void ReOrderData(float *reorderedData, float* originalData);
+        void PadData(float*** paddedData, float* reorderedData);
 
     protected:
 
-        svkMrsLinearPhase();
-        ~svkMrsLinearPhase();
-
-        virtual int     FillInputPortInformation(int port, vtkInformation* info);
-
-
-        //  Methods:
-        virtual int     RequestInformation(
-                            vtkInformation* request, 
-                            vtkInformationVector** inputVector,
-                            vtkInformationVector* outputVector
-                        );
-
-        virtual int     RequestData(
-                            vtkInformation* request, 
-                            vtkInformationVector** inputVector,
-                            vtkInformationVector* outputVector
-                        );
+        svkCSReorder();
+        ~svkCSReorder();
 
     private:
-        
-        double shiftWindow[3];
+        svkDataAcquisitionDescriptionXML* dadFile;
 
-};
+    };
+
 
 
 }   //svk
 
 
-#endif //SVK_MRS_LINEAR_PHASE
-
+#endif //SIVIC_SVKCSREORDER_H
