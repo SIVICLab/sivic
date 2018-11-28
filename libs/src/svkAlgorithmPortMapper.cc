@@ -317,16 +317,11 @@ svkDouble* svkAlgorithmPortMapper::GetDoubleInputPortValue( int port, int connec
  */
 void svkAlgorithmPortMapper::SetIntInputPortValue( int port, int value )
 {
-    // CHECK THAT THIS IS THE CORRECT TYPE FIRS
     if( this->GetInputPortType(port) == SVK_INT ) {
-        vtkDataObject* parameter =  this->GetAlgorithmInputPort( port );
-        if( parameter == NULL ) {
-            parameter = svkInt::New();
-            this->SetAlgorithmInputPort(port, parameter);
-            parameter->Delete();
-            parameter =  this->GetAlgorithmInputPort( port );
-        }
+        vtkDataObject* parameter = svkInt::New();
+        this->SetAlgorithmInputPort(port, parameter);
         svkInt::SafeDownCast( parameter )->SetValue(value);
+        parameter->Delete();
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type int. " << endl;
     }
