@@ -100,6 +100,7 @@ class svkFreqCorrect : public svkImageInPlaceFilter
                             vtkInformationVector** inputVector,
                             vtkInformationVector* outputVector
                         );
+        void            UpdatePPMReference(); 
 
 
     private:

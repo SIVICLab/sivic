@@ -85,6 +85,37 @@ svkFreqCorrect::~svkFreqCorrect()
 
 
 /*!
+ *  Compute the shift in the PPM reference (PPM of center point)
+ */
+void svkFreqCorrect::UpdatePPMReference()
+{
+
+    svkSpecPoint* point = svkSpecPoint::New();
+
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+    point->SetDcmHeader( data->GetDcmHeader() );
+
+    //  ppm at mid point in spectrum
+    float ppmRef            = data->GetDcmHeader()->GetFloatValue( "ChemicalShiftReference" ); 
+    float ppmRefTargetUnits = point->ConvertPosUnits( ppmRef, svkSpecPoint::PPM, this->units );
+    float refShifted        = ppmRefTargetUnits - this->globalShift; 
+    float refShiftedPPM     = point->ConvertPosUnits( refShifted, this->units, svkSpecPoint::PPM );
+    cout << "PPM REF:          " << ppmRef << endl;
+    cout << "PPM REF Target:   " << ppmRefTargetUnits << endl;
+    cout << "ref SHIFTed:      " << refShifted << endl;
+    cout << "ref SHIFTed PPM:  " << refShiftedPPM << endl;
+
+    //float ppmShift    = ppmRef - ppmShifted; 
+
+    data->GetDcmHeader()->SetValue(
+        "ChemicalShiftReference",
+        refShiftedPPM
+    );
+        
+}
+
+
+/*!
  *  By default the sift leaves 0s at the end unless it's specified to be
  *  a circular shift in which case the data wraps around. 
  */
@@ -174,6 +205,7 @@ int svkFreqCorrect::ApplyGlobalFourierShift()
     float shiftInRequestedUnits =  zeroInRequestedUnits - this->globalShift;
     pointsToShift = point->ConvertPosUnits( shiftInRequestedUnits, this->units, svkSpecPoint::PTS );
     point->Delete();
+
     /*  
      * this  works in  place
      */
@@ -196,8 +228,7 @@ int svkFreqCorrect::ApplyGlobalFourierShift()
         fft->Delete();
     }
 
-
-    
+    this->UpdatePPMReference(); 
 }
 
 
