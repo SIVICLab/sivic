@@ -212,7 +212,6 @@ ELSE(WIN32)
     SET(PLATFORM_LIBS fontconfig
                       GLU
                       GL
-                      GLdispatch
                       SM
                       ICE
                       X11
