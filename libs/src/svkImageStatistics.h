@@ -114,6 +114,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
             COMPUTE_SKEWNESS,
             NORMALIZATION_METHOD,
             NORMALIZATION_ROI_INDEX,
+            NORMALIZATION_IMAGE_INDEX,
             OUTPUT_FILE_NAME
         } svkImageStatisticsParameter;
 

@@ -58,7 +58,7 @@ enum EPSILobe
     ODD,
     UNDEFINED
 };
-#ifdef __cplusplus
+#if defined(__cplusplus) && !defined(SVK_EPIC)
 
 #include <vtkObject.h>
 #include <vtkXMLDataElement.h>
@@ -67,6 +67,7 @@ enum EPSILobe
 #include <svkXMLUtils.h>
 #include <svkInt.h>
 #include <svkEPSIReorder.h>
+#include <svkUtils.h>
 
 #include "svkTypes.h"
 
@@ -195,6 +196,10 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
         string                      GetEncodedMatrixSizeDimensionName(int index);
         int                         GetEncodedMatrixSizeDimensionValue(int index);
 
+        void                        GetSamplingIndicies( int* indicies );
+        void                        GetSamplingMask( int* samplingMask );
+        void                        GetBlips( int index, string blipDimension, int* blips);
+
         int                         WriteXMLFile( string xmlFileName );
 
 
@@ -226,7 +231,7 @@ class svkDataAcquisitionDescriptionXML: public vtkObject
 }   //svk
 #endif
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && !defined(SVK_EPIC)
 extern "C" {
 #endif
 #include <svkTypes.h>
@@ -308,7 +313,7 @@ int               svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimension
 struct svkCString svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionName(int index, void* xml);
 int               svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeNumberOfDimensions(void* xml);
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && !defined(SVK_EPIC)
 }
 #endif
-#endif //SVK_DATA_ACQUISITION_DESCRIPTION_XML_H
+#endif

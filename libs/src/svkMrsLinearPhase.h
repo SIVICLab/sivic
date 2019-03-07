@@ -62,7 +62,8 @@ using namespace std;
 
 
 /*! 
- *  This class will apply a linear phase shift to spec datasets. This is the equivalent to appyling
+ *  This class will apply a linear phase shift to spec datasets in the spatial (not spectral) domain. 
+ *  This is the equivalent to appyling
  *  a linear phase shift to each individual single-frequency image volume. NOTE: This class will
  *  NOT change the origin of your dataset, it will simply phase the data.
  */

@@ -51,7 +51,7 @@ vtkStandardNewMacro(svkImageStatistics);
 //! Constructor
 svkImageStatistics::svkImageStatistics()
 {
-    this->SetNumberOfInputPorts(27);
+    this->SetNumberOfInputPorts(28);
     this->SetNumberOfOutputPorts(1);
     bool required = true;
     bool repeatable = true;
@@ -59,6 +59,7 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, repeatable );
     this->GetPortMapper()->InitializeInputPort( NUM_BINS, "NUM_BINS", svkAlgorithmPortMapper::SVK_INT);
     this->GetPortMapper()->InitializeInputPort( BIN_SIZE, "BIN_SIZE", svkAlgorithmPortMapper::SVK_DOUBLE, required, repeatable);
+    this->GetPortMapper()->InitializeInputPort( NORMALIZATION_IMAGE_INDEX, "NORMALIZATION_IMAGE_INDEX", svkAlgorithmPortMapper::SVK_INT, !required, repeatable);
     this->GetPortMapper()->InitializeInputPort( IGNORE_NEGATIVE_NUMBERS, "IGNORE_NEGATIVE_NUMBERS", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( AUTO_ADJUST_BIN_SIZE, "AUTO_ADJUST_BIN_SIZE", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( START_BIN, "START_BIN", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
@@ -128,9 +129,17 @@ int svkImageStatistics::RequestData( vtkInformation* request,
     // Chop off the return character from asctime:
     timeString = timeString.substr(0, timeString.size()-1);
     results->SetAttribute("date", timeString.c_str());
-
+    vector<double> normalizationFactors;
     for (int imageIndex = 0; imageIndex < this->GetNumberOfInputConnections(INPUT_IMAGE); imageIndex++) {
         double normalizationFactor = 0;
+        int normalizationImageIndex = imageIndex;
+        if( this->GetPortMapper()->GetIntInputPortValue( NORMALIZATION_IMAGE_INDEX, imageIndex )){
+            normalizationImageIndex = this->GetPortMapper()->GetIntInputPortValue( NORMALIZATION_IMAGE_INDEX, imageIndex )->GetValue();
+            if( normalizationImageIndex > imageIndex ) {
+                cout << "ERROR! Normalization Image Index cannot be greater than the image index." << endl;
+                exit(1);
+            }
+        }
         vector<int> roiIndicies;
         int normalizationROIIndex = 0;
         int normalizationType = NONE;
@@ -208,9 +217,10 @@ int svkImageStatistics::RequestData( vtkInformation* request,
                     } else {
                         cout << "ERROR: Normalization element not found! " << endl;
                     }
+                    normalizationFactors.push_back(normalizationFactor);
                 }
-                this->ComputeSmoothStatistics(image,roi, binSize, maskedPixels, statistics, normalizationFactor);
-                this->ComputeAccumulateStatistics(image,roi, binSize, maskedPixels, statistics, normalizationFactor);
+                this->ComputeSmoothStatistics(image,roi, binSize, maskedPixels, statistics, normalizationFactors[normalizationImageIndex]);
+                this->ComputeAccumulateStatistics(image,roi, binSize, maskedPixels, statistics, normalizationFactors[normalizationImageIndex]);
             }
             maskedPixels->Delete();
             vtkIndent indent;

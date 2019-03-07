@@ -42,6 +42,9 @@
 
 
 #include <svkFreqCorrect.h>
+#include <svkMrsImageFFT.h>
+#include <svkSpecPoint.h>
+#include <svkPhaseSpec.h>
 
 
 using namespace svk;
@@ -67,6 +70,8 @@ svkFreqCorrect::svkFreqCorrect()
 
     this->SetNumberOfInputPorts(2); //1 mandatory, 1 optional 
     this->circularShift = false; 
+    this->useFourierShift = false; 
+    this->isInputInTimeDomain == true;  
 
 }
 
@@ -80,6 +85,37 @@ svkFreqCorrect::~svkFreqCorrect()
 
 
 /*!
+ *  Compute the shift in the PPM reference (PPM of center point)
+ */
+void svkFreqCorrect::UpdatePPMReference()
+{
+
+    svkSpecPoint* point = svkSpecPoint::New();
+
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+    point->SetDcmHeader( data->GetDcmHeader() );
+
+    //  ppm at mid point in spectrum
+    float ppmRef            = data->GetDcmHeader()->GetFloatValue( "ChemicalShiftReference" ); 
+    float ppmRefTargetUnits = point->ConvertPosUnits( ppmRef, svkSpecPoint::PPM, this->units );
+    float refShifted        = ppmRefTargetUnits - this->globalShift; 
+    float refShiftedPPM     = point->ConvertPosUnits( refShifted, this->units, svkSpecPoint::PPM );
+    cout << "PPM REF:          " << ppmRef << endl;
+    cout << "PPM REF Target:   " << ppmRefTargetUnits << endl;
+    cout << "ref SHIFTed:      " << refShifted << endl;
+    cout << "ref SHIFTed PPM:  " << refShiftedPPM << endl;
+
+    //float ppmShift    = ppmRef - ppmShifted; 
+
+    data->GetDcmHeader()->SetValue(
+        "ChemicalShiftReference",
+        refShiftedPPM
+    );
+        
+}
+
+
+/*!
  *  By default the sift leaves 0s at the end unless it's specified to be
  *  a circular shift in which case the data wraps around. 
  */
@@ -87,6 +123,17 @@ void svkFreqCorrect::SetCircularShift()
 {
     this->circularShift = true; 
 }    
+
+
+/*!
+ *  By default the sift leaves 0s at the end unless it's specified to be
+ *  a circular shift in which case the data wraps around. 
+ */
+void svkFreqCorrect::UseFourierShift()
+{
+    this->useFourierShift = true; 
+}    
+
 
 /*! 
  *
@@ -106,7 +153,13 @@ int svkFreqCorrect::RequestData( vtkInformation* request, vtkInformationVector**
     int retVal = 0; 
 
     //  If a map was provided, apply frequency corrections from that, otherwise apply a global correction
-    if ( this->GetImageDataInput(1) ) {
+    if  ( this->useFourierShift == true) {
+        //  1. make sure in time domain
+        //  2. convert hz to number of points and multiply that  by 360 for each point    
+        //  3. svkPhaseSpec to apply  shift
+        //  4. if necessary, convert back to freq domain
+        retVal = this->ApplyGlobalFourierShift(); 
+    }else if ( this->GetImageDataInput(1) ) {
         retVal = this->ApplyFrequencyCorrectionMap(); 
     } else {
         retVal = this->ApplyGlobalCorrection(); 
@@ -116,6 +169,68 @@ int svkFreqCorrect::RequestData( vtkInformation* request, vtkInformationVector**
     return retVal; 
 
 }
+
+
+/*! 
+ *  Shift using Fourier method in time domain. 
+ */
+int svkFreqCorrect::ApplyGlobalFourierShift()
+{
+    //  Get the domain of the input spectra:  time/frequency
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+    string spectralDomain = data->GetDcmHeader()->GetStringValue( "SignalDomainColumns");
+    if ( spectralDomain.compare("TIME") == 0 ) {
+        this->isInputInTimeDomain = true;
+    } else {
+        this->isInputInTimeDomain = false;
+    }
+
+    //  if necessary, transform data to time domain to apply phase shift: 
+    if ( this->isInputInTimeDomain == false ) {
+        svkMrsImageFFT* fft = svkMrsImageFFT::New();
+        fft->SetInputData( data );
+        fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
+        //  frequency to time: 
+        fft->SetFFTMode( svkMrsImageFFT::REVERSE );
+        fft->Update();
+        fft->Delete();
+    } 
+
+    float pointsToShift = 0;
+
+    svkSpecPoint* point = svkSpecPoint::New();
+    point->SetDcmHeader(data->GetDcmHeader());
+
+    float zeroInRequestedUnits = point->ConvertPosUnits( 0, svkSpecPoint::PTS, this->units);
+    float shiftInRequestedUnits =  zeroInRequestedUnits - this->globalShift;
+    pointsToShift = point->ConvertPosUnits( shiftInRequestedUnits, this->units, svkSpecPoint::PTS );
+    point->Delete();
+
+    /*  
+     * this  works in  place
+     */
+    svkPhaseSpec* phaser = svkPhaseSpec::New();
+    phaser->SetInputData( data );
+    phaser->PhaseAllChannels();
+    phaser->SetPhase0( 0 );
+    phaser->SetLinearPhasePivot( 0 );
+    phaser->SetLinearPhase( vtkMath::Round(pointsToShift) );
+    phaser->Update();
+
+    
+    if ( this->isInputInTimeDomain == false ) {
+        svkMrsImageFFT* fft = svkMrsImageFFT::New();
+        fft->SetInputData( data );
+        fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
+        //  time to frequency: 
+        fft->SetFFTMode( svkMrsImageFFT::FORWARD );
+        fft->Update();
+        fft->Delete();
+    }
+
+    this->UpdatePPMReference(); 
+}
+
 
 
 /*! 

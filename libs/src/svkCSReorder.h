@@ -15,6 +15,7 @@
  *      software without specific prior written permission.
  *  
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
+ *
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
  *  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
@@ -25,77 +26,53 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
  *  OF SUCH DAMAGE.
  */
+#ifndef SIVIC_SVKCSREORDER_H
+#define SIVIC_SVKCSREORDER_H
 
 
-
-/*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
- *
- *  Authors:
- *      Jason C. Crane, Ph.D.
- *      Beck Olson
- */
-
-
-#ifndef  SVK_TYPES_H           
-#define  SVK_TYPES_H          
-
-
-typedef enum {
-    UNDEFINED_EPSI_TYPE = 0,
-    FLYBACK,
-    SYMMETRIC,
-    INTERLEAVED
-} EPSIType;
-
-#if defined(__cplusplus) && !defined(SVK_EPIC)
+#include <vtkObjectFactory.h>
+#include <vtkDataObject.h>
+#include <vtkGlobFileNames.h>
+#include <svkDataAcquisitionDescriptionXML.h>
+#include <svkTypeUtils.h>
 namespace svk {
 
 
-using namespace std;
+    using namespace std;
 
-
-class svkTypes : public vtkObject
-{
+/*!
+ *  This class is a container for a primitive bool. It is a subclass of vtkDataObject so it can
+ *  be used in input ports of algorithms.
+ */
+    class svkCSReorder : public vtkObject
+    {
 
     public:
 
-        vtkTypeMacro( svkTypes, vtkObject);
+        // vtk type revision macro
+        vtkTypeMacro( svkCSReorder, vtkObject );
 
-        typedef enum {
-            ANATOMY_UNDEFINED = -1,
-            ANATOMY_BRAIN = 0,
-            ANATOMY_PROSTATE
-        } AnatomyType;
+        // vtk initialization 
+        static svkCSReorder* New();
+
+        void SetDADFilename( string dadFilename);
+        void ReOrderAndPadData(float* originalData, int numberDataPointsInFIDFile, float*** paddedData);
+        void ReOrderData(float *reorderedData, float* originalData);
+        void PadData(float*** paddedData, float* reorderedData);
+
+    protected:
+
+        svkCSReorder();
+        ~svkCSReorder();
+
+    private:
+        svkDataAcquisitionDescriptionXML* dadFile;
+
+    };
 
 
 
-        static string  GetAnatomyTypeString( AnatomyType anatomyType ) 
-        {
-            if ( anatomyType == ANATOMY_BRAIN ) {
-                return string("brain"); 
-            } else if ( anatomyType == ANATOMY_PROSTATE) {
-                return string("prostate"); 
-            }  else {
-                return "UNDEFINED"; 
-            }
-        }
+}   //svk
 
-        static svkTypes::AnatomyType GetAnatomyType( string anatomyType) 
-        {
-            if ( anatomyType.compare("brain") == 0 ) {
-                return svkTypes::ANATOMY_BRAIN; 
-            } else if ( anatomyType.compare("prostate") == 0 ) {
-                return svkTypes::ANATOMY_PROSTATE; 
-            } else {
-                return svkTypes::ANATOMY_UNDEFINED; 
-            }
-        }
-};
 
-}
-#endif
-#endif
+#endif //SIVIC_SVKCSREORDER_H

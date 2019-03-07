@@ -223,6 +223,7 @@ ADD_LIBRARY(
     svkAlgoTemplate.cc
     svkEPSIPhaseCorrect.cc
     svkEPSIReorder.cc
+    svkCSReorder.cc
     svkBurnResearchPixels.cc
     svkMrsImageFFT.cc
     svkMriImageFFT.cc
