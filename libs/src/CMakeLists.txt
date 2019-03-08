@@ -223,6 +223,7 @@ ADD_LIBRARY(
     svkAlgoTemplate.cc
     svkEPSIPhaseCorrect.cc
     svkEPSIReorder.cc
+    svkCSReorder.cc
     svkBurnResearchPixels.cc
     svkMrsImageFFT.cc
     svkMriImageFFT.cc
@@ -238,6 +239,7 @@ ADD_LIBRARY(
     svkImageAlgorithm.cc
     svkImageAlgorithmExecuter.cc
     svkImageThreshold.cc
+    svkImageDilateErode.cc
     svkFreqCorrect.cc
     svkAlgorithmPortMapper.cc
     svkImageAlgorithmWithPortMapper.cc

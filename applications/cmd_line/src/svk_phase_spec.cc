@@ -85,7 +85,7 @@ int main (int argc, char** argv)
     usemsg += "   -l        phase       Global first order phase value.                     \n";
     usemsg += "   -p        pivot       Global first order phase pivot point.               \n";
     usemsg += "   --single              Only phase the specified file if multiple in series.\n";
-    usemsg += "   -h                Print this help mesage.                                 \n";  
+    usemsg += "   -h                    Print this help mesage.                             \n";  
     usemsg += "\n";  
     usemsg += "Applies zero order and/or linear phase to a dataset. Phase is specified in   \n"; 
     usemsg += "degrees.                                                                     \n"; 

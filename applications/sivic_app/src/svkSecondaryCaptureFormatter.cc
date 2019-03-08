@@ -727,12 +727,7 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
         sliceLocationActor->GetProperty()->SetColor(0.5,0.5,0.5);
     }
 
-    vtkRenderWindow* window = vtkRenderWindow::New();
-#if defined(linux)
-    window->OffScreenRenderingOn();
-#endif 
-    window->AddRenderer( this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
-    this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->SetRenderWindow(window);
+
 
     int numFrames = lastFrame - firstFrame + 1;
     int numRows = 2;
@@ -742,7 +737,6 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
     int numCols = (int)ceil( numFrames/((double)numRows) );
     int x = (imageSize[0]/numCols);
     int y = (int)((imageSize[1]*(1-titleSpace))/numRows);
-    window->SetSize( x, y );
     sliceLocationActor->SetPosition(x/4,y-25);
 
 
@@ -752,12 +746,21 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
     colAppenders.reserve( (numFrames)/numCols );
     vector <vtkImageConstantPad*> paddedRows;
     for (int m = firstFrame; m <= lastFrame; m++) {
-        vtkRenderLargeImage* rendererToImage = vtkRenderLargeImage::New();
-        double origin[3];
+
 
         if( isColorBarOn && m == firstFrame + 1 ) {
             this->overlayController->GetView()->TurnPropOff( svkOverlayView::COLOR_BAR );
         }
+        vtkRenderWindow* window = vtkRenderWindow::New();
+#if defined(linux)
+        window->OffScreenRenderingOn();
+#endif
+        window->AddRenderer( this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
+        this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->SetRenderWindow(window);
+        window->SetSize( x, y );
+        vtkRenderLargeImage* rendererToImage = vtkRenderLargeImage::New();
+        double origin[3];
+
         // We need to reverse the slice order because of the direction of the appender.
         ostringstream position;
         this->sivicController->SetSlice( m );
@@ -799,6 +802,7 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
             colAppenders[(m-firstFrame)/numCols]->AddInputData( data );
         }
         rendererToImage->Delete();
+        window->Delete();
     }
     vtkImageAppend* rowAppender = vtkImageAppend::New();
     rowAppender->SetAppendAxis(1);
@@ -860,7 +864,6 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
     this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->RemoveViewProp( sliceLocationActor );
 
     padder->Delete();
-    window->Delete();
     titleWindow->Delete();
     this->overlayController->GetView()->TurnRendererOn( svkOverlayView::PRIMARY );
     this->plotController->GetView()->TurnRendererOn( svkPlotGridView::PRIMARY );

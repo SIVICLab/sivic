@@ -45,8 +45,11 @@
 
 #include <vtkImageData.h>
 #include <svkVarianFidMapper.h>
-
+#include <svkCSReorder.h>
 #include <vector>
+#include "svkDataAcquisitionDescriptionXML.h"
+#include <svkUtils.h>
+#include <svkTypeUtils.h>
 
 
 namespace svk {
@@ -116,21 +119,25 @@ class svkVarianCSFidMapper : public svkVarianFidMapper
                             int timePt, 
                             int coilNum
                         );
+        svkDataAcquisitionDescriptionXML* GetDadFile();
 
     private:
 
         float***            paddedData; 
         float****           rectilinearData; 
-        void                ReOrderSamples( float* specDataReordered, int numberDataPointsInFIDFile ); 
-        void                ReOrderFlyback(); 
-        void                ZeroPadCompressedSensingData( int numberDataPointsInFIDFile ); 
-        vector<int>         GetBlips(); 
+        void                ReOrderSamples( float* specDataReordered, int numberDataPointsInFIDFile );
+        void                ReOrderFlyback();
+        void                ZeroPadCompressedSensingData( int numberDataPointsInFIDFile );
+        vector<int>         GetBlips();
         void                GetBlipString(string* blipString);
 
         int                 numXReordered; 
         int                 numYReordered; 
         int                 numZReordered; 
-        int                 numTReordered; 
+        int                 numTReordered;
+        string              fidFileName;
+        svkDataAcquisitionDescriptionXML* dadFile;
+        svkCSReorder*       csReorder;
 
 };
 

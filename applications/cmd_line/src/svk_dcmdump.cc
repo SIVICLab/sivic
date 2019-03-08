@@ -110,6 +110,7 @@ void DisplayUsage( )
     cout << "    svk_dcmdump fileName" << endl << endl;
     cout << "DESCRIPTION" << endl;
     cout << "    svk_dcmdump is used to give a quick way to view svk's interpreted DICOM header of a given image file." << endl << endl;
+    cout << "    -v will also print vtk obect information." << endl << endl;
     cout << "VERSION" << endl;
     cout << "     " << SVK_RELEASE_VERSION << endl; 
     cout << endl << "############  USAGE  ############ " << endl << endl;

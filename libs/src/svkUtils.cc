@@ -338,6 +338,24 @@ string svkUtils::GetFilenameFromFullPath( string fullPath )
 }
 
 
+string svkUtils::GetPathFromFilename( string filename ){
+    vector<string> splitString = svkUtils::SplitString(filename, "/");
+    if( splitString.size() > 0 ) {
+        string path= "";
+        if(filename[0] == '/') {
+            path.append("/");
+        }
+        for( int i = 0; i < splitString.size() -1 ; i++ ) {
+            path.append(splitString[i]);
+            path.append("/");
+        }
+        return path;
+    } else {
+        return "./";
+    }
+}
+
+
 vector<string> svkUtils::SplitString( string str, string token )
 {
     vector<string> result;

@@ -159,7 +159,7 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         void            PrintSpectrum( vtkImageComplex* data, int numPoints, vtkstd::string msg ); 
         void            NormalizePhaseShift( double shift[3] );
         void            ValidateRequest(); 
-        bool            normalizeTranform;
+        bool            normalizeTransform;
 
 
 

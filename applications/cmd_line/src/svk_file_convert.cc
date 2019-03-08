@@ -324,6 +324,8 @@ int main (int argc, char** argv)
         info << "=====================================================================" << endl; 
         info << "AUTO WINDOW: " << window << endl;
         info << "AUTO LEVEL:  " << level  << endl;
+        info << "VTK Object: " << endl << *reader->GetOutput() << endl;
+
 
         if ( outputFileName.length() > 0 ) {
 

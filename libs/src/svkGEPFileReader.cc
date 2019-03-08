@@ -472,7 +472,7 @@ void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type)
 
 /*!
  */
-void svkGEPFileReader::SetEPSIParams( svkEPSIReorder::EPSIType type, svkEPSIReorder::EPSIAxis axis, int first,
+void svkGEPFileReader::SetEPSIParams( EPSIType type, svkEPSIReorder::EPSIAxis axis, int first,
                                       int numLobes, int numSkip, int flipLobe )
 {
 
@@ -3384,6 +3384,50 @@ string svkGEPFileReader::GetOffsetsString()
             rhs.series_uid                     , UID    , 32  , 196765,\
             rhs.landmark_uid                   , UID    , 32  , 196797,\
             rhs.anref                          , CHAR   , 3   , 196685,\
+            rhr.rh_da_xres                     , UINT_2 , 1   , 178,\
+            rhr.rh_da_yres                     , INT_2  , 1   , 180,\
+            rhr.rh_rc_xres                     , INT_2  , 1   , 182,\
+            rhr.rh_rc_yres                     , INT_2  , 1   , 184,\
+            rhr.rh_nframes                     , INT_2  , 1   , 150,\
+            rhr.rh_im_size                     , INT_2  , 1   , 186,\
+            rhr.rh_te                          , INT_4  , 1   , 1148,\
+            rhr.rh_te2                         , INT_4  , 1   , 1152,\
+            rhr.rh_scalei                      , FLOAT_4, 1   , 232,\
+            rhr.rh_phase_scale                 , FLOAT_4, 1   , 804,\
+            rhr.rh_slblank                     , INT_2  , 1   , 246,\
+            rhr.rh_ileaves                     , INT_2  , 1   , 850,\
+            rhr.rh_navs                        , INT_2  , 1   , 148,\
+            rhr.rh_nechoes                     , INT_2  , 1   , 146,\
+            rhr.rh_fov                         , FLOAT_4, 1   , 1144,\
+            rhr.rh_scancent                    , FLOAT_4, 1   , 1268,\
+            rhr.rh_recon_ctrl                  , UINT_2 , 1   , 126,\
+            rhr.rh_exec_ctrl                   , UINT_2 , 1   , 128,\
+            rhr.rh_dacq_ctrl                   , INT_2  , 1   , 124,\
+            rhr.rh_ovl                         , INT_2  , 1   , 808,\
+            rhs.se_exno                        , UINT_2 , 1   , 196428,\
+            rhs.start_loc                      , FLOAT_4, 1   , 195892,\
+            rhs.end_loc                        , FLOAT_4, 1   , 195896,\
+            rhi.imode                          , INT_2  , 1   , 199608,\
+            rhi.imatrix_X                      , INT_2  , 1   , 199548,\
+            rhi.imatrix_Y                      , INT_2  , 1   , 199550,\
+            rhi.fphase                         , INT_4  , 1   , 199348,\
+            rhi.plane                          , INT_2  , 1   , 199572,\
+            rhi.dim_X                          , FLOAT_4, 1   , 198860,\
+            rhi.dim_Y                          , FLOAT_4, 1   , 198864,\
+            rhi.slthick                        , FLOAT_4, 1   , 198496,\
+            rhi.numslabs                       , INT_4  , 1   , 199328,\
+            rhi.locsperslab                    , INT_4  , 1   , 199332,\
+            rhi.norm_R                         , FLOAT_4, 1   , 198888,\
+            rhi.norm_A                         , FLOAT_4, 1   , 198892,\
+            rhi.norm_S                         , FLOAT_4, 1   , 198896,\
+            rhi.dfov_rect                      , FLOAT_4, 1   , 198488,\
+            rhr.rh_ps_mps_r1                   , INT_4  , 1   , 476,\
+            rhr.rh_ps_mps_r2                   , INT_4  , 1   , 480,\
+            rhr.rh_ps_mps_tg                   , INT_4  , 1   , 484,\
+            rhr.rh_ps_aps_r1                   , INT_4  , 1   , 492,\
+            rhr.rh_ps_aps_r2                   , INT_4  , 1   , 496,\
+            rhr.rh_ps_aps_tg                   , INT_4  , 1   , 500,\
+            rhr.rh_ps_aps_freq                 , UINT_4 , 1   , 504,\
         "); 
 
     }

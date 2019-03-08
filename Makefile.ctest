@@ -11,6 +11,7 @@ VTK_DIR         	= /netopt/lib/vtk-5.6
 VTK6_DIR_DIST   	= /netopt/VTK/VTK-6.3.0/lib/cmake/vtk-6.3/
 VTK6_DIR_DBG    	= /netopt/VTK/VTK-6.3.0_debug/lib/cmake/vtk-6.3/
 VTK6_DIR_M32_EPIC	= /netopt/VTK/VTK-6.3.0_m32_epic/lib/cmake/vtk-6.3/
+VTK6_DIR_GEDIST  	= /netopt/VTK/VTK-6.3.0_GEDIST/lib/cmake/vtk-6.3/
 KWW_DIR     		= /netopt/kwwidgets_2.0_56/lib/KWWidgets/
 KWW6_DIR_DIST		= /netopt/kwwidgets_vtk6/
 KWW6_DIR_DBG 		= /netopt/kwwidgets_vtk6_debug/
@@ -85,9 +86,10 @@ CMAKE_PREFIX_PATH_DBG   = ${VTK6_DIR_DBG}
 CMAKE_PREFIX_PATH_DIST  = ${VTK6_DIR_DIST}
 CMAKE_PREFIX_PATH_EPIC32= ${VTK6_DIR_M32_EPIC}
 
-CONFIG_OPTS_VTK6_DBG  	= -DCMAKE_PREFIX_PATH=${VTK6_DIR_DBG}  -DVTK_DIR=${VTK6_DIR_DBG}  -DKWWidgets_DIR=${KWW6_DIR_DBG}
-CONFIG_OPTS_VTK6_DIST	= -DCMAKE_PREFIX_PATH=${VTK6_DIR_DIST} -DVTK_DIR=${VTK6_DIR_DIST} -DKWWidgets_DIR=${KWW6_DIR_DIST}
-CONFIG_OPTS_VTK6_EPIC32 = -DCMAKE_PREFIX_PATH=${VTK6_DIR_DIST} -DVTK_DIR=${VTK6_DIR_DIST} -DKWWidgets_DIR=${KWW6_DIR_DIST}
+CONFIG_OPTS_VTK6_DBG  	= -DCMAKE_PREFIX_PATH=${VTK6_DIR_DBG}    -DVTK_DIR=${VTK6_DIR_DBG}    -DKWWidgets_DIR=${KWW6_DIR_DBG}
+CONFIG_OPTS_VTK6_DIST	= -DCMAKE_PREFIX_PATH=${VTK6_DIR_DIST}   -DVTK_DIR=${VTK6_DIR_DIST}   -DKWWidgets_DIR=${KWW6_DIR_DIST}
+CONFIG_OPTS_VTK6_GEDIST	= -DCMAKE_PREFIX_PATH=${VTK6_DIR_GEDIST} -DVTK_DIR=${VTK6_DIR_GEDIST} -DKWWidgets_DIR=${KWW6_DIR_DIST}
+CONFIG_OPTS_VTK6_EPIC32 = -DCMAKE_PREFIX_PATH=${VTK6_DIR_DIST}   -DVTK_DIR=${VTK6_DIR_DIST}   -DKWWidgets_DIR=${KWW6_DIR_DIST}
 
 CONFIG_OPTS       		= \
                     	  -DBUILD_CLAPACK=ON                       \
@@ -116,37 +118,40 @@ ifeq ($(OSTYPE),Darwin)
                             -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
 endif
 
-CONFIG_OPTS_DBG   		= \
-				          ${CONFIG_OPTS_VTK6_DBG}			 \
-				      	  ${CONFIG_OPTS}
-CONFIG_OPTS_DIST  		= \
-					      ${CONFIG_OPTS_VTK6_DIST}			 \
-				     	  ${CONFIG_OPTS}
-CONFIG_OPTS_EPIC32		= \
-					      ${CONFIG_OPTS_VTK6_EPIC32}		 \
-					      CMAKE_CXX_FLAGS := -m32            \
-					      CMAKE_EXE_LINKER_FLAGS  := -m32	 \
-				     	  ${CONFIG_OPTS}
+CONFIG_OPTS_DBG         = \
+                        ${CONFIG_OPTS_VTK6_DBG}			\
+                        ${CONFIG_OPTS}
+CONFIG_OPTS_DIST        = \
+                        ${CONFIG_OPTS_VTK6_DIST}		\
+                        ${CONFIG_OPTS}
+CONFIG_OPTS_GEDIST      = \
+                        ${CONFIG_OPTS_VTK6_GEDIST}		\
+                        ${CONFIG_OPTS}
+CONFIG_OPTS_EPIC32      = \
+                        ${CONFIG_OPTS_VTK6_EPIC32}		\
+                        CMAKE_CXX_FLAGS := -m32         \
+                        CMAKE_EXE_LINKER_FLAGS  := -m32	\
+                        ${CONFIG_OPTS}
 
 CONFIG_BASE_VTK5         = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_VTK5}
 CONFIG_BASE_GE         	 = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_DIST}
 CONFIG_BASE_VTK6_DBG   	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_DBG}
 CONFIG_BASE_VTK6_DIST  	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_DIST}
 CONFIG_BASE_VTK6_EPIC32	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_EPIC32}
-CONFIG_BASE_GE_VTK6_DIST = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_DIST}
+CONFIG_BASE_GE_VTK6_DIST = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_GEDIST}
 
-CONFIG_TEST_ON      	 = -DUSE_OFF_SCREEN_TESTING=ON               \
+CONFIG_TEST_ON           = -DUSE_OFF_SCREEN_TESTING=ON               \
                       	   -DBUILD_TESTING=ON                        \
                       	   -DBUILD_GRAPHICS_TESTING=ON               \
                       	   -DSVK_TEST_ROOT=${SVK_TEST_ROOT}          \
                       	   -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS_TEST} \
                       	   -DDART_TESTING_TIMEOUT=6000
-CONFIG_TEST_OFF     	 = -DUSE_OFF_SCREEN_TESTING=OFF -DBUILD_TESTING=OFF -DBUILD_GRAPHICS_TESTING=OFF
+CONFIG_TEST_OFF          = -DUSE_OFF_SCREEN_TESTING=OFF -DBUILD_TESTING=OFF -DBUILD_GRAPHICS_TESTING=OFF
 
-CONFIG_UCSF_ON      	 = -DUCSF_INTERNAL=ON  -DBUILD_CREATE_RAW=ON
-CONFIG_UCSF_OFF     	 = -DUCSF_INTERNAL=OFF -DBUILD_CREATE_RAW=OFF
+CONFIG_UCSF_ON           = -DUCSF_INTERNAL=ON  -DBUILD_CREATE_RAW=ON
+CONFIG_UCSF_OFF          = -DUCSF_INTERNAL=OFF -DBUILD_CREATE_RAW=OFF
 
-CONFIG_OSIRIX       	 = -DBUILD_OSIRIX=OFF
+CONFIG_OSIRIX            = -DBUILD_OSIRIX=OFF
 ifeq ($(OSTYPE),Darwin)
 	CONFIG_OSIRIX  := -DBUILD_OSIRIX=ON -DBUILD_CREATE_RAW=OFF
 endif
@@ -229,7 +234,7 @@ configure_epic32: clean_results
 # configure and build on ESE host
 #
 configure_GE_dist: clean_results 
-	(${RM_CACHE} ${CONFIG_BASE_GE_VTK6_DIST} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_GE_CONSOLE} ${CONFIG_RELEASE} ${SIVIC_ROOT}/) 
+	(${RM_CACHE} ${CONFIG_BASE_GE_VTK6_DIST} VTK_DIR=${VTK6_DIR_GE_DIST} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_GE_CONSOLE} ${CONFIG_RELEASE} ${SIVIC_ROOT}/) 
 
 
 

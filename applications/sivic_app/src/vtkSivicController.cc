@@ -1078,6 +1078,8 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                     this->SetLUTCallback( svkLookupTable::GREY_SCALE );
                 } else if ( lut == "Hurd LUT" ) {
                     this->SetLUTCallback( svkLookupTable::HURD );
+                } else if ( lut == "Fixed Hurd CNI LUT" ) {
+                    this->SetLUTCallback( svkLookupTable::HURD_CNI_FIXED );
                 } else if ( lut == "Cyan LUT" ) {
                     this->SetLUTCallback( svkLookupTable::CYAN_HOT );
                 } else if ( lut == "Fire LUT" ) {
@@ -2996,6 +2998,9 @@ void vtkSivicController::SetLUTCallback( int type )
     } else if ( type == svkLookupTable::RED_SCALE ) {
         static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::RED_SCALE );
         static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::RED_SCALE );
+    } else if ( type == svkLookupTable::HURD_CNI_FIXED ) {
+        static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::HURD_CNI_FIXED );
+        static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::HURD_CNI_FIXED );
     }
 	this->imageViewWidget->UpdateThreshold();
 }

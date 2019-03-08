@@ -51,6 +51,7 @@
 #include <svkImageWriter.h>
 #include <svkDcmHeader.h>
 #include <svkFreqCorrect.h>
+#include <svkPhaseSpec.h>
 
 
 #ifdef WIN32
@@ -71,9 +72,10 @@ int main (int argc, char** argv)
 {
 
     string usemsg("\n") ; 
-    usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                   "\n";   
     usemsg += "svk_freq_correct -i input_file_name -o output_root [ -t output_data_type ]   \n"; 
-    usemsg += "                 ( -s shift | --map mapFile ) [ -uh ] [ --single ]           \n"; 
+    usemsg += "                 ( -s shift | --map mapFile ) [ --fs ]                       \n"; 
+    usemsg += "                 [ -uh ] [ --single ]                                        \n"; 
     usemsg += "                                                                             \n"; 
     usemsg += "   -i        name        Name of input data file to phase.                   \n"; 
     usemsg += "   -o        root_name   Name of input data file to phase.                   \n"; 
@@ -84,7 +86,9 @@ int main (int argc, char** argv)
     usemsg += "                         1 = PPM                                             \n";
     usemsg += "                         2 = HZ                                              \n";
     usemsg += "                         3 = PTS (default)                                   \n";
-    usemsg += "   -s        shift       Global freq shift +/-                               \n"; 
+    usemsg += "   -s        shift       Global freq shift +/- (pts)                         \n"; 
+    usemsg += "   --fs                  Apply by fourier shift rather t han point shift.    \n"; 
+    usemsg += "                         applying a phase shift in time.                     \n"; 
     usemsg += "   --map     map_file    Image with values of freq shifts                    \n"; 
     usemsg += "   --single              Only phase the specified file if multiple in series.\n";
     usemsg += "   -h                    Print this help mesage.                             \n";  
@@ -98,6 +102,7 @@ int main (int argc, char** argv)
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
     svkSpecPoint::UnitType units = svkSpecPoint::PTS;
     string  mapFileName = "";
+    float   fourierShift = 0;
     bool    onlyCorrectSingleFile = false;
     float   shift = 0; 
 
@@ -105,6 +110,7 @@ int main (int argc, char** argv)
 
     enum FLAG_NAME {
         FLAG_MAP = 0, 
+        FLAG_FOURIER, 
         FLAG_SINGLE 
     };
 
@@ -112,6 +118,7 @@ int main (int argc, char** argv)
     static struct option long_options[] =
     {
         {"map",     required_argument, NULL,  FLAG_MAP},
+        {"fs",      no_argument,       NULL,  FLAG_FOURIER},
         {"single",  no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
@@ -138,6 +145,8 @@ int main (int argc, char** argv)
             case FLAG_MAP:
                 mapFileName.assign( optarg );
                 break;
+            case FLAG_FOURIER:
+                fourierShift = true;
             case FLAG_SINGLE:
                 onlyCorrectSingleFile = true;
                 break;
@@ -243,9 +252,13 @@ int main (int argc, char** argv)
     //svkMrsImageData* mrsData = svkMrsImageData::New();
     //mrsData->DeepCopy( svkMrsImageData::SafeDownCast(reader->GetOutput()) );
     freqCorrect->SetInputData( reader->GetOutput() );
+    freqCorrect->SetUnits(units);
 
     if ( shift != 0 ) {
-        freqCorrect->SetGlobalFrequencyShift( shift  ); 
+        if (fourierShift == true){
+            freqCorrect->UseFourierShift(); 
+        } 
+        freqCorrect->SetGlobalFrequencyShift( shift ); 
     } else if ( mapFileName.length() != 0 ) {
         freqCorrect->SetInputConnection( 1, mapReader->GetOutputPort() ); 
     }

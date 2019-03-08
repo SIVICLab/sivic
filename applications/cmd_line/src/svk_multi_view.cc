@@ -319,9 +319,7 @@ int main ( int argc, char** argv )
     globalVars.numberOfImages = argc - optind;
     if( argc < 2 ) {
         Usage();
-    } else if( globalVars.numberOfImages > 9 || (!spectraFileNames.empty() && globalVars.numberOfImages > 8 ) ) {
-        Usage();
-    }  
+    }
 
     // Initialize the index arrays for component, channel, and timepoint
     if( InitializeIndexArray(globalVars.component, spectraFileNames.size() ) == false ) {
@@ -472,11 +470,11 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
             overlayId = id;
         }
     }
-
+    if(globalVars.skipValidation) {
+        dataViewer->GetView()->ValidationOff();
+    }
     if( globalVars.overlay.size() > overlayId) {
-        if(globalVars.skipValidation) {
-            dataViewer->GetView()->ValidationOff();
-        }
+
         dataViewer->SetInput( globalVars.overlay[overlayId], 2  );
         if( globalVars.thresholdSet ) {
             svkOverlayViewController::SafeDownCast(dataViewer)->SetOverlayThreshold( globalVars.threshold );
@@ -807,12 +805,13 @@ void CaptureWindows()
 void LoadOverlay( vector<string> overlayFileNames, bool isContour ) {
 
     svkImageData* overlayImage = NULL;
+    bool readOnlyOneFile = true;
     for( int i = 0; i < overlayFileNames.size(); i++ ) {
         if( isContour ) {
-            globalVars.overlayContour.push_back(globalVars.model->LoadFile(overlayFileNames[i] ));
+            globalVars.overlayContour.push_back(globalVars.model->LoadFile(overlayFileNames[i], readOnlyOneFile ));
             overlayImage = globalVars.overlayContour[i];
         } else {
-            globalVars.overlay.push_back(globalVars.model->LoadFile(overlayFileNames[i] ));
+            globalVars.overlay.push_back(globalVars.model->LoadFile(overlayFileNames[i], readOnlyOneFile ));
             overlayImage = globalVars.overlay[i];
         }
         if(overlayImage == NULL ) {

@@ -78,6 +78,7 @@ class svkFreqCorrect : public svkImageInPlaceFilter
         void            SetGlobalFrequencyShift( float shift );
         float           GetGlobalFrequencyShift();
         void            SetCircularShift(); 
+        void            UseFourierShift(); 
         virtual void    PrintSelf( ostream &os, vtkIndent indent );
 
 
@@ -99,6 +100,7 @@ class svkFreqCorrect : public svkImageInPlaceFilter
                             vtkInformationVector** inputVector,
                             vtkInformationVector* outputVector
                         );
+        void            UpdatePPMReference(); 
 
 
     private:
@@ -106,10 +108,13 @@ class svkFreqCorrect : public svkImageInPlaceFilter
         //  Members:
         float                   globalShift;
         svkSpecPoint::UnitType  units;
+        bool                    useFourierShift; 
 
-        int             ApplyFrequencyCorrectionMap();
-        int             ApplyGlobalCorrection();
-        bool            circularShift; 
+        int                     ApplyFrequencyCorrectionMap();
+        int                     ApplyGlobalCorrection();
+        int                     ApplyGlobalFourierShift(); 
+        bool                    circularShift; 
+        bool                    isInputInTimeDomain; 
 
 };
 
