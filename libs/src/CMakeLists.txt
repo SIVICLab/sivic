@@ -384,8 +384,10 @@ IF ( BUILD_ITK )
         svkNumerical
 
         svkMRSAutoPhase.cc
+        svkMRSAutoFreqCorrect.cc
         svkMRSFirstPointPhase.cc
         svkMRSZeroOrderPhase.cc
+        svkMRSMatchPeakFreq.cc
         #svkMRSFirstOrderPhase.cc
         svkMRSKinetics.cc 
     )

@@ -868,6 +868,15 @@ if ( BUILD_ITK )
         svk_auto_phase
         ${SVK_LIBS}
     )
+
+    ADD_EXECUTABLE(
+        svk_auto_freq_correct
+        svk_auto_freq_correct.cc
+    )
+    TARGET_LINK_LIBRARIES(
+        svk_auto_freq_correct
+        ${SVK_LIBS}
+    )
  
 endif ( BUILD_ITK )
 
@@ -967,6 +976,7 @@ if ( BUILD_CLAPACK )
 endif ( BUILD_CLAPACK )
 if ( BUILD_ITK )
     LIST(APPEND APPS svk_auto_phase)
+    LIST(APPEND APPS svk_auto_freq_correct)
     LIST(APPEND APPS svk_met_kinetics)
 endif ( BUILD_ITK )
 
