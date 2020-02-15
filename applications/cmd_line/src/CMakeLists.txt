@@ -116,6 +116,9 @@ SET(DCMTK_OFLOG "")
 if ( EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
     SET(DCMTK_OFLOG oflog )
 endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
+if ( EXISTS "${DCMTK_DIR}/lib64/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib64/oflog.lib")
+    SET(DCMTK_OFLOG oflog )
+endif (EXISTS "${DCMTK_DIR}/lib64/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib64/oflog.lib")
 
 
 ###################################
@@ -158,6 +161,7 @@ LINK_DIRECTORIES(
     ../../../libs/${PLATFORM}
     ../${PLATFORM}
     ${DCMTK_DIR}/lib
+    ${DCMTK_DIR}/lib64
     ${OPENSSL_DIR}/lib
 )
 

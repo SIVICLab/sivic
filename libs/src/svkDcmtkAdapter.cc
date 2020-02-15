@@ -82,7 +82,7 @@ svkDcmtkAdapter::svkDcmtkAdapter()
 	this->privateDic = &( dcmDataDict.wrlock() );
 
 	// We don't want to hold the  lock so lets unlock it.
-	dcmDataDict.unlock();
+	dcmDataDict.wrunlock();
 
     this->pixelDataElement = NULL;
 
@@ -182,7 +182,7 @@ void svkDcmtkAdapter::SetGEPrivateDictionaryElements()
     );
 
 
-    dcmDataDict.unlock();
+    dcmDataDict.wrunlock();
 
 }
 
@@ -487,7 +487,7 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
 
     //  Next element number should be 30 (not 28!). 
 
-    dcmDataDict.unlock();
+    dcmDataDict.wrunlock();
 }
 
 
