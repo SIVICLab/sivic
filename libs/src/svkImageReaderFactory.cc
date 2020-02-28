@@ -67,6 +67,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->dcmEnhancedVolReader      = svkDcmEnhancedVolumeReader::New();
     this->idfVolReader              = svkIdfVolumeReader::New();
     this->ddfVolReader              = svkDdfVolumeReader::New();
+    this->aiVolReader               = svkAspectImagingReader::New();
     this->fdfVolReader              = svkFdfVolumeReader::New();
     this->fidVolReader              = svkVarianFidReader::New();
     this->niiVolReader              = svkNIFTIVolumeReader::New();
@@ -91,6 +92,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->niiVolReader );
     vtkImageReader2Factory::RegisterReader( this->idfVolReader );
     vtkImageReader2Factory::RegisterReader( this->ddfVolReader );
+    vtkImageReader2Factory::RegisterReader( this->aiVolReader );
     vtkImageReader2Factory::RegisterReader( this->fdfVolReader );
     vtkImageReader2Factory::RegisterReader( this->fidVolReader );
     vtkImageReader2Factory::RegisterReader( this->sdbmVolReader );
@@ -128,6 +130,11 @@ svkImageReaderFactory::~svkImageReaderFactory()
     if (this->ddfVolReader != NULL) {
         this->ddfVolReader->Delete();
         this->ddfVolReader = NULL;
+    }
+
+    if (this->aiVolReader != NULL) {
+        this->aiVolReader->Delete();
+        this->aiVolReader = NULL;
     }
 
     if (this->dcmMriVolReader != NULL) {
@@ -316,6 +323,8 @@ svkImageReader2* svkImageReaderFactory::CreateImageReader2( svkImageReader2::Rea
         return svkIdfVolumeReader::New(); 
     } else if ( readerType == svkImageReader2::NIFTI) {
         return svkNIFTIVolumeReader::New();
+    } else if ( readerType == svkImageReader2::ASPECT_IMAGING ) {
+        return svkAspectImagingReader::New(); 
     } else {
         return NULL;
     }

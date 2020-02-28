@@ -240,7 +240,7 @@ int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkIn
                 value[comp] += resultArrays[interpIndex]->GetTuple(freq)[comp];
             }
             resultArrays[interpIndex]->SetTuple( freq, value );
-            delete value;
+            delete [] value;
         }
     }
     svkBool* retainInputExtentBool = this->GetPortMapper()->GetBoolInputPortValue(RETAIN_INPUT_EXTENT);

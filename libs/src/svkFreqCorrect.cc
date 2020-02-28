@@ -71,7 +71,7 @@ svkFreqCorrect::svkFreqCorrect()
     this->SetNumberOfInputPorts(2); //1 mandatory, 1 optional 
     this->circularShift = false; 
     this->useFourierShift = false; 
-    this->isInputInTimeDomain == true;  
+    this->isInputInTimeDomain = true;  
 
 }
 

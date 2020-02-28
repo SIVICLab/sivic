@@ -346,7 +346,7 @@ void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
         toplc, pixelSpacing, dcos, &dimensionVector
     );
 
-    delete volumeTlcLPSFrame;
+    delete [] volumeTlcLPSFrame;
 }
 
 

@@ -88,6 +88,7 @@ class svkImageReader2 : public vtkImageReader2
             BRUKER_RAW_MRS,
             PHILIPS_S,
             NIFTI,
+            ASPECT_IMAGING,
             DDF,
             IDF,
             LAST_TYPE = IDF

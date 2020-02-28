@@ -106,6 +106,7 @@ int main (int argc, char** argv)
     usemsg += "============================================================================ \n";  
     usemsg += "Converts the input file to the specified target file type.                   \n";  
     usemsg += "Supported input formats:                                                     \n";  
+    usemsg += "     Aspect Imaging (ccResult.xml)                                           \n";  
     usemsg += "     Bruker raw MRS (ser, fid)                                               \n";  
     usemsg += "     Bruker DICOM MRS                                                        \n";  
     usemsg += "     Varian raw MRS (fid)                                                    \n";  

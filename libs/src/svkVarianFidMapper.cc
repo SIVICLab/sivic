@@ -333,7 +333,7 @@ void svkVarianFidMapper::InitPerFrameFunctionalGroupMacros()
         toplc, pixelSpacing, dcos, &dimensionVector
     );
 
-    delete volumeTlcLPSFrame;
+    delete [] volumeTlcLPSFrame;
 }
 
 

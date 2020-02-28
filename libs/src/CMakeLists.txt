@@ -188,6 +188,7 @@ ADD_LIBRARY(
     svkGEPFileMapperMPCSIOBL.cc
     svkIdfVolumeReader.cc
     svkDdfVolumeReader.cc
+    svkAspectImagingReader.cc
     svkSdbmVolumeReader.cc
     svkDcmVolumeReader.cc
     svkDcmMrsVolumeReader.cc

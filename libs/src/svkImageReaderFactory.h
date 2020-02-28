@@ -53,6 +53,7 @@
 #include <svkDcmMrsVolumeReader.h>
 #include <svkDcmEnhancedVolumeReader.h>
 #include <svkDdfVolumeReader.h>
+#include <svkAspectImagingReader.h>
 #include <svkFdfVolumeReader.h>
 #include <svkVarianFidReader.h>
 #include <svkPhilipsSReader.h>
@@ -114,6 +115,7 @@ class svkImageReaderFactory : public vtkImageReader2Factory
         svkNIFTIVolumeReader*           niiVolReader;
         svkIdfVolumeReader*             idfVolReader;
         svkDdfVolumeReader*             ddfVolReader;
+        svkAspectImagingReader*         aiVolReader;
         svkFdfVolumeReader*             fdfVolReader;
         svkVarianFidReader*             fidVolReader;
         svkSdbmVolumeReader*            sdbmVolReader;
