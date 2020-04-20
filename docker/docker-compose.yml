@@ -1,8 +1,8 @@
 version: '2'  
 services:  
   sivic_centos7:
-    image: sivic/sivic:0.0.1-centos7
-    container_name: sivic_centos7_01
+    image: sivic/sivic:0.0.2-centos7
+    container_name: sivic_centos7_02
     volumes:
       - ../:/sivic
       - ./data:/data

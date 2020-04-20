@@ -1,0 +1,1 @@
+docker build -t sivic/sivic:0.0.2-centos7 .
