@@ -295,6 +295,7 @@ ADD_LIBRARY(
     svkXML.cc
     svkF2C.cc
     svkNIFTIVolumeReader.cc
+    svkBruker2DSeqReader.cc
 )
 
 ADD_LIBRARY(

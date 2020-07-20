@@ -90,7 +90,8 @@ class svkImageReader2 : public vtkImageReader2
             NIFTI,
             DDF,
             IDF,
-            LAST_TYPE = IDF
+            BRUKER_2D_SEQ, 
+            LAST_TYPE = BRUKER_2D_SEQ
         } ReaderType;
 
 

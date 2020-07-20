@@ -69,6 +69,7 @@
 #include <svkLCModelCSVReader.h>
 #include <svkLCModelTableReader.h>
 #include <svkDcmSegmentationVolumeReader.h>
+#include <svkBruker2DSeqReader.h>
 
 
 namespace svk {
@@ -129,6 +130,8 @@ class svkImageReaderFactory : public vtkImageReader2Factory
         svkDcmSegmentationVolumeReader* dcmSegmentationVolReader; 
         svkLCModelCSVReader*            lcmodelCSVReader; 
         svkLCModelTableReader*          lcmodelTableReader; 
+        svkBruker2DSeqReader*           bruker2DSeqReader; 
+
 
         bool                        quickParse; 
 

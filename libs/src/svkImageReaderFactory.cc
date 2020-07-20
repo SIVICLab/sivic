@@ -83,6 +83,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->dcmSegmentationVolReader  = svkDcmSegmentationVolumeReader::New();
     this->lcmodelCSVReader          = svkLCModelCSVReader::New();
     this->lcmodelTableReader        = svkLCModelTableReader::New();
+    this->bruker2DSeqReader        	= svkBruker2DSeqReader::New();
 
     vtkImageReader2Factory::RegisterReader( this->dcmMriVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmPETVolReader );
@@ -106,6 +107,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->dcmSegmentationVolReader );
     vtkImageReader2Factory::RegisterReader( this->lcmodelCSVReader );
     vtkImageReader2Factory::RegisterReader( this->lcmodelTableReader );
+    vtkImageReader2Factory::RegisterReader( this->bruker2DSeqReader );
 
     //  this can be used if only need to check file type for example.
     this->quickParse = false; 
@@ -230,6 +232,12 @@ svkImageReaderFactory::~svkImageReaderFactory()
         this->lcmodelTableReader->Delete();
         this->lcmodelTableReader = NULL;
     }
+
+    if (this->bruker2DSeqReader != NULL) {
+        this->bruker2DSeqReader->Delete();
+        this->bruker2DSeqReader = NULL;
+        
+    }
 }
 
 
@@ -316,6 +324,8 @@ svkImageReader2* svkImageReaderFactory::CreateImageReader2( svkImageReader2::Rea
         return svkIdfVolumeReader::New(); 
     } else if ( readerType == svkImageReader2::NIFTI) {
         return svkNIFTIVolumeReader::New();
+    } else if ( readerType == svkImageReader2::BRUKER_2D_SEQ) {
+        return svkBruker2DSeqReader::New();        
     } else {
         return NULL;
     }
