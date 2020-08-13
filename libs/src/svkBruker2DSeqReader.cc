@@ -93,27 +93,27 @@ svkBruker2DSeqReader::~svkBruker2DSeqReader()
 }
 
 /*!
- *  Check to see if the extension indicates a Bruker Raw MRS file.  If so, try 
+ *  Check to see if the extension indicates a Bruker 2Dseq file.  If so, try 
  *  to open the file for reading.  If that works, then return a success code. 
  *  Return Values: 1 if can read the file, 0 otherwise.
  */
 int svkBruker2DSeqReader::CanReadFile(const char* fname)
 {
-
+cout  << " Hi Bruker 2D seq reader."   << endl;
+                    
     string fileToCheck(fname);
 
-    if( fileToCheck.size() >= 3 ) {
+    if( fileToCheck.size() >= 5 ) {
 
         // Also see "vtkImageReader2::GetFileExtensions method" 
         if (
-            (  fileToCheck.substr( fileToCheck.size() - 3 ) == "ser" ) || 
-            (  fileToCheck.substr( fileToCheck.size() - 3 ) == "fid" )  
+            (  fileToCheck.substr( fileToCheck.size() - 5 ) == "2dseq" )  
         ) {
             FILE *fp = fopen(fname, "rb");
             if (fp) {
                 fclose(fp);
                 vtkDebugMacro(
-                    << this->GetClassName() << "::CanReadFile(): It's a Bruker RAW MRS (ser) File: " << fileToCheck
+                    << this->GetClassName() << "::CanReadFile(): It's a Bruker 2D Seq (2dseq) File: " << fileToCheck
                 );
 
                 //  Now check to see if it's a supported sequence: 
@@ -134,7 +134,7 @@ int svkBruker2DSeqReader::CanReadFile(const char* fname)
             }
         } else {
             vtkDebugMacro(
-                << this->GetClassName() << "::CanReadFile(): It's NOT a Bruker MRS File: " << fileToCheck
+                << this->GetClassName() << "::CanReadFile(): It's NOT a Bruker 2d Seq File: " << fileToCheck
             );
             return 0;
         }
@@ -142,9 +142,8 @@ int svkBruker2DSeqReader::CanReadFile(const char* fname)
         vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): is NOT a valid file: " << fileToCheck);
         return 0;
     }
+
 }
-
-
 
 
 /*!
@@ -178,16 +177,18 @@ void svkBruker2DSeqReader::ParseParamFiles( )
 {
     string path = svkImageReader2::GetFilePath( this->GetFileName() );
     string paramFilePath;
+    //printf ("%s\n",path.c_str());
 
-    paramFilePath = path + "/../subject"; 
+    //paramFilePath = path + "subject"; 
+    //this->ParseParamFileToMap( paramFilePath ); 
+
+    paramFilePath = path + "/asdf/../method"; 
     this->ParseParamFileToMap( paramFilePath ); 
+    printf ("%s\n",paramFilePath.c_str());
 
-    paramFilePath = path + "/method"; 
+    paramFilePath = path + "/../../acqp"; 
     this->ParseParamFileToMap( paramFilePath ); 
-
-    paramFilePath = path + "/acqp"; 
-    this->ParseParamFileToMap( paramFilePath ); 
-
+    printf ("%s\n",paramFilePath.c_str());
 
     if (this->GetDebug()) {
         this->PrintParamKeyValuePairs(); 
@@ -545,7 +546,7 @@ svkBrukerRawMRSMapper* svkBruker2DSeqReader::GetBrukerRawMRSMapper()
         *it = (char)tolower(*it);
     }
 
-    if ( sequence.find("mm_csi") != string::npos ) {
+    if ( sequence.find("spsp_EPSI") != string::npos ) {
 
         aMapper = svkBrukerRawMRSMapper::New();
 

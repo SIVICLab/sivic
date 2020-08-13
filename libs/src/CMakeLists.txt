@@ -198,6 +198,7 @@ ADD_LIBRARY(
     svkDcmRawDataReader.cc
     svkGEPostageStampReader.cc
     svkBrukerDCMMRSReader.cc
+	svkBruker2DSeqReader.cc
     svkPhilipsSReader.cc
     svkPhilipsSMapper.cc
     svkVarianReader.cc
@@ -295,7 +296,6 @@ ADD_LIBRARY(
     svkXML.cc
     svkF2C.cc
     svkNIFTIVolumeReader.cc
-    svkBruker2DSeqReader.cc
 )
 
 ADD_LIBRARY(

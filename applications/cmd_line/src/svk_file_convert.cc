@@ -107,6 +107,7 @@ int main (int argc, char** argv)
     usemsg += "Converts the input file to the specified target file type.                   \n";  
     usemsg += "Supported input formats:                                                     \n";  
     usemsg += "     Bruker raw MRS (ser, fid)                                               \n";  
+    usemsg += "     Bruker 2d seq (2dseq)                                                   \n";  
     usemsg += "     Bruker DICOM MRS                                                        \n";  
     usemsg += "     Varian raw MRS (fid)                                                    \n";  
     usemsg += "     Varian fdf MRI                                                          \n";  
