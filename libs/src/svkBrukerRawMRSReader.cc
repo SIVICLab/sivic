@@ -99,7 +99,7 @@ svkBrukerRawMRSReader::~svkBrukerRawMRSReader()
  */
 int svkBrukerRawMRSReader::CanReadFile(const char* fname)
 {
-
+cout  << " Hi Bruker 2D seq combo! reader."   << endl;
     string fileToCheck(fname);
 
     if( fileToCheck.size() >= 3 ) {
@@ -107,13 +107,14 @@ int svkBrukerRawMRSReader::CanReadFile(const char* fname)
         // Also see "vtkImageReader2::GetFileExtensions method" 
         if (
             (  fileToCheck.substr( fileToCheck.size() - 3 ) == "ser" ) || 
-            (  fileToCheck.substr( fileToCheck.size() - 3 ) == "fid" )  
+            (  fileToCheck.substr( fileToCheck.size() - 3 ) == "fid" ) ||  
+            (  fileToCheck.substr( fileToCheck.size() - 5 ) == "2dseq" )
         ) {
             FILE *fp = fopen(fname, "rb");
             if (fp) {
                 fclose(fp);
                 vtkDebugMacro(
-                    << this->GetClassName() << "::CanReadFile(): It's a Bruker RAW MRS (ser) File: " << fileToCheck
+                    << this->GetClassName() << "::CanReadFile(): It's a Bruker RAW MRS (ser) or 2dSeq File: " << fileToCheck
                 );
 
                 //  Now check to see if it's a supported sequence: 
@@ -176,6 +177,7 @@ int svkBrukerRawMRSReader::GetNumSlices()
  */
 void svkBrukerRawMRSReader::ParseParamFiles( )    
 {
+
     string path = svkImageReader2::GetFilePath( this->GetFileName() );
     string paramFilePath;
 
@@ -187,12 +189,19 @@ void svkBrukerRawMRSReader::ParseParamFiles( )
 
     paramFilePath = path + "/acqp"; 
     this->ParseParamFileToMap( paramFilePath ); 
+//adding in 2d seq paths here 
 
+    paramFilePath = path + "/../../method"; 
+    this->ParseParamFileToMap( paramFilePath ); 
+    
+    paramFilePath = path + "/../../acqp"; 
+    this->ParseParamFileToMap( paramFilePath );
 
     if (this->GetDebug()) {
         this->PrintParamKeyValuePairs(); 
     }
 }
+
 
 
 /*!
