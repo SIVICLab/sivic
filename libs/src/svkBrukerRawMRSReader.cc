@@ -547,26 +547,31 @@ svkBrukerRawMRSMapper* svkBrukerRawMRSReader::GetBrukerRawMRSMapper()
     svkBrukerRawMRSMapper* aMapper = NULL;
 
     string sequence = this->paramMap["Method"][0];
+    cout << "Mapper Method" << sequence << endl;
 
-    //convert to lower case:
-    string::iterator it;
-    for ( it = sequence.begin(); it < sequence.end(); it++ ) {
-        *it = (char)tolower(*it);
-    }
-
-    if ( sequence.find("mm_csi") != string::npos ) {
-
+    //inserted to find 2dseq
+    if ( sequence.find("spsp_EPSI") != string::npos ) {
         aMapper = svkBrukerRawMRSMapper::New();
 
-    } else {
-        cout <<  endl;
-        cout << "===============================" << endl;
-        cout << "===============================" << endl;
-        cout << "Not a supported Bruker sequence" << endl;
-        cout << "===============================" << endl;
-        cout << "===============================" << endl;
-        cout <<  endl;
-    }
+        //convert to lower case:
+        string::iterator it; 
+        for ( it = sequence.begin(); it < sequence.end(); it++ ) {
+            *it = (char)tolower(*it);
+
+        }
+    }   else if ( sequence.find("mm_csi") != string::npos ) {
+
+            aMapper = svkBrukerRawMRSMapper::New();
+
+            } else {
+                    cout <<  endl;
+                cout << "===============================" << endl;
+                cout << "===============================" << endl;
+                cout << "Not a supported Bruker sequence" << endl;
+                cout << "===============================" << endl;
+                cout << "===============================" << endl;
+                cout <<  endl;
+            }
 
     return aMapper;
 }
