@@ -552,27 +552,31 @@ svkBrukerRawMRSMapper* svkBrukerRawMRSReader::GetBrukerRawMRSMapper()
     //inserted to find 2dseq
     if ( sequence.find("spsp_EPSI") != string::npos ) {
         aMapper = svkBrukerRawMRSMapper::New();
-
+        cout << "It Picked Up EPSI";
+        
+    } else {
         //convert to lower case:
         string::iterator it; 
         for ( it = sequence.begin(); it < sequence.end(); it++ ) {
             *it = (char)tolower(*it);
 
         }
-    }   else if ( sequence.find("mm_csi") != string::npos ) {
-
+        
+        if ( sequence.find("mm_csi") != string::npos ) {
+            cout << "It picked up FID or CSI";
             aMapper = svkBrukerRawMRSMapper::New();
 
-            } else {
-                    cout <<  endl;
-                cout << "===============================" << endl;
-                cout << "===============================" << endl;
-                cout << "Not a supported Bruker sequence" << endl;
-                cout << "===============================" << endl;
-                cout << "===============================" << endl;
-                cout <<  endl;
-            }
-
+        } else {
+            cout <<  endl;
+            cout << "===============================" << endl;
+            cout << "===============================" << endl;
+            cout << "Not a supported Bruker sequence" << endl;
+            cout << "===============================" << endl;
+            cout << "===============================" << endl;
+            cout <<  endl;
+        }
+    }
+    
     return aMapper;
 }
 
@@ -583,7 +587,7 @@ svkBrukerRawMRSMapper* svkBrukerRawMRSReader::GetBrukerRawMRSMapper()
  */
 void svkBrukerRawMRSReader::ExecuteDataWithInformation(vtkDataObject* output, vtkInformation* outInfo)
 {
-
+    cout << "Where am I?" ; 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
     svkMrsImageData* data = svkMrsImageData::SafeDownCast( this->AllocateOutputData(output, outInfo) );
 

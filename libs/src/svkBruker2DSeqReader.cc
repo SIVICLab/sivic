@@ -182,9 +182,10 @@ void svkBruker2DSeqReader::ParseParamFiles( )
     //paramFilePath = path + "subject"; 
     //this->ParseParamFileToMap( paramFilePath ); 
 
-    paramFilePath = path + "/asdf/../method"; 
+    paramFilePath = path + "/../../method"; 
     this->ParseParamFileToMap( paramFilePath ); 
     printf ("%s\n",paramFilePath.c_str());
+    // need to split, add method and join
 
     paramFilePath = path + "/../../acqp"; 
     this->ParseParamFileToMap( paramFilePath ); 
@@ -539,12 +540,13 @@ svkBrukerRawMRSMapper* svkBruker2DSeqReader::GetBrukerRawMRSMapper()
     svkBrukerRawMRSMapper* aMapper = NULL;
 
     string sequence = this->paramMap["Method"][0];
+    cout << "Mapper Method" << sequence << endl;
 
-    //convert to lower case:
-    string::iterator it;
-    for ( it = sequence.begin(); it < sequence.end(); it++ ) {
-        *it = (char)tolower(*it);
-    }
+    // //convert to lower case:
+    // string::iterator it;
+    // for ( it = sequence.begin(); it < sequence.end(); it++ ) {
+    //     *it = (char)tolower(*it);
+    //}
 
     if ( sequence.find("spsp_EPSI") != string::npos ) {
 
