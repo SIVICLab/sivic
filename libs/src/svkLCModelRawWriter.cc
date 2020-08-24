@@ -76,7 +76,7 @@ svkLCModelRawWriter::svkLCModelRawWriter()
     this->gridTaskIDCounter = 0;
     this->gridTasks = ""; 
     this->gridArch = "lx24-amd64"; 
-    this->gridQueue = "city.q@elcerrito.radiology.ucsf.edu"; 
+    this->gridQueue = "city.q@novato.radiology.ucsf.edu"; 
 }
 
 
