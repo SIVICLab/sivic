@@ -66,19 +66,19 @@ namespace svk {
  *  methods).  
  *
  *  Concrete mappers need to be implemented to map sequence specific content from Varian acquisitions to DICOM MR
- *  Spectroscopy.  It is the svkBrukerRawMRSReader's responsibility to select the appropriate svkBrukerRawMRSMapper 
+ *  Spectroscopy.  It is the svkBrukerRawMRSReader's responsibility to select the appropriate svkBruker2DSeqMapper 
  *  instance for any give data set. 
  *  
  *  Thanks to Dr. Sukumar Subramaniam (UCSF NMR Lab) for help understanding the Varian data format and for his 
  *  assistance validating SIVIC's Varian data reading functionality.  
  */
-class svkBrukerRawMRSMapper : public vtkObject 
+class svkBruker2DSeqMapper : public vtkObject 
 {
 
     public:
 
-        static svkBrukerRawMRSMapper* New();
-        vtkTypeMacro( svkBrukerRawMRSMapper, vtkObject );
+        static svkBruker2DSeqMapper* New();
+        vtkTypeMacro( svkBruker2DSeqMapper, vtkObject );
 
         virtual void    InitializeDcmHeader(
                             map <string, vector < string> >    paramMap,
@@ -92,8 +92,8 @@ class svkBrukerRawMRSMapper : public vtkObject
         
     protected:
 
-        svkBrukerRawMRSMapper();
-        ~svkBrukerRawMRSMapper();
+        svkBruker2DSeqMapper();
+        ~svkBruker2DSeqMapper();
   
         void            InitPatientModule();
         void            InitGeneralStudyModule();

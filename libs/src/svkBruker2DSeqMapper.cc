@@ -40,7 +40,7 @@
  */
 
 
-#include <svkBrukerRawMRSMapper.h>
+#include <svkBruker2DSeqMapper.h>
 #include <svkVarianReader.h>
 #include <svkFreqCorrect.h>
 #include <svkTypeUtils.h>
@@ -55,19 +55,19 @@
 using namespace svk;
 
 
-vtkStandardNewMacro(svkBrukerRawMRSMapper);
+vtkStandardNewMacro(svkBruker2DSeqMapper);
 
 
 
 /*!
  *
  */
-svkBrukerRawMRSMapper::svkBrukerRawMRSMapper()
+svkBruker2DSeqMapper::svkBruker2DSeqMapper()
 {
 
 #if VTK_DEBUG_ON
     this->DebugOn();
-    vtkDebugLeaks::ConstructClass("svkBrukerRawMRSMapper");
+    vtkDebugLeaks::ConstructClass("svkBruker2DSeqMapper");
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
@@ -81,7 +81,7 @@ svkBrukerRawMRSMapper::svkBrukerRawMRSMapper()
 /*!
  *
  */
-svkBrukerRawMRSMapper::~svkBrukerRawMRSMapper()
+svkBruker2DSeqMapper::~svkBruker2DSeqMapper()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
 
@@ -98,7 +98,7 @@ svkBrukerRawMRSMapper::~svkBrukerRawMRSMapper()
  *  and initizlizes the svkDcmHeader member of the svkImageData 
  *  object.    
  */
-void svkBrukerRawMRSMapper::InitializeDcmHeader(map <string, vector < string> >  paramMap, 
+void svkBruker2DSeqMapper::InitializeDcmHeader(map <string, vector < string> >  paramMap, 
     svkDcmHeader* header, svkMRSIOD* iod, int swapBytes) 
 {
     this->paramMap = paramMap; 
@@ -127,7 +127,7 @@ void svkBrukerRawMRSMapper::InitializeDcmHeader(map <string, vector < string> > 
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitPatientModule()
+void svkBruker2DSeqMapper::InitPatientModule()
 {
 
     this->dcmHeader->InitPatientModule(
@@ -143,7 +143,7 @@ void svkBrukerRawMRSMapper::InitPatientModule()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitGeneralStudyModule()
+void svkBruker2DSeqMapper::InitGeneralStudyModule()
 {
     string timeDate = this->GetHeaderValueAsString( "SUBJECT_date" ); 
     size_t delim = timeDate.find("T"); 
@@ -164,7 +164,7 @@ void svkBrukerRawMRSMapper::InitGeneralStudyModule()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitGeneralSeriesModule()
+void svkBruker2DSeqMapper::InitGeneralSeriesModule()
 {
     this->dcmHeader->InitGeneralSeriesModule(
         "0", 
@@ -176,9 +176,9 @@ void svkBrukerRawMRSMapper::InitGeneralSeriesModule()
 
 /*!
  *  DDF is historically the UCSF representation of a GE raw file so
- *  initialize to svkBrukerRawMRSMapper::MFG_STRING.
+ *  initialize to svkBruker2DSeqMapper::MFG_STRING.
  */
-void svkBrukerRawMRSMapper::InitGeneralEquipmentModule()
+void svkBruker2DSeqMapper::InitGeneralEquipmentModule()
 {
     this->dcmHeader->SetValue(
         "Manufacturer",
@@ -190,7 +190,7 @@ void svkBrukerRawMRSMapper::InitGeneralEquipmentModule()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitMultiFrameFunctionalGroupsModule()
+void svkBruker2DSeqMapper::InitMultiFrameFunctionalGroupsModule()
 {
 
     this->InitSharedFunctionalGroupMacros();
@@ -226,7 +226,7 @@ void svkBrukerRawMRSMapper::InitMultiFrameFunctionalGroupsModule()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitSharedFunctionalGroupMacros()
+void svkBruker2DSeqMapper::InitSharedFunctionalGroupMacros()
 {
 
     this->InitPixelMeasuresMacro();
@@ -251,7 +251,7 @@ void svkBrukerRawMRSMapper::InitSharedFunctionalGroupMacros()
 /*!
  *  The FID toplc is the center of the first voxel.
  */
-void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
+void svkBruker2DSeqMapper::InitPerFrameFunctionalGroupMacros()
 {
 
     double dcos[3][3];
@@ -354,7 +354,7 @@ void svkBrukerRawMRSMapper::InitPerFrameFunctionalGroupMacros()
  *  
  *
  */
-void svkBrukerRawMRSMapper::InitPlaneOrientationMacro()
+void svkBruker2DSeqMapper::InitPlaneOrientationMacro()
 {
 
     this->dcmHeader->AddSequenceItemElement(
@@ -400,7 +400,7 @@ void svkBrukerRawMRSMapper::InitPlaneOrientationMacro()
 /*!
  *  Initializes the numeric and string representation of the orientation
  */
-void svkBrukerRawMRSMapper::GetDcmOrientation(float dcos[3][3], string* orientationString) 
+void svkBruker2DSeqMapper::GetDcmOrientation(float dcos[3][3], string* orientationString) 
 {
 
     //  Get the dcos from the SPackArrGradOrient field
@@ -483,7 +483,7 @@ void svkBrukerRawMRSMapper::GetDcmOrientation(float dcos[3][3], string* orientat
  *  observed in validation phantoms: 
  *      1.  Centric Coronal is inverted through all 3 directions (LP and S) 
  */
-void svkBrukerRawMRSMapper::FixBrukerOrientationAnomalies( float dcos[3][3] )
+void svkBruker2DSeqMapper::FixBrukerOrientationAnomalies( float dcos[3][3] )
 {
     string encoding = this->GetHeaderValueAsString("PVM_EncOrder");
     if ( encoding.find("CENTRIC_ENC") != string::npos ) { 
@@ -528,7 +528,7 @@ void svkBrukerRawMRSMapper::FixBrukerOrientationAnomalies( float dcos[3][3] )
  *  Probably implemented elsewhere, stupid. Returns product in the original 
  *  A matrix
  */
-void svkBrukerRawMRSMapper::MatMult(float A[3][3], float B[3][3] )
+void svkBruker2DSeqMapper::MatMult(float A[3][3], float B[3][3] )
 {
     float tmp[3][3];
     tmp[0][0] = 0; 
@@ -565,7 +565,7 @@ void svkBrukerRawMRSMapper::MatMult(float A[3][3], float B[3][3] )
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitMRTimingAndRelatedParametersMacro()
+void svkBruker2DSeqMapper::InitMRTimingAndRelatedParametersMacro()
 {
     this->dcmHeader->InitMRTimingAndRelatedParametersMacro(
         1000,
@@ -579,7 +579,7 @@ void svkBrukerRawMRSMapper::InitMRTimingAndRelatedParametersMacro()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
+void svkBruker2DSeqMapper::InitMRSpectroscopyFOVGeometryMacro()
 {
     this->dcmHeader->AddSequenceItemElement(
         "SharedFunctionalGroupsSequence",
@@ -759,7 +759,7 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyFOVGeometryMacro()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitMREchoMacro()
+void svkBruker2DSeqMapper::InitMREchoMacro()
 {
 
     this->dcmHeader->InitMREchoMacro( 1 * 1000.); 
@@ -769,7 +769,7 @@ void svkBrukerRawMRSMapper::InitMREchoMacro()
 /*!
  *  Override in concrete mapper for specific acquisitino
  */
-void svkBrukerRawMRSMapper::InitMRModifierMacro()
+void svkBruker2DSeqMapper::InitMRModifierMacro()
 {
     float inversionTime = 0; 
     this->dcmHeader->InitMRModifierMacro( inversionTime );
@@ -779,7 +779,7 @@ void svkBrukerRawMRSMapper::InitMRModifierMacro()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitMRTransmitCoilMacro()
+void svkBruker2DSeqMapper::InitMRTransmitCoilMacro()
 {
     this->dcmHeader->InitMRTransmitCoilMacro("Bruker", "UNKNOWN", "BODY");
 }
@@ -788,7 +788,7 @@ void svkBrukerRawMRSMapper::InitMRTransmitCoilMacro()
 /*! 
  *  Receive Coil:
  */
-void svkBrukerRawMRSMapper::InitMRReceiveCoilMacro()
+void svkBruker2DSeqMapper::InitMRReceiveCoilMacro()
 {
 
     this->dcmHeader->AddSequenceItemElement(
@@ -812,7 +812,7 @@ void svkBrukerRawMRSMapper::InitMRReceiveCoilMacro()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitMRAveragesMacro()
+void svkBruker2DSeqMapper::InitMRAveragesMacro()
 {
     int numAverages = 1; 
     this->dcmHeader->InitMRAveragesMacro(numAverages);
@@ -822,7 +822,7 @@ void svkBrukerRawMRSMapper::InitMRAveragesMacro()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitMultiFrameDimensionModule()
+void svkBruker2DSeqMapper::InitMultiFrameDimensionModule()
 {
     int indexCount = 0; 
     this->dcmHeader->AddSequenceItemElement(
@@ -875,7 +875,7 @@ void svkBrukerRawMRSMapper::InitMultiFrameDimensionModule()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitAcquisitionContextModule()
+void svkBruker2DSeqMapper::InitAcquisitionContextModule()
 {
 }
 
@@ -883,7 +883,7 @@ void svkBrukerRawMRSMapper::InitAcquisitionContextModule()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitMRSpectroscopyModule()
+void svkBruker2DSeqMapper::InitMRSpectroscopyModule()
 {
 
     /*  =======================================
@@ -1039,7 +1039,7 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyModule()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::InitMRSpectroscopyDataModule()
+void svkBruker2DSeqMapper::InitMRSpectroscopyDataModule()
 {
     this->dcmHeader->SetValue( "Columns", this->GetHeaderValueAsInt("ACQ_spatial_size_0") );
     this->dcmHeader->SetValue( "Rows", this->GetHeaderValueAsInt("ACQ_spatial_size_1") );
@@ -1056,7 +1056,7 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyDataModule()
 /*!
  *  Reads spec data from Bruker raw file (e.g. "ser" or "fid").
  */
-void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkMrsImageData* data )
+void svkBruker2DSeqMapper::ReadSerFile( string serFileName, svkMrsImageData* data )
 {
     
     vtkDebugMacro( << this->GetClassName() << "::ReadSerFile()" );
@@ -1153,7 +1153,7 @@ void svkBrukerRawMRSMapper::ReadSerFile( string serFileName, svkMrsImageData* da
 /*!
  *  Determine number of time points in the fid or ser file. 
  */
-int svkBrukerRawMRSMapper::GetNumTimePoints()
+int svkBruker2DSeqMapper::GetNumTimePoints()
 {
     return this->GetHeaderValueAsInt("NR");  
 }
@@ -1163,7 +1163,7 @@ int svkBrukerRawMRSMapper::GetNumTimePoints()
  *  Apply group delay shift in FID if necessary. Was required originally, but Bruker appears to 
  *  have fixed this so the FIDs start at the correct time point now. 
  */
-void svkBrukerRawMRSMapper::ApplyGroupDelay( svkMrsImageData* data )
+void svkBruker2DSeqMapper::ApplyGroupDelay( svkMrsImageData* data )
 {
 
     // not required anymore
@@ -1185,7 +1185,7 @@ void svkBrukerRawMRSMapper::ApplyGroupDelay( svkMrsImageData* data )
 /*!
  *  Reorder centric (or reverse centric) k-space data to standard linear encoding
  */
-void svkBrukerRawMRSMapper::ReorderKSpace( svkMrsImageData* data )
+void svkBruker2DSeqMapper::ReorderKSpace( svkMrsImageData* data )
 {
         
     svkMrsImageData* tmpData = svkMrsImageData::New();
@@ -1264,7 +1264,7 @@ void svkBrukerRawMRSMapper::ReorderKSpace( svkMrsImageData* data )
 /*!
  *
  */
-void svkBrukerRawMRSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z, int timePt, int coilNum)
+void svkBruker2DSeqMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z, int timePt, int coilNum)
 {
 
     int numComponents = 1;
@@ -1330,7 +1330,7 @@ void svkBrukerRawMRSMapper::SetCellSpectrum(vtkImageData* data, int x, int y, in
 /*!
  *  Use the Procpar patient position string to set the DCM_PatientPosition data element.
  */
-string svkBrukerRawMRSMapper::GetDcmPatientPositionString()
+string svkBruker2DSeqMapper::GetDcmPatientPositionString()
 {
     string dcmPatientPosition;
 
@@ -1363,7 +1363,7 @@ string svkBrukerRawMRSMapper::GetDcmPatientPositionString()
 /*!
  *
  */
-int svkBrukerRawMRSMapper::GetHeaderValueAsInt(string keyString, int valueIndex )
+int svkBruker2DSeqMapper::GetHeaderValueAsInt(string keyString, int valueIndex )
 {
 
     istringstream* iss = new istringstream();
@@ -1381,7 +1381,7 @@ int svkBrukerRawMRSMapper::GetHeaderValueAsInt(string keyString, int valueIndex 
 /*!
  *
  */
-float svkBrukerRawMRSMapper::GetHeaderValueAsFloat(string keyString, int valueIndex )
+float svkBruker2DSeqMapper::GetHeaderValueAsFloat(string keyString, int valueIndex )
 {
 
     istringstream* iss = new istringstream();
@@ -1398,7 +1398,7 @@ float svkBrukerRawMRSMapper::GetHeaderValueAsFloat(string keyString, int valueIn
 /*!
  *
  */
-string svkBrukerRawMRSMapper::GetHeaderValueAsString(string keyString, int valueIndex )
+string svkBruker2DSeqMapper::GetHeaderValueAsString(string keyString, int valueIndex )
 {
 
     map< string, vector < string > >::iterator it;
@@ -1415,7 +1415,7 @@ string svkBrukerRawMRSMapper::GetHeaderValueAsString(string keyString, int value
 /*!
  *  Pixel Spacing:
  */
-void svkBrukerRawMRSMapper::InitPixelMeasuresMacro()
+void svkBruker2DSeqMapper::InitPixelMeasuresMacro()
 {
 
     float pixelSize[3];
@@ -1436,7 +1436,7 @@ void svkBrukerRawMRSMapper::InitPixelMeasuresMacro()
 }
 
 
-void svkBrukerRawMRSMapper::InitMRSpectroscopyPulseSequenceModule() 
+void svkBruker2DSeqMapper::InitMRSpectroscopyPulseSequenceModule() 
 {
     //  I would have thought this would be no for linear and an even number of 
     //  phase encodes, but I thought the centric encoding would have sampled k0
@@ -1449,7 +1449,7 @@ void svkBrukerRawMRSMapper::InitMRSpectroscopyPulseSequenceModule()
 /*!
  *
  */
-void svkBrukerRawMRSMapper::GetBrukerPixelSize( float pixelSize[3] )
+void svkBruker2DSeqMapper::GetBrukerPixelSize( float pixelSize[3] )
 {
     float numPixels[3];
     numPixels[0] = this->GetHeaderValueAsInt("ACQ_spatial_size_0");

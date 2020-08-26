@@ -45,6 +45,7 @@
 
 #include <svkImageReader2.h>
 #include <svkBrukerRawMRSMapper.h>
+#include <svkBruker2DSeqReader.h>
 #include <vtkInformation.h>
 
 #include <map>
