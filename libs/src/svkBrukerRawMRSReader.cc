@@ -190,6 +190,9 @@ void svkBrukerRawMRSReader::ParseParamFiles( )
     paramFilePath = path + "/acqp"; 
     this->ParseParamFileToMap( paramFilePath ); 
 //adding in 2d seq paths here 
+//try visu_pars later instead of subject 
+    paramFilePath = path + "/../../visu_pars"; 
+    this->ParseParamFileToMap( paramFilePath );
 
     paramFilePath = path + "/../../method"; 
     this->ParseParamFileToMap( paramFilePath ); 
@@ -646,8 +649,8 @@ void svkBrukerRawMRSReader::ExecuteInformation()
  */
 void svkBrukerRawMRSReader::InitDcmHeader()
 {
-
-    vtkDebugMacro( << this->GetClassName() << "::InitDcmHeader()" );
+    cout << "Am I initializing header?" ;
+   vtkDebugMacro( << this->GetClassName() << "::InitDcmHeader()" );
 
     svkMRSIOD* iod = svkMRSIOD::New();
     iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
@@ -689,6 +692,7 @@ void svkBrukerRawMRSReader::InitDcmHeader()
  */
 void svkBrukerRawMRSReader::AssignParamVectorElements(vector<string>* paramVector, string valueArray)
 {
+    cout << "Donde estas?" ;
     size_t pos = 0;
     istringstream* iss = new istringstream();
     string tmpString;

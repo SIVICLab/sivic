@@ -101,26 +101,26 @@ svkBrukerRawMRSMapper::~svkBrukerRawMRSMapper()
 void svkBrukerRawMRSMapper::InitializeDcmHeader(map <string, vector < string> >  paramMap, 
     svkDcmHeader* header, svkMRSIOD* iod, int swapBytes) 
 {
-    this->paramMap = paramMap; 
+     this->paramMap = paramMap; 
     this->dcmHeader = header; 
     this->iod = iod;   
     this->swapBytes = swapBytes; 
 
-    this->InitPatientModule();
-    this->InitGeneralStudyModule();
+   this->InitPatientModule(); 
+    this->InitGeneralStudyModule(); 
     this->InitGeneralSeriesModule();
-    this->InitGeneralEquipmentModule();
+    this->InitGeneralEquipmentModule(); 
 
-    this->InitMultiFrameFunctionalGroupsModule();
-    this->InitMultiFrameDimensionModule();
-//    this->InitAcquisitionContextModule();
-    this->InitMRSpectroscopyModule();
-    this->InitMRSpectroscopyPulseSequenceModule();
+//  this->InitMultiFrameFunctionalGroupsModule(); //Will not write DICOM 
+    this->InitMultiFrameDimensionModule(); 
+//    this->InitAcquisitionContextModule(); // was previously commented out in original, is empty in definition
+/*     this->InitMRSpectroscopyModule(); // Doesn't work
+    this->InitMRSpectroscopyPulseSequenceModule(); // Doesn't work 
 
-    this->InitMRSpectroscopyDataModule();
+    this->InitMRSpectroscopyDataModule(); */ //Doesn't work 
 
-    this->dcmHeader->SetValue( "SVK_PRIVATE_TAG",  "SVK_PRIVATE_CREATOR"); 
-
+    this->dcmHeader->SetValue( "SVK_PRIVATE_TAG",  "SVK_PRIVATE_CREATOR");  
+ 
 }
 
 
@@ -130,12 +130,12 @@ void svkBrukerRawMRSMapper::InitializeDcmHeader(map <string, vector < string> > 
 void svkBrukerRawMRSMapper::InitPatientModule()
 {
 
-    this->dcmHeader->InitPatientModule(
+        this->dcmHeader->InitPatientModule(
         this->dcmHeader->GetDcmPatientName( this->GetHeaderValueAsString("SUBJECT_name_string") ),
         this->GetHeaderValueAsString("SUBJECT_id"), 
         this->GetHeaderValueAsString("SUBJECT_dbirth"), 
         this->GetHeaderValueAsString("SUBJECT_sex") 
-    );
+    ); 
 
 }
 
@@ -145,6 +145,7 @@ void svkBrukerRawMRSMapper::InitPatientModule()
  */
 void svkBrukerRawMRSMapper::InitGeneralStudyModule()
 {
+cout  << " Hi GeneralStudyModule!"   << endl;    
     string timeDate = this->GetHeaderValueAsString( "SUBJECT_date" ); 
     size_t delim = timeDate.find("T"); 
     string date = timeDate.substr(0, delim); 
@@ -180,6 +181,7 @@ void svkBrukerRawMRSMapper::InitGeneralSeriesModule()
  */
 void svkBrukerRawMRSMapper::InitGeneralEquipmentModule()
 {
+cout  << " Hi GeneralEquipmentModule."   << endl;    
     this->dcmHeader->SetValue(
         "Manufacturer",
         "Bruker"
@@ -885,7 +887,7 @@ void svkBrukerRawMRSMapper::InitAcquisitionContextModule()
  */
 void svkBrukerRawMRSMapper::InitMRSpectroscopyModule()
 {
-
+cout  << " Am i running"   << endl;
     /*  =======================================
      *  MR Image and Spectroscopy Instance Macro
      *  ======================================= */
