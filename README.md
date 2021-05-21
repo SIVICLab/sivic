@@ -12,11 +12,12 @@ participation is encouraged.  Please see the following links for further informa
 
 2. The Doxygen C++ API for SIVIC is published on Sourceforge:
 
-    http://sivic.sourceforge.net/libsvk/html/index.html
+        http://sivic.sourceforge.net/libsvk/html/index.html
 
 
 3.  Mail List
-    https://lists.sourceforge.net/lists/listinfo/sivic-users
+    
+        https://lists.sourceforge.net/lists/listinfo/sivic-users
     
 
 NOTES FOR WINDOWS USERS:
