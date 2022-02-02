@@ -42,13 +42,13 @@
 #ifdef WIN32
 #include<signal.h>
 #endif
+#include<signal.h>
 #include <svkPhilipsSMapper.h>
 #include <svkSpecUtils.h>
 #include <svkImageReader2.h>
 
 #include <vtkDebugLeaks.h>
 #include <vtkTransform.h>
-#include <vtkMatrix4x4.h>
 #include <vtkCallbackCommand.h>
 
 
@@ -270,9 +270,9 @@ void svkPhilipsSMapper::InitSharedFunctionalGroupMacros()
  *  The SPAR toplc is the center of the first voxel.
  *  Best guess at field interpretation all dims in mm. Not positive about difference between two
  *  sets of fields, e.g. ap_off_center and si_ap_off_center, etc.    
- *      ap_size :   AP FOV
- *      lr_size :   RL FOV
- *      cc_size :   SI FOV
+ *      ap_size :   AP VOL_LOC FOV
+ *      lr_size :   RL VOL_LOC FOV
+ *      cc_size :   SI VOL LOC FOV
  *      ap_off_center :  AP displacment from center (from origin)  
  *      lr_off_center :  LR displacement from center (from origin) 
  *      cc_off_center :  SI displacment from center (from origin) 
@@ -312,9 +312,9 @@ void svkPhilipsSMapper::InitPerFrameFunctionalGroupMacros()
 
     //  Get the volumetric center in acquisition frame coords:
     double center[3];
-    center[0] = this->GetHeaderValueAsFloat("lr_off_center");
-    center[1] = this->GetHeaderValueAsFloat("ap_off_center");
-    center[2] = this->GetHeaderValueAsFloat("cc_off_center");
+    center[0] = this->GetHeaderValueAsFloat("si_lr_off_center");
+    center[1] = this->GetHeaderValueAsFloat("si_ap_off_center");
+    center[2] = this->GetHeaderValueAsFloat("si_cc_off_center");
 
     //  Center of toplc (LPS) pixel in frame:
     double toplc[3];
@@ -349,34 +349,13 @@ void svkPhilipsSMapper::InitPlaneOrientationMacro()
     );
 
     //  Get the euler angles for the acquisition coordinate system:
-    float psi   = this->GetHeaderValueAsFloat("lr_angulation"); 
-    float phi   = this->GetHeaderValueAsFloat("ap_angulation"); 
-    float theta = this->GetHeaderValueAsFloat("cc_angulation"); 
+    float psi   = this->GetHeaderValueAsFloat("si_lr_angulation"); 
+    float phi   = this->GetHeaderValueAsFloat("si_ap_angulation"); 
+    float theta = this->GetHeaderValueAsFloat("si_cc_angulation"); 
 
-    vtkTransform* eulerTransform = vtkTransform::New();
-    eulerTransform->RotateX( theta);
-    eulerTransform->RotateY( phi );
-    eulerTransform->RotateZ( psi );
     vtkMatrix4x4* dcos = vtkMatrix4x4::New();
-    eulerTransform->GetMatrix(dcos);
-
-    if (this->GetDebug()) {
-        cout << *dcos << endl;
-    }
-
     string orientationString;
-
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 3; j++) {
-            ostringstream dcosOss;
-            dcosOss.setf(ios::fixed);
-            dcosOss << dcos->GetElement(i, j);
-            orientationString.append( dcosOss.str() );
-            if (i != 1 || j != 2  ) {
-                orientationString.append( "\\");
-            }
-        }
-    }
+    this->GetDcosFromAngulation( psi, phi, theta, dcos, &orientationString ); 
 
     this->dcmHeader->AddSequenceItemElement(
         "PlaneOrientationSequence",
@@ -405,6 +384,39 @@ void svkPhilipsSMapper::InitPlaneOrientationMacro()
         this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
     }
 }
+
+
+/*!
+ *  convert angluation to dcos:
+ *  Returns a vtkMatrix4x4 representing thd dcos matrix and a string representing the DICOM Orientation
+ */
+void svkPhilipsSMapper::GetDcosFromAngulation( float psi, float phi, float theta, vtkMatrix4x4* dcos, string* orientationString )
+{
+
+    vtkTransform* eulerTransform = vtkTransform::New();
+    eulerTransform->RotateX( theta);
+    eulerTransform->RotateY( phi );
+    eulerTransform->RotateZ( psi );
+    eulerTransform->GetMatrix( dcos );
+
+    if (this->GetDebug()) {
+        cout << *dcos << endl;
+    }
+
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 3; j++) {
+            ostringstream dcosOss;
+            dcosOss.setf(ios::fixed);
+            dcosOss << dcos->GetElement(i, j);
+            orientationString->append( dcosOss.str() );
+            if (i != 1 || j != 2  ) {
+                orientationString->append( "\\");
+            }
+        }
+    }
+
+}
+
 
 
 /*!
@@ -667,6 +679,49 @@ void svkPhilipsSMapper::InitMRReceiveCoilMacro()
 /*!
  *
  */
+void svkPhilipsSMapper::InitVolumeLocalizationSeq()
+{
+
+    float size[3];
+    size[0] = this->GetHeaderValueAsFloat( "lr_size" );
+    size[1] = this->GetHeaderValueAsFloat( "ap_size" );
+    size[2] = this->GetHeaderValueAsFloat( "cc_size" );
+
+    float center[3];
+    center[0] = this->GetHeaderValueAsFloat( "lr_off_center" );
+    center[1] = this->GetHeaderValueAsFloat( "ap_off_center" );
+    center[2] = this->GetHeaderValueAsFloat( "cc_off_center" );
+
+
+    //  Get the euler angles for the acquisition coordinate system:
+    float psi   = this->GetHeaderValueAsFloat("lr_angulation"); 
+    float phi   = this->GetHeaderValueAsFloat("ap_angulation"); 
+    float theta = this->GetHeaderValueAsFloat("cc_angulation"); 
+
+    vtkMatrix4x4* dcos = vtkMatrix4x4::New();
+    string orientationString;
+    this->GetDcosFromAngulation( psi, phi, theta, dcos, &orientationString ); 
+
+    float dcos3x3[3][3];
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            dcos3x3[i][j] = dcos->GetElement(i, j);
+        }
+    }
+
+    this->dcmHeader->InitVolumeLocalizationSeq(
+        size,
+        center,
+        dcos3x3
+    );
+
+}
+
+
+
+/*!
+ *
+ */
 void svkPhilipsSMapper::InitMRAveragesMacro()
 {
     int numAverages = 1; 
@@ -845,8 +900,10 @@ void svkPhilipsSMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "VolumeLocalizationTechnique",
-        ""
+        "PRESS"
     );
+
+    this->InitVolumeLocalizationSeq();
 
 
     this->dcmHeader->SetValue(
@@ -888,7 +945,8 @@ void svkPhilipsSMapper::InitMRSpectroscopyModule()
 
 
 /*!
- *
+ *  SPAR DATA is spatially reconstructed already, but spectral domain is in 
+ *  time. 
  */
 void svkPhilipsSMapper::InitMRSpectroscopyDataModule()
 {
@@ -901,9 +959,9 @@ void svkPhilipsSMapper::InitMRSpectroscopyDataModule()
     this->dcmHeader->SetValue( "DataPointColumns", this->GetHeaderValueAsInt("dim1_pnts") );
     this->dcmHeader->SetValue( "DataRepresentation", "COMPLEX" );
     this->dcmHeader->SetValue( "SignalDomainColumns", "TIME" );
-    this->dcmHeader->SetValue( "SVK_ColumnsDomain", "KSPACE" );
-    this->dcmHeader->SetValue( "SVK_RowsDomain", "KSPACE" );
-    this->dcmHeader->SetValue( "SVK_SliceDomain", "KSPACE" );
+    this->dcmHeader->SetValue( "SVK_ColumnsDomain", "SPACE" );
+    this->dcmHeader->SetValue( "SVK_RowsDomain", "SPACE" );
+    this->dcmHeader->SetValue( "SVK_SliceDomain", "SPACE" );
 }
 
 
@@ -1159,13 +1217,23 @@ void svkPhilipsSMapper::InitPixelMeasuresMacro()
 
 
 /*
- *  Sets the fov in 3 dimensions.  
+ *  Sets the fov in 3 dimensions. Only applies to isotropic voxels for now.  
+ *  Philips informs that only isotropic voxles are supported in the reconstructed
+ *  S* files.  Are anisotropic voxels supported: 
+ *  "No, since the "Reconstructed voxel size" is set by a single number, it is usually equal 
+ *  to or less than the smallest voxel size set."
  */
 void svkPhilipsSMapper::GetFOV(float* fov) 
 {
-    fov[0] = this->GetHeaderValueAsFloat("lr_size");
-    fov[1] = this->GetHeaderValueAsFloat("ap_size");
-    fov[2] = this->GetHeaderValueAsFloat("cc_size");
+
+    int numPixels[3];
+    this->GetDimPnts( numPixels ); 
+
+    fov[0] = this->GetHeaderValueAsFloat("phase_encoding_fov");
+    float isotropicPixelSize = fov[0] / numPixels[0];  
+    
+    fov[1] = numPixels[1] * isotropicPixelSize; 
+    fov[2] = numPixels[2] * this->GetHeaderValueAsFloat("slice_thickness");
 }
 
 

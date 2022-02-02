@@ -66,35 +66,53 @@ int main (int argc, char** argv)
 {
 
     string usemsg("\n") ; 
-    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                               "\n";   
-    usemsg += "svk_noise -i input_file_name                                             \n"; 
-    usemsg += "         [ -b ] [ -h ]                                                   \n"; 
-    usemsg += "                                                                         \n";  
-    usemsg += "   -i                name   Name of file to convert.                     \n"; 
-    usemsg += "   -b                       only include spectra in selection box.       \n"; 
-    usemsg += "   -h                       Print this help mesage.                      \n";  
-    usemsg += "                                                                         \n";  
-    usemsg += "Determines noise in baseline of MRS data set.                            \n";  
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                   "\n";   
+    usemsg += "svk_noise -i input_file_name                                                 \n"; 
+    usemsg += "         [ -l start_pt -u end_pt ]                                           \n"; 
+    usemsg += "         [ -b ] [ -h ]                                                       \n"; 
+    usemsg += "                                                                             \n";  
+    usemsg += "   -i                name   Name of input file                               \n"; 
+    usemsg += "   -p                       Percent of spectrum to use for noise calc.       \n"; 
+    usemsg += "                            number between 0 and 1 (default = .05).          \n"; 
+    usemsg += "   -b                       Only include spectra in selection box.           \n"; 
+    usemsg += "   -l                       lower point (inclusive) to use for noise window  \n"; 
+    usemsg += "   -u                       upper point (includive) to use for noise window  \n"; 
+    usemsg += "   --single                 Only operates on the single specified file       \n";
+    usemsg += "   -h                       Print this help mesage.                          \n";  
+    usemsg += "                                                                             \n";  
+    usemsg += "Determines noise in baseline of an MRS data set:                             \n";  
+    usemsg += "Determines the frequency range to use by identifying a window in the         \n"; 
+    usemsg += "average magnitude spectum comprising 5% (default) of the total spectrum      \n"; 
+    usemsg += "with the smallest SD.  Then uses that point range to compute the average     \n"; 
+    usemsg += "value of the SD from the complex spectra.  Also reports the mean value       \n"; 
+    usemsg += "in the noise window range.  Explicit manual window selection is also         \n"; 
+    usemsg += "supported (-l -u).                                                           \n"; 
     usemsg += "\n";  
 
 
     string inputFileName; 
     bool limitToSelectionBox = false; 
+    float noiseWindowPercent = -1; 
+    bool  onlyLoadSingleFile = false;
+    int noiseStartPoint = -1; 
+    int noiseEndPoint = -1; 
+
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
+        FLAG_SINGLE
     }; 
 
 
     static struct option long_options[] =
     {
         /* This option sets a flag. */
+        {"single",                  no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
-
 
 
     // ===============================================  
@@ -102,13 +120,25 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "i:bh", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:l:u:bp:h", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
                 break;
+            case 'p':
+                noiseWindowPercent = atof(optarg); 
+                break;
             case 'b':
                 limitToSelectionBox = true; 
+                break;
+            case 'l':
+                noiseStartPoint = atoi(optarg); 
+                break;
+            case 'u':
+                noiseEndPoint = atoi(optarg); 
+                break;
+            case FLAG_SINGLE:
+                onlyLoadSingleFile = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -136,6 +166,15 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
+    if (
+        ( noiseStartPoint != -1  && noiseEndPoint == -1 ) || 
+        ( noiseStartPoint == -1  && noiseEndPoint != -1 ) 
+    ) {
+        cout << "Must specify both -l and -u or neither." << endl;
+        cout << usemsg << endl;
+        exit(1); 
+    }
+
     // ===============================================  
     //  Use a reader factory to get the correct reader  
     //  type . 
@@ -149,6 +188,9 @@ int main (int argc, char** argv)
     }
 
     reader->SetFileName( inputFileName.c_str() );
+    if ( onlyLoadSingleFile == true ) {
+        reader->OnlyReadOneInputFile();
+    }
     reader->Update(); 
 
     svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader(); 
@@ -160,6 +202,13 @@ int main (int argc, char** argv)
     noise->SetInputData( reader->GetOutput() ); 
     if ( limitToSelectionBox ) {
         noise->OnlyUseSelectionBox(); 
+    }
+    if ( noiseWindowPercent >= 0 ) {
+        noise->SetNoiseWindowPercent( noiseWindowPercent );
+    }
+    if ( noiseStartPoint >= 0  && noiseEndPoint >= 0 ) {
+        noise->SetNoiseStartPoint( noiseStartPoint );     
+        noise->SetNoiseEndPoint( noiseEndPoint );     
     }
     noise->Update();
     float noiseSD = noise->GetNoiseSD(); 

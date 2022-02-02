@@ -259,7 +259,7 @@ class svkImageData: public vtkImageData
 
         void               SyncVTKImageDataToDcmHeader(); 
 
-        static  void                  RemoveArrays( svkImageData* data ); 
+        static  void       RemoveArrays( svkImageData* data ); 
 
         vtkSetStringMacro(SourceFileName);
         vtkGetStringMacro(SourceFileName);

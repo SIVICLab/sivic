@@ -68,7 +68,7 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_average_spec -i input_file_name -o output_file_root                      \n"; 
-    usemsg += "                   --mask mask_file_name | -b                                \n"; 
+    usemsg += "                   [ --mask mask_file_name | -b ]                            \n"; 
     usemsg += "                   [ -mvh ]                                                  \n";
     usemsg += "                                                                             \n";  
     usemsg += "   -i            input_file_name     Name of file to scale                   \n";
@@ -91,7 +91,7 @@ int main (int argc, char** argv)
 
     string inputFileName; 
     string outputFileName;
-    string maskFileName; 
+    string maskFileName = ""; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
     bool isVerbose = false; 
     bool limitToSelectionBox = false; 
@@ -160,7 +160,6 @@ int main (int argc, char** argv)
     if ( argc != 0 || 
         inputFileName.length() == 0 || 
         outputFileName.length() == 0 ||
-        ( maskFileName.length() == 0  && limitToSelectionBox == false )  || 
         ( maskFileName.length() > 0  && limitToSelectionBox == true )  
     )  {
         cout << usemsg << endl;

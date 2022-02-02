@@ -98,6 +98,13 @@ IF (UCSF_INTERNAL)
     ADD_DEFINITIONS(-DUCSF_INTERNAL)
 ENDIF(UCSF_INTERNAL) 
 
+IF (OSX_PLUGIN_OSIRIX)
+    ADD_DEFINITIONS(-DOSX_PLUGIN_OSIRIX)
+ENDIF(OSX_PLUGIN_OSIRIX) 
+IF (OSX_PLUGIN_HOROS)
+    ADD_DEFINITIONS(-DOSX_PLUGIN_HOROS)
+ENDIF(OSX_PLUGIN_HOROS) 
+
 IF (SVK_USE_GL2PS)
     ADD_DEFINITIONS(-DSVK_USE_GL2PS)
 ENDIF(SVK_USE_GL2PS) 
@@ -111,6 +118,9 @@ SET(DCMTK_OFLOG "")
 if ( EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
     SET(DCMTK_OFLOG oflog )
 endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
+if ( EXISTS "${DCMTK_DIR}/lib64/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib64/oflog.lib")
+    SET(DCMTK_OFLOG oflog )
+endif (EXISTS "${DCMTK_DIR}/lib64/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib64/oflog.lib")
 
 ###################################
 #   VTK
@@ -168,6 +178,7 @@ LINK_DIRECTORIES(
     ../../../libs/${PLATFORM}
     ../${PLATFORM}
     ${DCMTK_DIR}/lib
+    ${DCMTK_DIR}/lib64
     ${ADD_LINK_DIRS}
 )
 
@@ -309,6 +320,7 @@ TARGET_LINK_LIBRARIES(
     svkPSD
     svkTypeUtils
     svkadapt
+    svkXMLUtils
     ${KWWidgets_LIBRARIES}
     ${VTK_LIBRARIES} 
     dcmdata

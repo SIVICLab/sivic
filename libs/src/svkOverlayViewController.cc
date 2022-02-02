@@ -290,13 +290,17 @@ void svkOverlayViewController::SetInput( svkImageData* data, int index)
             this->view->SetInput(data, 1);
             this->SetSlice( this->GetView()->GetSlice() );
         }
-    } else if( index == MET && data != NULL && dataVector[MRI] != NULL ) {
-        if( dataVector[MET] != NULL ) {
-            dataVector[MET]->Delete();
+    } else if( index == svkOverlayView::OVERLAY && dataVector[MRI] != NULL ) {
+        if( dataVector[svkOverlayView::OVERLAY] != NULL ) {
+            dataVector[svkOverlayView::OVERLAY]->Delete();
         }
         data->Register( this );
-        dataVector[MET] = data;
-        this->view->SetInput( data, MET );
+        dataVector[svkOverlayView::OVERLAY] = data;
+        this->view->SetInput( data, svkOverlayView::OVERLAY );
+    } else if( index == svkOverlayView::OVERLAY_CONTOUR && dataVector[MRI] != NULL ) {
+        data->Register( this );
+        dataVector.push_back(data);
+        this->view->SetInput( data, svkOverlayView::OVERLAY_CONTOUR );
     } else if( data != NULL ) {
         cout<<"WARNING: svkOverlayViewController only takes two image inputs!"<<endl;
     } else {
@@ -649,7 +653,9 @@ void svkOverlayViewController::UseSelectionStyle()
             }
         }
         this->currentInteractorStyle = SELECTION;
-        svkOverlayView::SafeDownCast(this->view)->ToggleSelBoxVisibilityOn();
+        if( svkOverlayView::SafeDownCast(this->view)->GetSelectionBoxVisibility() != svkOverlayView::VISIBLE ) {
+            svkOverlayView::SafeDownCast(this->view)->SetSelectionBoxVisibility(svkOverlayView::VISIBLE_WHEN_CONTAINS_CURRENT_SLICE);
+        }
     }
 
 }
@@ -687,7 +693,9 @@ void svkOverlayViewController::UseRotationStyle()
             view->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE); 
             view->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
         }
-        svkOverlayView::SafeDownCast(this->view)->ToggleSelBoxVisibilityOff();
+        if( svkOverlayView::SafeDownCast(this->view)->GetSelectionBoxVisibility() != svkOverlayView::HIDDEN ) {
+            svkOverlayView::SafeDownCast(this->view)->SetSelectionBoxVisibility(svkOverlayView::VISIBLE);
+        }
         this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
         this->myRenderWindow->SetNumberOfLayers(1);
         this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOff();

@@ -207,6 +207,8 @@ ADD_LIBRARY(
     svkVarianUCSF2DcsiMapper.cc
     svkVarianUCSFEPSI2DMapper.cc
     svkVarianFidMapper.cc
+    svkBrukerRawMRSReader.cc
+    svkBrukerRawMRSMapper.cc
     svkGESigna5XReader.cc
     svkGESignaLX2Reader.cc
     svkPACSInterface.cc
@@ -217,9 +219,11 @@ ADD_LIBRARY(
     svkImageInPlaceFilter.cc    
     svkThreadedImageAlgorithm.cc
     svkPhaseSpec.cc
+    svkFreqCorrect.cc
     svkAlgoTemplate.cc
     svkEPSIPhaseCorrect.cc
     svkEPSIReorder.cc
+    svkCSReorder.cc
     svkBurnResearchPixels.cc
     svkMrsImageFFT.cc
     svkMriImageFFT.cc
@@ -235,6 +239,8 @@ ADD_LIBRARY(
     svkImageAlgorithm.cc
     svkImageAlgorithmExecuter.cc
     svkImageThreshold.cc
+    svkImageDilateErode.cc
+    svkFreqCorrect.cc
     svkAlgorithmPortMapper.cc
     svkImageAlgorithmWithPortMapper.cc
     svkImageAlgorithmPipeline.cc
@@ -288,6 +294,7 @@ ADD_LIBRARY(
     svkString.cc
     svkXML.cc
     svkF2C.cc
+    svkNIFTIVolumeReader.cc
 )
 
 ADD_LIBRARY(
@@ -345,6 +352,7 @@ IF( BUILD_VIZ_LIBRARY )
         svkOverlayView.cc
         svkOverlayViewController.cc
         svkDetailedPlotDirector.cc
+        svkOverlayContourDirector.cc
         ${SVK_ORIENTED_IMAGE_ACTOR_SRC}
     )
 ENDIF( BUILD_VIZ_LIBRARY )

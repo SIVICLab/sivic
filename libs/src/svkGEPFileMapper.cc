@@ -72,6 +72,8 @@ svkGEPFileMapper::svkGEPFileMapper()
 
     this->chopVal = 1;     
     this->progress = 0;
+    this->acqDad = NULL; 
+
 }
 
 
@@ -512,6 +514,13 @@ void svkGEPFileMapper::InitPixelMeasuresMacro()
         if ( localizationType.compare("PRESS") == 0 )  { 
             //  Get Thickness Values
             this->GetSelBoxSize( voxelSpacing );
+        } else {
+            // Single voxel, not press set size to full FOV
+            float fov[3]; 
+            this->GetFOV( fov ); 
+            for ( int i = 0; i < 3; i++ ) {
+                voxelSpacing[i] = fov[i]; 
+            }
         }
 
     }
@@ -1642,9 +1651,10 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
      *  MR Image and Spectroscopy Instance Macro
      *  ======================================= */
 
+    string dcmDate = this->ConvertGEDateToDICOM(this->GetHeaderValueAsString( "rhr.rh_scan_date" ));
     this->dcmHeader->SetValue(
         "AcquisitionDateTime",
-        this->GetHeaderValueAsString( "rhr.rh_scan_date" ) + "000000" 
+        svkImageReader2::RemoveDelimFromDate( &dcmDate ) + "000000"
     );
 
     this->dcmHeader->SetValue(
@@ -2166,8 +2176,8 @@ int svkGEPFileMapper::GetNumEPSIAcquisitions()
 
     int epsiType;
     if ( it != this->inputArgs.end() ) {
-        svkEPSIReorder::EPSIType epsiType = *( static_cast< svkEPSIReorder::EPSIType* >( this->inputArgs[ it->first ] ) );
-        if ( epsiType == svkEPSIReorder::SYMMETRIC || epsiType == svkEPSIReorder::INTERLEAVED ) {
+        EPSIType epsiType = *( static_cast< EPSIType* >( this->inputArgs[ it->first ] ) );
+        if ( epsiType == SYMMETRIC || epsiType == INTERLEAVED ) {
             numAcquisitions = 2; 
         }
     } 
@@ -2805,9 +2815,9 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
         map < string, void* >::iterator  it;
 
         it = this->inputArgs.find( "epsiType" );
-        svkEPSIReorder::EPSIType epsiType;
+        EPSIType epsiType;
         if ( it != this->inputArgs.end() ) {
-            epsiType = *( static_cast< svkEPSIReorder::EPSIType* >( this->inputArgs[ it->first ] ) );
+            epsiType = *( static_cast< EPSIType* >( this->inputArgs[ it->first ] ) );
         }
 
         it = this->inputArgs.find( "epsiAxis" );

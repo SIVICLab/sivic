@@ -116,6 +116,9 @@ SET(DCMTK_OFLOG "")
 if ( EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
     SET(DCMTK_OFLOG oflog )
 endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
+if ( EXISTS "${DCMTK_DIR}/lib64/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib64/oflog.lib")
+    SET(DCMTK_OFLOG oflog )
+endif (EXISTS "${DCMTK_DIR}/lib64/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib64/oflog.lib")
 
 
 ###################################
@@ -158,6 +161,7 @@ LINK_DIRECTORIES(
     ../../../libs/${PLATFORM}
     ../${PLATFORM}
     ${DCMTK_DIR}/lib
+    ${DCMTK_DIR}/lib64
     ${OPENSSL_DIR}/lib
 )
 
@@ -253,6 +257,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         svkPSD
         svkTypeUtils
         svkadapt 
+        svkXMLUtils
         #   this needs to be refined since includeing all the libs quadruples the static binary size
         ${VTK_LIBRARIES}
         vtkImagingSources-6.3.a
@@ -339,6 +344,8 @@ IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         X11
         Xext
         Xt
+        vtkImagingMorphological-6.3
+        vtkImagingGeneral-6.3
         vtkIOXMLParser-6.3
         vtkIOXML-6.3.a
         vtkexpat-6.3
@@ -379,6 +386,7 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin)
         svkPSD
         svkTypeUtils
         svkadapt 
+        svkXMLUtils
         #   this needs to be refined since includeing all the libs quadruples the static binary size
         ${VTK_LIBRARIES}
         dcmdata
@@ -415,6 +423,17 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+
+ADD_EXECUTABLE(
+    svk_print_image_info
+    svk_print_image_info.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_print_image_info
+	${SVK_LIBS}
+)
+
 ADD_EXECUTABLE(
     svk_create_secondary_capture
     svk_create_secondary_capture.cc
@@ -432,6 +451,17 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     svk_image_threshold 
+	${SVK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
+    svk_dilate_erode
+    svk_dilate_erode.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_dilate_erode
 	${SVK_LIBS}
 )
 
@@ -656,6 +686,15 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_freq_correct
+    svk_freq_correct.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_freq_correct
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_dcm_deid   
     svk_dcm_deid.cc
 )
@@ -793,7 +832,6 @@ TARGET_LINK_LIBRARIES(
     svk_image_stats
 	${SVK_LIBS}
     ${SVK_INFOVIS_LIBS}
-    svkXMLUtils
 )
 
 ADD_EXECUTABLE(
@@ -804,7 +842,6 @@ TARGET_LINK_LIBRARIES(
     svk_image_pipeline
 	${SVK_LIBS}
     ${SVK_INFOVIS_LIBS}
-    svkXMLUtils
 )
 
 ADD_EXECUTABLE(
@@ -893,6 +930,7 @@ ENDIF ( BUILD_CREATE_RAW )
 SET(APPS 
     svk_file_convert 
     svk_image_threshold 
+    svk_dilate_erode
     svk_interpolate_spectra
     svk_quick_view
     svk_multi_view
@@ -913,6 +951,7 @@ SET(APPS
     svk_point_selector 
     svk_phase_spec 
     svk_fft
+    svk_freq_correct
     svk_scale_image
     svk_image_mathematics
     svk_average_spec

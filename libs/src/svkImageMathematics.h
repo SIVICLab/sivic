@@ -76,6 +76,8 @@ class svkImageMathematics : public vtkImageMathematics
             SUBTRACT,
             MULTIPLY,
             MULTIPLY_BY_SCALAR,
+            ADD_SCALAR,
+            SQUARE_ROOT,
             MULTIPLY_IMAGE_1_BY_IMAGE_2_MEDIAN,
             NUM_BINS_FOR_HISTOGRAM,
             BIN_SIZE_FOR_HISTOGRAM,

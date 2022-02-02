@@ -1,0 +1,70 @@
+        <encoded_space>
+            <matrix_size>
+                <x>8</x>
+                <y>8</y>
+                <z>8</z>
+                <time_spec>59</time_spec>
+                <time_dynamic>10</time_dynamic>
+            </matrix_size>
+        </encoded_space>
+
+        <trajectory>
+            <dimensions>
+                <description>dimensions referenced in trajectory</description>
+                <dim id="dim1"> //  cols
+                    <logical>kx</logical>
+                </dim>
+
+                <dim id="dim2"> //  rows 
+                    <logical>ky</logical>
+                </dim>
+
+                <dim id="dim3"> //  slices
+                    <logical>kz</logical>
+                </dim>
+
+                <dim id="dim4"> //  other
+                    <description>Spectral</description>
+                    <logical>kf</logical>
+                </dim>
+
+                <dim id="dim5">
+                    <description>dynamic time points</description>
+                    <logical>time_dynamic</logical>
+                </dim>
+            </dimension>
+
+
+
+            //ref Design of flyback echo-planar readout gradients for magnetic resonance spectroscopic imaging.
+            <epsi_encodinge>
+                <epsi_type>[FLYBACK=1,Symmetric=2]</epsi_type>                      (Enumerated values)
+                <num_interleaves>0,1,2..</num_interleaves>                          (0: no interleaves, 1: std interleaving, 2:  additional interleaves)
+                <gradient_apmpltude_odd_mT_m>30</gradient_amplitude_odd_mT_m>       (mT_m -> milliTesla/meter, )
+                <gradient_apmpltude_even_mT_m>-40</gradient_amplitude_even_mT_m> 
+                <ramp_duration_odd_ms>.1<ramp_duration_odd_ms>                      (ms -> milliseconds)  Leadign and trailing ramps are same duration
+                <ramp_duration_even_ms>.1<ramp_duration_even_ms>
+                <plateau_duration_odd_ms>.9<plateau_duration_odd_ms>               
+                <plateau_duration_even_ms>0<plateau_duration_even_ms>
+                <num_lobes_odd>59</num_lobes_odd>                                   (number of complete lobes from the initial zero crossing even 
+                                                                                    if the sampling is delayed 
+                <num_lobes_even>59</num_lobes_even>
+                //<sample_spacing_time_ms>.01</sample_spacing_time_ms>              // delta T in ref (readout bandwidth from elsewhere in header)
+                <acquisition_delay_ms>1.2</acquisition_delay_ms>                    // this would be the delay from the zero crossing to the 
+                                                                                    // first sampled point.   Aligning sampling to the gradient.
+
+                <num_epsi_trains>1</num_epsi_trains>                                new parameter for acquireing multiple epsi trains
+                <gradient_axis>dim3</gradient_axis>                                 // example, epsi axis is along kz (slice) 
+
+                ---------------------------------
+                ---------------------------------
+
+                <echo_delay_ms></echo_delay_ms> // time delay from SE or GE to define 1st order phase correction
+                                                " time from start of EPSI gradient to the echo.  GE = < 0 (time back to center of RF pulse)
+                                                                                                 SE = > 0 ? based on rel timing of SE relative to gradient
+
+                Recon opts:  
+                <fraction_of_ramp_used> Q: is this specified up front, or rather just a processing option? 
+                    (alternatively) <spatial_resolution>    
+                                    <spatial FOV>
+            </epsi_encoding>

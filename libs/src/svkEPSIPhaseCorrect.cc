@@ -69,7 +69,9 @@ svkEPSIPhaseCorrect::svkEPSIPhaseCorrect()
     this->epsiAxis = -1;
     this->epsiOrigin = -1;
     this->epsiSpatialPhaseCorrection = NULL;
-
+    this->symEPSIPhaseArray = NULL; 
+    this->epsiType =  FLYBACK;
+    this->phaseSlope = 1;   //positive slope shifts points to left
 }
 
 
@@ -80,6 +82,14 @@ svkEPSIPhaseCorrect::~svkEPSIPhaseCorrect()
 {
 }
 
+
+/*!
+ *  Set the epsi type 
+ */
+void svkEPSIPhaseCorrect::SetEPSIType( EPSIType type )
+{
+    this->epsiType = type;
+}
 
 /*!
  *  Set the number of k-space samples along the EPSI encoding 
@@ -173,8 +183,15 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     vtkImageComplex* ktCorrection = new vtkImageComplex[2]; 
 
     //  Inverse Fourier Transform spectral data to frequency domain to 
-    //  apply linear phase shift: 
-    this->SpectralFFT( svkMrsImageFFT::FORWARD); 
+    //  apply linear phase shift for EPSI correction:
+    string specDomain = hdr->GetStringValue( "SignalDomainColumns");
+    bool applySpecFFTs = false;
+    if ( specDomain.compare("TIME") == 0 ) {
+        applySpecFFTs = true;
+    }
+    if ( applySpecFFTs == true ) {
+        this->SpectralFFT(svkMrsImageFFT::FORWARD);
+    }
 
      //  Get the Dimension Index and index values  
     svkDcmHeader::DimensionVector dimensionVector = hdr->GetDimensionIndexVector();
@@ -206,10 +223,10 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
         for ( int freq = 0; freq < numSpecPts; freq++ ) {
                     
             spectrum->GetTupleValue(freq, cmplxPtIn);
-            //cout << "confirm spec values: " << cmplxPtIn[0] << ", " << cmplxPtIn[1] << endl;
 
             epsiPhase[0] = epsiPhaseArray[epsiIndex][freq].Real; 
             epsiPhase[1] = epsiPhaseArray[epsiIndex][freq].Imag; 
+            //cout << freq << " " << cmplxPtIn[0] << " " << epsiPhase[0] << " " << epsiPhase[1] << endl;
 
             cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] + cmplxPtIn[1] * epsiPhase[1]; 
             cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] - cmplxPtIn[0] * epsiPhase[1]; 
@@ -218,10 +235,16 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     
         }
 
+        //  If this is a symmetric EPSI acquisition, then apply an additional phase correction to the 
+        //  second lobe to account for 1/2 the spectral bandwidth shifts between pos and neg lobes 
+        this->PhaseAlternatingSymmetricEPSILobes( cellID ); 
+
     }
 
     //  Forward Fourier Transform spectral data to back to time domain, should now be shifted.   
-    this->SpectralFFT( svkMrsImageFFT::REVERSE); 
+    if ( applySpecFFTs == true ) {
+        this->SpectralFFT(svkMrsImageFFT::REVERSE);
+    }
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
@@ -234,6 +257,73 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
 
     return 1; 
 } 
+
+
+/*!
+ *  If this is a symmetric EPSI acquisition, then apply an additional phase correction to the 
+ *  second lobe to account for 1/2 the spectral bandwidth shifts between pos and neg lobes. 
+ *  Apply a 1/2 cycle phase shift to alternating sym EPSI lobes.  Unlike the
+ *  phase correction to account for the time delat (dt) across the readout lobes and 
+ *  which varies by k, this is the same correction for each lobe, regardless of 
+ *  the k value. 
+ */
+void svkEPSIPhaseCorrect::PhaseAlternatingSymmetricEPSILobes( int cellID )
+{
+
+    if ( this->epsiType == SYMMETRIC ) {
+        //  Get pointer to input data set. 
+        svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+    
+        //  Get pointer to data's meta-data header (DICOM object). 
+        svkDcmHeader* hdr = mrsData->GetDcmHeader();  
+    
+        int numSpecPts = hdr->GetIntValue( "DataPointColumns" );
+    
+        svkDcmHeader::DimensionVector dimensionVector = hdr->GetDimensionIndexVector();
+        svkDcmHeader::DimensionVector indexVector = dimensionVector; 
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &indexVector, cellID ); 
+        int epsiLobeIndex = svkDcmHeader::GetDimensionVectorValue( &indexVector, svkDcmHeader::EPSI_ACQ_INDEX);  
+        //cout << "EPSI LOBE INDEX: " << epsiLobeIndex << endl;
+        if ( epsiLobeIndex == 1 ) {
+   
+            //  initialize the phase correction array if necessary 
+            if ( this->symEPSIPhaseArray == NULL ) {
+                cout << "Apply sym epsi phase correction" << endl;
+                double freqIncrement;
+                float  fOrigin = (numSpecPts)/2; 
+                double mult;
+                double Pi      = vtkMath::Pi();
+                double factor = this->phaseSlope * Pi; 
+                this->symEPSIPhaseArray = new vtkImageComplex[ numSpecPts ];
+                for( int f = 0; f <  numSpecPts; f++ ) {
+                    freqIncrement = ( f - fOrigin ) / ( numSpecPts );
+                    mult = factor * freqIncrement;
+                    this->symEPSIPhaseArray[f].Real = cos( mult );
+                    this->symEPSIPhaseArray[f].Imag = sin( mult );
+                }
+            }
+    
+            vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( cellID ) );
+            float cmplxPtIn[2];
+            float cmplxPtPhased[2];
+            float epsiPhase[2];
+    
+            for ( int freq = 0; freq < numSpecPts; freq++ ) {
+                spectrum->GetTupleValue(freq, cmplxPtIn);
+                //cout << " phase " << freq << " " <<  this->symEPSIPhaseArray[freq].Real << endl;
+                epsiPhase[0] = this->symEPSIPhaseArray[freq].Real; 
+                epsiPhase[1] = this->symEPSIPhaseArray[freq].Imag; 
+    
+                cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] + cmplxPtIn[1] * epsiPhase[1]; 
+                cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] - cmplxPtIn[0] * epsiPhase[1]; 
+    
+                spectrum->SetTuple(freq, cmplxPtPhased); 
+            }
+        
+        }
+    }
+}
+
 
 
 /*!
@@ -269,8 +359,9 @@ void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** ep
 
     double numKPts = this->numEPSIkRead;
     double kOrigin = this->GetEPSIOrigin(); 
-    float  fOrigin = (numSpecPts)/2.; 
-    //float  fOrigin = (numSpecPts-1)/2.; 
+    float  fOrigin = (numSpecPts)/2; 
+    //float  fOrigin = (numSpecPts - 1)/2.; 
+    //float  fOrigin = (numSpecPts)/2. - 1; 
     double Pi      = vtkMath::Pi();
     double kIncrement;
     double freqIncrement;
@@ -279,14 +370,32 @@ void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** ep
     cout <<  "num k pts read: " << numEPSIkRead << endl;
     cout << " EPSI ORIGIN: " << kOrigin << endl;
     cout << " FREQ ORIGIN: " << fOrigin << endl;
-    //cout << "DENOM " << numSpecPts * numKPts * 2 << endl;
+
+    double dtBs = 1./static_cast<float>(this->numEPSIkRead);
+    dtBs *= this->phaseSlope * 2 * Pi; 
+    //  if sym EPSI divide mult by 2 since the cycle (num points in spectral bandwith is 
+    //  twice as big)
+    if ( this->epsiType == SYMMETRIC ) {
+        dtBs /= 2; 
+    }
+
+    //  certainly need a factor of 2 for interleaved, but a factor of 4?  Not sure
+    cout << "Need to resolve this factor in different implementations" << endl;
+    cout << "DTBS: " << dtBs << endl;
+    //  apply a positively sloping linear phase to shift data points back to the left.     
+    //  shift should be 
     for( int k = 0; k < numKPts ; k++ ) {
         for( int f = 0; f <  numSpecPts; f++ ) {
-            kIncrement = ( k - kOrigin )/( numKPts * 2);
-            freqIncrement = ( f - fOrigin )/( numSpecPts );
-            mult = 2 * Pi * kIncrement * freqIncrement; 
+            kIncrement = ( k - kOrigin );
+            freqIncrement = ( f - fOrigin ) / ( numSpecPts );
+            mult = dtBs * kIncrement * freqIncrement;
             epsiPhaseArray[k][f].Real = cos( mult );
             epsiPhaseArray[k][f].Imag = sin( mult );
+
+            //cout << "fI: " << freqIncrement << endl;
+            //cout << "FACTOR( " << k << "," << f << "): " << mult << " " <<  epsiPhaseArray[k][f].Real << " " << epsiPhaseArray[k][f].Imag << endl;
+            //cout << "   Korigin: " << kOrigin << " numKPts " << numKPts << endl; 
+            //cout << "   KI: " << -1 * 360 * kIncrement * dtBs << endl;
         }
     }
 

@@ -383,6 +383,7 @@ int svkMrsZeroFill::RequestDataSpatial( vtkInformation* request, vtkInformationV
     data->GetDcos( dcos );
     double newOrigin[3] = { origin[0], origin[1], origin[2] };
 
+    //  this is in space, not a fractional shift
     double originShift[3] = { 0, 0, 0 };
     originShift[0] = newSpacing[0]/2 - spacing[0]/2;
     originShift[1] = newSpacing[1]/2 - spacing[1]/2;
@@ -459,6 +460,33 @@ int svkMrsZeroFill::RequestDataSpatial( vtkInformation* request, vtkInformationV
     shiftWindow[1] = -originShift[1]/newSpacing[1];
     shiftWindow[2] = -originShift[2]/newSpacing[2];
 
+    string k0Sampled = data->GetDcmHeader()->GetStringValue( "SVK_K0Sampled");
+    if (this->GetDebug()) {
+        cout << "K0Sampled: " << k0Sampled << endl;
+    }
+    for ( int i = 0; i < 3; i++ ) {
+        shiftWindow[i] = -1 * ( newSpacing[i] - spacing[i] ) / ( 2 * newSpacing[i] ); 
+        //  if k0 not sampled, apply the additional phase shift with respect to the original voxel 
+        //  size as a fraction of the new smaller voxel size:
+        if ( k0Sampled.compare( "NO" ) == 0 ) {
+            shiftWindow[i] -= spacing[i] /  (2 * newSpacing[i] ); 
+        }
+    }
+
+    //  Set k0 sampled to true if necessary:  
+    //      The phase correction from the original sampling 
+    //      has been accounted for now, so 
+    //      change the value of k0 sampled, otherwise
+    //      the data will get shifted again by the FFT
+    if ( k0Sampled.compare( "NO" ) == 0 ) {
+        outputData->GetDcmHeader()->SetValue( "SVK_K0Sampled", "YES" );
+    }
+    if (this->GetDebug()) {
+        cout << " SHIFT WINDOW(MRSZF) :          " << shiftWindow[0] << " " 
+            << shiftWindow[1] << " " << shiftWindow[2] << endl;
+        cout << " SHIFT WINDOW(MRSZF) (PixSize) :" << newSpacing[0] << " " 
+            << newSpacing[1] << " " << newSpacing[2] << endl;
+    }
     // Apply a half voxel  difference phase shift. This is because the sampled points of the data has changed.
     svkMrsLinearPhase* linearShift = svkMrsLinearPhase::New();
     linearShift->SetShiftWindow( shiftWindow );

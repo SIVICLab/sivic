@@ -48,6 +48,7 @@
 
 #include <svkDcmHeader.h>
 #include <svkMRSIOD.h>
+#include <vtkMatrix4x4.h>
 
 #include <map>
 #include <string>
@@ -107,6 +108,7 @@ class svkPhilipsSMapper : public vtkObject
         virtual void    InitPlaneOrientationMacro();
         virtual void    InitMREchoMacro();
         virtual void    InitMRTimingAndRelatedParametersMacro();
+        virtual void    InitVolumeLocalizationSeq(); 
         virtual void    InitMRReceiveCoilMacro();
         virtual void    InitMRSpectroscopyPulseSequenceModule();
         virtual void    InitMRSpectroscopyModule();
@@ -127,6 +129,14 @@ class svkPhilipsSMapper : public vtkObject
                                     const int *count ); 
         void            GetFOV(float* fov); 
         void            GetDimPnts(int* numPixels); 
+
+        void            GetDcosFromAngulation( 
+                            float psi, 
+                            float phi, 
+                            float theta, 
+                            vtkMatrix4x4* dcos, 
+                            string* orientationString ); 
+
 
         map <string, string >                       sparMap; 
         svkDcmHeader*                               dcmHeader; 

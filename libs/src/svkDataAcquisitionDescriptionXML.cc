@@ -104,7 +104,7 @@ svkDataAcquisitionDescriptionXML::~svkDataAcquisitionDescriptionXML()
  * \param type the desired contents of the encoding/trajectory element
  *
  */
-void svkDataAcquisitionDescriptionXML::SetTrajectoryType( vtkstd::string type )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryType( string type )
 {
     this->SetDataWithPath("encoding/trajectory", type.c_str() );
 }
@@ -114,7 +114,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryType( vtkstd::string type )
  * Get the contents of the encoding/trajectory element.
  * \return the contents of the encoding/trajectory element
  */
-vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryType( )
+string svkDataAcquisitionDescriptionXML::GetTrajectoryType( )
 {
     return this->GetDataWithPath( "encoding/trajectory" );
 }
@@ -125,7 +125,7 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryType( )
  * \param ID the desired contents of the encoding/trajectoryDescription/identifier element
  *
  */
-void svkDataAcquisitionDescriptionXML::SetTrajectoryID( vtkstd::string ID )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryID( string ID )
 {
     this->SetDataWithPath("encoding/trajectoryDescription/identifier", ID.c_str());
 }
@@ -135,7 +135,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryID( vtkstd::string ID )
  * Get the contents of the encoding/trajectoryDescription/identifier element.
  * \return the contents of the encoding/trajectoryDescription/identifier element
  */
-vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryID( )
+string svkDataAcquisitionDescriptionXML::GetTrajectoryID( )
 {
     return this->GetDataWithPath( "encoding/trajectoryDescription/identifier" );
 }
@@ -146,7 +146,7 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryID( )
  * \param comment the desired contents of the encoding/trajectoryDescription/comment element
  *
  */
-void svkDataAcquisitionDescriptionXML::SetTrajectoryComment( vtkstd::string comment )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryComment( string comment )
 {
     this->SetDataWithPath("encoding/trajectoryDescription/comment", comment.c_str());
 }
@@ -156,9 +156,137 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryComment( vtkstd::string comm
  * Get the contents of the encoding/trajectoryDescription/comment element.
  * \return the contents of the encoding/trajectoryDescription/comment element
  */
-vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryComment( )
+string svkDataAcquisitionDescriptionXML::GetTrajectoryComment( )
 {
     return this->GetDataWithPath( "encoding/trajectoryDescription/comment" );
+}
+
+
+/*!
+ *
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML::GetTrajectoryNumberOfDimensions()
+{
+    string parentPath = "encoding/trajectoryDescription/dimensions";
+    vtkXMLDataElement* parentElement = svkXMLUtils::FindNestedElementWithPath(this->GetRootXMLDataElement(), parentPath);
+    if( parentElement != NULL ) {
+        return parentElement->GetNumberOfNestedElements();
+    } else {
+        return -1;
+    }
+}
+
+
+/*!
+ *
+ * @param id
+ * @param logical
+ * @param description
+ */
+void svkDataAcquisitionDescriptionXML::AddTrajectoryDimension(string id, string logical, string description)
+{
+    string parentPath = "encoding/trajectoryDescription/dimensions";
+    string elementName = parentPath;
+    elementName.append("/dim");
+    vtkXMLDataElement* dimElement = this->AddElementWithParentPath(parentPath.c_str(), "dim");
+    dimElement->SetAttribute("id", id.c_str());
+    if( !logical.empty()) {
+        vtkXMLDataElement* logicalElement = vtkXMLDataElement::New();
+        logicalElement->SetCharacterData(logical.c_str(), logical.size());
+        logicalElement->SetName("logical");
+        dimElement->AddNestedElement(logicalElement);
+        logicalElement->Delete();
+    }
+    if( !description.empty()) {
+        vtkXMLDataElement* descriptionElement = vtkXMLDataElement::New();
+        descriptionElement->SetCharacterData(description.c_str(), description.size());
+        descriptionElement->SetName("description");
+        dimElement->AddNestedElement(descriptionElement);
+        descriptionElement->Delete();
+    }
+}
+
+
+/*!
+ *
+ * @param index
+ * @return
+ */
+string svkDataAcquisitionDescriptionXML::GetTrajectoryDimensionId(int index)
+{
+    string parentPath = "encoding/trajectoryDescription/dimensions/";
+    vtkXMLDataElement* element = this->GetNestedElementByIndexWithParentPath(index, parentPath.c_str());
+    if( element != NULL) {
+        return element->GetAttribute("id");
+    }
+    return "";
+}
+
+
+/*!
+ *
+ * @param index
+ * @return
+ */
+string svkDataAcquisitionDescriptionXML::GetTrajectoryDimensionLogical(int index)
+{
+    string parentPath = "encoding/trajectoryDescription/dimensions/";
+    vtkXMLDataElement* element = this->GetNestedElementByIndexWithParentPath(index, parentPath.c_str());
+    if( element != NULL ) {
+        vtkXMLDataElement* logical = svkXMLUtils::FindNestedElementWithPath( element, "logical");
+        if( logical != NULL ) {
+            return logical->GetCharacterData();
+        }
+    }
+    return "";
+}
+
+
+/*!
+ *
+ * @param index
+ * @return
+ */
+string svkDataAcquisitionDescriptionXML::GetTrajectoryDimensionDescription(int index)
+{
+    string parentPath = "encoding/trajectoryDescription/dimensions/";
+    vtkXMLDataElement* element = this->GetNestedElementByIndexWithParentPath(index, parentPath.c_str());
+    if( element != NULL ) {
+        vtkXMLDataElement* description = svkXMLUtils::FindNestedElementWithPath( element, "description");
+        if( description != NULL ) {
+            return description->GetCharacterData();
+        }
+    }
+    return "";
+}
+
+
+/*!
+ *
+ * @param type
+ */
+void svkDataAcquisitionDescriptionXML::SetEPSIType( EPSIType type ) {
+
+    string parentPath = "encoding/trajectoryDescription/epsiEncoding";
+    // Thes meethod coll ensures the EPSI encoding element is created already.
+    this->GetEPSIEncodingElement();
+
+    string elementName = parentPath;
+    elementName.append("/epsiType");
+    vtkXMLDataElement* epsiTypeElement = this->FindNestedElementWithPath(elementName);
+    if( epsiTypeElement == NULL ) {
+        epsiTypeElement = this->AddElementWithParentPath(parentPath.c_str(), "epsiType");
+    }
+    if( type == FLYBACK ) {
+        epsiTypeElement->SetCharacterData("FLYBACK", 7);
+    } else if (type == SYMMETRIC) {
+        epsiTypeElement->SetCharacterData("SYMMETRIC", 9);
+    } else if (type == INTERLEAVED) {
+        epsiTypeElement->SetCharacterData("INTERLEAVED", 11);
+    } else {
+        epsiTypeElement->SetCharacterData("UNDEFINED_EPSI_TYPE", 19);
+    }
 }
 
 
@@ -169,9 +297,9 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryComment( )
  * \param value the value of the new user parameter
  *
  */
-void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string name, long value  )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( string name, long value  )
 {
-    vtkstd::string valueString = svkTypeUtils::IntToString(value);
+    string valueString = svkTypeUtils::IntToString(value);
     this->SetTrajectoryParameter("userParameterLong", name, valueString );
 }
 
@@ -181,9 +309,9 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string na
  * \param name the name of the user parameter
  * \return the value of the user parameter
  */
-long svkDataAcquisitionDescriptionXML::GetTrajectoryLongParameter( vtkstd::string name  )
+long svkDataAcquisitionDescriptionXML::GetTrajectoryLongParameter( string name  )
 {
-    vtkstd::string parameterString = this->GetTrajectoryParameter("userParameterLong", name );
+    string parameterString = this->GetTrajectoryParameter("userParameterLong", name );
     return svkTypeUtils::StringToLInt( parameterString );
 }
 
@@ -193,9 +321,9 @@ long svkDataAcquisitionDescriptionXML::GetTrajectoryLongParameter( vtkstd::strin
  * \param name the name of the user parameter
  * \return the value of the user parameter
  */
-double svkDataAcquisitionDescriptionXML::GetTrajectoryDoubleParameter( vtkstd::string name  )
+double svkDataAcquisitionDescriptionXML::GetTrajectoryDoubleParameter( string name  )
 {
-    vtkstd::string parameterString = this->GetTrajectoryParameter("userParameterDouble", name );
+    string parameterString = this->GetTrajectoryParameter("userParameterDouble", name );
     return svkTypeUtils::StringToDouble( parameterString );
 }
 
@@ -207,10 +335,26 @@ double svkDataAcquisitionDescriptionXML::GetTrajectoryDoubleParameter( vtkstd::s
  * \param value the value of the new user parameter
  *
  */
-void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string name, double value  )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( string name, double value  )
 {
-    vtkstd::string valueString = svkTypeUtils::DoubleToString(value);
+    string valueString = svkTypeUtils::DoubleToString(value);
     this->SetTrajectoryParameter("userParameterDouble", name, valueString );
+}
+
+
+/*!
+ *
+ * @return
+ */
+vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetEPSIEncodingElement()
+{
+    string parentPath = "encoding/trajectoryDescription";
+    string elementPath = "encoding/trajectoryDescription/epsiEncoding";
+    vtkXMLDataElement* epsiEncodingElement = this->FindNestedElementWithPath(elementPath);
+    if( epsiEncodingElement == NULL ) {
+        epsiEncodingElement = this->AddElementWithParentPath(parentPath.c_str(), "epsiEncoding");
+    }
+    return epsiEncodingElement;
 }
 
 
@@ -222,6 +366,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string na
  * svk_data_acquisition_description/encoding/trajectory
  * svk_data_acquisition_description/encoding/trajectoryDescription
  * svk_data_acquisition_description/encoding/trajectoryDescription/identifier
+ * svk_data_acquisition_description/encoding/trajectoryDescription/dimensions
  * svk_data_acquisition_description/encoding/trajectoryDescription/comment
  * svk_data_acquisition_description/encoding/encodedSpace
  * svk_data_acquisition_description/encoding/encodedSpace/matrixSize
@@ -240,27 +385,45 @@ void svkDataAcquisitionDescriptionXML::InitializeEmptyXMLFile()
     this->dataAcquisitionDescriptionXML->SetName("svk_data_acquisition_description");
 
     // Create Encoding Element
-    vtkXMLDataElement* versionElem = svkXMLUtils::CreateNestedXMLDataElement( this->dataAcquisitionDescriptionXML, "version" , XML_VERSION );
-    vtkXMLDataElement* encodingElem = svkXMLUtils::CreateNestedXMLDataElement( this->dataAcquisitionDescriptionXML, "encoding" , "" );
-    vtkXMLDataElement* trajectoryElem = svkXMLUtils::CreateNestedXMLDataElement( encodingElem, "trajectory" , "" );
-    vtkXMLDataElement* trajectoryDescElem = svkXMLUtils::CreateNestedXMLDataElement( encodingElem, "trajectoryDescription" , "" );
-    vtkXMLDataElement* trajectoryIDElem = svkXMLUtils::CreateNestedXMLDataElement( trajectoryDescElem, "identifier" , "" );
-    vtkXMLDataElement* trajectoryCommentElem = svkXMLUtils::CreateNestedXMLDataElement( trajectoryDescElem, "comment" , "" );
-    vtkXMLDataElement* spaceElem = svkXMLUtils::CreateNestedXMLDataElement( encodingElem, "encodedSpace" , "" );
-    vtkXMLDataElement* matrixElem = svkXMLUtils::CreateNestedXMLDataElement( spaceElem, "matrixSize" , "" );
-    vtkXMLDataElement* matrixXElem = svkXMLUtils::CreateNestedXMLDataElement( matrixElem, "x" , "" );
-    vtkXMLDataElement* matrixYElem = svkXMLUtils::CreateNestedXMLDataElement( matrixElem, "y" , "" );
-    vtkXMLDataElement* matrixZElem = svkXMLUtils::CreateNestedXMLDataElement( matrixElem, "z" , "" );
-    vtkXMLDataElement* fovElem = svkXMLUtils::CreateNestedXMLDataElement( spaceElem, "fieldOfView_mm" , "" );
-    vtkXMLDataElement* fovXElem = svkXMLUtils::CreateNestedXMLDataElement( fovElem, "x" , "" );
-    vtkXMLDataElement* fovYElem = svkXMLUtils::CreateNestedXMLDataElement( fovElem, "y" , "" );
-    vtkXMLDataElement* fovZElem = svkXMLUtils::CreateNestedXMLDataElement( fovElem, "z" , "" );
+    vtkXMLDataElement* versionElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            this->dataAcquisitionDescriptionXML, "version" , XML_VERSION );
+    vtkXMLDataElement* encodingElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            this->dataAcquisitionDescriptionXML, "encoding" , "" );
+    vtkXMLDataElement* trajectoryElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            encodingElem, "trajectory" , "" );
+    vtkXMLDataElement* trajectoryDescElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            encodingElem, "trajectoryDescription" , "" );
+    vtkXMLDataElement* trajectoryIDElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            trajectoryDescElem, "identifier" , "" );
+    vtkXMLDataElement* trajectoryDimensionElem = svkXMLUtils::CreateNestedXMLDataElement(
+            trajectoryDescElem, "dimensions" , "" );
+    vtkXMLDataElement* trajectoryCommentElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            trajectoryDescElem, "comment" , "" );
+    vtkXMLDataElement* spaceElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            encodingElem, "encodedSpace" , "" );
+    vtkXMLDataElement* matrixElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            spaceElem, "matrixSize" , "" );
+    vtkXMLDataElement* matrixXElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            matrixElem, "x" , "" );
+    vtkXMLDataElement* matrixYElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            matrixElem, "y" , "" );
+    vtkXMLDataElement* matrixZElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            matrixElem, "z" , "" );
+    vtkXMLDataElement* fovElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            spaceElem, "fieldOfView_mm" , "" );
+    vtkXMLDataElement* fovXElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            fovElem, "x" , "" );
+    vtkXMLDataElement* fovYElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            fovElem, "y" , "" );
+    vtkXMLDataElement* fovZElem = svkXMLUtils::CreateNestedXMLDataElement( 
+            fovElem, "z" , "" );
 
     versionElem->Delete();
     encodingElem->Delete();
     trajectoryElem->Delete();
     trajectoryDescElem->Delete();
     trajectoryIDElem->Delete();
+    trajectoryDimensionElem->Delete();
     trajectoryCommentElem->Delete();
     spaceElem->Delete();
     matrixElem->Delete();
@@ -292,6 +455,14 @@ int svkDataAcquisitionDescriptionXML::SetXMLFileName( string xmlFileName )
 
     }
     this->dataAcquisitionDescriptionXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
+    //  check for svk_data_acquisition_description element: 
+    string dadRootName = this->dataAcquisitionDescriptionXML->GetRoot()->GetName();
+    cout << "NAME: " <<  dadRootName << endl; 
+    if (dadRootName.compare("svk_data_acquisition_description") != 0 )  {
+        cout << "NOT A DAD FILE" << endl;
+        return 1;
+    }
+
     if (this->dataAcquisitionDescriptionXML == NULL ) { 
         cout << "ERROR: xml file could not be parsed:" << this->xmlFileName << endl;
         return 1; 
@@ -403,7 +574,7 @@ int svkDataAcquisitionDescriptionXML::WriteXMLFile( string xmlFileName )
  * \param value the value of the new user parameter
  *
  */
-void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string type, vtkstd::string name, vtkstd::string value  )
+void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( string type, string name, string value  )
 {
     // Assume failure
     bool errorFound = true;
@@ -418,6 +589,7 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string ty
                 valueElem = paramElem->FindNestedElementWithName("value");
                 if( valueElem != NULL ) {
                     valueElem->SetCharacterData(value.c_str(), value.size());
+                    errorFound = false;
                 } else {
                     cout << "ERROR: " << type << " " << name << " does not contain a value tag." << endl;
                     errorFound = true;
@@ -459,9 +631,9 @@ void svkDataAcquisitionDescriptionXML::SetTrajectoryParameter( vtkstd::string ty
  * \param name the name of the user parameter
  * \return the value of the user parameter
  */
-vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryParameter( vtkstd::string type, vtkstd::string name )
+string svkDataAcquisitionDescriptionXML::GetTrajectoryParameter( string type, string name )
 {
-    vtkstd::string parameterValue = "";
+    string parameterValue = "";
     vtkXMLDataElement* userParamElem = this->GetTrajectoryParameterElement(type, name);
     vtkXMLDataElement* valueElem =  svkXMLUtils::FindNestedElementWithPath(userParamElem, "value");
     if( valueElem != NULL ) {
@@ -479,20 +651,20 @@ vtkstd::string svkDataAcquisitionDescriptionXML::GetTrajectoryParameter( vtkstd:
  * \param name the name of the user parameter
  * \return the vtkXMLDataElement of the user parameter. NULL is returned if the parameter is not found.
  */
-vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetTrajectoryParameterElement( vtkstd::string type, vtkstd::string name )
+vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetTrajectoryParameterElement( string type, string name )
 {
     vtkXMLDataElement* userParamElem = NULL;
     vtkXMLDataElement* trajDescElem  = this->FindNestedElementWithPath("encoding/trajectoryDescription");
     if(trajDescElem != NULL ) {
         for( int i = 0; i < trajDescElem->GetNumberOfNestedElements(); i++ ) {
             vtkXMLDataElement* paramElem = trajDescElem->GetNestedElement(i);
-            vtkstd::string paramElemName = "";
+            string paramElemName = "";
             if( paramElem != NULL ) {
                 paramElemName = paramElem->GetName();
             }
             if( !paramElemName.empty() && paramElemName == type ) {
                 vtkXMLDataElement* nameElem =  svkXMLUtils::FindNestedElementWithPath(paramElem, "name");
-                vtkstd::string paramName = "";
+                string paramName = "";
                 if( nameElem != NULL ) {
                     paramName = nameElem->GetCharacterData();
                 }
@@ -527,10 +699,19 @@ vtkXMLDataElement* svkDataAcquisitionDescriptionXML::FindNestedElementWithPath( 
 {
     vtkXMLDataElement* elem = NULL;
     elem = svkXMLUtils::FindNestedElementWithPath(this->dataAcquisitionDescriptionXML, xmlPath );
-    if( elem == NULL ) {
-        cout << "ERROR: Could not locate element at path: " << xmlPath << endl;
-    }
     return elem;
+}
+
+
+/*!
+ *
+ * @param parentPath
+ * @param elementName
+ * @return
+ */
+vtkXMLDataElement* svkDataAcquisitionDescriptionXML::FindOrCreateNestedElementWithPath( string parentPath, string elementName)
+{
+    return svkXMLUtils::FindOrCreateNestedElementWithPath(this->dataAcquisitionDescriptionXML, parentPath, elementName);
 }
 
 
@@ -539,14 +720,129 @@ vtkXMLDataElement* svkDataAcquisitionDescriptionXML::FindNestedElementWithPath( 
  *  \param xmlPath the xpath to the element
  *  \return the contents of the element at the given path
  */
-const char * svkDataAcquisitionDescriptionXML::GetDataWithPath( const char* xmlPath )
+string svkDataAcquisitionDescriptionXML::GetDataWithPath( const char* xmlPath )
 {
     string data = "";
     bool foundData = svkXMLUtils::GetNestedElementCharacterDataWithPath( this->dataAcquisitionDescriptionXML, xmlPath, &data );
     if( !foundData ) {
-        cout << "ERROR: Could get character data at path: " << xmlPath << endl;
+        cout << "ERROR: Could not get character data at path: " << xmlPath << endl;
     }
-    return data.c_str();
+    return data;
+}
+
+
+/*!
+ *
+ * @param index
+ * @param parentPath
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML::GetIntByIndexWithParentPath( int index, const char* parentPath )
+{
+    vtkXMLDataElement* parentElement = svkXMLUtils::FindNestedElementWithPath(this->GetRootXMLDataElement(), parentPath);
+    vtkXMLDataElement* element = parentElement->GetNestedElement(index);
+    string data = element->GetCharacterData();
+    if( data.compare("") != 0 ){
+        return svkTypeUtils::StringToInt(data);
+    }
+    return -1;
+}
+
+
+/*!
+ *
+ * @param elementPath
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML::GetIntWithPath( const char* elementPath )
+{
+    string data = this->GetDataWithPath( elementPath );
+    if( data.compare("") != 0 ){
+        return svkTypeUtils::StringToInt(data);
+    }
+    return -1;
+}
+
+
+/*!
+ *
+ * @param parentPath
+ * @param elementName
+ * @param value
+ */
+void svkDataAcquisitionDescriptionXML::SetIntWithPath( const char* parentPath, const char* elementName, int value)
+{
+    vtkXMLDataElement* elem = this->FindOrCreateNestedElementWithPath( parentPath, elementName );
+    string data = svkTypeUtils::IntToString(value);
+    if( elem != NULL ){
+        elem->SetCharacterData(data.c_str(), data.size());
+    }
+}
+
+
+/*!
+ *
+ * @param elementPath
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML::GetFloatWithPath( const char* elementPath )
+{
+    string data = this->GetDataWithPath( elementPath );
+    if( data.compare("") != 0 ){
+        return svkTypeUtils::StringToFloat(data);
+    }
+    return -1;
+}
+
+
+/*!
+ *
+ * @param parentPath
+ * @param elementName
+ * @param value
+ */
+void svkDataAcquisitionDescriptionXML::SetFloatWithPath( const char* parentPath, const char* elementName, float value)
+{
+    vtkXMLDataElement* elem = this->FindOrCreateNestedElementWithPath( parentPath, elementName );
+    string data = svkTypeUtils::DoubleToString(value);
+    if( elem != NULL ){
+        elem->SetCharacterData(data.c_str(), data.size());
+    }
+}
+
+
+/*!
+ *
+ * @param index
+ * @param parentPath
+ * @return
+ */
+string svkDataAcquisitionDescriptionXML::GetDataByIndexWithParentPath( int index, const char* parentPath )
+{
+    vtkXMLDataElement* element = this->GetNestedElementByIndexWithParentPath(index, parentPath);
+    if( element != NULL ) {
+        return element->GetName();
+    }
+    return NULL;
+}
+
+
+/*!
+ *
+ * @param index
+ * @param parentPath
+ * @return
+ */
+vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetNestedElementByIndexWithParentPath( int index, const char* parentPath )
+{
+    vtkXMLDataElement* element = NULL;
+    string data = this->GetDataWithPath( parentPath );
+    vtkXMLDataElement* parentElement = svkXMLUtils::FindNestedElementWithPath(this->GetRootXMLDataElement(), parentPath);
+    if( parentElement != NULL ) {
+        element = parentElement->GetNestedElement(index);
+    }
+
+    return element;
 }
 
 
@@ -565,6 +861,22 @@ int svkDataAcquisitionDescriptionXML::SetDataWithPath( const char* xmlPath, cons
         return -1;
     } else {
         return 0;
+    }
+
+}
+
+
+/*!
+ *
+ * @param parentPath
+ * @param elementName
+ * @param value
+ */
+void svkDataAcquisitionDescriptionXML::SetDataWithPath( const char* parentPath, const char* elementName, string value)
+{
+    vtkXMLDataElement* elem = this->FindOrCreateNestedElementWithPath( parentPath, elementName );
+    if( elem != NULL ){
+        elem->SetCharacterData(value.c_str(), value.size());
     }
 }
 
@@ -636,6 +948,431 @@ svkSatBandsXML* svkDataAcquisitionDescriptionXML::GetSatBandsXML( )
 vtkXMLDataElement* svkDataAcquisitionDescriptionXML::GetRootXMLDataElement()
 {
     return this->dataAcquisitionDescriptionXML;
+}
+
+
+/*!
+ *
+ * @return
+ */
+EPSIType svkDataAcquisitionDescriptionXML::GetEPSIType()
+{
+    string epsiTypeFromDad = this->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/epsiType");
+    EPSIType epsiType = UNDEFINED_EPSI_TYPE;
+    if( epsiTypeFromDad.compare("SYMMETRIC") == 0 ){
+        epsiType = SYMMETRIC;
+    } else if ( epsiTypeFromDad.compare("FLYBACK") == 0 ) {
+        epsiType = FLYBACK;
+    } else if (epsiTypeFromDad.compare("INTERLEAVED") == 0 ) {
+        epsiType = INTERLEAVED;
+    }
+
+    return epsiType;
+}
+
+
+/*!
+ *
+ * @return
+ */
+string svkDataAcquisitionDescriptionXML::GetEPSITypeString()
+{
+    string epsiTypeFromDad = this->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/epsiType");
+    return epsiTypeFromDad;
+}
+
+
+/*!
+ *
+ * @param numberOfInterleaves
+ */
+void svkDataAcquisitionDescriptionXML::SetEPSINumberOfInterleaves( int numberOfInterleaves )
+{
+    this->SetIntWithPath("/encoding/trajectoryDescription/epsiEncoding", "numInterleaves", numberOfInterleaves);
+}
+
+
+/*!
+ *
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML::GetEPSINumberOfInterleaves( )
+{
+    return this->GetIntWithPath("/encoding/trajectoryDescription/epsiEncoding/numInterleaves");
+}
+
+
+/*!
+ *
+ * @param gradientAmplitude
+ * @param lobe
+ */
+void svkDataAcquisitionDescriptionXML::SetEPSIGradientAmplitude( float gradientAmplitude, enum EPSILobe lobe )
+{
+    string element = "";
+    if( lobe == ODD ) {
+        element = "gradientAmplitudeOddMTM";
+    } else if( lobe == EVEN ) {
+        element = "gradientAmplitudeEvenMTM";
+    } else {
+        cout << "ERROR: EPSI lobe must be either EVEN or ODD." << endl;
+        return;
+    }
+    this->SetFloatWithPath("/encoding/trajectoryDescription/epsiEncoding", element.c_str(), gradientAmplitude);
+
+}
+
+
+/*!
+ *
+ * @param lobe
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML::GetEPSIGradientAmplitude( enum EPSILobe lobe )
+{
+    string path = "/encoding/trajectoryDescription/epsiEncoding/";
+    if( lobe == ODD ) {
+        path.append("gradientAmplitudeOddMTM");
+    } else if( lobe == EVEN ) {
+        path.append("gradientAmplitudeEvenMTM");
+    } else {
+        cout << "ERROR: EPSI lobe must be either EVEN or ODD." << endl;
+        return 0;
+    }
+    return this->GetFloatWithPath(path.c_str());
+
+}
+
+
+/*!
+ *
+ * @param rampDuration
+ * @param lobe
+ */
+void svkDataAcquisitionDescriptionXML::SetEPSIRampDuration( float rampDuration, enum EPSILobe lobe )
+{
+    string element = "";
+    if( lobe == ODD ) {
+        element = "rampDurationOddMs";
+    } else if( lobe == EVEN ) {
+        element = "rampDurationEvenMs";
+    } else {
+        cout << "ERROR: EPSI lobe must be either EVEN or ODD." << endl;
+        return;
+    }
+    this->SetFloatWithPath("/encoding/trajectoryDescription/epsiEncoding", element.c_str(), rampDuration);
+
+}
+
+
+/*!
+ *
+ * @param lobe
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML::GetEPSIRampDuration( enum EPSILobe lobe )
+{
+    string path = "/encoding/trajectoryDescription/epsiEncoding/";
+    if( lobe == ODD ) {
+        path.append("rampDurationOddMs");
+    } else if( lobe == EVEN ) {
+        path.append("rampDurationEvenMs");
+    } else {
+        cout << "ERROR: EPSI lobe must be either EVEN or ODD." << endl;
+        return 0;
+    }
+    return this->GetFloatWithPath(path.c_str());
+
+}
+
+
+/*!
+ *
+ * @param plateauDuration
+ * @param lobe
+ */
+void svkDataAcquisitionDescriptionXML::SetEPSIPlateauDuration( float plateauDuration, enum EPSILobe lobe )
+{
+    string element = "";
+    if( lobe == ODD ) {
+        element = "plateauDurationOddMs";
+    } else if( lobe == EVEN ) {
+        element = "plateauDurationEvenMs";
+    } else {
+        cout << "ERROR: EPSI lobe must be either EVEN or ODD." << endl;
+        return;
+    }
+    this->SetFloatWithPath("/encoding/trajectoryDescription/epsiEncoding", element.c_str(), plateauDuration);
+
+}
+
+
+/*!
+ *
+ * @param lobe
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML::GetEPSIPlateauDuration( enum EPSILobe lobe )
+{
+    string path = "/encoding/trajectoryDescription/epsiEncoding/";
+    if( lobe == ODD ) {
+        path.append("plateauDurationOddMs");
+    } else if( lobe == EVEN ) {
+        path.append("plateauDurationEvenMs");
+    } else {
+        cout << "ERROR: EPSI lobe must be either EVEN or ODD." << endl;
+        return 0;
+    }
+    return this->GetFloatWithPath(path.c_str());
+
+}
+
+
+/*!
+ *
+ * @param numberOfLobes
+ * @param lobe
+ */
+void svkDataAcquisitionDescriptionXML::SetEPSINumberOfLobes( int numberOfLobes, enum EPSILobe lobe )
+{
+    string element = "";
+    if( lobe == ODD ) {
+        element = "numberOfLobesOdd";
+    } else if( lobe == EVEN ) {
+        element = "numberOfLobesEven";
+    } else {
+        cout << "ERROR: EPSI lobe must be either EVEN or ODD." << endl;
+        return;
+    }
+    this->SetIntWithPath("/encoding/trajectoryDescription/epsiEncoding", element.c_str(), numberOfLobes);
+
+}
+
+
+/*!
+ *
+ * @param lobe
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML::GetEPSINumberOfLobes( enum EPSILobe lobe )
+{
+    string path = "/encoding/trajectoryDescription/epsiEncoding/";
+    if( lobe == ODD ) {
+        path.append("numberOfLobesOdd");
+    } else if( lobe == EVEN ) {
+        path.append("numberOfLobesEven");
+    } else {
+        cout << "ERROR: EPSI lobe must be either EVEN or ODD." << endl;
+        return 0;
+    }
+    return this->GetIntWithPath(path.c_str());
+
+}
+
+
+/*!
+ *
+ * @param sampleSpacing
+ */
+void svkDataAcquisitionDescriptionXML::SetEPSISampleSpacing( float sampleSpacing )
+{
+    this->SetFloatWithPath("/encoding/trajectoryDescription/epsiEncoding", "sampleSpacingTimeMs", sampleSpacing);
+}
+
+
+/*!
+ *
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML::GetEPSISampleSpacing( )
+{
+    string path = "/encoding/trajectoryDescription/epsiEncoding/sampleSpacingTimeMs";
+    return this->GetFloatWithPath(path.c_str());
+}
+
+
+/*!
+ *
+ * @param acquisitionDelay
+ */
+void svkDataAcquisitionDescriptionXML::SetEPSIAcquisitionDelay( float acquisitionDelay )
+{
+    this->SetFloatWithPath("/encoding/trajectoryDescription/epsiEncoding", "acquisitionDelayTimeMs", acquisitionDelay);
+}
+
+
+/*!
+ *
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML::GetEPSIAcquisitionDelay( ) {
+    string path = "/encoding/trajectoryDescription/epsiEncoding/acquisitionDelayTimeMs";
+    return this->GetFloatWithPath(path.c_str());
+}
+
+
+/*!
+ *
+ * @param echoDelay
+ */
+void svkDataAcquisitionDescriptionXML::SetEPSIEchoDelay( float echoDelay )
+{
+    this->SetFloatWithPath("/encoding/trajectoryDescription/epsiEncoding", "echoDelayTimeMs", echoDelay);
+}
+
+
+/*!
+ *
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML::GetEPSIEchoDelay( ) {
+    string path = "/encoding/trajectoryDescription/epsiEncoding/echoDelayTimeMs";
+    return this->GetFloatWithPath(path.c_str());
+}
+
+
+/*!
+ *
+ * @param gradientAxis
+ */
+void svkDataAcquisitionDescriptionXML::SetEPSIGradientAxis( int gradientAxis )
+{
+    vtkXMLDataElement* element = this->GetNestedElementByIndexWithParentPath(gradientAxis - 1, "encoding/trajectoryDescription/dimensions");
+    string idName = element->GetAttribute("id");
+    this->SetDataWithPath("/encoding/trajectoryDescription/epsiEncoding", "gradientAxis", idName.c_str());
+}
+
+
+/*!
+ *
+ * @return
+ */
+string svkDataAcquisitionDescriptionXML::GetEPSIGradientAxisId( )
+{
+    return this->GetDataWithPath( "/encoding/trajectoryDescription/epsiEncoding/gradientAxis" );
+}
+
+
+/*!
+ *
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML::GetEPSIGradientAxisIndex( )
+{
+
+    vtkXMLDataElement* dimensionsElement = this->FindNestedElementWithPath("encoding/trajectoryDescription/dimensions");
+    int numberOfDimensions = this->GetTrajectoryNumberOfDimensions();
+    for( int i = 0; i < numberOfDimensions; i++ ) {
+        vtkXMLDataElement* element = dimensionsElement->GetNestedElement(i);
+        string idName = element->GetAttribute("id");
+        if( idName.compare( this->GetEPSIGradientAxisId() ) == 0) {
+            return i + 1;
+        }
+
+    }
+    return -1;
+}
+
+
+/*!
+ *
+ * @param name
+ * @param value
+ */
+void svkDataAcquisitionDescriptionXML::AddEncodedMatrixSizeDimension( string name, int value  )
+{
+    string parentPath = "encoding/encodedSpace/matrixSize";
+    string elementName = parentPath;
+    elementName.append("/");
+    elementName.append(name);
+    vtkXMLDataElement* elem = this->FindNestedElementWithPath(elementName);
+    if (elem == NULL ) {
+        this->AddElementWithParentPath(parentPath.c_str(), name.c_str());
+
+    }
+    this->SetDataWithPath(elementName.c_str(), svkTypeUtils::IntToString(value).c_str());
+}
+
+
+/*!
+ *
+ * @param index
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML::GetEncodedMatrixSizeDimensionValue(int index)
+{
+    string parentPath = "encoding/encodedSpace/matrixSize";
+    return this->GetIntByIndexWithParentPath(index, parentPath.c_str());
+}
+
+
+/*!
+ *
+ * @param index
+ * @return
+ */
+string svkDataAcquisitionDescriptionXML::GetEncodedMatrixSizeDimensionName(int index)
+{
+    string parentPath = "encoding/encodedSpace/matrixSize";
+    return this->GetDataByIndexWithParentPath(index, parentPath.c_str());
+}
+
+
+/*!
+ *
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML::GetEncodedMatrixSizeNumberOfDimensions()
+{
+    string parentPath = "encoding/encodedSpace/matrixSize";
+    vtkXMLDataElement* parentElement = svkXMLUtils::FindNestedElementWithPath(this->GetRootXMLDataElement(), parentPath);
+    return parentElement->GetNumberOfNestedElements();
+}
+
+
+void svkDataAcquisitionDescriptionXML::GetSamplingIndicies(int *indicies) {
+    string indiciesString = this->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/indicies");
+    vector<string> splitString = svkUtils::SplitString(indiciesString, " ");
+
+    for( int i = 0; i < splitString.size(); i++){
+        // TODO: Make array 0 index array
+        indicies[i] = svkTypeUtils::StringToInt(splitString[i])-1;
+    }
+}
+
+void svkDataAcquisitionDescriptionXML::GetSamplingMask(int *samplingMask) {
+    string samplingMaskString = this->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/samplingMask");
+    vector<string> splitString = svkUtils::SplitString(samplingMaskString, " ");
+
+    for( int i = 0; i < splitString.size(); i++){
+        samplingMask[i] = svkTypeUtils::StringToInt(splitString[i]);
+    }
+}
+
+void svkDataAcquisitionDescriptionXML::GetBlips( int index, string blipDimension, int* blips) {
+    string xmlPath = "/encoding/trajectoryDescription/epsiEncoding/blips[index=";
+    xmlPath.append(svkTypeUtils::IntToString(index));
+    xmlPath.append("]/d");
+    xmlPath.append(blipDimension);
+    string blipsString = this->GetDataWithPath(xmlPath.c_str());
+    vector<string> splitString = svkUtils::SplitString(blipsString, " ");
+
+    for( int i = 0; i < splitString.size(); i++){
+        blips[i] = svkTypeUtils::StringToInt(splitString[i]);
+    }
+}
+
+
+
+/*!
+ *
+ * @return
+ */
+svkCString GetEmptySvkCString()
+{
+    svkCString data;
+    data.c_str[0] = '\0';
+    return data;
 }
 
 
@@ -717,14 +1454,14 @@ int svkDataAcquisitionDescriptionXML_WriteXMLFile(const char* filepath, void* xm
  * \param path the xpath of the requested XML element
  * \return the contents of the requested element
  */
-const char* svkDataAcquisitionDescriptionXML_GetDataWithPath( void* xml, const char* path )
+svkCString svkDataAcquisitionDescriptionXML_GetDataWithPath( void* xml, const char* path )
 {
+    svkCString data;
     if( xml != NULL ) {
-        return ((svkDataAcquisitionDescriptionXML*)xml)->GetDataWithPath( path );
-    } else {
-        printf(NULL_XML_ERROR);
-        return NULL;
+        string stringData = ((svkDataAcquisitionDescriptionXML*)xml)->GetDataWithPath( path );
+        strcpy(data.c_str, stringData.c_str());
     }
+    return data;
 }
 
 
@@ -843,14 +1580,16 @@ void svkDataAcquisitionDescriptionXML_SetTrajectory(const char* type, const char
  * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML object
  * \return the contents of the encoding/trajectory element
  */
-const char* svkDataAcquisitionDescriptionXML_GetTrajectoryType(void* xml)
+svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryType(void* xml)
 {
+    svkCString data;
     if( xml != NULL ) {
-        return (((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryType( )).c_str();
+        string stringData = (((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryType( )).c_str();
+        strcpy(data.c_str, stringData.c_str());
     } else {
         printf(NULL_XML_ERROR);
-        return NULL;
     }
+    return data;
 }
 
 
@@ -859,13 +1598,33 @@ const char* svkDataAcquisitionDescriptionXML_GetTrajectoryType(void* xml)
  * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML object
  * \return the contents of the encoding/trajectoryDescription/identifier element
  */
-const char* svkDataAcquisitionDescriptionXML_GetTrajectoryID(void* xml)
+svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryID(void* xml)
 {
+    svkCString data;
     if( xml != NULL ) {
-        return (((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryID( )).c_str();
+        string stringData = (((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryID( )).c_str();
+        strcpy(data.c_str, stringData.c_str());
     } else {
         printf(NULL_XML_ERROR);
-        return NULL;
+    }
+    return data;
+}
+
+
+/*!
+ *
+ * @param id
+ * @param logical
+ * @param description
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_AddTrajectoryDimension(const char* id, const char* logical,
+                                                                          const char* description, void *xml)
+{
+    if( xml != NULL ) {
+        ((svkDataAcquisitionDescriptionXML*)xml)->AddTrajectoryDimension( id, logical, description );
+    } else {
+        printf(NULL_XML_ERROR);
     }
 }
 
@@ -875,13 +1634,440 @@ const char* svkDataAcquisitionDescriptionXML_GetTrajectoryID(void* xml)
  * \param xml a void pointer to the svk::svkDataAcquisitionDescriptionXML object
  * \return the contents of the encoding/trajectoryDescription/comment element
  */
-const char* svkDataAcquisitionDescriptionXML_GetTrajectoryComment(void* xml)
+svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryComment(void* xml)
 {
+    svkCString data;
     if( xml != NULL ) {
-        return (((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryComment( )).c_str();
+        string stringData = (((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryComment( )).c_str();
+        strcpy(data.c_str, stringData.c_str());
     } else {
         printf(NULL_XML_ERROR);
-        return NULL;
+    }
+    return data;
+}
+
+
+/*!
+ *
+ * @param xml
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML_GetTrajectoryNumberOfDimensions(void *xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryNumberOfDimensions();
+    } else {
+        printf(NULL_XML_ERROR);
+        return -1;
+    }
+}
+
+
+/*!
+ *
+ * @param index
+ * @param xml
+ * @return
+ */
+struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionId(int index, void *xml) {
+    svkCString data = GetEmptySvkCString();
+    if( xml != NULL ) {
+        string stringData = ((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryDimensionId(index);
+        strcpy(data.c_str, stringData.c_str());
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+    return data;
+}
+
+
+/*!
+ *
+ * @param index
+ * @param xml
+ * @return
+ */
+struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionLogical(int index, void *xml) {
+
+    svkCString data = GetEmptySvkCString();
+    if( xml != NULL ) {
+        string stringData = ((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryDimensionLogical(index);
+        strcpy(data.c_str, stringData.c_str());
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+    return data;
+
+}
+
+
+/*!
+ *
+ * @param index
+ * @param xml
+ * @return
+ */
+struct svkCString svkDataAcquisitionDescriptionXML_GetTrajectoryDimensionDescription(int index, void *xml) {
+    svkCString data = GetEmptySvkCString();
+    if( xml != NULL ) {
+        string stringData = ((svkDataAcquisitionDescriptionXML*)xml)->GetTrajectoryDimensionDescription(index);
+        strcpy(data.c_str, stringData.c_str());
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+    return data;
+}
+
+
+/*!
+ *
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_SetEPSITypeToFlyback(void* xml) {
+    svkDataAcquisitionDescriptionXML_SetEPSIType( FLYBACK, xml );
+}
+
+
+/*!
+ *
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_SetEPSITypeToSymmetric(void* xml) {
+    svkDataAcquisitionDescriptionXML_SetEPSIType( SYMMETRIC, xml );
+}
+
+
+/*!
+ *
+ * @param type
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_SetEPSIType( EPSIType type, void* xml) {
+    if( xml != NULL ) {
+        ((svkDataAcquisitionDescriptionXML*)xml)->SetEPSIType( type );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+}
+
+
+/*!
+ *
+ * @param xml
+ * @return
+ */
+EPSIType svkDataAcquisitionDescriptionXML_GetEPSIType(void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEPSIType( );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+    return UNDEFINED_EPSI_TYPE;
+}
+
+
+/*!
+ *
+ * @param numberOfInterleaves
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_SetEPSINumberOfInterleaves( int numberOfInterleaves, void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->SetEPSINumberOfInterleaves( numberOfInterleaves );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+}
+
+
+/*!
+ *
+ * @param xml
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML_GetEPSINumberOfInterleaves( void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEPSINumberOfInterleaves( );
+    } else {
+        printf(NULL_XML_ERROR);
+        return -1;
+    }
+}
+
+
+/*!
+ *
+ * @param amplitude
+ * @param lobe
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_SetEPSIGradientAmplitude(float amplitude, enum EPSILobe lobe, void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->SetEPSIGradientAmplitude( amplitude, lobe );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+}
+
+
+/*!
+ *
+ * @param lobe
+ * @param xml
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML_GetEPSIGradientAmplitude(enum EPSILobe lobe, void *xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEPSIGradientAmplitude( lobe );
+    } else {
+        printf(NULL_XML_ERROR);
+        return 0;
+    }
+}
+
+
+/*!
+ *
+ * @param duration
+ * @param lobe
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_SetEPSIRampDuration(float duration, enum EPSILobe lobe, void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->SetEPSIRampDuration( duration, lobe );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+}
+
+
+/*!
+ *
+ * @param lobe
+ * @param xml
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML_GetEPSIRampDuration(enum EPSILobe lobe, void *xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEPSIRampDuration( lobe );
+    } else {
+        printf(NULL_XML_ERROR);
+        return 0;
+    }
+}
+
+
+/*!
+ *
+ * @param duration
+ * @param lobe
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_SetEPSIPlateauDuration(float duration, enum EPSILobe lobe, void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->SetEPSIPlateauDuration( duration, lobe );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+}
+
+
+/*!
+ *
+ * @param lobe
+ * @param xml
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML_GetEPSIPlateauDuration(enum EPSILobe lobe, void *xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEPSIPlateauDuration( lobe );
+    } else {
+        printf(NULL_XML_ERROR);
+        return 0;
+    }
+}
+
+
+/*!
+ *
+ * @param numberOfLobes
+ * @param lobe
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_SetEPSINumberOfLobes(int numberOfLobes, enum EPSILobe lobe, void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->SetEPSINumberOfLobes( numberOfLobes, lobe );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+}
+
+
+/*!
+ *
+ * @param lobe
+ * @param xml
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML_GetEPSINumberOfLobes(enum EPSILobe lobe, void *xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEPSINumberOfLobes( lobe );
+    } else {
+        printf(NULL_XML_ERROR);
+        return 0;
+    }
+}
+
+
+/*!
+ *
+ * @param sampleSpacing
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_SetEPSISampleSpacing(float sampleSpacing, void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->SetEPSISampleSpacing( sampleSpacing );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+}
+
+
+/*!
+ *
+ * @param xml
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML_GetEPSISampleSpacing(void *xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEPSISampleSpacing();
+    } else {
+        printf(NULL_XML_ERROR);
+        return 0;
+    }
+}
+
+
+/*!
+ *
+ * @param acquisitionDelay
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_SetEPSIAcquisitionDelay(float acquisitionDelay, void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->SetEPSIAcquisitionDelay( acquisitionDelay );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+}
+
+
+/*!
+ *
+ * @param xml
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML_GetEPSIAcquisitionDelay(void *xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEPSIAcquisitionDelay();
+    } else {
+        printf(NULL_XML_ERROR);
+        return 0;
+    }
+}
+
+
+/*!
+ *
+ * @param echoDelay
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_SetEPSIEchoDelay(float echoDelay, void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->SetEPSIEchoDelay( echoDelay );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+}
+
+
+/*!
+ *
+ * @param xml
+ * @return
+ */
+float svkDataAcquisitionDescriptionXML_GetEPSIEchoDelay(void *xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEPSIEchoDelay();
+    } else {
+        printf(NULL_XML_ERROR);
+        return 0;
+    }
+}
+
+
+/*!
+ *
+ * @param gradientAxis
+ * @param xml
+ */
+void svkDataAcquisitionDescriptionXML_SetEPSIGradientAxis(int gradientAxis, void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->SetEPSIGradientAxis( gradientAxis );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+}
+
+
+/*!
+ *
+ * @param xml
+ * @return
+ */
+struct svkCString svkDataAcquisitionDescriptionXML_GetEPSIGradientAxisId(void *xml)
+{
+    svkCString data = GetEmptySvkCString();
+    if( xml != NULL ) {
+        string stringData = ((svkDataAcquisitionDescriptionXML*)xml)->GetEPSIGradientAxisId();
+        strcpy(data.c_str, stringData.c_str());
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+    return data;
+}
+
+
+/*!
+ *
+ * @param xml
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML_GetEPSIGradientAxisIndex(void *xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEPSIGradientAxisIndex();
+    } else {
+        printf(NULL_XML_ERROR);
+        return -0;
     }
 }
 
@@ -955,3 +2141,71 @@ double svkDataAcquisitionDescriptionXML_GetTrajectoryDoubleParameter(const char*
         return VTK_DOUBLE_MIN;
     }
 }
+
+
+/*!
+ *
+ * @param name
+ * @param value
+ */
+void svkDataAcquisitionDescriptionXML_AddEncodedMatrixSizeDimension(const char* name, int value, void* xml)
+{
+    if( xml != NULL ) {
+        ((svkDataAcquisitionDescriptionXML*)xml)->AddEncodedMatrixSizeDimension( name, value );
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+}
+
+
+/*!
+ *
+ * @param xml
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeNumberOfDimensions(void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEncodedMatrixSizeNumberOfDimensions();
+    } else {
+        printf(NULL_XML_ERROR);
+        return -1;
+    }
+}
+
+
+/*!
+ * 
+ * @param index
+ * @param xml
+ * @return
+ */
+int svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionValue(int index, void* xml)
+{
+    if( xml != NULL ) {
+        return ((svkDataAcquisitionDescriptionXML*)xml)->GetEncodedMatrixSizeDimensionValue(index);
+    } else {
+        printf(NULL_XML_ERROR);
+        return -1;
+    }
+}
+
+
+/*!
+ *
+ * @param index
+ * @param xml
+ * @return
+ */
+svkCString svkDataAcquisitionDescriptionXML_GetEncodedMatrixSizeDimensionName(int index, void* xml)
+{
+    svkCString data = GetEmptySvkCString();
+    if( xml != NULL ) {
+        string stringData = ((svkDataAcquisitionDescriptionXML*)xml)->GetEncodedMatrixSizeDimensionName(index);
+        strcpy(data.c_str, stringData.c_str());
+    } else {
+        printf(NULL_XML_ERROR);
+    }
+    return data;
+}
+

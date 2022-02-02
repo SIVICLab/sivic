@@ -51,7 +51,6 @@
 using namespace svk;
 
 
-//vtkCxxRevisionMacro(svkVarianFidReader, "$Rev$");
 vtkStandardNewMacro(svkVarianFidReader);
 
 
@@ -142,7 +141,7 @@ int svkVarianFidReader::CanReadFile(const char* fname)
                 //  should be a mapper factory to get psd specific instance:
                 this->mapper = this->GetFidMapper();
                 if ( this->mapper == NULL ) {
-                    cout  << " Not a know FID sequnce.  Can not read file."   << endl;
+                    cout  << "Not a known Varian FID sequnce.  Can not read file."   << endl;
                     return 0;
                 }
 
@@ -270,7 +269,16 @@ svkVarianFidMapper* svkVarianFidReader::GetFidMapper()
 {
     svkVarianFidMapper* aMapper = NULL;
 
-    string seqfil = this->procparMap["seqfil"][0][0];
+    string seqfil;
+
+    map <string, vector < vector<string> > >::iterator mapIt; 
+    mapIt = this->procparMap.find("seqfil");
+    if ( mapIt != this->procparMap.end() ) {
+        seqfil = this->procparMap["seqfil"][0][0];
+    } else {
+        seqfil = "";
+    }
+
 
     //convert to lower case:
     string::iterator it;

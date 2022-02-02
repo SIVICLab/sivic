@@ -82,8 +82,11 @@ class svkMRSNoise : public svkImageInPlaceFilter
         void            OnlyUseSelectionBox();
         vtkFloatArray*  GetAverageMagnitudeSpectrum(); 
         virtual void    PrintSelf( ostream &os, vtkIndent indent );
+        void            SetNoiseStartPoint( int startPt ); 
         int             GetNoiseStartPoint(); 
+        void            SetNoiseEndPoint( int endPt ); 
         int             GetNoiseEndPoint(); 
+        void            SetNoiseWindowPercent(float percent); 
 
 
     protected:

@@ -47,7 +47,6 @@
 using namespace svk;
 
 
-//vtkCxxRevisionMacro(svkMRSCombine, "$Rev$");
 vtkStandardNewMacro(svkMRSCombine);
 
 
@@ -106,6 +105,7 @@ int svkMRSCombine::RequestData( vtkInformation* request, vtkInformationVector** 
 
     if ( this->combinationMethod == svkMRSCombine::ADDITION || 
          this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ||
+         this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION_SQRT_WT ||
          this->combinationMethod == svkMRSCombine::SUBTRACTION ) {
         this->RequestLinearCombinationData(); 
     } else if (this->combinationMethod == svkMRSCombine::SUM_OF_SQUARES ) {
@@ -114,8 +114,18 @@ int svkMRSCombine::RequestData( vtkInformation* request, vtkInformationVector** 
 
     //  Redimension data set:
     this->RedimensionData(); 
-    //cout << "RD: " << *( this->GetImageDataInput(0) ) << endl;;
-    //this->GetImageDataInput(0)->GetDcmHeader()->PrintDcmHeader();
+
+    //  scale weighted images to same intensity as input: 
+    if (
+        this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION  //||
+        //this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION_SQRT_WT
+    )
+    {
+        this->maxSignalIntensityOutput = this->GetMaxSignalIntensity();
+        //cout << "MAX SIG IN:  " << this->maxSignalIntensityInput << endl;
+        //cout << "MAX SIG OUT: " << this->maxSignalIntensityOutput << endl;
+        this->ScaleOutputIntensity(); 
+    }
 
     //  Trigger observer update via modified event:
     this->GetOutput()->GetProvenance()->AddAlgorithm( this->GetClassName() );
@@ -123,6 +133,66 @@ int svkMRSCombine::RequestData( vtkInformation* request, vtkInformationVector** 
     
     return 1; 
 
+}
+
+
+/*
+ *  Returns the maximum MRS signal intensity over all channels. 
+ */
+float svkMRSCombine::ScaleOutputIntensity() 
+{
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    int numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
+
+    float globalScale = this->maxSignalIntensityInput/this->maxSignalIntensityOutput; 
+    //globalScale = 100; // to validate against original "nmrsrc" implementation. 
+
+    for ( int cellID = 0; cellID < numCells; cellID++ ) {
+
+        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
+        float tuple[2];
+        for (int i = 0; i < numTimePoints; i++ ) {
+            spectrum->GetTupleValue(i, tuple);
+            tuple[0] = tuple[0] * globalScale;  
+            tuple[1] = tuple[1] * globalScale;  
+            spectrum->SetTupleValue(i, tuple); 
+        }
+    }
+}
+
+
+/*
+ *  Returns the maximum MRS signal intensity over all channels. 
+ */
+float svkMRSCombine::GetMaxSignalIntensity() 
+{
+    float maxSignalIntensity = VTK_FLOAT_MIN; 
+
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    int numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
+
+    for ( int cellID = 0; cellID < numCells; cellID++ ) {
+
+        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
+        float tuple[2];
+        for (int i = 0; i < numTimePoints; i++ ) {
+            spectrum->GetTupleValue(i, tuple);
+            if ( tuple[0] > maxSignalIntensity ) {
+                maxSignalIntensity = tuple[0]; 
+            }
+        }
+
+    }
+
+    if (maxSignalIntensity == 0. ) {    
+        maxSignalIntensity = 1; 
+    }
+        
+    return maxSignalIntensity; 
 }
 
 
@@ -136,9 +206,8 @@ float svkMRSCombine::GetTotalWeight( svkMriImageData* weightImage, int voxelID)
     int numChannels       = hdr->GetNumberOfCoils();
     float weightSumOfSquares = 0; 
     for( int channel = 0; channel < numChannels; channel++ ) { 
-        float* weights = static_cast<vtkFloatArray*>( 
-                                        weightImage->GetPointData()->GetArray(channel) )->GetPointer(0); 
-        weightSumOfSquares += ( weights[voxelID] * weights[voxelID] ); 
+        float wt = weightImage->GetPointData()->GetAbstractArray(channel)->GetVariantValue(voxelID).ToFloat(); 
+        weightSumOfSquares += ( wt * wt ); 
     }
     return weightSumOfSquares; 
 }
@@ -167,8 +236,14 @@ void svkMRSCombine::RequestLinearCombinationData( )
 
     //  If this is a weighted sum, then load in the weight values here: 
     svkMriImageData* weightImage;
-    if ( this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ) {
+    if ( 
+        this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION  ||
+        this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION_SQRT_WT
+    ) 
+    {
         weightImage = svkMriImageData::SafeDownCast(this->GetImageDataInput( svkMRSCombine::WEIGHTS ) );
+
+        this->maxSignalIntensityInput= this->GetMaxSignalIntensity(); 
     } 
 
     for (int timePt = 0; timePt < numTimePts; timePt++) {
@@ -181,10 +256,16 @@ void svkMRSCombine::RequestLinearCombinationData( )
 
                     //  for each voxel, get the total weight: 
                     float weightTotal;
-                    if ( this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ) {
+                    if ( 
+                        this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ||
+                        this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION_SQRT_WT
+                    ) {
                         weightTotal = this->GetTotalWeight( weightImage, voxelID); 
-                        weightTotal = pow( (float)weightTotal, (float)0.5); 
+                        if ( this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION_SQRT_WT ) {
+                            weightTotal = pow( (float)weightTotal, (float)0.5); 
+                        }
                     }
+                    //cout << "WT TOTAL: " << weightTotal << endl;
 
                     //  for each frequency point, combine channels using specified combination method.
                     for (int freq = 0; freq < numFrequencyPoints; freq++) {
@@ -198,22 +279,26 @@ void svkMRSCombine::RequestLinearCombinationData( )
                             vtkFloatArray* spectrumN = static_cast<vtkFloatArray*>( data->GetSpectrum( x, y, z, timePt, channel) );
                             spectrumN->GetTupleValue(freq, cmplxPtN);
 
-                            // if WEIGHTED_ADDITION, get weights for this channel
-                            float* weights;
-                            if ( this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ) {
-                                weights = static_cast<vtkFloatArray*>( 
-                                        weightImage->GetPointData()->GetArray(channel) )->GetPointer(0) ; 
-                            }
-    
                             if ( this->combinationMethod == svkMRSCombine::ADDITION ) {
 
                                 cmplxPt0[0] += ( cmplxPtN[0] ); 
                                 cmplxPt0[1] += ( cmplxPtN[1] ); 
 
-                            } else if ( this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ) {
+                            } else if ( 
+                                this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION || 
+                                this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION_SQRT_WT
+                            ) {
                                 
-                                cmplxPt0[0] += weights[voxelID] * ( cmplxPtN[0] ) / weightTotal; 
-                                cmplxPt0[1] += weights[voxelID] * ( cmplxPtN[1] ) / weightTotal; 
+                                //  if all weights are zero, the combination in the previous two lines wil
+                                //  be zero, but don't then divide by zero.  For WEIGHTED_ADDITION should use
+                                //  a wt_threshold based on  wt_threshold = .2 * wt_median * numChannels. 
+                                if ( weightTotal == 0 ) {    
+                                    weightTotal = 1; 
+                                }
+                                float wt = weightImage->GetPointData()->GetAbstractArray(channel)->GetVariantValue(voxelID).ToFloat(); 
+                                //cout <<  "weights[" << voxelID << "] = " << wt << endl;
+                                cmplxPt0[0] += wt * ( cmplxPtN[0] ) / weightTotal; 
+                                cmplxPt0[1] += wt * ( cmplxPtN[1] ) / weightTotal; 
 
                             } else if ( this->combinationMethod == svkMRSCombine::SUBTRACTION ) {
 

@@ -62,12 +62,35 @@ svkMRSNoise::svkMRSNoise()
 
     this->noiseSD = 0.0;
     this->onlyUseSelectionBox = false;
+    this->noiseWindowPercent = .05;
+    this->noiseWindowStartPt = -1;
+    this->noiseWindowEndPt = -1;
+
 }
 
 
 svkMRSNoise::~svkMRSNoise()
 {
 }
+
+
+/*!
+ *
+ */
+void svkMRSNoise::SetNoiseStartPoint( int startPt )
+{
+    this->noiseWindowStartPt = startPt;
+}
+
+
+/*!
+ *
+ */
+void svkMRSNoise::SetNoiseEndPoint( int endPt )
+{
+    this->noiseWindowEndPt = endPt;
+}
+
 
 
 /*! 
@@ -103,8 +126,10 @@ int svkMRSNoise::RequestData( vtkInformation* request, vtkInformationVector** in
     //  get average spectrum (in selection box)?
     //  break spectrum up into small sections and find the section with the smallest SD
     //  calculate the average SD in that region from each voxel 
-    this->InitAverageSpectrum(); 
-    this->FindNoiseWindow();
+    if ( this->noiseWindowStartPt < 0 || this->noiseWindowEndPt < 0 ) {
+        this->InitAverageSpectrum(); 
+        this->FindNoiseWindow();
+    }
     this->CalculateNoiseSD(); 
 
     delete [] this->selectionBoxMask; 
@@ -201,9 +226,11 @@ float svkMRSNoise::CalcWindowMean( vtkFloatArray* spectrum, int startPt, int end
     for (int i = startPt; i <= endPt; i++ ) {   //inclusive
         spectrum->GetTupleValue(i, tuple); 
         mean += tuple[0]; 
+        //cout << "MEAN: " << i << " " << tuple[0] << endl;
     }
 
     mean = mean / (endPt - startPt + 1);    // inclusive
+    //cout << "MEAN av: " << mean << endl;
 
     return mean; 
 }
@@ -218,14 +245,15 @@ void svkMRSNoise::FindNoiseWindow()
     int numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
 
     //  Now analyze this spectrum for the region of smallest noise that is at least 5 percent of data points. 
-    float noiseWindowPercent = 20;  
-    int noiseWindow = static_cast<int>(numTimePoints/noiseWindowPercent); 
+    int noiseWindow = static_cast<int>(numTimePoints * this->noiseWindowPercent); 
 
     float tuple[2];
     int startPoint = 0; 
     double noise = FLT_MAX; 
     double mean; 
     //cout << "window size: " << noiseWindow << endl;
+    this->noiseWindowStartPt = 0; 
+    this->noiseWindowEndPt = 0; 
     for ( int i = startPoint; i < numTimePoints - noiseWindow; i++ ) {
 
         double noiseTmp = 0; 
@@ -390,6 +418,20 @@ vtkFloatArray*  svkMRSNoise::GetAverageMagnitudeSpectrum()
 void svkMRSNoise::OnlyUseSelectionBox()
 {
     this->onlyUseSelectionBox = true;
+}
+
+/*! 
+ *  Sets percent of spectrum to use for noise calculation. 
+ */
+void svkMRSNoise::SetNoiseWindowPercent(float percent)
+{
+    if ( percent > 1 ) {
+        percent = 1.0; 
+    } 
+    if ( percent < 0 ) {
+        percent = 0; 
+    } 
+    this->noiseWindowPercent = percent;
 }
 
 

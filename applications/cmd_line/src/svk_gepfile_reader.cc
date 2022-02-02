@@ -146,7 +146,7 @@ int main (int argc, char** argv)
     bool    dcCorrection      = true; 
     bool    printHeader       = false; 
     bool    printShortHeader  = false; 
-    svkEPSIReorder::EPSIType epsiType = svkEPSIReorder::UNDEFINED_EPSI_TYPE;
+    EPSIType epsiType         = UNDEFINED_EPSI_TYPE;
     int     epsiAxis          = UNDEFINED;
     int     epsiNumLobes      = UNDEFINED;
     int     epsiSkip          = UNDEFINED;
@@ -241,7 +241,7 @@ int main (int argc, char** argv)
                 chopString.assign(optarg);
                 break;
             case FLAG_EPSI_TYPE:
-                epsiType = static_cast<svkEPSIReorder::EPSIType>(atoi(optarg));
+                epsiType = static_cast<EPSIType>(atoi(optarg));
                 break;
             case FLAG_EPSI_AXIS:
                 //  axis ordering starts at 0
@@ -300,7 +300,7 @@ int main (int argc, char** argv)
             exit(1); 
         }
         //  validate EPSI input if necessary:
-        if ( epsiType != svkEPSIReorder::UNDEFINED_EPSI_TYPE ) { 
+        if ( epsiType != UNDEFINED_EPSI_TYPE ) {
             if (
                 epsiNumLobes == UNDEFINED ||
                 epsiSkip == UNDEFINED ||
@@ -409,7 +409,7 @@ int main (int argc, char** argv)
 
 
     //  Set EPSI params if necessary in reader: 
-    if ( epsiType != svkEPSIReorder::UNDEFINED_EPSI_TYPE ) { 
+    if ( epsiType != UNDEFINED_EPSI_TYPE ) {
         reader->SetEPSIParams( 
             epsiType, 
             static_cast<svkEPSIReorder::EPSIAxis>(epsiAxis), 
@@ -419,7 +419,7 @@ int main (int argc, char** argv)
             epsiFlipLobe
         );
     }
-    if ( epsiType == svkEPSIReorder::UNDEFINED_EPSI_TYPE && epsiFlipLobe != 0 ) { 
+    if ( epsiType == UNDEFINED_EPSI_TYPE && epsiFlipLobe != 0 ) {
         reader->SetEPSIParams( 
             epsiFlipLobe
         );

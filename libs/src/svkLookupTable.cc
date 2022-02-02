@@ -3179,7 +3179,7 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         this->SetTableValue(1022,0.996078,0.996078,0.996078);
         this->SetTableValue(1023,1,1,1);
 
-    } else if ( this->type == svkLookupTable::HURD ) {
+    } else if ( this->type == svkLookupTable::HURD || this->type == svkLookupTable::HURD_CNI_FIXED) {
 
         this->SetNumberOfColors(256);
         this->SetNumberOfTableValues(256);
@@ -3441,7 +3441,10 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         SetTableValue(253, 255./255, 11./255, 0./255);
         SetTableValue(254, 255./255, 7./255, 0./255);
         SetTableValue(255, 255./255, 0./255, 0./255);
-
+        if( this->type == svkLookupTable::HURD_CNI_FIXED ) {
+            this->TableRange[0] = 0;
+            this->TableRange[1] = 6;
+        }
     } else if ( this->type == svkLookupTable::CYAN_HOT ) {
 
 //cout << "CYAN!" << endl;
@@ -3703,6 +3706,7 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         SetTableValue(253,  248./255,  255./255,  255./255);
         SetTableValue(254,  251./255,  255./255,  255./255);
         SetTableValue(255,  255./255,  255./255,  255./255);
+
     } else if ( this->type == svkLookupTable::FIRE ) {
 
         this->SetNumberOfColors(256);
@@ -6133,9 +6137,12 @@ bool svkLookupTable::IsLUTFixed()
 {
     bool isFixed = false;
     if( this->type == svkLookupTable::CNI_FIXED 
-        || this->type == svkLookupTable::CBF_FIXED ) {
+        || this->type == svkLookupTable::CBF_FIXED
+        || this->type == svkLookupTable::HURD_CNI_FIXED) {
         isFixed = true;
     }
 	return isFixed;
 }
+
+
 

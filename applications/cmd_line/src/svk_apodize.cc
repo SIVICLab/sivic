@@ -68,7 +68,7 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";   
     usemsg += "svk_apodize -i input_file_name -o output_root                                    \n"; 
-    usemsg += "                 -f filter_type [ --width ] --single [-vh]                       \n";
+    usemsg += "                 -f filter_type [ --width ] [ --single ] [-vh]                   \n";
     usemsg += "                                                                                 \n";  
     usemsg += "   -i        input_file_name   Name of file to convert.                          \n"; 
     usemsg += "   -o        output_root       Root name of outputfile.                          \n";  

@@ -14,7 +14,8 @@ VTK6_DIR_M32_EPIC	= /netopt/VTK/VTK-6.3.0_m32_epic/lib/cmake/vtk-6.3/
 KWW_DIR     		= /netopt/kwwidgets_2.0_56/lib/KWWidgets/
 KWW6_DIR_DIST		= /netopt/kwwidgets_vtk6/
 KWW6_DIR_DBG 		= /netopt/kwwidgets_vtk6_debug/
-DCMTK_DIR       	= /netopt/dicom
+DCMTK_DIR       	= /netopt/rhel7/dicom
+#DCMTK_DIR       	= /netopt/dicom
 # check test_data out of radiology trac into test_data
 SIVIC_ROOT      	= $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 SVK_TEST_ROOT   	= ${SIVIC_ROOT}/test_data
@@ -27,10 +28,11 @@ CLAPACK_DIR     	= /opt/src/freeware/clapack/clapack-3.2.1-CMAKE
 ITK_DIR         	= /netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4
 ADD_LINK_DIRS   	= 
 CMAKE_PREFIX_PATH 	= ${VTK_DIR}
+NUM_JOBS		    = 16
 	
 #   Mac OS X
 ifeq ($(OSTYPE),Darwin)
-	CMAKE_DIR               := /opt/local/bin
+	CMAKE_DIR               := /usr/local/bin
 	DCMTK_DIR               := /usr/local/dicom
 	CLAPACK_DIR             := /usr/local/clapack-3.2.1-CMAKE
 	VTK6_DIR_DBG            := /usr/local/vtk6.3/lib/cmake/vtk-6.3
@@ -38,6 +40,7 @@ ifeq ($(OSTYPE),Darwin)
 	KWWidgets_DIR           := /usr/local/kwwidgets_vtk6/lib/KWWidgets
 	KWW_DIR                 := /usr/local/kwwidgets_vtk6/lib/KWWidgets
 	KWW6_DIR_DIST           := /usr/local/kwwidgets_vtk6/lib/KWWidgets
+	KWW6_DIR_DBG            := /usr/local/kwwidgets_vtk6/lib/KWWidgets
 	ITK_DIR                 := /usr/local/ITK4.9/lib/cmake/ITK-4.9
 	ADD_LINK_DIRS           := -DADD_LINK_DIRS=/opt/local/lib
 	CMAKE_CXX_FLAGS         := -I/usr/X11R6/include
@@ -99,10 +102,20 @@ CONFIG_OPTS       		= \
                     	  -DBUILD_SIVIC=ON                         \
                     	  -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}     \
                     	  -DSVNCOMMAND=${SVN_COMMAND}              \
-                    	  -DCMAKE_VERBOSE_MAKEFILE=ON              \
-                    	  -DMAKECOMMAND="/usr/bin/gmake -i -j4"    \
+                    	  -DCMAKE_VERBOSE_MAKEFILE=ON              			\
+                    	  -DMAKECOMMAND="/usr/bin/gmake -i -j${NUM_JOBS}"	\
 						  -DSVK_USE_GL2PS=ON
 
+ifeq ($(OSTYPE),Darwin)
+	CONFIG_OPTS_VTK6_DIST += -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
+                             -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	      \
+                             -DOPENGL_gl_LIBRARY="${OPENGL_gl_LIBRARY}"           \
+                             -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
+    CONFIG_OPTS_VTK6_DBG += -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
+                            -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	      \
+                            -DOPENGL_gl_LIBRARY="${OPENGL_gl_LIBRARY}"           \
+                            -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
+endif
 
 CONFIG_OPTS_DBG   		= \
 				          ${CONFIG_OPTS_VTK6_DBG}			 \
@@ -122,12 +135,6 @@ CONFIG_BASE_VTK6_DBG   	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_DBG}
 CONFIG_BASE_VTK6_DIST  	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_DIST}
 CONFIG_BASE_VTK6_EPIC32	 = ${CMAKE_DIR}/cmake ${CONFIG_OPTS_EPIC32}
 CONFIG_BASE_GE_VTK6_DIST = ${CMAKE_DIR_GE}/cmake ${CONFIG_OPTS_DIST}
-ifeq ($(OSTYPE),Darwin)
-	CONFIG_BASE_VTK6_DIST += -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
-                             -DOPENGL_INCLUDE_DIR="${OPENGL_INCLUDE_DIR}"	      \
-                             -DOPENGL_gl_LIBRARY="${OPENGL_gl_LIBRARY}"           \
-                             -DOPENGL_glu_LIBRARY="${OPENGL_glu_LIBRARY}"
-endif
 
 CONFIG_TEST_ON      	 = -DUSE_OFF_SCREEN_TESTING=ON               \
                       	   -DBUILD_TESTING=ON                        \
@@ -153,6 +160,7 @@ TEST_ROOT 			= ${SVK_TEST_ROOT}/results_tmp
 
 CLION_OPTS_DBG      = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_OPTS_DBG}  ${CONFIG_DEBUG}   ${CONFIG_TEST_ON}  ${CONFIG_UCSF_ON}
 CLION_OPTS_REL      = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_OPTS_DIST} ${CONFIG_RELEASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON}
+CLION_OPTS_REL_OSX  = -DCLION_BUILD=true -DCREATE_WRAPPER_SCRIPTS=false ${CONFIG_BASE_VTK6_DIST} ${CONFIG_RELEASE} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_ON} ${ADD_LINK_DIRS}
 
 clean_results:
 	${RM} -rf ${TEST_ROOT}/
@@ -190,6 +198,18 @@ configure_debug: clean_results
 configure_dist: clean_results
 	(${RM_CACHE} ${CONFIG_BASE_VTK6_DIST} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
+
+#
+# 	configure for external release 
+#
+configure_dist_osirix: clean_results
+	(${RM_CACHE} ${CONFIG_BASE_VTK6_DIST} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} -DOSX_PLUGIN_OSIRIX=ON  ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
+
+#
+# 	configure for external release 
+#
+configure_dist_horos: clean_results
+	(${RM_CACHE} ${CONFIG_BASE_VTK6_DIST} ${CONFIG_TEST_OFF} ${CONFIG_UCSF_OFF} ${CONFIG_OSIRIX} -DOSX_PLUGIN_HOROS=ON  ${CONFIG_RELEASE} ${ADD_LINK_DIRS} ${SIVIC_ROOT}/) 
 
 #
 # 	configure for UCSF release 
@@ -243,7 +263,7 @@ experimental: configure_testing
 experimental_fast_vtk5: configure_testing_vtk5
 	${XVFB_RUN} ${CMAKE_DIR}/ctest -D Experimental --output-log ${OUTPUT_LOG} 
 experimental_fast: configure_testing
-	${XVFB_RUN} ${CMAKE_DIR}/ctest -D Experimental --output-log ${OUTPUT_LOG} 
+	${XVFB_RUN} ${CMAKE_DIR}/ctest -j${NUM_JOBS} -D Experimental --output-log ${OUTPUT_LOG} 
 
 clion_options: 
 	$(info CMAKE BUILD OPTIONS FOR CLION:)
@@ -254,6 +274,10 @@ clion_options:
 	$(info Release:) 
 	$(info ----------------------------------------------------------------------------------)
 	$(info ${CLION_OPTS_REL})
+	$(info ----------------------------------------------------------------------------------)
+	$(info Release_OSX:) 
+	$(info ----------------------------------------------------------------------------------)
+	$(info ${CLION_OPTS_REL_OSX})
 	$(info ----------------------------------------------------------------------------------)
 	$(warning This target does only prints the cmake options for Clion.)
 	$(warning Please configure your project from the GUI.)

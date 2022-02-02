@@ -189,8 +189,10 @@ class vtkSivicController : public vtkObject
         void                       Add4DImageData( svkImageData* data, string stringFilename );
         void                       Add4DImageDataFromModel(const char* modelObjectName );
         void                       OpenOverlayFromModel( const char* modelObjectName );
-        void                       OpenOverlay( svkImageData* data, string stringFilename );
+        void                       OpenOverlay( svkImageData* data, string stringFilename);
         void                       OpenOverlay( const char* fileName, bool onlyReadOneInputFile = false );
+        void                       OpenContour( svkImageData* data, string stringFilename);
+        void                       OpenContour( const char* fileName, bool onlyReadOneInputFile = false );
         void                       OpenMetabolites( const char* metabolites );
         void                       SetPreferencesFromRegistry( );
         void                       SaveData();    

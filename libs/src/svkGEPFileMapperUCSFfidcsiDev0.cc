@@ -68,7 +68,7 @@ svkGEPFileMapperUCSFfidcsiDev0::svkGEPFileMapperUCSFfidcsiDev0()
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
-
+    this->dadFile = NULL;
 }
 
 
@@ -78,6 +78,9 @@ svkGEPFileMapperUCSFfidcsiDev0::svkGEPFileMapperUCSFfidcsiDev0()
 svkGEPFileMapperUCSFfidcsiDev0::~svkGEPFileMapperUCSFfidcsiDev0()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
+    if( this->dadFile != NULL ) {
+        this->dadFile->Delete();
+    }
 }
 
 
@@ -165,7 +168,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
         cout << "list raw files EPSI: " << pFileNames->GetValue(fileNumber) << endl;  	 	 
         vtkStringArray* tmpArray = vtkStringArray::New();
         tmpArray->InsertNextValue( pFileNames->GetValue(fileNumber) );
-
+        this->LoadDataAcquisitionDescriptionFile( pFileNames->GetValue(fileNumber) );
         svkImageData* tmpImage = svkMrsImageData::New();
         tmpImage->DeepCopy( data ); 
 
@@ -179,11 +182,11 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
         this->progress = (float)timePt/numTimePts; 
         this->UpdateProgress( this->progress );
 
-	// Detect symmetric EPSI based on equal positive and negative gradient lobe lengths (stored in rhuser 13 and 16)
-	if (this->GetHeaderValueAsInt( "rhr.rh_user13" ) == this->GetHeaderValueAsInt( "rhr.rh_user16" )) { 
-        	//  Separate out EPSI sampled data into time and k-space dimensions:
-        	this->ReorderEPSIData( tmpImage );
-	}
+        // Detect symmetric EPSI based on equal positive and negative gradient lobe lengths (stored in rhuser 13 and 16)
+        if (this->GetHeaderValueAsInt( "rhr.rh_user13" ) == this->GetHeaderValueAsInt( "rhr.rh_user16" )) { 
+            //  Separate out EPSI sampled data into time and k-space dimensions:
+            this->ReorderEPSIData( tmpImage );
+        }
         //data->DeepCopy( tmpImage ); 
 
         //  copy data to tmpImageDynamic and add appropriate arrays
@@ -432,49 +435,125 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     tmpReorderData->DeepCopy( data ); 
 
     svkEPSIReorder* reorder = svkEPSIReorder::New();    
-    reorder->SetInputData( tmpReorderData ); 
-    reorder->SetEPSIType( svkEPSIReorder::SYMMETRIC ); 
+    reorder->SetInputData( tmpReorderData );
+
+    EPSIType epsiType = SYMMETRIC;
+    if( this->dadFile != NULL && this->dadFile->GetEPSIType() != UNDEFINED_EPSI_TYPE ) {
+        epsiType = this->dadFile->GetEPSIType();
+    }
+    reorder->SetEPSIType( epsiType );
 
     //  between lobes, throw out the last and first point before resuming sampling
     //  These are the zero crossings in symmetric EPSI. 
     cout << "reorder: NumSamplesToSkip: " << 2 << endl;
     reorder->SetNumSamplesToSkip( 2 ); 
 
-    //  this is the number of lobes in the EPSI sampling. For symmetric 
-    //  epsi this is twice the number of frequence points (pos + neg)    
-    cout << "reorder: NumEPSILobes: " <<  this->GetHeaderValueAsInt( "rhr.rh_user10") << endl; 
-    reorder->SetNumEPSILobes( this->GetHeaderValueAsInt( "rhr.rh_user10") ); 
 
     //============================================================
-    //  Read EPSI acquisition params from raw header: 
+    //  Read EPSI acquisition params from raw header(legacy) or DAD file: 
     //============================================================
+
+    //================================================
+    //  this is the number of lobes in the EPSI sampling. 
+    //  For symmetric epsi this is twice the number of 
+    //  frequence points (pos + neg)    
+    //================================================
+    int numLobes; ; 
+    if ( this->dadFile != NULL ) {
+        //  DAD 
+        int numLobesOdd  = this->dadFile->GetIntWithPath("/encoding/trajectoryDescription/epsiEncoding/numberOfLobesOdd");
+        int numLobesEven = this->dadFile->GetIntWithPath("/encoding/trajectoryDescription/epsiEncoding/numberOfLobesEven");
+        numLobes = numLobesOdd + numLobesEven; 
+    } else {
+        numLobes = this->GetHeaderValueAsInt( "rhr.rh_user10");
+    }
+    cout << "reorder: NumEPSILobes: " <<  numLobes << endl;
+    reorder->SetNumEPSILobes( numLobes ); 
+
+
+    //================================================
     //  dwell time time between k-space points
-    int deltaT = this->GetHeaderValueAsInt( "rhr.rh_user12" );
+    //================================================
+    int sampleSpacingTimeMs; 
+    if ( this->dadFile != NULL ) {
+        //  DAD 
+        sampleSpacingTimeMs = 1000 * this->dadFile->GetFloatWithPath(
+            "/encoding/trajectoryDescription/epsiEncoding/sampleSpacingTimeMs");
+    } else {
+        //  Legacy
+        sampleSpacingTimeMs = this->GetHeaderValueAsInt( "rhr.rh_user12" );
+    }    
+    cout << "DELTA T: " << sampleSpacingTimeMs << endl;
 
+
+    //================================================
     //  time for plateau encoding (gradient duratation)
-    int plateauTime = this->GetHeaderValueAsInt( "rhr.rh_user13" );
+    //================================================
+    int plateauTime;
+    if ( this->dadFile != NULL ) {
+        //  DAD    
+        plateauTime = 1000 * this->dadFile->GetFloatWithPath(
+            "/encoding/trajectoryDescription/epsiEncoding/plateauDurationOddMs");
+    } else {
+        //  Legacy
+        plateauTime = this->GetHeaderValueAsInt( "rhr.rh_user13" );
+    }
+    cout << "plateauTime: " << plateauTime << endl;
 
+    
+    //================================================
     //  time for ramp in one direction
-    int rampTime = this->GetHeaderValueAsInt( "rhr.rh_user15" );
+    //================================================
+    int rampDuration;
+    if ( this->dadFile != NULL ) {
+        //  DAD    
+        rampDuration = 1000 * this->dadFile->GetFloatWithPath(
+            "/encoding/trajectoryDescription/epsiEncoding/rampDurationOddMs");
+    } else {
+        //  Legacy 
+        rampDuration = this->GetHeaderValueAsInt( "rhr.rh_user15" );
+    }
+    cout << "ramp duration: " << rampDuration << endl;
+    
 
     //  number of samples per lobe (ramps + plateau)  
     //  num spectral samples in FID is num time_pts / this value (
-    cout << "reorder: NumSamplesPerLobe: " <<  ( plateauTime + 2 * rampTime) / deltaT  << endl;
-    reorder->SetNumSamplesPerLobe( ( plateauTime + 2 * rampTime) / deltaT );
+    cout << "reorder: NumSamplesPerLobe: " <<  ( plateauTime + 2 * rampDuration) / sampleSpacingTimeMs  << endl;
+    reorder->SetNumSamplesPerLobe( ( plateauTime + 2 * rampDuration) / sampleSpacingTimeMs );
 
-    //  number of samples at start.  add 1 for the zero crossing
-    cout << "reorder: FirstSample: " <<  this->GetHeaderValueAsInt( "rhr.rh_user22" ) + 1  << endl;
-    reorder->SetFirstSample( this->GetHeaderValueAsInt( "rhr.rh_user22" ) + 1 );
 
-    //  EPSI Axis (user20) defines which axis is epsi encoded.  Swap the value of 
+    //================================================
+    //  Number of samples at start.  add 1 for the 
+    //  zero crossing
+    //================================================
+    int firstSampleOffset; 
+    if ( this->dadFile != NULL ) {
+        //  DAD    
+        float acquisitionDelayTimeMs = 1000 * this->dadFile->GetFloatWithPath(
+            "/encoding/trajectoryDescription/epsiEncoding/acquisitionDelayTimeMs");
+        firstSampleOffset = acquisitionDelayTimeMs / sampleSpacingTimeMs; 
+    } else {
+        //  Legacy 
+        firstSampleOffset = this->GetHeaderValueAsInt( "rhr.rh_user22" ); 
+    }
+    cout << "reorder: FirstSample: " <<  firstSampleOffset + 1 << endl;
+    reorder->SetFirstSample( firstSampleOffset + 1 ); 
+
+
+    //================================================
+    //  EPSI Axis defines which axis is epsi 
+    //  encoded.  Swap the value of 
     //  epsi k-space encodes into this field: 
-    int epsiAxis_init = this->GetHeaderValueAsInt( "rhr.rh_user20" ) - 1 ;
+    //================================================
+    int epsiAxis_init = this->GetEPSIAxis();
+    cout << "EPSI AXIS: " << epsiAxis_init<< endl;
+    
 
     //  Swap X/Y dimensions if swap on and if epsi is on X or Y
     if ( this->IsSwapOn()  && epsiAxis_init == 0) {
-	epsiAxis_init = 1;
+        epsiAxis_init = 1;
     } else if ( this->IsSwapOn()  && epsiAxis_init == 1) {
-	epsiAxis_init = 0;
+        epsiAxis_init = 0;
     }
 
     reorder->SetEPSIAxis( static_cast<svkEPSIReorder::EPSIAxis>(epsiAxis_init)  );
@@ -599,7 +678,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  resample ramp data 
     //  =================================================
 
-    this->ResampleRamps( data, deltaT, plateauTime, rampTime, epsiAxis ); 
+    this->ResampleRamps( data, sampleSpacingTimeMs, plateauTime, rampDuration, epsiAxis ); 
 
     //  This results in a match to Matlab when comparing the k-space data output:     
     //  final_datap(:,:,:,:,t) = fftshift(fftn(kdatap));
@@ -630,7 +709,14 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  combine even/odd lobes (separate post-processing 
     //  step). 
     //  =================================================
-    //this->CombineLobes(data); 
+
+    svkMrsImageData* tmpData = svkMrsImageData::New();
+    tmpData->DeepCopy( data );
+    bool sumOfSquares = false;     
+    svkEPSIReorder::CombineLobes( tmpData, sumOfSquares);
+    data->DeepCopy( tmpData );
+    tmpData->Delete();
+
 
     //  =================================================
     //  Account for patient entry.. need to review, not sure this
@@ -643,6 +729,31 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     tmpReorderData->Delete();
     reorder->Delete(); 
 
+}
+
+
+/*!
+ *  Use DAD or legacy userCV to get epsi gradient axis: 
+ */
+int svkGEPFileMapperUCSFfidcsiDev0::GetEPSIAxis( ) 
+{
+    int epsiAxis;
+    if ( this->dadFile != NULL ) {
+        //  DAD
+        string epsiGradientAxis = this->dadFile->GetDataWithPath(
+            "/encoding/trajectoryDescription/epsiEncoding/gradientAxis");
+        if ( epsiGradientAxis.compare("dim1") == 0 ) {
+            epsiAxis = 0; 
+        } else if ( epsiGradientAxis.compare("dim2") == 0 ) {
+            epsiAxis = 1; 
+        } else if ( epsiGradientAxis.compare("dim3")  == 0 ) {
+            epsiAxis = 2; 
+        }
+    } else {
+        //  Legacy 
+        epsiAxis = this->GetHeaderValueAsInt( "rhr.rh_user20" ) - 1 ;
+    }
+    return epsiAxis; 
 }
 
 
@@ -688,6 +799,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::EPSIPhaseCorrection( svkImageData* data, in
     numRead -= 2; 
     epsiPhase->SetNumEPSIkRead( numRead );
     epsiPhase->SetEPSIAxis( epsiAxis );
+    epsiPhase->SetEPSIType( SYMMETRIC );
     epsiPhase->SetInputData( tmpData ); 
     //tmpData->GetDcmHeader()->PrintDcmHeader(); 
     epsiPhase->Update(); 
@@ -749,7 +861,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::FlipAxis( svkImageData* data, int axis, int
  *      Rapid Gridding Reconstruction With a Minimal Oversampling Ratio
  *      IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. 24, NO. 6, JUNE 2005
  */
-void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int deltaT, int plateauTime, int rampTime, int epsiAxis )
+void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int sampleSpacingTimeMs, int plateauTime, int rampDuration, int epsiAxis )
 {
 
     int numLobes = 2; //for symmetric epsi pos/neg gradient
@@ -764,7 +876,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     int numEPSIVoxels = numVoxels[ epsiAxis ]; 
 
     float* waveFormIntegral = new float[ numEPSIVoxels ]; 
-    this->GetWaveFormIntegral( waveFormIntegral, deltaT, plateauTime, rampTime ); 
+    this->GetWaveFormIntegral( waveFormIntegral, sampleSpacingTimeMs, plateauTime, rampDuration ); 
 
     //  =============================================
     //  MATLAB translation: 
@@ -1328,11 +1440,11 @@ double svkGEPFileMapperUCSFfidcsiDev0::GetBessel0Term( float arg, int index)
  *  Returns the waveform integral over a single period, normalized to 1 and centered 
  *  about 0, with both end points removed (zero crossing). 
  */
-void svkGEPFileMapperUCSFfidcsiDev0::GetWaveFormIntegral( float* waveFormIntegral, int deltaT, int plateauTime, int rampTime )
+void svkGEPFileMapperUCSFfidcsiDev0::GetWaveFormIntegral( float* waveFormIntegral, int sampleSpacingTimeMs, int plateauTime, int rampDuration )
 {
     //  4 microsecond sampling:     
     int sampleDeltaT= 4; 
-    int numRampSamples = rampTime / sampleDeltaT;  
+    int numRampSamples = rampDuration / sampleDeltaT;  
     int numPlateauSamples = plateauTime / sampleDeltaT;  
 
     int numWaveFormPts = (numRampSamples * 2) + numPlateauSamples; 
@@ -1368,7 +1480,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetWaveFormIntegral( float* waveFormIntegra
 
 
     //  normalize to 1 and down sample full integral to EPSI k-space sampling interval: 
-    int binSize = deltaT / sampleDeltaT; 
+    int binSize = sampleSpacingTimeMs / sampleDeltaT; 
     int binIndex = 0 + binSize/2 -1; 
 
     // truncate first and last points: 
@@ -1489,8 +1601,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::ModifyForPatientEntry( svkImageData* data )
         //  if feet first entry, reverse RL and SI direction: 
         //  =================================================
 
-    //  fix dcos for epsiAxis
-        int epsiAxis = this->GetHeaderValueAsInt( "rhr.rh_user20" ) - 1;
+        //  fix dcos for epsiAxis
+        int epsiAxis = this->GetEPSIAxis();
         dcos[epsiAxis][0] *=-1;
         dcos[epsiAxis][1] *=-1;
         dcos[epsiAxis][2] *=-1;
@@ -1512,84 +1624,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ModifyForPatientEntry( svkImageData* data )
     );
 
     data->SyncVTKImageDataToDcmHeader(); 
-
-}
-
-
-/*!
- *  Sum of squares combination of lobes 
- */
-void svkGEPFileMapperUCSFfidcsiDev0::CombineLobes(svkImageData* data) 
-{
-
-    svkDcmHeader* hdr = data->GetDcmHeader();
-
-    int numFreqPts = hdr->GetIntValue( "DataPointColumns" );
-
-    svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector();
-    svkDcmHeader::DimensionVector loopVectorLobe0 = dimVector; 
-
-    int numCells = svkDcmHeader::GetNumberOfCells( &dimVector ); 
-    
-    //  Loop over all cellss where EPSI_ACQ_INDEX = 0 and combine with EPSI_ACQ_INDEX = 1 
-
-    float specPtLobe0[2];
-    float specPtLobe1[2];
-    float specPtSOS[2];
-
-    for (int cellIDLobe0 = 0; cellIDLobe0 < numCells; cellIDLobe0++ ) { 
-
-        //  Get the dimensionVector index for the non-dynamic image: 
-        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimVector, &loopVectorLobe0, cellIDLobe0 ); 
-
-        int lobe = hdr->GetDimensionVectorValue( &loopVectorLobe0, svkDcmHeader::EPSI_ACQ_INDEX); 
-
-        if ( lobe == 0 ) {
-
-            //get spectrum from both lobes 
-            svkDcmHeader::DimensionVector loopVectorLobe1 = loopVectorLobe0; 
-            svkDcmHeader::SetDimensionVectorValue( &loopVectorLobe1, svkDcmHeader::EPSI_ACQ_INDEX, 1); 
-
-            int cellIDLobe1 = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &loopVectorLobe1); 
-
-            vtkFloatArray* spectrumLobe0 = vtkFloatArray::SafeDownCast( 
-                svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellIDLobe0) 
-            );
-            vtkFloatArray* spectrumLobe1 = vtkFloatArray::SafeDownCast( 
-                svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellIDLobe1) 
-            );
-
-            for ( int freq = 0; freq < numFreqPts; freq++ ) {
-                spectrumLobe0->GetTupleValue( freq, specPtLobe0 );      
-                spectrumLobe1->GetTupleValue( freq, specPtLobe1 );     
-                specPtSOS[0]  = ( specPtLobe0[0] * specPtLobe0[0] + specPtLobe0[1] * specPtLobe0[1] ); 
-                specPtSOS[0] += ( specPtLobe1[0] * specPtLobe1[0] + specPtLobe1[1] * specPtLobe1[1] ); 
-                specPtSOS[0]  = pow( static_cast<float>(specPtSOS[0]), static_cast<float>(0.5) );
-                specPtSOS[1] = 0; 
-                spectrumLobe0->SetTupleValue( freq, specPtSOS );
-            }
-        }
-    }
-
-    //  redimension here: 
-    //  remove EPSI_ACQ_INDEX = 1 arrays
-    //  remove dimension index for EPSI_ACQ /? 
-    svkDcmHeader::DimensionVector loopVector = dimVector; 
-    for (int cellID = 0; cellID < numCells; cellID++ ) { 
-
-        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimVector, &loopVector, cellID); 
-
-        int lobeNum = hdr->GetDimensionVectorValue( &loopVector, svkDcmHeader::EPSI_ACQ_INDEX); 
-
-        if ( lobeNum == 1 ) {
-
-            //int cellIDLobe1 = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &loopVector); 
-
-            string arrayName = svk4DImageData::GetArrayName( &loopVector ); 
-            data->GetCellData()->RemoveArray( arrayName.c_str() );
-        }
-    }
-    data->GetDcmHeader()->RemoveDimensionIndex( svkDcmHeader::EPSI_ACQ_INDEX );
 
 }
 
@@ -1616,4 +1650,47 @@ void svkGEPFileMapperUCSFfidcsiDev0::InitMRSpectroscopyModule()
 float svkGEPFileMapperUCSFfidcsiDev0::GetPPMRef()
 {
     return 178; 
+}
+
+void svkGEPFileMapperUCSFfidcsiDev0::LoadDataAcquisitionDescriptionFile( string pfileName )
+{
+    if( this->dadFile == NULL ) {
+        size_t lastPath = pfileName.find_last_of("/");
+        string pfileDirectory = svkUtils::GetCurrentWorkingDirectory();
+        if ( lastPath != pfileName.npos ) {
+            pfileDirectory = pfileName.substr(0, lastPath);
+        } else {
+            pfileDirectory = svkUtils::GetCurrentWorkingDirectory();
+        }
+        string dadFileName = pfileDirectory;
+        dadFileName.append("/P44544_dad_fidcsi_ucsf.xml");
+
+        if ( svkUtils::FilePathExists( dadFileName.c_str() )){
+            this->dadFile = svkDataAcquisitionDescriptionXML::New();
+            //  search for dad files with .xml extension and find one with dad element: 
+            cout << "DAD File Name: " << dadFileName << endl;
+            int status = this->dadFile->SetXMLFileName( dadFileName );
+            if ( status != 0 ) {
+                cout << "ERROR: not a DAD file" << endl;
+                exit(1); 
+            }
+            cout << "Loading parameters from Data Acquistion Description file... " << endl;
+            cout << "Trajectory ID           : " << this->dadFile->GetTrajectoryID() << endl;
+            cout << "EPSI Type               : " << this->dadFile->GetEPSITypeString() << endl;
+            cout << "Interleaves             : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/numInterleaves") << endl;
+            cout << "gradientAmplitudeOddMTM : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/gradientAmplitudeOddMTM") << " mT/m" << endl;
+            cout << "gradientAmplitudeEvenMTM: " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/gradientAmplitudeEvenMTM") << " mT/m" << endl;
+            cout << "rampDurationOddMs       : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/rampDurationOddMs") << " ms" << endl;
+            cout << "rampDurationEvenMs      : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/rampDurationEvenMs") << " ms" << endl;
+            cout << "plateauDurationOddMs    : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/plateauDurationOddMs") << " ms" << endl;
+            cout << "plateauDurationEvenMs   : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/plateauDurationEvenMs") << " ms" << endl;
+            cout << "numLobesOdd             : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/numberOfLobesOdd") << endl;
+            cout << "numLobesEven            : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/numberOfLobesEven") << endl;
+            cout << "sampleSpacing_timeMs    : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/sampleSpacingTimeMs") << " ms" << endl;
+            cout << "acquisitionDelayMs      : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/acquisitionDelayTimeMs") << " ms" << endl;
+            cout << "gradientAxis            : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/gradientAxis") << " ms" << endl;
+            cout << "echoDelayMs             : " << this->dadFile->GetDataWithPath("/encoding/trajectoryDescription/epsiEncoding/echoDelayTimeMs") << " ms" << endl;
+
+        }
+    }
 }
