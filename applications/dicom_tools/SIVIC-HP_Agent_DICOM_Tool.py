@@ -128,7 +128,7 @@ def check_values(path):
         start_value = get_value(ds,(0x0018,0x1042)) 
         flow_value = get_value(ds,(0x0018,0x1047))
         contrast_seq = get_value(ds,(0x0018,0x0012))
-
+        
         ingredient_list = []
         if contrast_seq:
           for item in contrast_seq:
