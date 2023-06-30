@@ -1,6 +1,7 @@
 .idea
 .cproject
 .project
+.DS_Store
 *.sublime-*
 CMakeFiles
 Linux_x86_64
