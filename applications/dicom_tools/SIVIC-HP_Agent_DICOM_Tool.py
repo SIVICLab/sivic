@@ -10,9 +10,11 @@ warnings.filterwarnings("ignore")
 #Creator:Ernesto Diaz
 
 #fucntion to for the dicom attributes 
-def add_dicom_attributes(ds,agent,vol,flow_duration,ingredient1,ingredient2,molarity1,molar_mass1,molarity2,molar_mass2,acq_time,date,filename):
+def add_dicom_attributes(ds,agent,route,vol,flow_duration,ingredient1,ingredient2,molarity1,molar_mass1,molarity2,molar_mass2,acq_time,date,filename):
 #Adding Contrast Agent
  ds.add_new([0x0018, 0x0010], 'LO', agent)
+#Adding Contrast Administration Route
+ ds.add_new([0x0018,0x1040], 'LO', route ) 
 #Adding Volume of Contrast Agent Injected
  ds.add_new([0x0018, 0x1041], 'DS', vol)
 #Adding Delay Time from Start of Injection to Start of Acquisition
@@ -23,42 +25,29 @@ def add_dicom_attributes(ds,agent,vol,flow_duration,ingredient1,ingredient2,mola
  ds.add_new([0x0400,0x0562],'DT',date)
 #Adding the the filename
  ds.add_new([0x0400,0x0563],'LO',filename)
-#Ingredient Concentration for ingredient1 or ingredient2
- if ingredient1 or ingredient2:
-  concentration1 = float(molarity1) * (float(molar_mass1) / 1000)
-  concentration2 = float(molarity1) * (float(molar_mass1) / 1000)
-  #getting all the dicom attributes for the next function
-  add_seq(ds,agent,vol,flow_duration,ingredient1,ingredient2,concentration1,concentration2,acq_time,date,filename)
-  
-#fucntion for adding the attributes to the sequence
-def add_seq(ds,agent,vol,flow_duration,ingredient1,ingredient2,concentration1,concentration2,acq_time,date,filename):
-  #create an empty sequence
-  ds.add_new([0x0400,0x0550],'SQ',None)
-  seq = ds.ModifiedAttributesSequence
-  item = pydicom.Dataset()
-  #then add all attributes into the modified sequence
-  item.ContrastBolusAgent = agent
-  item.ContrastBolusVolume = vol
-  item.ContrastBolusStartTime = acq_time
-  item.ContrastFlowDuration = flow_duration
-  item.AttributeModificationDateTime = date
-  item.ModifyingSystem = filename
-  #adding the sequence if its 1 ingredient or 2 
-  if ingredient1:
-    item.ContrastBolusIngredient = ingredient1
-    item.ContrastBolusIngredientConcentration = concentration1
-  if ingredient2:
-    item.ContrastBolusIngredient = [ingredient1,ingredient2]
-    item.ContrastBolusIngredientConcentration = [concentration1,concentration2]
-  seq +=[item]  
-  #add them to the contrast boulus sequenece
-  if ingredient1:
+#adding a seq for the date and tool name
+ ds.add_new([0x0400,0x0550],'SQ',None)
+ seq = ds.ModifiedAttributesSequence
+ item = pydicom.Dataset()
+
+ item.AttributeModificationDateTime = date
+ item.ModifyingSystem = filename
+ seq +=[item] 
+
+# #Ingredient Concentration for ingredient1 or ingredient2
+ concentration1 = float(molarity1) * (float(molar_mass1) / 1000)
+ if ingredient2:
+   concentration2 = float(molarity2) * (float(molar_mass2) / 1000)
+ else:
+   concentration2 = None   
+ 
+ if ingredient1:
    ds.add_new([0x0018, 0x0012], 'SQ', None)
    seq = ds.ContrastBolusAgentSequence
    seq += [pydicom.Dataset()]
    seq[0].ContrastBolusIngredient = ingredient1
    seq[0].ContrastBolusIngredientConcentration = concentration1
-  if ingredient2:
+ if ingredient2:
    ds.add_new([0x0018, 0x0012], 'SQ', None)
    seq = ds.ContrastBolusAgentSequence
    seq += [pydicom.Dataset(), pydicom.Dataset()]
@@ -67,7 +56,6 @@ def add_seq(ds,agent,vol,flow_duration,ingredient1,ingredient2,concentration1,co
    seq[1].ContrastBolusIngredient = ingredient2
    seq[1].ContrastBolusIngredientConcentration = concentration2
 
-  
 
 #function for user input value or default value
 def get_user_input_default(prompt, default):
@@ -91,6 +79,7 @@ def check_values(path):
         for filename in files:
          ds = pydicom.dcmread(filename, force=True)
          agent_value = get_value(ds,(0x0018,0x0010))
+         route_value = get_value(ds, (0x0018, 0x1040))
          volume_value = get_value(ds,(0x0018,0x1041))
          start_value = get_value(ds,(0x0018,0x1042)) 
          flow_value = get_value(ds,(0x0018,0x1047))
@@ -118,12 +107,13 @@ def check_values(path):
           second_ingredient = None      
 
       
-        main(path,agent_value,volume_value,start_value,flow_value,first_ingredient,second_ingredient)
+        main(path,agent_value,route_value,volume_value,start_value,flow_value,first_ingredient,second_ingredient)
     #this is for a single file
     elif os.path.isfile(path):
 
         ds = pydicom.dcmread(path, force=True)
         agent_value = get_value(ds,(0x0018,0x0010))
+        route_value = get_value(ds, (0x0018, 0x1040))
         volume_value = get_value(ds,(0x0018,0x1041))
         start_value = get_value(ds,(0x0018,0x1042)) 
         flow_value = get_value(ds,(0x0018,0x1047))
@@ -150,12 +140,12 @@ def check_values(path):
           first_ingredient = None
           second_ingredient = None    
 
-        main(path,agent_value,volume_value,start_value,flow_value,first_ingredient,second_ingredient)
+        main(path,agent_value,route_value,volume_value,start_value,flow_value,first_ingredient,second_ingredient)
     else:
         print("Error: Path is neither a directory nor a file.")
 
 #main function where we ask for user inputs and add the attributes to dicom path
-def main(path,agent,vol,start,flow,ingredient1,ingredient2):
+def main(path,agent,route,vol,start,flow,ingredient1,ingredient2):
     print("----Welcome----\n")
     if not agent:
       agent = get_user_input_default("Enter A Contrast Agent", "HYPERPOLARIZED [1-13C]PYRUVATE")
@@ -164,6 +154,13 @@ def main(path,agent,vol,start,flow,ingredient1,ingredient2):
       if agent_input.lower() == 'y':
         agent = get_user_input_default("Enter A Contrast Agent", "HYPERPOLARIZED [1-13C]PYRUVATE")  
    
+    if not route:
+      route = get_user_input_default("Enter A Administration Route of a Contrast Agent", "IV")
+    else:
+      route_input = input("The Current Administration Route of Contrast Agent is"+ " "+ route +". "+"Would you like to overwrite it? Type Y or N:")  
+      if route_input.lower()=='y':
+        route = get_user_input_default("Enter A Administration Route of a Contrast Agent", "IV")
+
     if not vol:
      vol = get_user_input_default("Enter The Volume of The Contrast Agent Injected In mL", "0.35")
     else:
@@ -212,7 +209,7 @@ def main(path,agent,vol,start,flow,ingredient1,ingredient2):
     molarity1 = get_user_input_default("Enter The Molarity Of The Contrast Ingredient in mM", "80")
     molar_mass1 = get_user_input_default("Enter The Molar Mass Of The Contrast Ingredient in g/mol", "88.06")
 
-
+  
     ingredient2 = input("Would You Like To Add Another Ingredient? Type Y or N:")
     if ingredient2.lower() == 'y':
      ingredient2 = get_user_input_default("Enter Another Ingredient", "[^13^C,^15^N]UREA")
@@ -226,6 +223,8 @@ def main(path,agent,vol,start,flow,ingredient1,ingredient2):
     now = datetime.datetime.now()
     modifi_date = now.strftime("%Y%m%d%H")
     filename = os.path.basename(__file__)
+    
+    # def add_seq(ds,agent,route,vol,flow_duration,ingredient1,ingredient2,concentration1,concentration2,acq_time,date,filename)
 
     # Add DICOM attributes to all files in the specified directory
     if os.path.isdir(path):
@@ -235,17 +234,34 @@ def main(path,agent,vol,start,flow,ingredient1,ingredient2):
 
         for path in files:
             ds = pydicom.dcmread(path,force=True)
-            add_dicom_attributes(ds,agent,vol,flow,ingredient1,ingredient2,molarity1,molar_mass1,molarity2,molar_mass2,start,modifi_date,filename)
-            print(ds.filename) 
-            ds.save_as(path)
-            print("These are the attributes that you modified:")
-            print(ds.ModifiedAttributesSequence)
+            
+            add_dicom_attributes(ds,agent,route,vol,flow,ingredient1,ingredient2,molarity1,molar_mass1,molarity2,molar_mass2,start,modifi_date,filename)
+            ds.save_as(path) 
+        print("These are the attributes that you modified") 
+        print(ds.ContrastBolusAgent)
+        print(ds.ContrastBolusRoute)
+        print(ds.ContrastBolusVolume)
+        print(ds.ContrastBolusStartTime)
+        print(ds.ContrastFlowDuration)
+        print(ds.ContrastBolusAgentSequence)
+        print(ds.ModifiedAttributesSequence)
            
     else:
             ds = pydicom.dcmread(path,force=True)
-            add_dicom_attributes(ds,agent,vol,flow,ingredient1,ingredient2,molarity1,molar_mass1,start,modifi_date,filename)
-            print(ds.filename)
-            ds.save_as(path)
-            print("These are the attributes that you modified:")
+            
+            add_dicom_attributes(ds,agent,route,vol,flow,ingredient1,ingredient2,molarity1,molar_mass1,molarity2,molar_mass2,start,modifi_date,filename)
+            ds.save_as(path)  
+            print("These are the attributes that you modified")
+            print(ds.ContrastBolusAgent)
+            print(ds.ContrastBolusRoute)
+            print(ds.ContrastBolusVolume)
+            print(ds.ContrastBolusStartTime)
+            print(ds.ContrastFlowDuration)
+            print(ds.ContrastBolusAgentSequence)
             print(ds.ModifiedAttributesSequence)
-check_values(sys.argv[1])
+
+if __name__ == '__main__':
+  if len(sys.argv)==2:
+    check_values(sys.argv[1])
+  else:
+    print("usage:python3 SIVIC-HP_Agent_DICOM_Tool.py <path_to_dicom_file_or_directory>")  
