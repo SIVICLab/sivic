@@ -85,10 +85,12 @@ https://gitlab.kitware.com/vtk/vtk/-/archive/v6.3.0/vtk-v6.3.0.tar.gz
 * export DCMTK_DIR=/usr/local/sivic/build/deps/dcmtk-3.6.7
 * export VTK_DIR=/usr/local/sivic/build/deps/VTK-6.3.0
 
-#### 7. Build and install KWWidgets
-https://github.com/SIVICLab/KWWidgets
-*	open up terminal and cd into KWWidgets
-  - BUILD_TESTING=OFF
+### 7.Build and Install KWWidgets 
+* open up and terminal
+* CD into KWWidgets
+* cmake .
+* cmake ..
+  - BUILD_TESTING = OFF
   - CMAKE_INSTALL_PREFIX=/usr/local/sivic/build/deps/KWWidgets
   - VTK_DIR=/usr/local/sivic/build/deps/VTK-6.3.0/lib/cmake/vtk-6.3
   - TCL_INCLUDE_PATH=/usr/local/sivic/build/deps/tcl8.5.19/include
@@ -96,9 +98,6 @@ https://github.com/SIVICLab/KWWidgets
   - TCL_TCLSH=/usr/local/sivic/build/deps/tcl8.5.19/bin/tclsh8.5
   - TK_INCLUDE_PATH=/usr/local/sivic/build/deps/tk8.5.19/include
   - TK_LIBRARY=/usr/local/sivic/build/deps/tk8.5.19/lib/libtk8.5.so
-*	cmake .
-*	ccmake ..
-  
 * make
 * make install
 
