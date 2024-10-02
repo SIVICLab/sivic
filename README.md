@@ -1,7 +1,33 @@
+# SIVIC
+
+This is an early stage relese of SIVIC.  All comments/questions are welcome.  This is a community project and 
+participation is encouraged.  Please see the following links for further information. 
+
+1.  General help and project information:
+
+    http://sourceforge.net/projects/sivic/
+
+    http://sourceforge.net/apps/trac/sivic/
 
 
+2. The Doxygen C++ API for SIVIC is published on Sourceforge:
 
-# HOW TO BUILD SIVIC
+    http://sivic.sourceforge.net/libsvk/html/index.html
+
+
+3.  Mail List
+    
+    https://lists.sourceforge.net/lists/listinfo/sivic-users
+    
+
+NOTES FOR WINDOWS USERS:
+    * To run sivic simply double click on sivic_windows/bin/sivic.bat, or run from the msdos prompt.
+    * This version of sivic should run on Windows Vista, Windows 7, and Windows 2003 Server.
+    * Some features are disabled in the Windows version (using the "exam" button and the quantification demo). These features should be available soon.
+    * Command line tools are not yet available, but also should be soon.
+    * Please contact us via the sourceforge site above if you have any problems.
+
+## HOW TO BUILD SIVIC
 ### BUILDING DEPENDENCIES    
 #### This was Built using CentOS 7.9 ( GCC 4.8.5 / GLIBC 2.17). Build is forward compatible with RHEL8 and RHEL9. Needs to build on a redhat 7 sever .
 
