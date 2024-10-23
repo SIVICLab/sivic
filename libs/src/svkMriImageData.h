@@ -48,12 +48,12 @@
 #define MIN_USED_BINS 10
 #define EXCLUDE_FACTOR 0.05 
 
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 #include <svkImageData.h>
 #include <svk4DImageData.h>
-#include <vtkImageAccumulate.h>
-#include <vtkCallbackCommand.h>
-#include <vtkPolyData.h>
+#include </usr/include/vtk/vtkImageAccumulate.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkPolyData.h>
 #include <svkFastCellData.h>
 
 

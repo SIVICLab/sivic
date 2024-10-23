@@ -44,12 +44,12 @@
 #define SVK_DICOM_SC_WRITER_H
 
 
-#include <vtkErrorCode.h>
-#include <vtkObjectFactory.h>
-#include <vtkImageData.h>
-#include <vtkImageLuminance.h>
-#include <vtkInformation.h>
-#include <vtkExecutive.h>
+#include </usr/include/vtk/vtkErrorCode.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkImageData.h>
+#include </usr/include/vtk/vtkImageLuminance.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkExecutive.h>
 
 #include <svkImageWriter.h>
 #include <svkImageData.h>

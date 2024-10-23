@@ -40,11 +40,11 @@
  */
 
 
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkImageFourierFilter.h> // for vtkImageComplex struct
-#include <vtkMath.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkInformationVector.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkImageFourierFilter.h> // for vtkImageComplex struct
+#include </usr/include/vtk/vtkMath.h>
 
 #include <svkMRSZeroOrderPhaseCostFunction.h>
 #include <svkMRSZeroOrderPhase.h>

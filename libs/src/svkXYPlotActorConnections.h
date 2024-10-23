@@ -43,8 +43,8 @@
 #ifndef SVK_XY_PLOT_ACTOR_CONNECTIONS_H
 #define SVK_XY_PLOT_ACTOR_CONNECTIONS_H
 
-#include <vtkObjectFactory.h>
-#include <vtkAlgorithm.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkAlgorithm.h>
 
 
 namespace svk {

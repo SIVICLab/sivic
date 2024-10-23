@@ -44,16 +44,16 @@
 #define SVK_DATA_VIEW_H
 
 
-#include <vtkRenderWindowInteractor.h>
-#include <vtkRendererCollection.h>
-#include <vtkCallbackCommand.h>
-#include <vtkObject.h>
+#include </usr/include/vtk/vtkRenderWindowInteractor.h>
+#include </usr/include/vtk/vtkRendererCollection.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkObject.h>
 
 #include <svkImageData.h>
-#include <vtkPlane.h>
-#include <vtkPlaneCollection.h>
-#include <vtkCollectionIterator.h>
-#include <vtkAbstractMapper.h>
+#include </usr/include/vtk/vtkPlane.h>
+#include </usr/include/vtk/vtkPlaneCollection.h>
+#include </usr/include/vtk/vtkCollectionIterator.h>
+#include </usr/include/vtk/vtkAbstractMapper.h>
 #include <svkDataViewController.h>
 
 #include <vector>

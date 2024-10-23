@@ -58,7 +58,7 @@
 #define SVK_IMAGE_FOURIER_CENTER_H
 
 
-#include <vtkImageDecomposeFilter.h>
+#include </usr/include/vtk/vtkImageDecomposeFilter.h>
 
 
 namespace svk {

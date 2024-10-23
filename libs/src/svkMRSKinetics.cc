@@ -41,9 +41,9 @@
  */
 
 
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkInformationVector.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
 
 #include <svkMRSKinetics.h>
 #include <math.h>
@@ -94,7 +94,7 @@ svkMRSKinetics::~svkMRSKinetics()
 /*!
  *  Set the series description for the DICOM header of the copy.  
  */
-void svkMRSKinetics::SetSeriesDescription( vtkstd::string newSeriesDescription )
+void svkMRSKinetics::SetSeriesDescription( std::string newSeriesDescription )
 {
     this->newSeriesDescription = newSeriesDescription;
     this->Modified(); 

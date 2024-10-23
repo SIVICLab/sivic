@@ -41,7 +41,7 @@
 
 
 #include <svkGEPFileMapperUCSF.h>
-#include <vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
 
 #include <svkSatBandsXML.h>
 

@@ -44,9 +44,9 @@
 #include <svkIntegratePeak.h>
 #include <svkSpecPoint.h>
 
-#include <vtkImageWeightedSum.h>
-#include <vtkImageMathematics.h>
-#include <vtkImageMagnitude.h>
+#include </usr/include/vtk/vtkImageWeightedSum.h>
+#include </usr/include/vtk/vtkImageMathematics.h>
+#include </usr/include/vtk/vtkImageMagnitude.h>
 
 
 

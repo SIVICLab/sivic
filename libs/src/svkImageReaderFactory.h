@@ -44,8 +44,8 @@
 #define SVK_IMAGE_READER_FACTORY_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkImageReader2Factory.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkImageReader2Factory.h>
 #include <svkNIFTIVolumeReader.h>
 #include <svkIdfVolumeReader.h>
 #include <svkDcmMriVolumeReader.h>

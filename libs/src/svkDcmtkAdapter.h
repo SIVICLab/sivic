@@ -45,12 +45,13 @@
 #define HEADER_MAX_READ_LENGTH 256
 
 
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
 #include <svkDcmHeader.h>
 #include <svkDcmtkIod.h>
-#include <dcmtk/dcmdata/dctk.h>
-#include <dcmtk/dcmdata/dctag.h>
+#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/config/osconfig.h>
+#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/dcmdata/dctk.h>
+#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/dcmdata/dctag.h>
 
 
 namespace svk {

@@ -47,8 +47,8 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
 #include <svkDcmHeader.h>
 #include <svkMriImageData.h>
 #include <svkMrsImageData.h>

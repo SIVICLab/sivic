@@ -43,9 +43,9 @@
 #ifndef SVK_VARIABLE_FLIP_DAT_READER_H
 #define SVK_VARIABLE_FLIP_DAT_READER_H
 
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkInformation.h>
 #include <map>
-#include <vtkStringArray.h>
+#include </usr/include/vtk/vtkStringArray.h>
 #include <string>
 
 #include <svkImageReader2.h>

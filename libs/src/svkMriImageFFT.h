@@ -44,12 +44,12 @@
 #define SVK_MRI_IMAGE_FFT_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkImageFourierFilter.h>
-#include <vtkImageFFT.h>
-#include <vtkImageRFFT.h>
-#include <vtkImageExtractComponents.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkImageFourierFilter.h>
+#include </usr/include/vtk/vtkImageFFT.h>
+#include </usr/include/vtk/vtkImageRFFT.h>
+#include </usr/include/vtk/vtkImageExtractComponents.h>
 #include <svkImageAlgorithm.h>
 
 

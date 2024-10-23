@@ -46,20 +46,20 @@
 
 #include <svkImageData.h>
 #include <map>
-#include <vtkObject.h>
+#include </usr/include/vtk/vtkObject.h>
 #include <string>
-#include <vtkImageData.h>
-#include <vtkObjectFactory.h>
-#include <vtkImageFlip.h>
-#include <vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkImageData.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkImageFlip.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
 #include <svkImageReaderFactory.h>
 #include <svkImageDataFactory.h>
-#include <vtkAlgorithmOutput.h>
-#include <vtkTrivialProducer.h>
-#include <vtkSmartPointer.h>
+#include </usr/include/vtk/vtkAlgorithmOutput.h>
+#include </usr/include/vtk/vtkTrivialProducer.h>
+#include </usr/include/vtk/vtkSmartPointer.h>
 
-#include <vtkAlgorithm.h>
-#include <vtkImageReader2.h>
+#include </usr/include/vtk/vtkAlgorithm.h>
+#include </usr/include/vtk/vtkImageReader2.h>
 
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>

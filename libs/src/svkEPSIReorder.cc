@@ -301,7 +301,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
 
     //  Allocate arrays for spectra at each phase encode:
     svkDcmHeader* hdr = data->GetDcmHeader();
-    vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
+    std::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
 
     int numComponents;
     if ( dataRepresentation == "COMPLEX" ) {
@@ -519,13 +519,13 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                             //  init the dimensionVector with the current value in each dimension and pass that to 
                             //  reorder EPSI data, throwing away the first and last 
                             //  point (zero crossing). 
-                            float epsiTuple[2]; 
-                            float tuple[2]; 
+                            double epsiTuple[2]; 
+                            double tuple[2]; 
                             int epsiOffset; 
 
                             for (int i = 0; i < numFreqPts; i++) {
                                 epsiOffset = (lobeStride * numEPSIAcquisitionsPerFID * i ) + currentEPSIPt;
-                                epsiSpectrum->GetTupleValue(epsiOffset, epsiTuple); 
+                                epsiSpectrum->GetTuple (epsiOffset, epsiTuple); 
                                 tuple[0] = epsiTuple[0]; 
                                 tuple[1] = epsiTuple[1]; 
                                 //if ( i < 1 ) {
@@ -644,18 +644,18 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                     = static_cast<vtkFloatArray*>(svkMrsImageData::SafeDownCast(dataTmp)->GetSpectrum( cellIDOut ) );
 
             //  Loop over frequency points and interleave
-            float tuple0[2]; 
-            float tuple1[2]; 
-            float tupleOut0[2]; 
-            float tupleOut1[2]; 
+            double tuple0[2]; 
+            double tuple1[2]; 
+            double tupleOut0[2]; 
+            double tupleOut1[2]; 
 
             vtkDataArray* outArray = dataTmp->GetCellData()->GetArray( cellIDOut );
             dataTmp->SetArrayName( outArray, &outputLoopVector ); 
 
             for ( int i = 0; i < numFreqPts; i++  ) {
 
-                epsiSpectrum0->GetTupleValue(i, tuple0); 
-                epsiSpectrum1->GetTupleValue(i, tuple1); 
+                epsiSpectrum0->GetTuple(i, tuple0); 
+                epsiSpectrum1->GetTuple(i, tuple1); 
 
                 tupleOut0[0] = tuple0[0]; 
                 tupleOut0[1] = tuple0[1]; 
@@ -705,9 +705,9 @@ void svkEPSIReorder::CombineLobes(svkImageData* data, bool sumOfSquares )
 
     //  Loop over all cellss where EPSI_ACQ_INDEX = 0 and combine with EPSI_ACQ_INDEX = 1 
 
-    float specPtLobe0[2];
-    float specPtLobe1[2];
-    float specPtSum[2];
+    double specPtLobe0[2];
+    double specPtLobe1[2];
+    double specPtSum[2];
     
     int lastPrint = -1;
     for (int cellIDLobe0 = 0; cellIDLobe0 < numCells; cellIDLobe0++ ) {
@@ -739,8 +739,8 @@ void svkEPSIReorder::CombineLobes(svkImageData* data, bool sumOfSquares )
             );
 
             for ( int freq = 0; freq < numFreqPts; freq++ ) {
-                spectrumLobe0->GetTupleValue( freq, specPtLobe0 );
-                spectrumLobe1->GetTupleValue( freq, specPtLobe1 );
+                spectrumLobe0->GetTuple( freq, specPtLobe0 );
+                spectrumLobe1->GetTuple( freq, specPtLobe1 );
                 if ( sumOfSquares == true ) {
                     //  add the magnitude data from each lobe: 
                     specPtSum[0]  = ( specPtLobe0[0] * specPtLobe0[0] + specPtLobe0[1] * specPtLobe0[1] );
@@ -751,7 +751,7 @@ void svkEPSIReorder::CombineLobes(svkImageData* data, bool sumOfSquares )
                     specPtSum[0]  = ( specPtLobe0[0] + specPtLobe1[0] ); 
                     specPtSum[1]  = ( specPtLobe0[1] + specPtLobe1[1] ); 
                 }
-                spectrumLobe0->SetTupleValue( freq, specPtSum );
+                spectrumLobe0->SetTuple( freq, specPtSum );
             }
         }
     }

@@ -44,18 +44,18 @@
 #define SVK_IMAGE_THRESHOLD_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkImageData.h>
 #include <svkMriImageData.h>
 #include <svkMrsImageData.h>
 #include <svkImageAlgorithm.h>
 #include <svkDcmHeader.h>
-#include <vtkImageThreshold.h>
+#include </usr/include/vtk/vtkImageThreshold.h>
 #include <svkImageAlgorithmExecuter.h>
-#include <vtkCharArray.h>
+#include </usr/include/vtk/vtkCharArray.h>
 #include <svkUtils.h>
 #include <svkImageAlgorithmWithPortMapper.h>
 #include <svkIdfVolumeWriter.h>

@@ -45,15 +45,15 @@
 #include <svkImageReader2.h>
 #include <svkUtils.h>
 #include <svkTypeUtils.h>
-#include <vtkExecutive.h>
-#include <vtkImageAccumulate.h>
-#include <vtkErrorCode.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
-#include <vtkShortArray.h>
-#include <vtkFloatArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkByteSwap.h>
+#include </usr/include/vtk/vtkExecutive.h>
+#include </usr/include/vtk/vtkImageAccumulate.h>
+#include </usr/include/vtk/vtkErrorCode.h>
+#include </usr/include/vtk/vtkUnsignedCharArray.h>
+#include </usr/include/vtk/vtkUnsignedShortArray.h>
+#include </usr/include/vtk/vtkShortArray.h>
+#include </usr/include/vtk/vtkFloatArray.h>
+#include </usr/include/vtk/vtkDoubleArray.h>
+#include </usr/include/vtk/vtkByteSwap.h>
 
 
 using namespace svk;

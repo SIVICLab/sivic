@@ -42,11 +42,11 @@
 #ifndef SVK_DDF_VOLUME_READER_H
 #define SVK_DDF_VOLUME_READER_H
 
-#include <vtkImageData.h>
-#include <vtkInformation.h>
-#include <vtkDataObject.h>
-#include <vtkPointData.h>
-#include <vtkStringArray.h>
+#include </usr/include/vtk/vtkImageData.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkDataObject.h>
+#include </usr/include/vtk/vtkPointData.h>
+#include </usr/include/vtk/vtkStringArray.h>
 
 #include <svkImageReader2.h>
 #include <svkMRSIOD.h>

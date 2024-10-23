@@ -46,16 +46,16 @@
 #ifndef SVK_OPEN_GL_ORIENTED_IMAGE_ACTOR_H 
 #define SVK_OPEN_GL_ORIENTED_IMAGE_ACTOR_H 
 
-#include <vtkOpenGLImageActor.h>
-#include <vtkOpenGLRenderWindow.h>
-#include <vtkOpenGLRenderer.h>
-#include <vtkTransform.h>
-#include <vtkMapper.h>
+#include </usr/include/vtk/vtkOpenGLImageActor.h>
+#include </usr/include/vtk/vtkOpenGLRenderWindow.h>
+#include </usr/include/vtk/vtkOpenGLRenderer.h>
+#include </usr/include/vtk/vtkTransform.h>
+#include </usr/include/vtk/vtkMapper.h>
 
 #include <svkImageData.h>
 #include <svkMriImageData.h>
 
-#include "vtkgl.h" // vtkgl namespace
+#include "/usr/include/vtk/vtkgl.h"
 
 
 namespace svk {

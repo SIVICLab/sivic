@@ -41,7 +41,7 @@
 
 
 #include <svkDICOMSCWriter.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
 
 
 using namespace svk;
@@ -192,7 +192,7 @@ void svkDICOMSCWriter::Write()
         upExtent[4] = this->FileNumber; 
         upExtent[5] = this->FileNumber; 
 
-        this->SetUpdateExtent( upExtent );  
+        this->GetUpdateExtent( upExtent );  
         this->Update();
 
         // determine the name

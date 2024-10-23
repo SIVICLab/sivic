@@ -44,11 +44,11 @@
 #define SVK_DICOM_MRS_WRITER_H
 
 
-#include <vtkErrorCode.h>
-#include <vtkObjectFactory.h>
-#include <vtkCellData.h>
-#include <vtkInformation.h>
-#include <vtkExecutive.h>
+#include </usr/include/vtk/vtkErrorCode.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkCellData.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkExecutive.h>
 
 #include <svkDICOMWriter.h>
 #include <svkImageData.h>

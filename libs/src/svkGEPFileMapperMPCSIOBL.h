@@ -62,7 +62,7 @@ class svkGEPFileMapperMPCSIOBL : public svkGEPFileMapper
         vtkTypeMacro( svkGEPFileMapperMPCSIOBL, svkGEPFileMapper );
         static          svkGEPFileMapperMPCSIOBL* New();
 
-        void            ReadData( vtkstd::string pFileName, vtkImageData* data );
+        void            ReadData( std::string pFileName, vtkImageData* data );
 
 
     protected:

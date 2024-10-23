@@ -39,9 +39,9 @@
 
 
 #include <svkFileUtils.h>
-#include <vtkGlobFileNames.h>
-#include <vtkStringArray.h>
-#include <vtkDirectory.h>
+#include </usr/include/vtk/vtkGlobFileNames.h>
+#include </usr/include/vtk/vtkStringArray.h>
+#include </usr/include/vtk/vtkDirectory.h>
 
 
 using namespace svk;

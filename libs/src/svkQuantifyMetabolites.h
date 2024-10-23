@@ -44,9 +44,9 @@
 #define SVK_QUANTIFY_METABOLITES_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkImageData.h>
 #include <svkMriImageData.h>
@@ -79,15 +79,15 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         static svkQuantifyMetabolites* New();
         vtkTypeMacro( svkQuantifyMetabolites, svkImageAlgorithm);
 
-        void                                                SetXMLFileName( vtkstd::string xmlFileName );     
-        vtkstd::string                                      GetXMLFileName( );
+        void                                                SetXMLFileName( std::string xmlFileName );     
+        std::string                                      GetXMLFileName( );
         void                                                ClearXMLFile( );
         void                                                SetVerbose( bool isVerbose );     
-        vtkstd::vector< svkMriImageData* >*                 GetMetMaps();
+        std::vector< svkMriImageData* >*                 GetMetMaps();
         void                                                LimitToSelectedVolume(float fraction = 0.5001); 
-        vtkstd::vector< vtkstd::vector< vtkstd::string > >  GetRegionNameVector();
-        int                                                 GetIntFromString(vtkstd::string stringVal ); 
-        float                                               GetFloatFromString(vtkstd::string stringVal ); 
+        std::vector< std::vector< std::string > >  GetRegionNameVector();
+        int                                                 GetIntFromString(std::string stringVal ); 
+        float                                               GetFloatFromString(std::string stringVal ); 
         void                                                ModifyRegion( int regionID, float peakPPM, float widthPPM ); 
         static void                                         WriteDefaultXMLTemplate( string fileName, bool clobber = false ); 
         static string                                       GetDefaultXMLFileName(); 
@@ -127,7 +127,7 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         void                                GenerateRegionMaps();
         void                                GenerateRatioMaps();
         void                                GenerateZScoreMaps();
-        string                              ReplaceSlashesAndWhiteSpace( vtkstd::string inString); 
+        string                              ReplaceSlashesAndWhiteSpace( std::string inString); 
         void                                GetNumeratorAndDenominatorImages( 
                                                 vtkXMLDataElement* ratioXML, 
                                                 svkImageData* numeratorImage, 
@@ -137,8 +137,8 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
 
         //  Members:
         bool                                isVerbose; 
-        vtkstd::string                      xmlFileName; 
-        vtkstd::vector< svkMriImageData* >  metMapVector; 
+        std::string                      xmlFileName; 
+        std::vector< svkMriImageData* >  metMapVector; 
         float                               useSelectedVolumeFraction;
         short*                              selectedVolumeMask;
         vtkXMLDataElement*                  mrsXML;
@@ -147,7 +147,7 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
 
 
         //  map of regions: region name, peak (ppm) and peak width (ppm)
-        vtkstd::vector < vtkstd::vector< vtkstd::string > >  regionVector;
+        std::vector < std::vector< std::string > >  regionVector;
 
 
 

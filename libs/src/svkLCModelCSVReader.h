@@ -43,8 +43,8 @@
 #ifndef SVK_LCMODEL_CSV_READER_H
 #define SVK_LCMODEL_CSV_READER_H
 
-#include <vtkInformation.h>
-#include <vtkStringArray.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkStringArray.h>
 
 #include <svkUtils.h>
 #include <svkLCModelReader.h>

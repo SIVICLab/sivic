@@ -43,8 +43,8 @@
 #define SVK_ORIENTED_IMAGE_ACTOR_FACTORY_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
 #include <svkOpenGLOrientedImageActor.h>
 
 

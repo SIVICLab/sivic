@@ -71,18 +71,18 @@
 #ifndef SVK_IMAGE_LINEAR_PHASE_H
 #define SVK_IMAGE_LINEAR_PHASE_H
 
-#include <vtkImageData.h>
-#include <vtkMath.h>
-#include <vtkImageRFFT.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkImageData.h>
+#include </usr/include/vtk/vtkMath.h>
+#include </usr/include/vtk/vtkImageRFFT.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
 #include <svkSpecUtils.h>
 
 #include <math.h>
 
 
-#include "vtkImageFourierFilter.h"
+#include "/usr/include/vtk/vtkImageFourierFilter.h"
 
 namespace svk {
 

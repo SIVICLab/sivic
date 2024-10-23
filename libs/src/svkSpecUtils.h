@@ -44,11 +44,11 @@
 #define SVK_SPEC_UTILS_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkFloatArray.h>
-#include <vtkMath.h>
-#include <vtkImageFourierFilter.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkFloatArray.h>
+#include </usr/include/vtk/vtkMath.h>
+#include </usr/include/vtk/vtkImageFourierFilter.h>
 
 namespace svk {
 

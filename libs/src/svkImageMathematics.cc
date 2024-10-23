@@ -40,10 +40,10 @@
  */
 
 
-#include <vtkInstantiator.h>
-#include <vtkInformation.h>
-#include <vtkDataSetAttributes.h>
-#include <vtkImageCast.h>
+//include </usr/include/vtk/vtkInstantiator.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkDataSetAttributes.h>
+#include </usr/include/vtk/vtkImageCast.h>
 
 #include <svkImageMathematics.h>
 #include <svkMriImageData.h>

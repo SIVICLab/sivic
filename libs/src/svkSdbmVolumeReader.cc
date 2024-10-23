@@ -40,11 +40,11 @@
 
 
 #include <svkSdbmVolumeReader.h>
-#include <vtkCellData.h>
-#include <vtkDebugLeaks.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
-#include <vtkByteSwap.h>
+#include </usr/include/vtk/vtkCellData.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkGlobFileNames.h>
+#include </usr/include/vtk/vtkSortFileNames.h>
+#include </usr/include/vtk/vtkByteSwap.h>
 
 #include <sys/stat.h>
 

@@ -46,14 +46,14 @@
 
 #include <svkImageData.h>
 #include <map>
-#include <vtkObject.h>
+#include </usr/include/vtk/vtkObject.h>
 #include <string>
-#include <vtkObjectFactory.h>
-#include <vtkObjectBase.h>
-#include <vtkTransform.h>
-#include <vtkImageActor.h>
-#include <vtkCallbackCommand.h>
-#include <vtkImageProperty.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObjectBase.h>
+#include </usr/include/vtk/vtkTransform.h>
+#include </usr/include/vtk/vtkImageActor.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkImageProperty.h>
 
 #include <svkImageData.h>
 

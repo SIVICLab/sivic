@@ -44,8 +44,8 @@
 #define SVK_IMAGE_READER_2_H
 
 
-#include <vtkImageReader2.h>
-#include <vtkImageData.h>
+#include </usr/include/vtk/vtkImageReader2.h>
+#include </usr/include/vtk/vtkImageData.h>
 
 #include <svkImageData.h>
 #include <svkUtils.h>

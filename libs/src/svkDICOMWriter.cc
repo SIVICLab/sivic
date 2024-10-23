@@ -39,7 +39,7 @@
  *      Beck Olson
  */
 
-#include <vtkExecutive.h>
+#include </usr/include/vtk/vtkExecutive.h>
 #include <svkDICOMWriter.h>
 
 

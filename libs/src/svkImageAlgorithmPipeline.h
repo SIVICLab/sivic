@@ -46,9 +46,9 @@
 
 #include <stdio.h>
 #include <map>
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkXMLDataElement.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkXMLDataElement.h>
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
 #include <svkMriImageData.h>
@@ -58,7 +58,7 @@
 #include <svkImageStatistics.h>
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
-#include <vtkAlgorithmOutput.h>
+#include </usr/include/vtk/vtkAlgorithmOutput.h>
 #include <svkImageMathematics.h>
 #include <svkImageCopy.h>
 

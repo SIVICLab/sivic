@@ -61,7 +61,7 @@ class svkGEPFileMapperMBrease : public svkGEPFileMapper
         vtkTypeMacro( svkGEPFileMapperMBrease, svkGEPFileMapper );
         static          svkGEPFileMapperMBrease* New();
 
-        void            ReadData( vtkstd::string pFileName, vtkImageData* data );
+        void            ReadData( std::string pFileName, vtkImageData* data );
 
 
     protected:

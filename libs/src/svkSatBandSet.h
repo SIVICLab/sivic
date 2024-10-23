@@ -44,17 +44,17 @@
 #define SVK_SAT_BAND_SET_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 #include <vector>
-#include <vtkPlane.h>
-#include <vtkActor.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkPlaneSource.h>
-#include <vtkProperty.h>
-#include <vtkClipDataSet.h>
-#include <vtkClipPolyData.h>
+#include </usr/include/vtk/vtkPlane.h>
+#include </usr/include/vtk/vtkActor.h>
+#include </usr/include/vtk/vtkPolyDataMapper.h>
+#include </usr/include/vtk/vtkPlaneSource.h>
+#include </usr/include/vtk/vtkProperty.h>
+#include </usr/include/vtk/vtkClipDataSet.h>
+#include </usr/include/vtk/vtkClipPolyData.h>
 #include <svkMrsImageData.h>
 #include <svkMriImageData.h>
 #include <svkImageTopologyGenerator.h>

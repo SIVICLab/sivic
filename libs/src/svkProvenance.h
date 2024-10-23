@@ -44,9 +44,9 @@
 #define SVK_PROVENANCE_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkXMLDataElement.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkXMLDataElement.h>
 
 #include <sstream>
 

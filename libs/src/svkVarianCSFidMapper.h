@@ -43,7 +43,7 @@
 #define SVK_VARIAN_CS_FID_MAPPER_H
 
 
-#include <vtkImageData.h>
+#include </usr/include/vtk/vtkImageData.h>
 #include <svkVarianFidMapper.h>
 #include <svkCSReorder.h>
 #include <vector>

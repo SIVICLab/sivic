@@ -42,10 +42,10 @@
 
 #include <svkBrukerRawMRSReader.h>
 #include <svkTypeUtils.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
-#include <vtkStringArray.h>
-#include <vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkGlobFileNames.h>
+#include </usr/include/vtk/vtkSortFileNames.h>
+#include </usr/include/vtk/vtkStringArray.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
 
 #include <sys/stat.h>
 

@@ -44,12 +44,12 @@
 #include <svkImageReaderFactory.h>
 #include <svkString.h>
 #include <svkTypeUtils.h>
-#include <vtkDebugLeaks.h>
-#include <vtkByteSwap.h>
-#include <vtkSmartPointer.h>
-#include <vtkDelimitedTextReader.h>
-#include <vtkTable.h>
-#include <vtkStringToNumeric.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkByteSwap.h>
+#include </usr/include/vtk/vtkSmartPointer.h>
+#include </usr/include/vtk/vtkDelimitedTextReader.h>
+#include </usr/include/vtk/vtkTable.h>
+#include </usr/include/vtk/vtkStringToNumeric.h>
 
 #include <sys/stat.h>
 
@@ -95,7 +95,7 @@ svkLCModelTableReader::~svkLCModelTableReader() {
  */
 int svkLCModelTableReader::CanReadFile(const char* fname) {
 
-    vtkstd::string fileToCheck(fname);
+    std::string fileToCheck(fname);
 
     if (fileToCheck.size() > 4) {
 

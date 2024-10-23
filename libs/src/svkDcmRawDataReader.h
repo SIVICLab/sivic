@@ -76,7 +76,7 @@ class svkDcmRawDataReader : public svkDcmVolumeReader
         //  Methods:
         virtual int CanReadFile(const char* fname);
         void        ExtractFiles(); 
-        void        SetOutputDir( vtkstd::string outDir ); 
+        void        SetOutputDir( std::string outDir ); 
 
 
 
@@ -96,7 +96,7 @@ class svkDcmRawDataReader : public svkDcmVolumeReader
         void    InitPrivateHeader(); 
         void    LegacyParsing(string fileName, int fileNum, long int numBytes); 
 
-        vtkstd::string outDir;
+        std::string outDir;
 
 };
 

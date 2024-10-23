@@ -45,28 +45,28 @@
 
 
 #include <vector>
-#include <vtkRenderer.h>
-#include <vtkIdList.h>
+#include </usr/include/vtk/vtkRenderer.h>
+#include </usr/include/vtk/vtkIdList.h>
 
-#include <vtkImageData.h>
-#include <vtkCellData.h>
-#include <vtkCamera.h>
-#include <vtkProp3DCollection.h>
-#include <vtkDataSetCollection.h>
-#include <vtkCallbackCommand.h>
-#include <vtkAppendPolyData.h>
-#include <vtkAreaPicker.h>
-#include <vtkCollectionIterator.h>
-#include <vtkTransform.h>
+#include </usr/include/vtk/vtkImageData.h>
+#include </usr/include/vtk/vtkCellData.h>
+#include </usr/include/vtk/vtkCamera.h>
+#include </usr/include/vtk/vtkProp3DCollection.h>
+#include </usr/include/vtk/vtkDataSetCollection.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkAppendPolyData.h>
+#include </usr/include/vtk/vtkAreaPicker.h>
+#include </usr/include/vtk/vtkCollectionIterator.h>
+#include </usr/include/vtk/vtkTransform.h>
 #include <svkPlotLine.h>
 #include <svkImageData.h>
 #include <svkDataView.h>
 #include <svk4DImageData.h>
 #include <svkMrsImageData.h>
-#include <vtkPolyDataCollection.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkLODActor.h>
-#include <vtkProperty.h>
+#include </usr/include/vtk/vtkPolyDataCollection.h>
+#include </usr/include/vtk/vtkPolyDataMapper.h>
+#include </usr/include/vtk/vtkLODActor.h>
+#include </usr/include/vtk/vtkProperty.h>
 
 
 namespace svk {
@@ -110,8 +110,8 @@ class svkPlotLineGrid : public vtkObject
         void                    AlignCamera( bool invertView = 1 );
         void                    SetComponent( svkPlotLine::PlotComponent component );
         svkPlotLine::PlotComponent GetComponent( );
-        vtkstd::vector<int>     GetVolumeIndexVector( );
-        void                    SetVolumeIndexVector( vtkstd::vector<int> );
+        std::vector<int>     GetVolumeIndexVector( );
+        void                    SetVolumeIndexVector( std::vector<int> );
         void                    SetVolumeIndex( int index, int volumeIndex = 0 );
         int                     GetVolumeIndex( int volumeIndex = 0 );
         void                    UpdateDataArrays(int tlc, int brc);
@@ -127,16 +127,16 @@ class svkPlotLineGrid : public vtkObject
 
         //! The current slice
         int                         slice;
-        vtkstd::vector< int >      volumeIndexVector;
+        std::vector< int >      volumeIndexVector;
 
         //! The ID's of the top left corner, and bottom right corner cells 
         int                         tlcBrc[2];
 
         //! dcos to be passed as a pointer
-        vtkstd::vector< vtkstd::vector<double> > dcos;
+        std::vector< std::vector<double> > dcos;
 
         //! Represents the current slice of plot lines
-        vtkstd::vector<svkPlotLine*>  xyPlots;
+        std::vector<svkPlotLine*>  xyPlots;
 
         //! The actor that holds the plot grid
         vtkActor*                plotGridActor;
@@ -171,7 +171,7 @@ class svkPlotLineGrid : public vtkObject
         int                         ampSelectionUpToDate[2];
 
         // Defines if the given volume for a given slice is up to date
-        vtkstd::vector< vtkstd::vector<bool> >  volumeUpToDate;
+        std::vector< std::vector<bool> >  volumeUpToDate;
 
         //! The data
         svk4DImageData*               data;

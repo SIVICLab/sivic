@@ -601,7 +601,7 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
 /*
  *  Debugging
  */
-void svkMrsImageFFT::PrintSpectrum( vtkImageComplex* data, int numPoints, vtkstd::string msg )
+void svkMrsImageFFT::PrintSpectrum( vtkImageComplex* data, int numPoints, std::string msg )
 {
     for( int i = 0; i < numPoints; i++ ) {
         float abs = ( data[i].Real * data[i].Real )

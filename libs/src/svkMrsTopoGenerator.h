@@ -44,7 +44,7 @@
 #define SVK_MRS_TOPO_GENERATOR_H
 
 
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 #include <svkMrsImageData.h>
 #include <svkImageTopologyGenerator.h>
 #include <svkSatBandSet.h>

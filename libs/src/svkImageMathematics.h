@@ -44,7 +44,7 @@
 #define SVK_IMAGE_MATHEMATICS_H
 
 
-#include <vtkImageMathematics.h>
+#include </usr/include/vtk/vtkImageMathematics.h>
 #include <svkAlgorithmPortMapper.h>
 #include <svkStatistics.h>
 

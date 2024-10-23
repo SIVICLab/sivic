@@ -46,10 +46,10 @@
 
 #include <svkImageData.h>
 #include <svkDataView.h>
-#include <vtkRenderWindow.h>
-#include <vtkRenderWindowInteractor.h>
-#include <vtkObject.h>
-#include <vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkRenderWindow.h>
+#include </usr/include/vtk/vtkRenderWindowInteractor.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
 #include <vector>
 
 

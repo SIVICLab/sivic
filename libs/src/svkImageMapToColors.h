@@ -44,11 +44,11 @@
 #define SVK_IMAGE_MAP_TO_COLORS_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-#include <vtkDataObject.h>
-#include <vtkImageMapToColors.h>
-#include <vtkInstantiator.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkDataObject.h>
+#include </usr/include/vtk/vtkImageMapToColors.h>
+//#include </usr/include/vtk/vtkInstantiator.h>
 
 #include <svkMriImageData.h>
 #include <svkImageData.h>

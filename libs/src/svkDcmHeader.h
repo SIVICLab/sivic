@@ -44,9 +44,9 @@
 #define SVK_DCM_HEADER_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkMath.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkMath.h>
 
 #include <iostream>
 #include <sstream>

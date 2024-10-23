@@ -44,8 +44,8 @@
 #define SVK_IMAGE_WRITER_FACTORY_H
 
 
-#include <vtkObject.h>
-#include <vtkImageWriter.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkImageWriter.h>
 #include <svkImageData.h>
 
 

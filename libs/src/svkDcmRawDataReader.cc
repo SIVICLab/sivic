@@ -40,15 +40,15 @@
  */
 
 
-#include <vtkZLibDataCompressor.h>
+#include </usr/include/vtk/vtkZLibDataCompressor.h>
 
 #include <svkDcmRawDataReader.h>
 #include <svkDcmHeader.h>
 #include <svkMriImageData.h>
 
-#include <vtkErrorCode.h>
-#include <vtkInformation.h>
-#include <vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkErrorCode.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
 
 #include <sstream>
 
@@ -93,7 +93,7 @@ svkDcmRawDataReader::~svkDcmRawDataReader()
 int svkDcmRawDataReader::CanReadFile(const char* fname)
 {
 
-    vtkstd::string fileToCheck(fname);
+    std::string fileToCheck(fname);
 
     bool isDcmRaw = false; 
 
@@ -102,7 +102,7 @@ int svkDcmRawDataReader::CanReadFile(const char* fname)
         svkImageData* tmp = svkMriImageData::New(); 
 
         tmp->GetDcmHeader()->ReadDcmFile( fname );
-        vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
+        std::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
 
         //verify that this isn't a proprietary use of DICOM MR ImageStorage: 
         if( tmp->GetDcmHeader()->ElementExists( "SVK_PRIVATE_TAG", "top") ) {
@@ -165,14 +165,14 @@ void svkDcmRawDataReader::ExtractFiles()
 
     for ( int fileNum = 0; fileNum < numberOfEncapsulatedFiles; fileNum++ ) {
 
-        vtkstd::string fileName =  
+        std::string fileName =  
             hdr->GetStringSequenceItemElement(
                 "SVK_FILE_SET_SEQUENCE",
                 fileNum,
                 "SVK_FILE_NAME"
             );
 
-        vtkstd::string sha1Digest =  
+        std::string sha1Digest =  
             hdr->GetStringSequenceItemElement(
                 "SVK_FILE_SET_SEQUENCE",
                 fileNum,
@@ -210,7 +210,7 @@ void svkDcmRawDataReader::ExtractFiles()
         } else {
 
             //  If an output directory was provided, prepend the filename:
-            vtkstd::string outputFileName = fileName; 
+            std::string outputFileName = fileName; 
             if ( this->outDir.size() > 0 ) {
                 outputFileName = outDir + "/" + fileName; 
             }
@@ -374,7 +374,7 @@ void svkDcmRawDataReader::LegacyParsing(string fileName, int fileNum, long int n
     );
 
     //  If an output directory was provided, prepend the filename:
-    vtkstd::string outputFileName = fileName; 
+    std::string outputFileName = fileName; 
     if ( this->outDir.size() > 0 ) {
         outputFileName = outDir + "/" + fileName; 
     }
@@ -405,7 +405,7 @@ void svkDcmRawDataReader::LegacyParsing(string fileName, int fileNum, long int n
 /*!
  *  Set the path to extract files into
  */
-void svkDcmRawDataReader::SetOutputDir( vtkstd::string outDir )
+void svkDcmRawDataReader::SetOutputDir( std::string outDir )
 {
     this->outDir = outDir; 
 }

@@ -42,11 +42,11 @@
 
 #include <svkGEPFileMapper.h>
 #include <svkMrsImageData.h>
-#include <vtkCellData.h>
-#include <vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkCellData.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
 #include <svkSpecUtils.h>
-#include <vtkByteSwap.h>
-#include <vtkMatrix3x3.h>
+#include </usr/include/vtk/vtkByteSwap.h>
+#include </usr/include/vtk/vtkMatrix3x3.h>
 
 #include "svkEPSIReorder.h"
 
@@ -2631,7 +2631,7 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
 
         cout << "LOAD_AVG OF ACQUISITIONS" << endl;
 
-        float cmplxPt[2];
+        double cmplxPt[2];
         float cmplxPtAv[2];
 
         int numFreqPts = this->dcmHeader->GetIntValue( "DataPointColumns" );
@@ -2662,7 +2662,7 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
                     vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
                         mrsData->GetSpectrum( 0, 0, 0, acq, coil)
                     ); 
-                    spectrum->GetTupleValue(freq, cmplxPt);
+                    spectrum->GetTuple(freq, cmplxPt);
                     cmplxPtAv[0] += cmplxPt[0]; 
                     cmplxPtAv[1] += cmplxPt[1]; 
                     if ( freq == 0) {

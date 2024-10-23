@@ -44,14 +44,14 @@
 #define SVK_MRS_LINEAR_PHASE
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkInformationVector.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
 #include <svkSpecUtils.h>
 #include <svkImageInPlaceFilter.h>
-#include <vtkImageFourierFilter.h>
+#include </usr/include/vtk/vtkImageFourierFilter.h>
 
 
 namespace svk {

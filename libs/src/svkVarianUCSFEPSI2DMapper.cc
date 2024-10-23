@@ -43,10 +43,10 @@
 #include <svkVarianUCSFEPSI2DMapper.h>
 #include <svkVarianReader.h>
 #include <svkMrsImageData.h>
-#include <vtkDebugLeaks.h>
-#include <vtkTransform.h>
-#include <vtkMatrix4x4.h>
-#include <vtkByteSwap.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkTransform.h>
+#include </usr/include/vtk/vtkMatrix4x4.h>
+#include </usr/include/vtk/vtkByteSwap.h>
 
 
 using namespace svk;
@@ -118,7 +118,7 @@ void svkVarianUCSFEPSI2DMapper::InitPixelMeasuresMacro()
     pixelSize[1] = this->GetHeaderValueAsFloat("lro", 0) / numPixels[1];
     pixelSize[2] = this->GetHeaderValueAsFloat("thk", 0) / numPixels[2];
 
-    vtkstd::string pixelSizeString[3];
+    std::string pixelSizeString[3];
 
     for (int i = 0; i < 3; i++) {
         ostringstream oss;
@@ -390,7 +390,7 @@ void svkVarianUCSFEPSI2DMapper::InitMRSpectroscopyModule()
  *  This method reads data from the pfile and puts the data into the CellData arrays.
  *  Non-uniform k-space sampling requires regridding to rectaliniear k-space array here. 
  */
-void svkVarianUCSFEPSI2DMapper::ReadFidFile( vtkstd::string fidFileName, svkImageData* data )
+void svkVarianUCSFEPSI2DMapper::ReadFidFile( std::string fidFileName, svkImageData* data )
 {
 
     svkImageData* tmpImage = svkMrsImageData::New();
@@ -480,7 +480,7 @@ void svkVarianUCSFEPSI2DMapper::ReorderEPSIData( svkImageData* data)
     svkDcmHeader* hdr = data->GetDcmHeader();
 
 
-    vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
+    std::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
     int numComponents;
     if ( dataRepresentation == "COMPLEX" ) {
         numComponents = 2;
@@ -647,12 +647,12 @@ void svkVarianUCSFEPSI2DMapper::ReorderEPSIData( svkImageData* data)
 
                                //  reorder EPSI data, throwng away the first and last 
                                //  point (zero crossing). 
-                            float epsiTuple[2]; 
-                            float tuple[2]; 
+                            double epsiTuple[2]; 
+                            double tuple[2]; 
                             int epsiOffset; 
                             for (int i = 0; i < numFreqPts; i++) {
                                 epsiOffset = (lobeStride * i ) + currentEPSIPt;
-                                epsiSpectrum->GetTupleValue(epsiOffset, epsiTuple); 
+                                epsiSpectrum->GetTuple(epsiOffset, epsiTuple); 
                                 tuple[0] = epsiTuple[0]; 
                                 tuple[1] = epsiTuple[1]; 
                                 //cout << " epsi_spec to cartesian spec " << epsiOffset << " -> " << i << " " << epsiTuple[0] << " " << epsiTuple[1] << endl;
@@ -773,7 +773,7 @@ void svkVarianUCSFEPSI2DMapper::SetCellSpectrum(vtkImageData* data, int x, int y
 {
 
     int numComponents = 1;
-    vtkstd::string representation =  this->dcmHeader->GetStringValue( "DataRepresentation" );
+    std::string representation =  this->dcmHeader->GetStringValue( "DataRepresentation" );
     if (representation.compare( "COMPLEX" ) == 0 ) {
         numComponents = 2;
     }

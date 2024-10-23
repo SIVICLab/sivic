@@ -41,7 +41,7 @@
 
 
 #include <svkLookupTable.h>
-#include <vtkImageAccumulate.h>
+#include </usr/include/vtk/vtkImageAccumulate.h>
 
 
 using namespace svk;

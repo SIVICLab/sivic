@@ -44,20 +44,20 @@
 #define SVK_OVERLAY_CONTOUR_DIRECTOR_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkDataSet.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkDataSet.h>
 #include <svkMriImageData.h>
-#include <vtkExtractVOI.h>
-#include <vtkProperty.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkTransform.h>
+#include </usr/include/vtk/vtkExtractVOI.h>
+#include </usr/include/vtk/vtkProperty.h>
+#include </usr/include/vtk/vtkPolyDataMapper.h>
+#include </usr/include/vtk/vtkTransform.h>
 
 #include <svkDcmHeader.h>
-#include <vtkContourFilter.h>
-#include <vtkLegendBoxActor.h>
-#include <vtkTubeFilter.h>
-#include <vtkActor.h>
+#include </usr/include/vtk/vtkContourFilter.h>
+#include </usr/include/vtk/vtkLegendBoxActor.h>
+#include </usr/include/vtk/vtkTubeFilter.h>
+#include </usr/include/vtk/vtkActor.h>
 #include <vector>
 
 
@@ -116,7 +116,7 @@ class svkOverlayContourDirector : public vtkObject
         svkMriImageData*                 referenceImage;
         vector<vtkContourFilter*>        contourFilters;
         vector<vtkActor*>                contourActors;
-        vtkstd::vector<svkMriImageData*> dataVector;
+        std::vector<svkMriImageData*> dataVector;
         int                              FindOverlayContourSlice( int referenceSlice, svkDcmHeader::Orientation orientation, int overlayIndex );
         vtkTransform*                    GetContourTransform(svkImageData* contourData, int contourSlice,
                                                             int referenceSlice,

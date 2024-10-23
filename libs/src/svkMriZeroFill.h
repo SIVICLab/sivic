@@ -44,15 +44,15 @@
 #define SVK_MRI_ZERO_FILL
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkImageConstantPad.h>
-#include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkImageChangeInformation.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkImageConstantPad.h>
+#include </usr/include/vtk/vtkInformationVector.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkImageChangeInformation.h>
 #include <svkImageAlgorithm.h>
 #include <svkImageLinearPhase.h>
-#include <vtkImageMathematics.h>
+#include </usr/include/vtk/vtkImageMathematics.h>
 
 
 namespace svk {

@@ -53,13 +53,13 @@
 
 #include "svkExtractVOI.h"
 
-#include "vtkCellData.h"
-#include "vtkImageData.h"
-#include "vtkInformation.h"
-#include "vtkInformationVector.h"
-#include "vtkObjectFactory.h"
-#include "vtkStreamingDemandDrivenPipeline.h"
-#include "vtkPointData.h"
+#include "/usr/include/vtk/vtkCellData.h"
+#include "/usr/include/vtk/vtkImageData.h"
+#include "/usr/include/vtk/vtkInformation.h"
+#include "/usr/include/vtk/vtkInformationVector.h"
+#include "/usr/include/vtk/vtkObjectFactory.h"
+#include "/usr/include/vtk/vtkStreamingDemandDrivenPipeline.h"
+#include "/usr/include/vtk/vtkPointData.h"
 using namespace svk;
 
 //vtkCxxRevisionMacro(svkExtractVOI, "$Rev$");

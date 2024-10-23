@@ -45,10 +45,10 @@
 
 
 #include <stdio.h>
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkDataArray.h>
-#include <vtkFloatArray.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkDataArray.h>
+#include </usr/include/vtk/vtkFloatArray.h>
 #include <svkUtils.h>
 
 namespace svk {

@@ -44,9 +44,9 @@
 #define SVK_METABOLITE_MAP_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkImageData.h>
 #include <svkMriImageData.h>
@@ -85,7 +85,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
         }algorithm;
 
 
-        void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
+        void                    SetSeriesDescription(std::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         void                    SetZeroCopy(bool zeroCopy); 
         void                    SetPeakPosPPM( float peak_center_ppm );     
@@ -96,7 +96,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
         void                    SetAlgorithmToLineWidth();
         void                    SetAlgorithmToMagLineWidth();
         void                    SetAlgorithmToMagIntegrate();
-        void                    SetAlgorithm( vtkstd::string algo );     
+        void                    SetAlgorithm( std::string algo );     
         void                    SetVerbose( bool isVerbose );     
         void                    LimitToSelectedVolume(float fraction = 0.5001);
         short*                  GetSelectedVolumeMask();
@@ -143,7 +143,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
 
 
         //  Members:
-        vtkstd::string              newSeriesDescription; 
+        std::string              newSeriesDescription; 
         float                       peakCenterPPM;
         float                       peakWidthPPM;
         svkMetaboliteMap::algorithm quantificationAlgorithm;  

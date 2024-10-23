@@ -152,12 +152,12 @@ float svkMRSCombine::ScaleOutputIntensity()
     for ( int cellID = 0; cellID < numCells; cellID++ ) {
 
         vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
-        float tuple[2];
+        double tuple[2];
         for (int i = 0; i < numTimePoints; i++ ) {
-            spectrum->GetTupleValue(i, tuple);
+            spectrum->GetTuple(i, tuple);
             tuple[0] = tuple[0] * globalScale;  
             tuple[1] = tuple[1] * globalScale;  
-            spectrum->SetTupleValue(i, tuple); 
+            spectrum->SetTuple(i, tuple); 
         }
     }
 }
@@ -178,9 +178,9 @@ float svkMRSCombine::GetMaxSignalIntensity()
     for ( int cellID = 0; cellID < numCells; cellID++ ) {
 
         vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
-        float tuple[2];
+        double tuple[2];
         for (int i = 0; i < numTimePoints; i++ ) {
-            spectrum->GetTupleValue(i, tuple);
+            spectrum->GetTuple(i, tuple);
             if ( tuple[0] > maxSignalIntensity ) {
                 maxSignalIntensity = tuple[0]; 
             }
@@ -277,7 +277,7 @@ void svkMRSCombine::RequestLinearCombinationData( )
                         for( int channel = 0; channel < numChannels; channel++ ) { 
 
                             vtkFloatArray* spectrumN = static_cast<vtkFloatArray*>( data->GetSpectrum( x, y, z, timePt, channel) );
-                            spectrumN->GetTupleValue(freq, cmplxPtN);
+                            spectrumN->GetTuple(freq, cmplxPtN);
 
                             if ( this->combinationMethod == svkMRSCombine::ADDITION ) {
 
@@ -404,7 +404,7 @@ void svkMRSCombine::RequestSumOfSquaresData()
                             vtkFloatArray* spectrumN = static_cast<vtkFloatArray*>(
                                             svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel ) );
     
-                            spectrumN->GetTupleValue(freq, cmplxPtN);
+                            spectrumN->GetTuple(freq, cmplxPtN);
     
                             cmplxPtNNew[0] += ( cmplxPtN[0] * cmplxPtN[0] + cmplxPtN[1] * cmplxPtN[1] ); 
                             cmplxPtNNew[1] += 0; 
@@ -429,7 +429,7 @@ void svkMRSCombine::RequestSumOfSquaresData()
                                             svkMrsImageData::SafeDownCast(data)->GetSpectrum( 
                                                     x, y, z, targetTimeIndex, targetChannelIndex) 
                                         );
-                                spectrumN->SetTupleValue(freq, cmplxPtNNew);
+                                spectrumN->SetTuple(freq, cmplxPtNNew);
                             }
 
                         }

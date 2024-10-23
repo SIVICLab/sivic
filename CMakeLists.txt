@@ -29,6 +29,24 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 
 PROJECT( sivic )
+
+add_definitions(-D__STDC_FORMAT_MACROS)
+add_definitions(-DVTK_LEGACY_REMOVE)
+add_definitions(-Dvtkstd=std)
+
+# Detect the compiler and set the C++ standard flags accordingly
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
+  # For GCC or Clang
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wno-deprecated -Wno-deprecated-declarations")
+elseif(MSVC)
+  # For Microsoft Visual C++
+  # Note: MSVC uses different flags and supports C++14 from Visual Studio 2015 Update 3 onwards
+  # Adjust the flag accordingly if using an older version
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14")
+endif()
+
+# For all targets
+
 option( BUILD_TESTING "Build tests." FALSE )
 
 INCLUDE( CMakeSivicInclude.cmake )
@@ -105,8 +123,26 @@ ENDIF(WIN32)
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK 6.0 REQUIRED NO_MODULE )
-INCLUDE(${VTK_USE_FILE})
+set(VTK_INCLUDE_DIRS "/usr/include/vtk")
+
+FIND_PACKAGE(VTK 6.0 REQUIRED COMPONENTS
+    CommonCore
+    CommonDataModel
+    CommonSystem
+    IOImage
+    ImagingCore
+    ImagingFourier
+    ImagingGeneral
+    FiltersCore
+    FiltersGeneral
+    FiltersSources
+    # Add other required modules as needed
+)
+
+include_directories(${VTK_INCLUDE_DIRS})
+
+# Remove deprecated include
+#INCLUDE(${VTK_USE_FILE})
 
 
 ###################################
@@ -122,11 +158,57 @@ IF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER 
     
 ENDIF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
 
+#   DCMTK
 ###################################
-#   DCMTK (DCMTK_DIR is the root include dir
-###################################
-FIND_PATH(DCMTK_DIR dctk.h)
+# Set DCMTK include and library directories
+set(DCMTK_INCLUDE_DIRS "/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include")
+set(DCMTK_LIBRARY_DIRS "/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/lib64")
 
+# Include DCMTK headers
+include_directories(${DCMTK_INCLUDE_DIRS})
+
+# List of required DCMTK libraries
+set(DCMTK_LIB_NAMES
+  ofstd
+  oflog
+  dcmdata
+  dcmimgle
+  dcmimage
+  # Add other libraries as needed
+)
+
+# Find each DCMTK library
+foreach(lib ${DCMTK_LIB_NAMES})
+  find_library(DCMTK_${lib}_LIBRARY
+    NAMES ${lib}
+    PATHS ${DCMTK_LIBRARY_DIRS}
+    NO_DEFAULT_PATH
+  )
+  if(NOT DCMTK_${lib}_LIBRARY)
+    message(FATAL_ERROR "Cannot find DCMTK library: ${lib}")
+  else()
+    message(STATUS "Found DCMTK library: ${lib} at ${DCMTK_${lib}_LIBRARY}")
+  endif()
+  list(APPEND DCMTK_LIBRARIES ${DCMTK_${lib}_LIBRARY})
+endforeach()
+
+# Ensure proper linking order
+set(DCMTK_LIBRARIES
+  ${DCMTK_dcmimage_LIBRARY}
+  ${DCMTK_dcmimgle_LIBRARY}
+  ${DCMTK_dcmdata_LIBRARY}
+  ${DCMTK_oflog_LIBRARY}
+  ${DCMTK_ofstd_LIBRARY}
+)
+
+# If you have a specific target that requires DCMTK, link the libraries
+# Replace 'your_target_name' with the actual target name(s)
+# target_link_libraries(your_target_name ${DCMTK_LIBRARIES})
+
+# For example, if you have a library target named 'svk'
+# You might link it like this:
+# target_link_libraries(svk ${DCMTK_LIBRARIES})
+####################
 
 if( BUILD_PROFILER)
     ADD_DEFINITIONS( -pg )

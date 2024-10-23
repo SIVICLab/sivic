@@ -47,9 +47,9 @@
 
 #include <itkParticleSwarmOptimizer.h>
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkImageData.h>
 #include <svkMriImageData.h>
@@ -94,7 +94,7 @@ class svkMRSKinetics: public svkImageAlgorithm
         } MODEL_TYPE;
 
 
-        void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
+        void                    SetSeriesDescription(std::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         void                    SetZeroCopy(bool zeroCopy); 
         void                    SetModelType( svkMRSKinetics::MODEL_TYPE modelType ); 
@@ -136,7 +136,7 @@ class svkMRSKinetics: public svkImageAlgorithm
 
 
         //  Members:
-        vtkstd::string          newSeriesDescription; 
+        std::string          newSeriesDescription; 
 
 
     private:

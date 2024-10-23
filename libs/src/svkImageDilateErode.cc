@@ -41,7 +41,7 @@
 
 
 #include <svkImageDilateErode.h>
-#include <vtkImageDilateErode3D.h>
+#include </usr/include/vtk/vtkImageDilateErode3D.h>
 
 using namespace svk;
 

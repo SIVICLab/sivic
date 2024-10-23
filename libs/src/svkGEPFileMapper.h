@@ -43,8 +43,8 @@
 #define SVK_GE_PFILE_MAPPER_H
 
 
-#include <vtkImageData.h>
-#include <vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkImageData.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
 
 #include <svkDcmHeader.h>
 #include <svkImageReader2.h>
@@ -54,7 +54,7 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <vtkStringArray.h>
+#include </usr/include/vtk/vtkStringArray.h>
 
 
 namespace svk {

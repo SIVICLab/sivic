@@ -49,10 +49,10 @@
 #include <vector>
 #include <stdio.h>
 #include <sstream>
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkXMLDataElement.h>
-#include <vtkXMLUtilities.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkXMLDataElement.h>
+#include </usr/include/vtk/vtkXMLUtilities.h>
 
 #ifdef WIN32
 #include <windows.h>

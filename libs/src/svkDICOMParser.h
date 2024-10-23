@@ -44,10 +44,10 @@
 #define SVK_DICOM_PARSER_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <DICOMParser.h>
-#include <DICOMFile.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/DICOMParser.h>
+#include </usr/include/vtk/DICOMFile.h>
 #include <svkDcmHeader.h>
 
 

@@ -44,12 +44,12 @@
 #define SVK_IMAGE_CLIP_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-#include <vtkDataObject.h>
-#include <vtkImageClip.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkDataObject.h>
+#include </usr/include/vtk/vtkImageClip.h>
 #include <svkMriImageData.h>
-#include <vtkInstantiator.h>
+//include <vtkInstantiator.h>
 
 
 namespace svk {

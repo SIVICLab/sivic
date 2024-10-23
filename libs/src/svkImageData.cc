@@ -1873,7 +1873,7 @@ void svkImageData::RemoveArrays( svkImageData* data )
 
     for ( int cellID = 0; cellID < numCells; cellID++) {
         svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID); 
-        vtkstd::string arrayName = svk4DImageData::GetArrayName(&loopVector); 
+        std::string arrayName = svk4DImageData::GetArrayName(&loopVector); 
         data->GetCellData()->RemoveArray( arrayName.c_str() );
     }
 }

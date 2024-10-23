@@ -44,11 +44,11 @@
 #include <svkDdfVolumeWriter.h>
 #include <svk4DImageData.h>
 #include <svkDcmHeader.h>
-#include <vtkErrorCode.h>
-#include <vtkCellData.h>
-#include <vtkExecutive.h>
-#include <vtkFloatArray.h>
-#include <vtkByteSwap.h>
+#include </usr/include/vtk/vtkErrorCode.h>
+#include </usr/include/vtk/vtkCellData.h>
+#include </usr/include/vtk/vtkExecutive.h>
+#include </usr/include/vtk/vtkFloatArray.h>
+#include </usr/include/vtk/vtkByteSwap.h>
 #include <svkUtils.h>
 #include "svkTypeUtils.h"
 
@@ -361,7 +361,7 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, svkDcmHeader::DimensionVe
 
                 for (int i = 0; i < specPts; i++) {
 
-                    fa->GetTupleValue(i, dataTuple);
+                    fa->GetTypedTuple(i, dataTuple);
 
                     for (int j = 0; j < numComponents; j++) {
                         specData[ (offsetOut * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];

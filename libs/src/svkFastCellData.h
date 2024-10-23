@@ -45,10 +45,10 @@
 #define SVK_FAST_CELL_DATA
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkCellData.h>
-#include <vtkDataArray.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkCellData.h>
+#include </usr/include/vtk/vtkDataArray.h>
 
 namespace svk {
 

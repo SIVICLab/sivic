@@ -40,16 +40,16 @@
 
 
 #include <svkGESigna5XReader.h>
-#include <vtkByteSwap.h>
-#include <vtkDebugLeaks.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkByteSwap.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkGlobFileNames.h>
+#include </usr/include/vtk/vtkSortFileNames.h>
+#include </usr/include/vtk/vtkInformation.h>
 #include <svkIOD.h>
 #include <svkEnhancedMRIIOD.h>
 #include <svkMriImageData.h>
-#include <vtkMath.h>
-#include <vtkMatrix4x4.h>
+#include </usr/include/vtk/vtkMath.h>
+#include </usr/include/vtk/vtkMatrix4x4.h>
 
 #include <sys/stat.h>
 #include <string>

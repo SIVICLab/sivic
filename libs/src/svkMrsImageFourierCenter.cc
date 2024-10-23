@@ -43,7 +43,7 @@
 
 #include <svkMrsImageFourierCenter.h>
 #include <svkImageFourierCenter.h>
-#include <vtkImageFFT.h>
+#include </usr/include/vtk/vtkImageFFT.h>
 #include <svkMrsImageFFT.h>
 
 using namespace svk;

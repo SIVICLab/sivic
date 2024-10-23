@@ -43,9 +43,9 @@
 #ifndef SVK_LCMODEL_COORD_READER_H
 #define SVK_LCMODEL_COORD_READER_H
 
-#include <vtkInformation.h>
-#include <vtkStringArray.h>
-#include <vtkTable.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkStringArray.h>
+#include </usr/include/vtk/vtkTable.h>
 
 #include <svkUtils.h>
 #include <svkLCModelReader.h>

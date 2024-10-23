@@ -48,9 +48,9 @@
 
 #include <svkPhilipsSMapper.h>
 #include <svkImageReader2.h>
-#include <vtkInformation.h>
-#include <vtkStringArray.h>
-#include <vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkStringArray.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
 #include <map>
 #include <string>
 

@@ -43,15 +43,15 @@
 #ifndef SVK_NIFTI_VOLUME_READER_H
 #define SVK_NIFTI_VOLUME_READER_H
 
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkInformation.h>
 #include <map>
 #include <string>
 
 #include <svkUtils.h>
 #include <svkImageReader2.h>
 #include <svkEnhancedMRIIOD.h>
-#include <vtkNIFTIImageReader.h>
-#include <vtkNIFTIImageHeader.h>
+#include </usr/include/vtk/vtkNIFTIImageReader.h>
+#include </usr/include/vtk/vtkNIFTIImageHeader.h>
 
 namespace svk {
 

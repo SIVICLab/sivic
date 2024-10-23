@@ -44,8 +44,8 @@
 
 #include <svkUtils.h>
 #include <svkTypeUtils.h>
-#include "dcmtk/dcmdata/dcrleerg.h" 
-#include "dcmtk/dcmdata/dcrledrg.h" 
+#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/dcmdata/dcrleerg.h>
+#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/dcmdata/dcrledrg.h> 
 
 
 
@@ -2127,7 +2127,7 @@ bool svkDcmtkAdapter::ElementExists(const char* elementName, const char* parentS
             elementExists = true;
 
         }
-    } else if( vtkstd::string(parentSeqName).compare("top") == 0) {
+    } else if( std::string(parentSeqName).compare("top") == 0) {
 
         if ( dataset->findAndGetElement( GetDcmTagKey(elementName), tmpElement, OFFalse) == EC_Normal ) {
 

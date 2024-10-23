@@ -44,9 +44,9 @@
 #define SVK_ALGORITHM_PORT_MAPPER_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkImageData.h>
 #include <svkMriImageData.h>
@@ -58,7 +58,7 @@
 #include <svkInt.h>
 #include <svkBool.h>
 #include <svkXML.h>
-#include <vtkAlgorithmOutput.h>
+#include </usr/include/vtk/vtkAlgorithmOutput.h>
 #include <svkImageReaderFactory.h>
 #include <string>
 

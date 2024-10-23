@@ -43,8 +43,8 @@
 #ifndef SVK_EPSI_REORDER_H
 #define SVK_EPSI_REORDER_H
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 #include <svkTypes.h>
 
 #include <svkMrsImageFFT.h>

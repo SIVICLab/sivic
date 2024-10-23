@@ -42,7 +42,7 @@
 
 #include <svkPhilipsSReader.h>
 #include <svkPhilipsSMapper.h>
-#include <vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
 #include <algorithm>    // std::remove
 
 #include <sys/stat.h>

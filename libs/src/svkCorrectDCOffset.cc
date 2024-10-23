@@ -128,7 +128,7 @@ void svkCorrectDCOffset::CorrectDCOffset()
     int fractionOfSpectrum = static_cast<int>( numSpecPts / 8 );
     vtkFloatArray* spectrum;
     float offset[2]; 
-    float cmplxPt[2]; 
+    double cmplxPt[2]; 
     int numSampledFIDs = 0; 
 
     int channelVoxelIndex0 = 0;
@@ -155,7 +155,7 @@ void svkCorrectDCOffset::CorrectDCOffset()
                 numSampledFIDs++; 
 
                 for (int freq = numSpecPts - fractionOfSpectrum; freq < numSpecPts; freq++ ) {
-                    spectrum->GetTupleValue(freq, cmplxPt);
+                    spectrum->GetTuple(freq, cmplxPt);
                     offset[0] += cmplxPt[0];
                     offset[1] += cmplxPt[1];
                 }
@@ -180,7 +180,7 @@ void svkCorrectDCOffset::CorrectDCOffset()
 
                 for (int freq = 0; freq < numSpecPts; freq++ ) {
 
-                    spectrum->GetTupleValue( freq, cmplxPt );
+                    spectrum->GetTuple( freq, cmplxPt );
 
                     cmplxPt[0] -= offset[0];
                     cmplxPt[1] -= offset[1];

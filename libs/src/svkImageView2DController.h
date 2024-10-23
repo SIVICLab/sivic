@@ -45,7 +45,7 @@
 
 
 #include <svkImageView2D.h>
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 
 
 namespace svk {

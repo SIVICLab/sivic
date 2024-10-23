@@ -200,10 +200,10 @@ float svkMRSNoise::CalcWindowSD( vtkFloatArray* spectrum, float mean, int startP
 {
 
     double noise = 0;  
-    float tuple[2];
+    double tuple[2];
 
     for (int i = startPt; i <= endPt; i++ ) {
-        spectrum->GetTupleValue(i, tuple); 
+        spectrum->GetTuple(i, tuple); 
         double value = (tuple[0] - mean) * (tuple[0] - mean ); 
         noise += value; 
     }
@@ -222,9 +222,9 @@ float svkMRSNoise::CalcWindowSD( vtkFloatArray* spectrum, float mean, int startP
 float svkMRSNoise::CalcWindowMean( vtkFloatArray* spectrum, int startPt, int endPt )
 {
     float mean = 0; 
-    float tuple[2];
+    double tuple[2];
     for (int i = startPt; i <= endPt; i++ ) {   //inclusive
-        spectrum->GetTupleValue(i, tuple); 
+        spectrum->GetTuple(i, tuple); 
         mean += tuple[0]; 
         //cout << "MEAN: " << i << " " << tuple[0] << endl;
     }
@@ -247,7 +247,7 @@ void svkMRSNoise::FindNoiseWindow()
     //  Now analyze this spectrum for the region of smallest noise that is at least 5 percent of data points. 
     int noiseWindow = static_cast<int>(numTimePoints * this->noiseWindowPercent); 
 
-    float tuple[2];
+    double tuple[2];
     int startPoint = 0; 
     double noise = FLT_MAX; 
     double mean; 
@@ -319,9 +319,9 @@ void svkMRSNoise::InitAverageSpectrum()
     vtkFloatArray* spectrum0 = static_cast<vtkFloatArray*>( data->GetSpectrum( 0 ) );
     this->averageSpectrum = vtkFloatArray::New(); 
     this->averageSpectrum->DeepCopy(spectrum0 ); 
-    float tuple[2];
+    double tuple[2];
     for (int i = 0; i < numTimePoints; i++ ) {
-        this->averageSpectrum->GetTupleValue(i, tuple); 
+        this->averageSpectrum->GetTuple(i, tuple); 
         tuple[0] = 0.; 
         tuple[1] = 0.; 
         this->averageSpectrum->SetTuple(i, tuple); 
@@ -342,10 +342,10 @@ void svkMRSNoise::InitAverageSpectrum()
         }
         // average in this spectrum
         vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
-        float tuple[2];
+        double tuple[2];
         for (int i = 0; i < numTimePoints; i++ ) {
-            spectrum->GetTupleValue(i, tuple); 
-            this->averageSpectrum->GetTupleValue(i, avTuple); 
+            spectrum->GetTuple(i, tuple); 
+            this->averageSpectrum->GetTuple(i, avTuple); 
             float rms =  tuple[0]*tuple[0] + tuple[1]*tuple[1];  
             rms =  pow( static_cast<double>(rms), static_cast<double>(0.5)); 
             avTuple[0] = avTuple[0] + rms; 
@@ -356,7 +356,7 @@ void svkMRSNoise::InitAverageSpectrum()
     }
 
     for (int i = 0; i < numTimePoints; i++ ) {
-        this->averageSpectrum->GetTupleValue(i, avTuple); 
+        this->averageSpectrum->GetTuple(i, avTuple); 
         avTuple[0] = avTuple[0]/numVoxelsAveraged; 
         this->averageSpectrum->SetTuple(i, avTuple); 
     }

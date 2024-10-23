@@ -44,10 +44,10 @@
 #define SVK_IMAGE_VIEW_2D_H
 
 
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 #include <svkDataView.h>
 #include <svkImageView2DController.h>
-#include <vtkImageViewer2.h>
+#include </usr/include/vtk/vtkImageViewer2.h>
 
 
 namespace svk {

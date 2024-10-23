@@ -44,13 +44,13 @@
 #define SVK_MRS_IMAGE_FFT_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkImageFourierFilter.h>
-#include <vtkImageFFT.h>
-#include <vtkImageRFFT.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkImageFourierFilter.h>
+#include </usr/include/vtk/vtkImageFFT.h>
+#include </usr/include/vtk/vtkImageRFFT.h>
 #include <svkImageLinearPhase.h>
 #include <svkImageFourierCenter.h>
 
@@ -156,7 +156,7 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         FFTMode         mode; 
 
         void            UpdateOrigin(); 
-        void            PrintSpectrum( vtkImageComplex* data, int numPoints, vtkstd::string msg ); 
+        void            PrintSpectrum( vtkImageComplex* data, int numPoints, std::string msg ); 
         void            NormalizePhaseShift( double shift[3] );
         void            ValidateRequest(); 
         bool            normalizeTransform;

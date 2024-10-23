@@ -44,9 +44,9 @@
 #define SVK_DCE_QUANTIFY_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkImageData.h>
 #include <svkMriImageData.h>
@@ -94,7 +94,7 @@ class svkDCEQuantify: public svkImageAlgorithmWithPortMapper
 
         static svkDCEQuantify* New();
         vtkTypeMacro( svkDCEQuantify, svkImageAlgorithmWithPortMapper);
-        vtkstd::vector< svkMriImageData* >* GetDCEMaps();
+        std::vector< svkMriImageData* >* GetDCEMaps();
 
         void    SetTimepointStart(int startPt);
         svkInt* GetTimepointStart( );
@@ -127,7 +127,7 @@ class svkDCEQuantify: public svkImageAlgorithmWithPortMapper
         void         GenerateNormalizedMaps(); 
 
         //  Members:
-        vtkstd::vector< svkMriImageData* >  dceMapVector; 
+        std::vector< svkMriImageData* >  dceMapVector; 
 
 };
 

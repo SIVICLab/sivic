@@ -30,9 +30,9 @@
 #define SIVIC_SVKCSREORDER_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkDataObject.h>
-#include <vtkGlobFileNames.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkDataObject.h>
+#include </usr/include/vtk/vtkGlobFileNames.h>
 #include <svkDataAcquisitionDescriptionXML.h>
 #include <svkTypeUtils.h>
 namespace svk {

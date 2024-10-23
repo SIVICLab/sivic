@@ -43,8 +43,8 @@
 #ifndef SVK_EPSI_PHASE_CORRECT_H
 #define SVK_EPSI_PHASE_CORRECT_H
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 
 #include <svkMrsImageFFT.h>
 #include <svkImageInPlaceFilter.h>

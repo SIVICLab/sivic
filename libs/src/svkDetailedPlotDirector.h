@@ -44,24 +44,24 @@
 #define SVK_DETAILED_PLOT_DIRECTOR_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkDataArray.h>
-#include <vtkAxisActor2D.h>
-#include <vtkTextActor.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkDataArray.h>
+#include </usr/include/vtk/vtkAxisActor2D.h>
+#include </usr/include/vtk/vtkTextActor.h>
 #include <svkXYPlotActor.h>
-#include <vtkTextProperty.h>
+#include </usr/include/vtk/vtkTextProperty.h>
 #include <svkXYPlotActor.h>
-#include <vtkCollectionIterator.h>
-#include <vtkAxisActor2D.h>
-#include <vtkProperty2D.h>
-#include <vtkObject.h>
-#include <vtkDataSet.h>
-#include <vtkRenderWindowInteractor.h>
-#include <vtkCursor2D.h>
-#include <vtkCallbackCommand.h>
-#include <vtkRenderWindow.h>
-#include <vtkRendererCollection.h>
-#include <vtkFloatArray.h>
+#include </usr/include/vtk/vtkCollectionIterator.h>
+#include </usr/include/vtk/vtkAxisActor2D.h>
+#include </usr/include/vtk/vtkProperty2D.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkDataSet.h>
+#include </usr/include/vtk/vtkRenderWindowInteractor.h>
+#include </usr/include/vtk/vtkCursor2D.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkRenderWindow.h>
+#include </usr/include/vtk/vtkRendererCollection.h>
+#include </usr/include/vtk/vtkFloatArray.h>
 
 #include <svkSpecPoint.h>
 #include <svkPlotLine.h>
@@ -129,7 +129,7 @@ class svkDetailedPlotDirector : public vtkObject
         void                           GenerateMagnitudeArray( vtkDataArray* complexArray, vtkDataArray* magnitudeArray);
         void                           RegenerateMagnitudeArrays();
 
-        vtkstd::vector<vtkDataObject*> dataVector;
+        std::vector<vtkDataObject*> dataVector;
         svkXYPlotActor*                xyPlotActor;
         double                         xMin;
         double                         yMin;

@@ -44,9 +44,9 @@
 #include <svkSatBandsXML.h>
 #include <svkTypeUtils.h>
 #include <svkFileUtils.h>
-#include <vtkXMLUtilities.h>
-#include <vtkXMLDataParser.h>
-#include <vtkMath.h>
+#include </usr/include/vtk/vtkXMLUtilities.h>
+#include </usr/include/vtk/vtkXMLDataParser.h>
+#include </usr/include/vtk/vtkMath.h>
 #include <stdexcept>
 
 using namespace svk;

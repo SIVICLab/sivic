@@ -43,8 +43,8 @@
 #ifndef SVK_GE__CONSOLE_PACS_INTERFACE_H
 #define SVK_GE__CONSOLE_PACS_INTERFACE_H
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 #include <svkPACSInterface.h>
 #include <svkUtils.h>
 #include <svkUCSFUtils.h>

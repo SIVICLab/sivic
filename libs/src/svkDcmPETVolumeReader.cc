@@ -43,11 +43,11 @@
 #include <svkDcmPETVolumeReader.h>
 #include <svkMriImageData.h>
 #include <svkTypeUtils.h>
-#include <vtkType.h>
-#include <vtkDebugLeaks.h>
-#include <vtkStringArray.h>
-#include <vtkInformation.h>
-#include <vtkMath.h>
+#include </usr/include/vtk/vtkType.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkStringArray.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkMath.h>
 #include <svkIOD.h>
 #include <svkEnhancedMRIIOD.h>
 #include <vector>

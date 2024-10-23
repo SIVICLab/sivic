@@ -41,12 +41,12 @@
 
 
 #include <svkFdfVolumeReader.h>
-#include <vtkShortArray.h>
-#include <vtkUnsignedShortArray.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
-#include <vtkDebugLeaks.h>
-#include <vtkByteSwap.h>
+#include </usr/include/vtk/vtkShortArray.h>
+#include </usr/include/vtk/vtkUnsignedShortArray.h>
+#include </usr/include/vtk/vtkGlobFileNames.h>
+#include </usr/include/vtk/vtkSortFileNames.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkByteSwap.h>
 #include <svkEnhancedMRIIOD.h>
 
 #include <sys/stat.h>

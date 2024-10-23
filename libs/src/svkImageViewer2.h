@@ -47,22 +47,22 @@
 #ifndef SVK_IMAGE_VIEWER_2_H
 #define SVK_IMAGE_VIEWER_2_H
 
-#include <vtkImageViewer2.h>
-#include <vtkImageMapper3D.h>
-#include <vtkTransform.h>
-#include <vtkImageActor.h>
-#include <vtkRenderWindow.h>
-#include <vtkRenderWindowInteractor.h>
-#include <vtkInteractorStyleImage.h>
-#include <vtkCommand.h>
-#include <vtkCamera.h>
-#include <vtkImageMapToWindowLevelColors.h>
+#include </usr/include/vtk/vtkImageViewer2.h>
+#include </usr/include/vtk/vtkImageMapper3D.h>
+#include </usr/include/vtk/vtkTransform.h>
+#include </usr/include/vtk/vtkImageActor.h>
+#include </usr/include/vtk/vtkRenderWindow.h>
+#include </usr/include/vtk/vtkRenderWindowInteractor.h>
+#include </usr/include/vtk/vtkInteractorStyleImage.h>
+#include </usr/include/vtk/vtkCommand.h>
+#include </usr/include/vtk/vtkCamera.h>
+#include </usr/include/vtk/vtkImageMapToWindowLevelColors.h>
 
 #include <svkImageMapToWindowLevelColors.h>
 #include <svkImageData.h>
 #include <svkOrientedImageActor.h>
-#include <vtkRenderer.h>
-#include <vtkCollectionIterator.h>
+#include </usr/include/vtk/vtkRenderer.h>
+#include </usr/include/vtk/vtkCollectionIterator.h>
 
 
 namespace svk {

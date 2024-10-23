@@ -41,7 +41,7 @@
 
 
 #include <svkImageViewer2.h>
-#include "vtkStreamingDemandDrivenPipeline.h"
+#include "/usr/include/vtk/vtkStreamingDemandDrivenPipeline.h"
 
 
 
@@ -146,7 +146,7 @@ public:
       if (event == vtkCommand::ResetWindowLevelEvent)
         {
         this->IV->GetInputAlgorithm()->UpdateInformation();
-        vtkStreamingDemandDrivenPipeline::SetUpdateExtent(
+        vtkStreamingDemandDrivenPipeline::SetExtent(
           this->IV->GetInputInformation(),
           vtkStreamingDemandDrivenPipeline::GetWholeExtent(
             this->IV->GetInputInformation()));
@@ -779,7 +779,7 @@ void svkImageViewer2::UpdateInputInformation()
     vtkAlgorithm* input = this->GetInputAlgorithm();
     input->UpdateInformation();
 
-    vtkStreamingDemandDrivenPipeline::SetUpdateExtent(
+    vtkStreamingDemandDrivenPipeline::SetExtent(
         this->GetInputInformation(),
         vtkStreamingDemandDrivenPipeline::GetWholeExtent(
             this->GetInputInformation()

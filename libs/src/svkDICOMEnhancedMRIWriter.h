@@ -43,7 +43,7 @@
 #define SVK_DICOM_ENHANCED_MRI_WRITER_H
 
 
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkDICOMImageWriter.h>
 

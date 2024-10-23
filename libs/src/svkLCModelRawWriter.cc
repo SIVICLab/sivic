@@ -43,10 +43,10 @@
 
 #include <svkLCModelRawWriter.h>
 #include <svkDcmHeader.h>
-#include <vtkErrorCode.h>
-#include <vtkCellData.h>
-#include <vtkExecutive.h>
-#include <vtkFloatArray.h>
+#include </usr/include/vtk/vtkErrorCode.h>
+#include </usr/include/vtk/vtkCellData.h>
+#include </usr/include/vtk/vtkExecutive.h>
+#include </usr/include/vtk/vtkFloatArray.h>
 #include <svkImageReader2.h>
 #include <svkTypeUtils.h>
 
@@ -252,7 +252,7 @@ void svkLCModelRawWriter::WriteGridSubmissionFile( string fileRoot )
 
     string submitScriptName = fileRoot + ".grid"; 
     if( this->submitScript.is_open() == false) {
-        cout << this->submitScript << endl;
+        //cout << this->submitScript << endl;
         this->submitScript.open( submitScriptName.c_str() );
     }
 
@@ -340,7 +340,7 @@ void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVec
                 for (int i = 0; i < specPts; i++) {
 
                     if ( this->quantificationMask[cellID] == 1 ) {
-                        fa->GetTupleValue(i, dataTuple);
+                        fa->GetTypedTuple(i, dataTuple);
                         //cout << "cellID(" << cellID << ") tup: " << i << " " << dataTuple[0] << endl;
                     } else {
                         dataTuple[0] = 0; 

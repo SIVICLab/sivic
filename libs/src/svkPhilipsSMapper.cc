@@ -47,9 +47,9 @@
 #include <svkSpecUtils.h>
 #include <svkImageReader2.h>
 
-#include <vtkDebugLeaks.h>
-#include <vtkTransform.h>
-#include <vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkTransform.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
 
 
 using namespace svk;

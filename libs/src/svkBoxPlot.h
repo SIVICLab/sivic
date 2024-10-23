@@ -42,22 +42,22 @@
 #ifndef SVK_BOX_PLOT_H
 #define SVK_BOX_PLOT_H
 
-#include <vtkObjectFactory.h>
-#include <vtkActor.h>
-#include <vtkPoints.h>
-#include <vtkProperty.h>
-#include <vtkFloatArray.h>
-#include <vtkPolyLine.h>
-#include <vtkPlane.h>
-#include <vtkTransform.h>
-#include <vtkPolyData.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkTransformPolyDataFilter.h>
-#include <vtkRenderedAreaPicker.h>
-#include <vtkViewport.h>
-#include <vtkTexture.h>
-#include <vtkRenderer.h>
-#include <vtkOpenGLActor.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkActor.h>
+#include </usr/include/vtk/vtkPoints.h>
+#include </usr/include/vtk/vtkProperty.h>
+#include </usr/include/vtk/vtkFloatArray.h>
+#include </usr/include/vtk/vtkPolyLine.h>
+#include </usr/include/vtk/vtkPlane.h>
+#include </usr/include/vtk/vtkTransform.h>
+#include </usr/include/vtk/vtkPolyData.h>
+#include </usr/include/vtk/vtkPolyDataMapper.h>
+#include </usr/include/vtk/vtkTransformPolyDataFilter.h>
+#include </usr/include/vtk/vtkRenderedAreaPicker.h>
+#include </usr/include/vtk/vtkViewport.h>
+#include </usr/include/vtk/vtkTexture.h>
+#include </usr/include/vtk/vtkRenderer.h>
+#include </usr/include/vtk/vtkOpenGLActor.h>
 
 
 namespace svk {

@@ -41,9 +41,9 @@
 
 
 #include <svkImageWriterFactory.h>
-#include <vtkJPEGWriter.h>
-#include <vtkTIFFWriter.h>
-#include <vtkPostScriptWriter.h>
+#include </usr/include/vtk/vtkJPEGWriter.h>
+#include </usr/include/vtk/vtkTIFFWriter.h>
+#include </usr/include/vtk/vtkPostScriptWriter.h>
 #include <svkDICOMSCWriter.h>
 #include <svkDICOMMRSWriter.h>
 #include <svkDICOMEnhancedMRIWriter.h>

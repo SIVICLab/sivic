@@ -44,16 +44,16 @@
 #define SVK_PLOT_GRID_VIEW_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkProp3DCollection.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkProp3DCollection.h>
 #include <svkLabeledDataMapper.h>
-#include <vtkSelectVisiblePoints.h>
+#include </usr/include/vtk/vtkSelectVisiblePoints.h>
 #include <svkImageClip.h>
-#include <vtkImageActor.h>
-#include <vtkTextProperty.h>
-#include <vtkDoubleArray.h>
-#include <vtkExtractEdges.h>
-#include <vtkImageMapper3D.h>
+#include </usr/include/vtk/vtkImageActor.h>
+#include </usr/include/vtk/vtkTextProperty.h>
+#include </usr/include/vtk/vtkDoubleArray.h>
+#include </usr/include/vtk/vtkExtractEdges.h>
+#include </usr/include/vtk/vtkImageMapper3D.h>
 #include <svkImageMapToColors.h>
 #include <svkDataView.h>
 #include <svkPlotGridViewController.h>
@@ -65,11 +65,11 @@
 #include <svkImageClip.h>
 #include <svkSatBandSet.h>
 #include <svkVoxelTaggingUtils.h>
-#include <vtkCellCenters.h>
-#include <vtkXYPlotActor.h>
-#include <vtkCursor2D.h>
-#include <vtkCleanPolyData.h>
-#include <vtkPolyDataPointSampler.h>
+#include </usr/include/vtk/vtkCellCenters.h>
+#include </usr/include/vtk/vtkXYPlotActor.h>
+#include </usr/include/vtk/vtkCursor2D.h>
+#include </usr/include/vtk/vtkCleanPolyData.h>
+#include </usr/include/vtk/vtkPolyDataPointSampler.h>
 #include <svkDetailedPlotDirector.h>
 #include <svkMrsTopoGenerator.h>
 #include <svkOrientedImageActor.h>
@@ -216,7 +216,7 @@ class svkPlotGridView : public svkDataView
         svkDetailedPlotDirector* detailedPlotDirector;
         svkSpecPoint::UnitType   plotUnitType;
         svkImageMapToColors*     windowLevel;
-        vtkstd::vector<int>      volumeIndexVector;
+        std::vector<int>      volumeIndexVector;
         int                      overlayTextDigits;
         bool                     alignCamera; 
 

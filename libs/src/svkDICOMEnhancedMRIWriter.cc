@@ -43,10 +43,10 @@
 #include <svkDICOMEnhancedMRIWriter.h>
 #include <svkTypeUtils.h>
 #include <svkImageReader2.h>
-#include <vtkErrorCode.h>
-#include <vtkCellData.h>
-#include <vtkExecutive.h>
-#include <vtkImageAccumulate.h>
+#include </usr/include/vtk/vtkErrorCode.h>
+#include </usr/include/vtk/vtkCellData.h>
+#include </usr/include/vtk/vtkExecutive.h>
+#include </usr/include/vtk/vtkImageAccumulate.h>
 
 
 using namespace svk;

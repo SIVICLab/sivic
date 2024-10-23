@@ -42,10 +42,10 @@
 #ifndef SVK_PLOT_LINE_H
 #define SVK_PLOT_LINE_H
 
-#include <vtkObjectFactory.h>
-#include <vtkPoints.h>
-#include <vtkDataArray.h>
-#include <vtkPolyLine.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkPoints.h>
+#include </usr/include/vtk/vtkDataArray.h>
+#include </usr/include/vtk/vtkPolyLine.h>
 #include <vector>
 
 

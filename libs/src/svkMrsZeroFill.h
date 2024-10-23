@@ -44,11 +44,11 @@
 #define SVK_MRS_ZERO_FILL_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkInformationVector.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
 
 #include <svkUtils.h>
 #include <svkMriZeroFill.h>

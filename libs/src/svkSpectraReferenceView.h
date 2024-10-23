@@ -43,23 +43,23 @@
 #define SVK_OVERLAY_VIEW_H
 
 
-#include <vtkImageViewer2.h>
-#include <vtkRenderWindow.h>
-#include <vtkRenderWindowInteractor.h>
-#include <vtkRenderer.h>
-#include <vtkCamera.h>
-#include <vtkImageMapToWindowLevelColors.h>
-#include <vtkProp3DCollection.h>
-#include <vtkAreaPicker.h>
-#include <vtkImageActor.h>
-#include <vtkObjectFactory.h>
-#include <vtkExtractEdges.h>
-#include <vtkCellData.h>
-#include <vtkPointData.h>
-#include <vtkPlane.h>
-#include <vtkColorTransferFunction.h>
-#include <vtkLookupTable.h>
-#include <vtkScalarBarActor.h>
+#include </usr/include/vtk/vtkImageViewer2.h>
+#include </usr/include/vtk/vtkRenderWindow.h>
+#include </usr/include/vtk/vtkRenderWindowInteractor.h>
+#include </usr/include/vtk/vtkRenderer.h>
+#include </usr/include/vtk/vtkCamera.h>
+#include </usr/include/vtk/vtkImageMapToWindowLevelColors.h>
+#include </usr/include/vtk/vtkProp3DCollection.h>
+#include </usr/include/vtk/vtkAreaPicker.h>
+#include </usr/include/vtk/vtkImageActor.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkExtractEdges.h>
+#include </usr/include/vtk/vtkCellData.h>
+#include </usr/include/vtk/vtkPointData.h>
+#include </usr/include/vtk/vtkPlane.h>
+#include </usr/include/vtk/vtkColorTransferFunction.h>
+#include </usr/include/vtk/vtkLookupTable.h>
+#include </usr/include/vtk/vtkScalarBarActor.h>
 
 #include <svkSpectraReferenceViewController.h>
 #include <svkImageViewer2.h>

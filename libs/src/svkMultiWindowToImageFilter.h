@@ -44,20 +44,20 @@
 #define SVK_MULTI_WINDOW_TO_IMAGE_FILTER_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkAlgorithm.h>
-#include <vtkImageData.h>
-#include <vtkWindowToImageFilter.h>
-#include <vtkRenderWindow.h>
-#include <vtkInformationVector.h>
-#include <vtkInformation.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkImageConstantPad.h>
-#include <vtkImageAppend.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkAlgorithm.h>
+#include </usr/include/vtk/vtkImageData.h>
+#include </usr/include/vtk/vtkWindowToImageFilter.h>
+#include </usr/include/vtk/vtkRenderWindow.h>
+#include </usr/include/vtk/vtkInformationVector.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkImageConstantPad.h>
+#include </usr/include/vtk/vtkImageAppend.h>
 #include <vector>
-#include <vtkImageFlip.h>
-#include <vtkRenderLargeImage.h>
-#include <vtkRendererCollection.h>
+#include </usr/include/vtk/vtkImageFlip.h>
+#include </usr/include/vtk/vtkRenderLargeImage.h>
+#include </usr/include/vtk/vtkRendererCollection.h>
 
 
 namespace svk {

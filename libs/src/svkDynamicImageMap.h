@@ -44,9 +44,9 @@
 #define SVK_DYNAMIC_IMAGE_MAP_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkImageData.h>
 #include <svkMriImageData.h>
@@ -71,7 +71,7 @@ class svkDynamicImageMap: public svkImageAlgorithm
 
         vtkTypeMacro( svkDynamicImageMap, svkImageAlgorithm);
 
-        void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
+        void                    SetSeriesDescription(std::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         // TODO: Make private API
         void                    SetZeroCopy(bool zeroCopy); 
@@ -108,7 +108,7 @@ class svkDynamicImageMap: public svkImageAlgorithm
 
 
         //  Members:
-        vtkstd::string          newSeriesDescription; 
+        std::string          newSeriesDescription; 
         bool                    normalize; 
 
 

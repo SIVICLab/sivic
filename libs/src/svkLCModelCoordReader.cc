@@ -47,12 +47,12 @@
 #include <svkTypeUtils.h>
 #include <svkFileUtils.h>
 #include <svkSpecPoint.h>
-#include <vtkDebugLeaks.h>
-#include <vtkByteSwap.h>
-#include <vtkSmartPointer.h>
-#include <vtkDelimitedTextReader.h>
-#include <vtkStringToNumeric.h>
-#include <vtkVariantArray.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkByteSwap.h>
+#include </usr/include/vtk/vtkSmartPointer.h>
+#include </usr/include/vtk/vtkDelimitedTextReader.h>
+#include </usr/include/vtk/vtkStringToNumeric.h>
+#include </usr/include/vtk/vtkVariantArray.h>
 
 #include <sys/stat.h>
 
@@ -103,7 +103,7 @@ svkLCModelCoordReader::~svkLCModelCoordReader()
 int svkLCModelCoordReader::CanReadFile(const char* fname)
 {
 
-    vtkstd::string fileToCheck(fname);
+    std::string fileToCheck(fname);
 
     if( fileToCheck.size() > 4 ) {
 

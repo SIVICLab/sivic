@@ -177,7 +177,7 @@ void svkDICOMMRSWriter::InitSpectroscopyData()
         
         for (int i = 0; i < specPts; i++) {
         
-            fa->GetTupleValue(i, dataTuple);  
+            fa->GetTypedTuple(i, dataTuple);  
 
             //  According to DICOM Part 3 C.8.14.4.1, time domain data should be 
             //  ordered from low to high frequency (or as the complex conjugate):

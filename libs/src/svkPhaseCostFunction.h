@@ -45,7 +45,7 @@
 
 
 
-#include <vtkMath.h>
+#include </usr/include/vtk/vtkMath.h>
 
 #include <svkMRSAutoPhase.h>
 #include <svkPhaseSpec.h>

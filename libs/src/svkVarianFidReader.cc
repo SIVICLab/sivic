@@ -44,7 +44,7 @@
 #include <svkVarianCSFidMapper.h>
 #include <svkVarianUCSF2DcsiMapper.h>
 #include <svkVarianUCSFEPSI2DMapper.h>
-#include <vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
 
 #include <sys/stat.h>
 

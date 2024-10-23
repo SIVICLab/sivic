@@ -44,10 +44,10 @@
 #define SVK_APODIZATION_WINDOW_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkFloatArray.h>
-#include <vtkMath.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkFloatArray.h>
+#include </usr/include/vtk/vtkMath.h>
 #include <svkImageData.h>
 
 namespace svk {

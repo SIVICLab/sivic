@@ -40,7 +40,7 @@
 #ifndef SVK_VOXEL_TAGGING_UTILS_H
 #define SVK_VOXEL_TAGGING_UTILS_H
 
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 #include <svkImageData.h>
 #include <svkMriImageData.h>
 #include <svkUtils.h>

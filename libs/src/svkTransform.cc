@@ -42,9 +42,9 @@
 
 #include <svkTransform.h>
 
-#include <vtkImageChangeInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkImageChangeInformation.h>
+#include </usr/include/vtk/vtkInformationVector.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
 
 
 using namespace svk;

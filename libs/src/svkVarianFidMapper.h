@@ -43,7 +43,7 @@
 #define SVK_VARIAN_FID_MAPPER_H
 
 
-#include <vtkImageData.h>
+#include </usr/include/vtk/vtkImageData.h>
 #include <svkImageData.h>
 
 #include <svkDcmHeader.h>

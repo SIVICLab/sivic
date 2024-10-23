@@ -134,7 +134,7 @@ void svkMRSPeakPick::RefinePeakRanges()
     int numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
     
     //  Define a reasonable width about the peak that defines it. 
-    float tuple[2];
+    double tuple[2];
     float previousPt = FLT_MIN;   
     float resolveHeight = FLT_MIN; 
     float derivative; 
@@ -152,7 +152,7 @@ void svkMRSPeakPick::RefinePeakRanges()
         int endPt= this->peakVector[i][2]; 
 
         // Get the "resole height" for the current peak 
-        this->averageSpectrum->GetTupleValue(peakPt, tuple);
+        this->averageSpectrum->GetTuple(peakPt, tuple);
         float signal = tuple[0] - this->baselineValue;
         float peakHeight = signal;  
         resolveHeight = peakHeight * this->resolveHeightFraction;
@@ -161,7 +161,7 @@ void svkMRSPeakPick::RefinePeakRanges()
         // scan over initial range estimate
         for ( int freq = startPt; freq <= endPt;freq++ ) {
 
-            this->averageSpectrum->GetTupleValue(freq, tuple);
+            this->averageSpectrum->GetTuple(freq, tuple);
             signal = tuple[0] - this->baselineValue;
             derivative = signal - previousPt; 
             
@@ -220,7 +220,7 @@ void svkMRSPeakPick::PickPeaks()
     int numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
     
     //  First calculate the value for a voxel, then the SD for that same voxel
-    float tuple[2];
+    double tuple[2];
     float previousPt = FLT_MIN;   
     int   peakPt = -1; 
     float localMax = FLT_MIN; 
@@ -237,7 +237,7 @@ void svkMRSPeakPick::PickPeaks()
     //  below peak half height (fwhm resolved peaks).  
     for ( int i = 0; i < numTimePoints; i++ ) {
 
-        this->averageSpectrum->GetTupleValue(i, tuple);
+        this->averageSpectrum->GetTuple(i, tuple);
         float signal = tuple[0] - this->baselineValue;
         float derivative = signal - previousPt; 
 
@@ -267,13 +267,13 @@ void svkMRSPeakPick::PickPeaks()
 
             while ( derivative < -1 * derivativeLimit  && signal > thresholdSignal ) {
                 i = i + 1;  
-                this->averageSpectrum->GetTupleValue(i, tuple);
+                this->averageSpectrum->GetTuple(i, tuple);
                 signal = tuple[0] - this->baselineValue;
                 derivative = signal - previousPt; 
                 previousPt = signal; 
             }
             i = i - 1; 
-            this->averageSpectrum->GetTupleValue(i, tuple);
+            this->averageSpectrum->GetTuple(i, tuple);
             signal = tuple[0] - this->baselineValue;
             derivative = signal - previousPt; 
 
@@ -311,14 +311,14 @@ float svkMRSPeakPick::GetPeakHeight( vtkFloatArray* spectrum, int peakNum )
     float peakHeight = FLT_MIN; 
     int startPt = this->peakVector[peakNum][0];
     int endPt   = this->peakVector[peakNum][2];
-    float tuple[2];     
+    double tuple[2];     
 
     //int peakPt = this->peakVector[peakNum][1];
     //spectrum->GetTupleValue(peakPt, tuple);
     //return tuple[0];     
 
     for ( int i = startPt; i <= endPt; i++ ) {
-        spectrum->GetTupleValue(i, tuple);
+        spectrum->GetTuple(i, tuple);
         if ( tuple[0] > peakHeight ) {
             peakHeight = tuple[0];  
         }
@@ -337,9 +337,9 @@ float svkMRSPeakPick::GetPeakHeightAtPeakPos( vtkFloatArray* spectrum, int peakN
 
     float peakHeight; 
     int peakPt = this->peakVector[peakNum][1];
-    float tuple[2];     
+    double tuple[2];     
 
-    spectrum->GetTupleValue(peakPt, tuple);
+    spectrum->GetTuple(peakPt, tuple);
     peakHeight = tuple[0];  
 
     return peakHeight; 
@@ -356,9 +356,9 @@ float svkMRSPeakPick::GetPeakArea( vtkFloatArray* spectrum, int peakNum )
     float peakArea = 0; 
     int startPt = this->peakVector[peakNum][0];
     int endPt   = this->peakVector[peakNum][2];
-    float tuple[2];     
+    double tuple[2];     
     for ( int i = startPt; i <= endPt; i++ ) {
-        spectrum->GetTupleValue(i, tuple);
+        spectrum->GetTuple(i, tuple);
         peakArea += tuple[0];
     }
 
@@ -376,16 +376,16 @@ float svkMRSPeakPick::GetPeakSymmetry( vtkFloatArray* spectrum, int peakNum )
     int startPt = this->peakVector[peakNum][0];
     int peakPt  = this->peakVector[peakNum][1];
     int endPt   = this->peakVector[peakNum][2];
-    float tuple[2];     
+    double tuple[2];     
     float leftIntegral = 0; 
     for ( int i = startPt; i <= peakPt; i++ ) {
-        spectrum->GetTupleValue(i, tuple);
+        spectrum->GetTuple(i, tuple);
         leftIntegral += tuple[0];
     }
 
     float rightIntegral = 0; 
     for ( int i = peakPt; i <= endPt; i++ ) {
-        spectrum->GetTupleValue(i, tuple);
+        spectrum->GetTuple(i, tuple);
         rightIntegral += tuple[0];
     }
 

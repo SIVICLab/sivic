@@ -77,9 +77,9 @@
 #define SVK_EXTRACT_VOI
 
 
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkExtractVOI.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkExtractVOI.h>
 #include <svkImageData.h>
 
 

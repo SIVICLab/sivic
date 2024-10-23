@@ -40,11 +40,11 @@
  */
 
 
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkXMLDataElement.h>
-#include <vtkXMLUtilities.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkInformationVector.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkXMLDataElement.h>
+#include </usr/include/vtk/vtkXMLUtilities.h>
 
 #include <svkMetaboliteMap.h>
 #include <svkSpecPoint.h>
@@ -97,7 +97,7 @@ svkMetaboliteMap::~svkMetaboliteMap()
 /*!
  *  Set the series description for the DICOM header of the copy.  
  */
-void svkMetaboliteMap::SetSeriesDescription( vtkstd::string newSeriesDescription )
+void svkMetaboliteMap::SetSeriesDescription( std::string newSeriesDescription )
 {
     this->newSeriesDescription = newSeriesDescription;
     this->Modified(); 
@@ -257,7 +257,7 @@ void svkMetaboliteMap::GenerateMap()
             //  Add the output volume array to the correct array in the svkMriImageData object
             ostringstream number;
             number << volumeIndex;
-            vtkstd::string arrayNameString("pixels");
+            std::string arrayNameString("pixels");
             arrayNameString.append(number.str());
 
             metMapArray->SetName( arrayNameString.c_str() );
@@ -673,7 +673,7 @@ void  svkMetaboliteMap::SetAlgorithmToMagIntegrate()
 /*
  *  Set algo type based on string description svkMetaboliteMap::algorithm. 
  */
-void svkMetaboliteMap::SetAlgorithm( vtkstd::string algo )
+void svkMetaboliteMap::SetAlgorithm( std::string algo )
 {
     if ( algo.compare("INTEGRATE") == 0 ) {
         this->SetAlgorithmToIntegrate(); 

@@ -44,8 +44,8 @@
 #define SVK_STRING_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkDataObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkDataObject.h>
 #include <string>
 
 namespace svk {

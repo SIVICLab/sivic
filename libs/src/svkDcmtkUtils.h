@@ -43,8 +43,8 @@
 #ifndef SVK_DCMTK_UTILS_H
 #define	SVK_DCMTK_UTILS_H
 
-
-#include <dcmtk/dcmdata/dctk.h>
+#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/config/osconfig.h>
+#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/dcmdata/dctk.h>
 
 #include <stdexcept>
 #include <float.h>

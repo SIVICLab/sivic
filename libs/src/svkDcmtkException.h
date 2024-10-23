@@ -46,7 +46,8 @@
 
 #include <stdexcept>
 #include <string>
-#include <dcmtk/dcmdata/dctk.h>
+#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/config/osconfig.h>
+#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/dcmdata/dctk.h>
 
 
 namespace svk {

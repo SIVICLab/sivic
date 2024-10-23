@@ -41,7 +41,7 @@
 
 #include <svkImageStatistics.h>
 #include <svkTypeUtils.h>
-#include <vtkMultiBlockDataSet.h>
+#include </usr/include/vtk/vtkMultiBlockDataSet.h>
 
 using namespace svk;
 

@@ -47,26 +47,26 @@
 
 #include <stdio.h>
 #include <map>
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkXMLDataElement.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkXMLDataElement.h>
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
 #include <svkMriImageData.h>
-#include <vtkOrderStatistics.h>
+#include </usr/include/vtk/vtkOrderStatistics.h>
 #include <svkImageAlgorithmWithPortMapper.h>
 #include <svkImageAlgorithmPipeline.h>
 #include <svkIdfVolumeWriter.h>
 #include <svkGenericAlgorithmWithPortMapper.h>
-#include <vtkImageToImageStencil.h>
-#include <vtkXMLUtilities.h>
+#include </usr/include/vtk/vtkImageToImageStencil.h>
+#include </usr/include/vtk/vtkXMLUtilities.h>
 #include <svkXML.h>
-#include <vtkArrayToTable.h>
-#include <vtkTable.h>
-#include <vtkDescriptiveStatistics.h>
+#include </usr/include/vtk/vtkArrayToTable.h>
+#include </usr/include/vtk/vtkTable.h>
+#include </usr/include/vtk/vtkDescriptiveStatistics.h>
 #include <svkDataValidator.h>
-#include <vtkSortDataArray.h>
-#include <vtkVariant.h>
+#include </usr/include/vtk/vtkSortDataArray.h>
+#include </usr/include/vtk/vtkVariant.h>
 #include <svkXMLUtils.h>
 
 namespace svk {

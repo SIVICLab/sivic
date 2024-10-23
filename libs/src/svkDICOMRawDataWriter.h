@@ -44,11 +44,11 @@
 #define SVK_DICOM_RAW_DATARITER_H
 
 
-#include <vtkErrorCode.h>
-#include <vtkObjectFactory.h>
-#include <vtkImageLuminance.h>
-#include <vtkInformation.h>
-#include <vtkExecutive.h>
+#include </usr/include/vtk/vtkErrorCode.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkImageLuminance.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkExecutive.h>
 #include <vector>
 
 #include <svkImageWriter.h>

@@ -44,14 +44,14 @@
 #define SVK_PLOT_GRID_VIEW_CONTROLLER_H
 
 
-#include <vtkInteractorStyleRubberBand2D.h> 
-#include <vtkInteractorStyleTrackballCamera.h> 
-#include <vtkCallbackCommand.h>
-#include <vtkCommand.h>
-#include <vtkRenderWindowInteractor.h>
-#include <vtkCoordinate.h>
-#include <vtkAreaPicker.h>
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInteractorStyleRubberBand2D.h>
+#include </usr/include/vtk/vtkInteractorStyleTrackballCamera.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkCommand.h>
+#include </usr/include/vtk/vtkRenderWindowInteractor.h>
+#include </usr/include/vtk/vtkCoordinate.h>
+#include </usr/include/vtk/vtkAreaPicker.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 
 #include <svkSpecGridSelector.h>
 #include <svkPlotGridView.h>

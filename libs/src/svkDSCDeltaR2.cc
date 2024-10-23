@@ -40,11 +40,11 @@
  */
 
 
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkXMLDataElement.h>
-#include <vtkXMLUtilities.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkInformationVector.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkXMLDataElement.h>
+#include </usr/include/vtk/vtkXMLUtilities.h>
 
 #include <svkDSCDeltaR2.h>
 

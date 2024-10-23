@@ -40,9 +40,9 @@
  */
 
 #include <svkDcmSegmentationVolumeReader.h>
-#include <vtkObjectFactory.h>
-#include <vtkDebugLeaks.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkMriImageData.h>
 
@@ -86,13 +86,13 @@ svkDcmSegmentationVolumeReader::~svkDcmSegmentationVolumeReader()
 int svkDcmSegmentationVolumeReader::CanReadFile(const char* fname)
 {
 
-    vtkstd::string fileToCheck(fname);
+    std::string fileToCheck(fname);
 
     if ( svkDcmHeader::IsFileDICOM( fname ) ) {
  
         svkImageData* tmp = svkMriImageData::New(); 
         tmp->GetDcmHeader()->ReadDcmFileHeaderOnly( fname );
-        vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
+        std::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
         tmp->Delete(); 
 
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.66.4" ) {
@@ -167,7 +167,7 @@ void svkDcmSegmentationVolumeReader::LoadData( svkImageData* data )
         }
         ostringstream volNumber;
         volNumber << vol;
-        vtkstd::string arrayNameString("pixels");
+        std::string arrayNameString("pixels");
         arrayNameString.append(volNumber.str());
         array->SetName( arrayNameString.c_str() );
         if( this->numVolumes > 1 ) {

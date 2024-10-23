@@ -42,7 +42,7 @@
 
 
 #include <svkMrsImageFlip.h>
-#include <vtkImageFlip.h>
+#include </usr/include/vtk/vtkImageFlip.h>
 
 
 using namespace svk;

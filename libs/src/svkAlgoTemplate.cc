@@ -105,7 +105,7 @@ int svkAlgoTemplate::RequestData( vtkInformation* request, vtkInformationVector*
                 //  Iterate over frequency points in spectrum and do something:
                 for ( int freq = 0; freq < numSpecPts; freq++ ) {
 
-                    spectrum->GetTupleValue(freq, cmplxPt);
+                    spectrum->GetTuple(freq, cmplxPt);
 
                     cmplxPt[0] = cmplxPt[0] + 0;     
                     cmplxPt[1] = cmplxPt[1] + 0;     

@@ -43,12 +43,12 @@
 #define SVK_PHILIPS_S_MAPPER_H
 
 
-#include <vtkImageData.h>
+#include </usr/include/vtk/vtkImageData.h>
 #include <svkImageData.h>
 
 #include <svkDcmHeader.h>
 #include <svkMRSIOD.h>
-#include <vtkMatrix4x4.h>
+#include </usr/include/vtk/vtkMatrix4x4.h>
 
 #include <map>
 #include <string>

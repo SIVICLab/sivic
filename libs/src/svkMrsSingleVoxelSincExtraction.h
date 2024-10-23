@@ -43,9 +43,9 @@
 #ifndef SVK_SINGLE_VOXEL_SINC_EXTRACTION_H
 #define SVK_SINGLE_VOXEL_SINC_EXTRACTION_H
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkImageData.h>
 #include <svkMrsImageData.h>

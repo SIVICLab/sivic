@@ -42,13 +42,13 @@
 
 #include <svkVarianCSFidMapper.h>
 //#include <svkVarianReader.h>
-#include <vtkDebugLeaks.h>
-#include <vtkTransform.h>
-#include <vtkDataArray.h>
-#include <vtkCellData.h>
-#include <vtkMatrix4x4.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkTransform.h>
+#include </usr/include/vtk/vtkDataArray.h>
+#include </usr/include/vtk/vtkCellData.h>
+#include </usr/include/vtk/vtkMatrix4x4.h>
 #include <svkDcmHeader.h>
-#include <vtkByteSwap.h>
+#include </usr/include/vtk/vtkByteSwap.h>
 
 
 using namespace svk;
@@ -95,7 +95,7 @@ svkVarianCSFidMapper::~svkVarianCSFidMapper()
             int lengthX  = 0;
             int lengthY  = 0;
         if( this->GetDadFile() == NULL ) {
-            vtkstd::vector<int> blipVector = this->GetBlips();
+            std::vector<int> blipVector = this->GetBlips();
             lengthX  = blipVector[0];
             lengthY  = blipVector[1];
         } else {
@@ -989,7 +989,7 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
 
         //  I think everything is ok up to here.  Not positive about the padding yet.
 
-        vtkstd::vector<int> blipVector = this->GetBlips();
+        std::vector<int> blipVector = this->GetBlips();
 
         int lengthX = blipVector[0];
         int lengthY = blipVector[1];
@@ -1392,13 +1392,13 @@ void svkVarianCSFidMapper::ReOrderFlyback( )
 /*!
  *
  */
-vtkstd::vector<int> svkVarianCSFidMapper::GetBlips()
+std::vector<int> svkVarianCSFidMapper::GetBlips()
 {
 
         string blipString;
         this->GetBlipString( &blipString );
 
-    vtkstd::vector<int> blipVector;
+    std::vector<int> blipVector;
         istringstream* iss = new istringstream();
         int intVal;
 

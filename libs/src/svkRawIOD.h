@@ -44,7 +44,7 @@
 #define SVK_RAW_IOD_H
 
 
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 #include <svkIOD.h>
 
 

@@ -112,7 +112,7 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
         svkGEPFileMapperUCSFfidcsiDev0();
         ~svkGEPFileMapperUCSFfidcsiDev0();
   
-        virtual vtkstd::string  GetVolumeLocalizationTechnique(); 
+        virtual std::string  GetVolumeLocalizationTechnique(); 
         virtual void            GetSelBoxCenter( float selBoxCenter[3] );
         virtual void            GetSelBoxSize( float selBoxSize[3] );
         virtual void            GetCenterFromRawFile( double* center ); 
@@ -138,10 +138,10 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
         void                    ResampleRamps( svkImageData* data, int deltaT, int plateauTime, int rampTime, int epsiAxis ); 
         virtual void            GetWaveFormIntegral( float* waveFormIntegral, int deltaT, int plateauTime, int rampTime ); 
         void                    GetKaiserBesselValues( 
-                                    vtkstd::vector<float>* u, 
+                                    std::vector<float>* u, 
                                     float width, 
                                     float beta,
-                                    vtkstd::vector<float>* kbVals 
+                                    std::vector<float>* kbVals 
                                     ); 
         double                  GetBessel0Term( float arg, int index);
         double                  GetBessel0( float arg);
@@ -158,7 +158,7 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
                                     int numFreqPts, 
                                     svkDcmHeader::DimensionVector* dimensionVector, 
                                     svkDcmHeader::DimensionVector* loopIndex, 
-                                    vtkstd::string comment 
+                                    std::string comment 
                                 ); 
         void                    LoadDataAcquisitionDescriptionFile( string pfileName);
         int                     GetEPSIAxis(); 

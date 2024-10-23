@@ -43,7 +43,7 @@
 #define SVK_MRS_FIRST_ORDER_PHASE_COST_FUNCTION_H
 
 
-#include <vtkMath.h>
+#include </usr/include/vtk/vtkMath.h>
 
 #include <svkMRSAutoPhase.h>
 #include <svkPhaseSpec.h>

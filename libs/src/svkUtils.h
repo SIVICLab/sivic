@@ -49,11 +49,11 @@
 #include <vector>
 #include <stdio.h>
 #include <sstream>
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkGlobFileNames.h>
-#include <vtkStringArray.h>
-#include <vtkDirectory.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkGlobFileNames.h>
+#include </usr/include/vtk/vtkStringArray.h>
+#include </usr/include/vtk/vtkDirectory.h>
 #include <svkMriImageData.h>
 #include <svkMrsImageData.h>
 
@@ -114,8 +114,8 @@ class svkUtils : public vtkObject
         static string             GetPathFromFilename( string filename );
         static int                NearestInt(double x);
         static bool               UncompressFiles( vtkStringArray *filenames );
-        static bool               UncompressFile( vtkstd::string filename );
-        static bool               IsFileCompressed( vtkstd::string filename );
+        static bool               UncompressFile( std::string filename );
+        static bool               IsFileCompressed( std::string filename );
         static string             SpacesTo_( string inputString );
         static bool               AreValuesClose(double x, double y, double maxRatio = 0.01 );
         static bool               AreValuesClose(double x[3], double y[3], double maxRatio = 0.01 );

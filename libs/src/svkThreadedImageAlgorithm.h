@@ -44,14 +44,14 @@
 #define SVK_THREADED_IMAGE_ALGORITHM_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkImageData.h>
-#include <vtkCellData.h>
-#include <vtkThreadedImageAlgorithm.h>
-#include <vtkInstantiator.h>
-#include <vtkInformation.h>
-#include <vtkExecutive.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkImageData.h>
+#include </usr/include/vtk/vtkCellData.h>
+#include </usr/include/vtk/vtkThreadedImageAlgorithm.h>
+//#include </usr/include/vtk/vtkInstantiator.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkExecutive.h>
 
 #include <svkMriImageData.h>
 #include <svkMrsImageData.h>

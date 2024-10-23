@@ -40,9 +40,9 @@
  */
 
 #include <svkDcmMrsVolumeReader.h>
-#include <vtkObjectFactory.h>
-#include <vtkDebugLeaks.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkMrsImageData.h>
 
@@ -83,13 +83,13 @@ svkDcmMrsVolumeReader::~svkDcmMrsVolumeReader()
 int svkDcmMrsVolumeReader::CanReadFile(const char* fname)
 {
 
-    vtkstd::string fileToCheck(fname);
+    std::string fileToCheck(fname);
 
     if ( svkDcmHeader::IsFileDICOM( fname ) ) {
  
         svkImageData* tmp = svkMrsImageData::New(); 
         tmp->GetDcmHeader()->ReadDcmFile( fname ); 
-        vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
+        std::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
         tmp->Delete(); 
 
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.2" ) {           
@@ -136,7 +136,7 @@ void svkDcmMrsVolumeReader::InitPrivateHeader()
 void svkDcmMrsVolumeReader::LoadData( svkImageData* data )
 {
 
-    vtkstd::string dataRepresentation = this->GetOutput()->GetDcmHeader()->GetStringValue( "DataRepresentation" ); 
+    std::string dataRepresentation = this->GetOutput()->GetDcmHeader()->GetStringValue( "DataRepresentation" ); 
     int numComponents; 
     if ( dataRepresentation == "COMPLEX" ) {
         numComponents = 2; 

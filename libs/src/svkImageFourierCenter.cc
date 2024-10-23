@@ -56,10 +56,10 @@
 =========================================================================*/
 #include <svkImageFourierCenter.h>
 
-#include <vtkImageData.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkImageData.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
 
 #include <math.h>
 

@@ -45,11 +45,11 @@
 #include <svkFreqCorrect.h>
 #include <svkTypeUtils.h>
 
-#include <vtkDebugLeaks.h>
-#include <vtkTransform.h>
-#include <vtkMatrix4x4.h>
-#include <vtkByteSwap.h>
-#include <vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkTransform.h>
+#include </usr/include/vtk/vtkMatrix4x4.h>
+#include </usr/include/vtk/vtkByteSwap.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
 
 
 using namespace svk;
@@ -1247,7 +1247,7 @@ void svkBrukerRawMRSMapper::ReorderKSpace( svkMrsImageData* data )
                     );
 
                     for ( int freq = 0; freq < numPts; freq++ ) {
-                        spectrum->GetTupleValue( freq, specTuple);
+                        spectrum->GetTuple( freq, specTuple);
                         //cout << "ST: " << specTuple[0] << endl;
                         targetSpectrum->InsertTuple(freq, specTuple);
                     }

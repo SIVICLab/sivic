@@ -43,9 +43,9 @@
 #ifndef SVK_FDF_VOLUME_READER_H
 #define SVK_FDF_VOLUME_READER_H
 
-#include <vtkInformation.h>
-#include <vtkFloatArray.h>
-#include <vtkStringArray.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkFloatArray.h>
+#include </usr/include/vtk/vtkStringArray.h>
 
 #include <svkVarianReader.h>
 

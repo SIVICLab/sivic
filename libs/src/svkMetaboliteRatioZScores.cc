@@ -40,9 +40,9 @@
  */
 
 
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkInformationVector.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
 
 #include <svkMetaboliteRatioZScores.h>
 #include <svkSpecPoint.h>
@@ -103,7 +103,7 @@ svkMetaboliteRatioZScores::~svkMetaboliteRatioZScores()
 /*!
  *  Set the series description for the DICOM header of the output image.  
  */
-void svkMetaboliteRatioZScores::SetSeriesDescription( vtkstd::string newSeriesDescription )
+void svkMetaboliteRatioZScores::SetSeriesDescription( std::string newSeriesDescription )
 {
     this->newSeriesDescription = newSeriesDescription;
     this->Modified(); 

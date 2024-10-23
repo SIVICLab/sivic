@@ -43,7 +43,7 @@
 #define SVK_BRUKER_RAW_MRS_MAPPER_H
 
 
-#include <vtkImageData.h>
+#include </usr/include/vtk/vtkImageData.h>
 
 #include <svkImageData.h>
 #include <svkDcmHeader.h>

@@ -46,11 +46,11 @@
 
 #ifdef __cplusplus
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 #include <svkImageReader2.h>
 #include <svkIdfVolumeWriter.h>
-#include <vtkGlobFileNames.h>
+#include </usr/include/vtk/vtkGlobFileNames.h>
 #include <svkUtils.h>
 
 

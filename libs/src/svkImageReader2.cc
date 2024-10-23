@@ -42,11 +42,11 @@
 
 
 #include <svkImageReader2.h>
-#include <vtkInformation.h>
-#include <vtkInstantiator.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
-#include <vtkStringArray.h>
+#include </usr/include/vtk/vtkInformation.h>
+//#include </usr/include/vtk/vtkInstantiator.h>
+#include </usr/include/vtk/vtkGlobFileNames.h>
+#include </usr/include/vtk/vtkSortFileNames.h>
+#include </usr/include/vtk/vtkStringArray.h>
 #include <svkMriImageData.h>
 #include <svkMrsImageData.h>
 #include <svkImageReaderFactory.h>

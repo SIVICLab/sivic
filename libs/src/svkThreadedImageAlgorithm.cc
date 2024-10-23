@@ -40,9 +40,9 @@
  */
 
 
-#include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkMultiThreader.h>
+#include </usr/include/vtk/vtkInformationVector.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkMultiThreader.h>
 
 #include <svkThreadedImageAlgorithm.h>
 

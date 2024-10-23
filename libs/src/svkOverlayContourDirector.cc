@@ -41,7 +41,7 @@
 
 
 #include <svkOverlayContourDirector.h>
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 
 using namespace svk;
 

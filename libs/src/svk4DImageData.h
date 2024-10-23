@@ -44,10 +44,10 @@
 #define SVK_4D_IMAGE_DATA_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkPolyData.h>
-#include <vtkImageData.h>
-#include <vtkDoubleArray.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkPolyData.h>
+#include </usr/include/vtk/vtkImageData.h>
+#include </usr/include/vtk/vtkDoubleArray.h>
 
 #include <svkImageData.h>
 #include <vector>

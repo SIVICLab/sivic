@@ -46,9 +46,9 @@
 #include <svkTypeUtils.h>
 #include <svkFileUtils.h>
 #include <svkXMLUtils.h>
-#include <vtkXMLUtilities.h>
-#include <vtkXMLDataParser.h>
-#include <vtkMath.h>
+#include </usr/include/vtk/vtkXMLUtilities.h>
+#include </usr/include/vtk/vtkXMLDataParser.h>
+#include </usr/include/vtk/vtkMath.h>
 #include <stdexcept>
 #define NULL_XML_ERROR "ERROR: Data Acquisition Description XML is NULL!\n"
 #define XML_VERSION "0"

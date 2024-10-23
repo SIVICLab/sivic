@@ -87,7 +87,7 @@ void svkSpecUtils::PhaseSpectrum(vtkFloatArray* spectrum, float phase, int point
     float cosPhase = static_cast<float>( cos( phase ) );
     float sinPhase = static_cast<float>( sin( phase ) );
 
-    spectrum->GetTupleValue(point, phasedPoint);
+    spectrum->GetTypedTuple(point, phasedPoint);
     float realValue      = phasedPoint[0] * cosPhase - phasedPoint[1] * sinPhase;
     float imaginaryValue = phasedPoint[0] * sinPhase + phasedPoint[1] * cosPhase;
     phasedPoint[0] = realValue;

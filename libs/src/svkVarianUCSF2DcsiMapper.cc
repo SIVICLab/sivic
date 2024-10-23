@@ -42,10 +42,10 @@
 
 #include <svkVarianUCSF2DcsiMapper.h>
 #include <svkVarianReader.h>
-#include <vtkDebugLeaks.h>
-#include <vtkTransform.h>
-#include <vtkMatrix4x4.h>
-#include <vtkByteSwap.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkTransform.h>
+#include </usr/include/vtk/vtkMatrix4x4.h>
+#include </usr/include/vtk/vtkByteSwap.h>
 
 
 using namespace svk;
@@ -106,7 +106,7 @@ void svkVarianUCSF2DcsiMapper::InitPixelMeasuresMacro()
     pixelSize[1] = this->GetHeaderValueAsFloat("lpe2", 0) /  numPixels[1];
     pixelSize[2] = this->GetHeaderValueAsFloat("thk", 0) / numPixels[2];
 
-    vtkstd::string pixelSizeString[3];
+    std::string pixelSizeString[3];
 
     for (int i = 0; i < 3; i++) {
         ostringstream oss;

@@ -45,7 +45,7 @@
 #define SVK_DICOM_IMAGE_WRITER_H
 
 
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkDICOMWriter.h>
 #include <svkImageData.h>

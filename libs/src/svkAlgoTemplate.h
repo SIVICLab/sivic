@@ -44,8 +44,8 @@
 #define SVK_ALGO_TEMPLATE_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 
 #include <svkImageInPlaceFilter.h>
 

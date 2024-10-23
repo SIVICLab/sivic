@@ -39,7 +39,7 @@
 
 
 #include <svkTypeUtils.h>
-#include <vtkGlobFileNames.h>
+#include </usr/include/vtk/vtkGlobFileNames.h>
 
 using namespace svk;
 

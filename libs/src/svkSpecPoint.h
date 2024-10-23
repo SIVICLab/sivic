@@ -44,7 +44,7 @@
 #define  SVK_SPEC_POINT_H          
 
 
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 #include <svkDcmHeader.h>
 #include <string>
 #include <iostream>

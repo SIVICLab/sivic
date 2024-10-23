@@ -44,11 +44,11 @@
 #define SVK_MRS_IMAGE_DATA_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkImageData.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkPlanesIntersection.h>
-#include <vtkHexahedron.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkImageData.h>
+#include </usr/include/vtk/vtkUnstructuredGrid.h>
+#include </usr/include/vtk/vtkPlanesIntersection.h>
+#include </usr/include/vtk/vtkHexahedron.h>
 #include <svk4DImageData.h>
 #include <svkMriImageData.h>
 
@@ -88,7 +88,7 @@ class svkMrsImageData: public svk4DImageData
                             int timePoint,
                             int channel,
                             int component,
-                            vtkstd::string seriesDescription, 
+                            std::string seriesDescription, 
                             int vtkDataType = VTK_VOID
                        );
 

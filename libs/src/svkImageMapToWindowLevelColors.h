@@ -44,11 +44,11 @@
 #define SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-#include <vtkDataObject.h>
-#include <vtkImageMapToWindowLevelColors.h>
-#include <vtkInstantiator.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkDataObject.h>
+#include </usr/include/vtk/vtkImageMapToWindowLevelColors.h>
+//#include </usr/include/vtk/vtkInstantiator.h>
 #include <svkMriImageData.h>
 
 

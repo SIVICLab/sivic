@@ -43,9 +43,9 @@
 #ifndef SVK_IMAGE_DATA_FACTORY_H
 #define SVK_IMAGE_DATA_FACTORY_H
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkVersion.h>
+#include "/usr/include/vtk/vtkObject.h"
+#include "/usr/include/vtk/vtkObjectFactory.h"
+#include "/usr/include/vtk/vtkVersion.h"
 #include <svkImageData.h>
 #include <svkMriImageData.h>
 #include <svkMrsImageData.h>

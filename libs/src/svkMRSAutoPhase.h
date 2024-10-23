@@ -48,13 +48,13 @@
 #include <itkPowellOptimizer.h>
 #include <itkParticleSwarmOptimizer.h>
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkImageData.h>
 #include <svkMrsImageData.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
 #include <svkThreadedImageAlgorithm.h>
 
 #include <complex>

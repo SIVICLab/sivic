@@ -44,9 +44,9 @@
 #define SVK_XML_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkDataObject.h>
-#include <vtkXMLDataElement.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkDataObject.h>
+#include </usr/include/vtk/vtkXMLDataElement.h>
 
 namespace svk {
 

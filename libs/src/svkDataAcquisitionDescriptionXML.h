@@ -60,8 +60,9 @@ enum EPSILobe
 };
 #if defined(__cplusplus) && !defined(SVK_EPIC)
 
-#include <vtkObject.h>
-#include <vtkXMLDataElement.h>
+#include "/usr/include/vtk/vtkObject.h"
+#include </usr/include/vtk/vtkXMLDataElement.h>
+
 #include <svkSatBandsXML.h>
 #include <svkEPSIReorder.h>
 #include <svkXMLUtils.h>

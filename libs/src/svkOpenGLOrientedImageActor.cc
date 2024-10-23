@@ -44,11 +44,11 @@
  */
 
 #include <svkOpenGLOrientedImageActor.h>
-#include <vtkGraphicsFactory.h>
-#include <vtkImageData.h>
-#include <vtkMath.h>
-#include <vtkRenderer.h>
-#include <vtkTransform.h>
+#include </usr/include/vtk/vtkGraphicsFactory.h>
+#include </usr/include/vtk/vtkImageData.h>
+#include </usr/include/vtk/vtkMath.h>
+#include </usr/include/vtk/vtkRenderer.h>
+#include </usr/include/vtk/vtkTransform.h>
 
 
 using namespace svk;

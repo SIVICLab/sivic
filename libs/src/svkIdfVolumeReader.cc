@@ -42,8 +42,8 @@
 
 #include <svkIdfVolumeReader.h>
 #include <svkDcmMriVolumeReader.h>
-#include <vtkDebugLeaks.h>
-#include <vtkByteSwap.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkByteSwap.h>
 
 #include <sys/stat.h>
 

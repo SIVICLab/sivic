@@ -44,9 +44,9 @@
 #define SVK_LOOKUP_TABLE_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkLookupTable.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkLookupTable.h>
 
 
 namespace svk{

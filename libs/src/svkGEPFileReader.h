@@ -42,8 +42,8 @@
 #ifndef SVK_GE_PFILE_READER_H
 #define SVK_GE_PFILE_READER_H
 
-#include <vtkCallbackCommand.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkCallbackCommand.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkImageReader2.h>
 #include <svkGEPFileMapper.h>

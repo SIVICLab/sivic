@@ -43,7 +43,7 @@
 #define SVK_GE_SIGNA_5X_READER_H
 
 
-#include <vtkStringArray.h>
+#include </usr/include/vtk/vtkStringArray.h>
 
 #include <svkImageReader2.h>
 #include <svkGEImageHeader.h>

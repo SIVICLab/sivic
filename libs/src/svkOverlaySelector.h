@@ -42,17 +42,17 @@
 #ifndef SELECT_BOX_INTERACTOR_H
 #define SELECT_BOX_INTERACTOR_H
 
-#include <vtkInteractorStyleRubberBand2D.h>
-#include <vtkInteractorStyleRubberBand2D.h>
-#include <vtkCommand.h>
-#include <vtkRenderWindowInteractor.h>
-#include <vtkRenderWindow.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkRenderer.h>
-#include <vtkCamera.h>
-#include <vtkObjectFactory.h>
-#include <vtkRendererCollection.h>
-#include <vtkCornerAnnotation.h>
+#include </usr/include/vtk/vtkInteractorStyleRubberBand2D.h>
+#include </usr/include/vtk/vtkInteractorStyleRubberBand2D.h>
+#include </usr/include/vtk/vtkCommand.h>
+#include </usr/include/vtk/vtkRenderWindowInteractor.h>
+#include </usr/include/vtk/vtkRenderWindow.h>
+#include </usr/include/vtk/vtkUnsignedCharArray.h>
+#include </usr/include/vtk/vtkRenderer.h>
+#include </usr/include/vtk/vtkCamera.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkRendererCollection.h>
+#include </usr/include/vtk/vtkCornerAnnotation.h>
 
 
 namespace svk {

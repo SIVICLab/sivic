@@ -84,7 +84,7 @@
 #ifndef __svkAreaPicker_h
 #define __svkAreaPicker_h
 
-#include "vtkAbstractPropPicker.h"
+#include "/usr/include/vtk/vtkAbstractPropPicker.h"
 
 
 class vtkRenderer;

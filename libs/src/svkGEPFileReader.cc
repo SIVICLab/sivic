@@ -45,9 +45,9 @@
 #include <svkMRSIOD.h>
 #include <svkUtils.h>
 #include <svkTypeUtils.h>
-#include <vtkDebugLeaks.h>
-#include <vtkByteSwap.h>
-#include <vtkStringArray.h> 
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkByteSwap.h>
+#include </usr/include/vtk/vtkStringArray.h>
 
 #include <sys/stat.h>
 

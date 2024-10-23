@@ -176,7 +176,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     }
     this->CreateEPSIPhaseCorrectionFactors( epsiPhaseArray, numSpecPts ); 
 
-    float cmplxPtIn[2]; 
+    double cmplxPtIn[2]; 
     float cmplxPtPhased[2]; 
     float epsiPhase[2]; 
     int   epsiIndex; 
@@ -222,7 +222,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
         //  Iterate over frequency points in spectrum and apply phase correction:
         for ( int freq = 0; freq < numSpecPts; freq++ ) {
                     
-            spectrum->GetTupleValue(freq, cmplxPtIn);
+            spectrum->GetTuple(freq, cmplxPtIn);
 
             epsiPhase[0] = epsiPhaseArray[epsiIndex][freq].Real; 
             epsiPhase[1] = epsiPhaseArray[epsiIndex][freq].Imag; 
@@ -304,12 +304,12 @@ void svkEPSIPhaseCorrect::PhaseAlternatingSymmetricEPSILobes( int cellID )
             }
     
             vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( cellID ) );
-            float cmplxPtIn[2];
-            float cmplxPtPhased[2];
-            float epsiPhase[2];
+            double cmplxPtIn[2];
+            double cmplxPtPhased[2];
+            double epsiPhase[2];
     
             for ( int freq = 0; freq < numSpecPts; freq++ ) {
-                spectrum->GetTupleValue(freq, cmplxPtIn);
+                spectrum->GetTuple(freq, cmplxPtIn);
                 //cout << " phase " << freq << " " <<  this->symEPSIPhaseArray[freq].Real << endl;
                 epsiPhase[0] = this->symEPSIPhaseArray[freq].Real; 
                 epsiPhase[1] = this->symEPSIPhaseArray[freq].Imag; 

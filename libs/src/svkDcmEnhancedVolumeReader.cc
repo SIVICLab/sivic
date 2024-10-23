@@ -42,9 +42,9 @@
 #include <svkDcmEnhancedVolumeReader.h>
 #include <svkMriImageData.h>
 #include <svkTypeUtils.h>
-#include <vtkObjectFactory.h>
-#include <vtkDebugLeaks.h>
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 
 
@@ -222,7 +222,7 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
         }
         ostringstream volNumber;
         volNumber << vol;
-        vtkstd::string arrayNameString("pixels");
+        std::string arrayNameString("pixels");
         arrayNameString.append(volNumber.str());
         array->SetName( arrayNameString.c_str() );
         if( this->numVolumes > 1 ) {

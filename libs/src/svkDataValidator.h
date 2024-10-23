@@ -44,7 +44,7 @@
 #define SVK_DATA_VALIDATOR_H
 
 
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 #include <svkImageData.h>
 #include <svkUtils.h>
 #include <set>

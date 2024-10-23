@@ -41,7 +41,7 @@
 
 
 #include <svkNIFTIVolumeReader.h>
-#include <vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
 #include <svkTypeUtils.h>
 
 

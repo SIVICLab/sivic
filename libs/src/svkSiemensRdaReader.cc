@@ -42,8 +42,8 @@
 
 #include <svkSiemensRdaReader.h>
 #include <svkSpecUtils.h>
-#include <vtkDebugLeaks.h>
-#include <vtkByteSwap.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkByteSwap.h>
 
 #include <limits>
 #include <sys/stat.h>

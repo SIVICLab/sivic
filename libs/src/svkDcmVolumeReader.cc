@@ -41,10 +41,10 @@
 
 
 #include <svkDcmVolumeReader.h>
-#include <vtkDebugLeaks.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
-#include <vtkStringArray.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkGlobFileNames.h>
+#include </usr/include/vtk/vtkSortFileNames.h>
+#include </usr/include/vtk/vtkStringArray.h>
 
 
 #include <svkMriImageData.h>
@@ -785,9 +785,9 @@ void svkDcmVolumeReader::SortFilesByImagePositionPatient(
 {
 
     if ( ascending ) {
-        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortAscendAttribute7 ); 
+        std::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortAscendAttribute7 ); 
     } else {
-        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortDescendAttribute7 ); 
+        std::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortDescendAttribute7 ); 
     }
 
     return;
@@ -820,9 +820,9 @@ void svkDcmVolumeReader::SortFilesByInstanceNumber(
         }
 
         if ( ascending ) {
-            vtkstd::sort( dcmSliceAttributes.begin(), dcmSliceAttributes.end(), SortAscendAttribute8 ); 
+            std::sort( dcmSliceAttributes.begin(), dcmSliceAttributes.end(), SortAscendAttribute8 ); 
         } else {
-            vtkstd::sort( dcmSliceAttributes.begin(), dcmSliceAttributes.end(), SortDescendAttribute8 ); 
+            std::sort( dcmSliceAttributes.begin(), dcmSliceAttributes.end(), SortDescendAttribute8 ); 
         }
 
         //  Not put the images back in the correc order:

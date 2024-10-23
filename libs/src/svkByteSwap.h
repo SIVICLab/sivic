@@ -44,8 +44,8 @@
 #define SVK_BYTE_SWAP_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
 
 
 namespace svk {

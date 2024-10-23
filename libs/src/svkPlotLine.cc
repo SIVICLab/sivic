@@ -39,7 +39,7 @@
  *      Beck Olson
  */
 
-
+#include <cmath>
 #include <svkPlotLine.h>
 
 

@@ -43,7 +43,7 @@
 #ifndef SVK_IDF_VOLUME_WRITER_H
 #define SVK_IDF_VOLUME_WRITER_H
 
-#include <vtkInformation.h>
+#include </usr/include/vtk/vtkInformation.h>
 
 #include <svkImageWriter.h>
 #include <svkImageData.h>

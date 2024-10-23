@@ -39,12 +39,12 @@
  *      Beck Olson,
  */
 
-#include "vtkMultiThreader.h"
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkImageFourierFilter.h> // for vtkImageComplex struct
-#include <vtkMath.h>
+#include "/usr/include/vtk/vtkMultiThreader.h"
+#include </usr/include/vtk/vtkInformation.h>
+#include </usr/include/vtk/vtkInformationVector.h>
+#include </usr/include/vtk/vtkStreamingDemandDrivenPipeline.h>
+#include </usr/include/vtk/vtkImageFourierFilter.h>
+#include </usr/include/vtk/vtkMath.h>
 
 #include <svkMRSAutoPhase.h>
 #include <svkMrsImageFFT.h>

@@ -40,8 +40,8 @@
 
 
 #include <svkGESignaLX2Reader.h>
-#include <vtkByteSwap.h>
-#include <vtkDebugLeaks.h>
+#include </usr/include/vtk/vtkByteSwap.h>
+#include </usr/include/vtk/vtkDebugLeaks.h>
 #include <svkMriImageData.h>
 
 #define GE_SIGNA_5X_MAGIC_NUMBER  0x494d4746
@@ -399,7 +399,7 @@ GESignaHeader* svkGESignaLX2Reader::ReadHeader(const char *FileNameToRead)
     buffer = NULL;
     
     // Check if this is a MR file.  If not exit!
-    vtkstd::string examType(signaHeader->Exam_Type);
+    std::string examType(signaHeader->Exam_Type);
     if ( examType != "MR" ) {
         fclose(fp);
         delete signaHeader;

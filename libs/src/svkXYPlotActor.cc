@@ -57,32 +57,32 @@ PURPOSE.  See the above copyright notice for more information.
 =========================================================================*/
 #include "svkXYPlotActor.h"
 
-#include "vtkAlgorithm.h"
-#include "vtkAlgorithmOutput.h"
-#include "vtkAppendPolyData.h"
-#include "vtkAxisActor2D.h"
-#include "vtkCellArray.h"
-#include "vtkDataObjectCollection.h"
-#include "vtkDataSetCollection.h"
-#include "vtkFieldData.h"
-#include "vtkDoubleArray.h"
-#include "vtkGlyph2D.h"
-#include "vtkGlyphSource2D.h"
-#include "vtkIntArray.h"
-#include "vtkLegendBoxActor.h"
-#include "vtkMath.h"
-#include "vtkObjectFactory.h"
-#include "vtkPlane.h"
-#include "vtkPlanes.h"
-#include "vtkPointData.h"
-#include "vtkPolyData.h"
-#include "vtkPolyDataMapper2D.h"
-#include "vtkProperty2D.h"
-#include "vtkTextActor.h"
-#include "vtkTextMapper.h"
-#include "vtkTextProperty.h"
-#include "vtkTrivialProducer.h"
-#include "vtkViewport.h"
+#include "/usr/include/vtk/vtkAlgorithm.h"
+#include "/usr/include/vtk/vtkAlgorithmOutput.h"
+#include "/usr/include/vtk/vtkAppendPolyData.h"
+#include "/usr/include/vtk/vtkAxisActor2D.h"
+#include "/usr/include/vtk/vtkCellArray.h"
+#include "/usr/include/vtk/vtkDataObjectCollection.h"
+#include "/usr/include/vtk/vtkDataSetCollection.h"
+#include "/usr/include/vtk/vtkFieldData.h"
+#include "/usr/include/vtk/vtkDoubleArray.h"
+#include "/usr/include/vtk/vtkGlyph2D.h"
+#include "/usr/include/vtk/vtkGlyphSource2D.h"
+#include "/usr/include/vtk/vtkIntArray.h"
+#include "/usr/include/vtk/vtkLegendBoxActor.h"
+#include "/usr/include/vtk/vtkMath.h"
+#include "/usr/include/vtk/vtkObjectFactory.h"
+#include "/usr/include/vtk/vtkPlane.h"
+#include "/usr/include/vtk/vtkPlanes.h"
+#include "/usr/include/vtk/vtkPointData.h"
+#include "/usr/include/vtk/vtkPolyData.h"
+#include "/usr/include/vtk/vtkPolyDataMapper2D.h"
+#include "/usr/include/vtk/vtkProperty2D.h"
+#include "/usr/include/vtk/vtkTextActor.h"
+#include "/usr/include/vtk/vtkTextMapper.h"
+#include "/usr/include/vtk/vtkTextProperty.h"
+#include "/usr/include/vtk/vtkTrivialProducer.h"
+#include "/usr/include/vtk/vtkViewport.h"
 #include <svkXYPlotActorConnections.h>
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -2614,7 +2614,7 @@ void svkXYPlotActor::ClipPlotData( int *pos, int *pos2, vtkPolyData *pd )
   vtkIdType numPts=pd->GetNumberOfPoints();
   vtkIdType npts = 0;
   vtkIdType newPts[2];
-  vtkIdType *pts=0;
+  const vtkIdType *pts=0;
   vtkIdType i, id;
   int j;
   double x1[3], x2[3], px[3], n[3], xint[3], t;

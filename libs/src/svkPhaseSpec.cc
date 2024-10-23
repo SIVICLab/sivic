@@ -365,7 +365,7 @@ void svkPhaseSpec::ZeroOrderPhase(float phi0, vtkFloatArray* spectrum)
     float cmplxPt[2]; 
     for ( int i = 0; i < numPoints; i++ ) {
 
-        spectrum->GetTupleValue(i, cmplxPt);
+        spectrum->GetTuple(i, cmplxPt);
         svkPhaseSpec::ZeroOrderPhase( phi0, cmplxPt ); 
         spectrum->SetTuple(i, cmplxPt); 
 
@@ -395,10 +395,10 @@ void svkPhaseSpec::FirstOrderPhase(float phi1, int pivotPoint, vtkFloatArray* sp
                 phi1, 
                 pivotPoint);
 
-    float cmplxPt[2]; 
+    double cmplxPt[2]; 
     for ( int i = 0; i < numPoints; i++ ) {
 
-        spectrum->GetTupleValue(i, cmplxPt);
+        spectrum->GetTuple(i, cmplxPt);
 
         //  apply first order phase
         float re1 = ( linearPhaseArray[i].Real * cmplxPt[0] - linearPhaseArray[i].Imag * cmplxPt[1] );
@@ -429,10 +429,10 @@ void svkPhaseSpec::FirstOrderPhase( float phi0, vtkImageComplex* linearPhaseArra
     float sinPhase = static_cast<float>( sin( phi0) );
 
     int numPoints = spectrum->GetNumberOfTuples();     
-    float cmplxPt[2]; 
+    double cmplxPt[2]; 
     for ( int i = 0; i < numPoints; i++ ) {
 
-        spectrum->GetTupleValue(i, cmplxPt);
+        spectrum->GetTuple(i, cmplxPt);
 
         //  apply zero-order phase
         float re0 = ( cmplxPt[0] * cosPhase ) - ( cmplxPt[1] * sinPhase );

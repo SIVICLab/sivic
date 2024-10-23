@@ -44,11 +44,11 @@
 #define SVK_OBLIQUE_RESLICE_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkImageReslice.h>
-#include <vtkMatrix4x4.h>
-#include <vtkTransform.h>
+#include </usr/include/vtk/vtkObject.h>
+#include </usr/include/vtk/vtkObjectFactory.h>
+#include </usr/include/vtk/vtkImageReslice.h>
+#include </usr/include/vtk/vtkMatrix4x4.h>
+#include </usr/include/vtk/vtkTransform.h>
 
 #include <svkImageAlgorithm.h>
 #include <svkImageAlgorithmWithPortMapper.h>

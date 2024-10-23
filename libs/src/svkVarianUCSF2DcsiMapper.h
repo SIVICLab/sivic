@@ -43,7 +43,7 @@
 #define SVK_VARIAN_UCSF_2D_CSI_MAPPER_H
 
 
-#include <vtkImageData.h>
+#include </usr/include/vtk/vtkImageData.h>
 
 #include <svkDcmHeader.h>
 #include <svkMRSIOD.h>

@@ -636,7 +636,7 @@ void svkMrsZeroFill::InitializeDataArrays( svkMrsImageData* outputData )
     int numPts = outputData->GetDcmHeader()->GetIntValue("DataPointColumns");
 
     int numComponents = 1;
-    vtkstd::string representation =  outputData->GetDcmHeader()->GetStringValue( "DataRepresentation" );
+    std::string representation =  outputData->GetDcmHeader()->GetStringValue( "DataRepresentation" );
     if (representation.compare( "COMPLEX" ) == 0 ) {
         numComponents = 2;
     }
