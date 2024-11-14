@@ -146,7 +146,7 @@ vtkActor* svkImageTopologyGenerator::MakeRectGridVoxelActor( double* bounds )
 
     vtkDataSetMapper *rgridMapper = vtkDataSetMapper::New();
     rgridMapper->SetInputData(rgrid);
-    rgridMapper->ImmediateModeRenderingOn();
+    //rgridMapper->ImmediateModeRenderingOn();
     rgridMapper->StaticOn();
 
     vtkActor *wireActor = vtkActor::New();
@@ -232,7 +232,7 @@ void svkImageTopologyGenerator::GenerateVoxelGridActor( svkImageData* data, vtkA
         entireGridMapper->ScalarVisibilityOff( );
         entireGridMapper->InterpolateScalarsBeforeMappingOff();
         entireGridMapper->ReleaseDataFlagOn();
-        entireGridMapper->ImmediateModeRenderingOn();
+       // entireGridMapper->ImmediateModeRenderingOn();
 
         // We need a filter to pull out the edges of the data cells (voxels)
         vtkExtractEdges* edgeExtractor = vtkExtractEdges::New();

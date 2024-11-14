@@ -60,7 +60,7 @@ svkGenericAlgorithmWithPortMapper::svkGenericAlgorithmWithPortMapper()
     this->portMapper = NULL;
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
-    vtkInstantiator::RegisterInstantiator("svkXML",  svkXML::NewObject);
+    //vtkInstantiator::RegisterInstantiator("svkXML",  svkXML::NewObject);
 
 }
 

@@ -1267,7 +1267,7 @@ void svkPlotGridView::UpdateDetailedPlotOverlay( int tlcID )
     if( this->dataVector[MET] != NULL && overlayActor != NULL && this->windowLevel->GetInput() != NULL ) {
         this->detailedPlotDirector->SetBackgroundOpacity( overlayActor->GetOpacity());
         double value = this->dataVector[MET]->GetPointData()->GetScalars()->GetTuple1(tlcID);
-        unsigned char* voxelColor = this->colorTransfer->MapValue(value);
+        const unsigned char* voxelColor = this->colorTransfer->MapValue(value);
         double color[3] = {voxelColor[0]/255.0, voxelColor[1]/255.0, voxelColor[2]/255.0};
         this->detailedPlotDirector->SetBackgroundColor(color);
         // Check to see if the voxel was thresholded

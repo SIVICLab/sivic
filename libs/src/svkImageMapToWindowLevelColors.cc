@@ -59,7 +59,7 @@ svkImageMapToWindowLevelColors::svkImageMapToWindowLevelColors()
     // for certain member variables of an algorithm, so we set it to single thread.
     this->SetNumberOfThreads(1); 
 #endif
-    vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
+    //vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
 }
 
 

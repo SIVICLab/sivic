@@ -61,9 +61,9 @@ svkImageAlgorithm::svkImageAlgorithm()
 
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 
-    vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
-    vtkInstantiator::RegisterInstantiator("svkMrsImageData", svkMrsImageData::NewObject);
-    vtkInstantiator::RegisterInstantiator("svk4DImageData",  svk4DImageData::NewObject);
+    //vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
+    //vtkInstantiator::RegisterInstantiator("svkMrsImageData", svkMrsImageData::NewObject);
+    //vtkInstantiator::RegisterInstantiator("svk4DImageData",  svk4DImageData::NewObject);
 }
 
 

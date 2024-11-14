@@ -231,8 +231,8 @@ void svkMRSCombine::RequestLinearCombinationData( )
     data->GetNumberOfVoxels(numVoxels); 
 
     // For each voxel, add data from individual voxels:  
-    float cmplxPt0[2];
-    float cmplxPtN[2];
+    double cmplxPt0[2];
+    double cmplxPtN[2];
 
     //  If this is a weighted sum, then load in the weight values here: 
     svkMriImageData* weightImage;
@@ -353,9 +353,9 @@ void svkMRSCombine::RequestSumOfSquaresData()
 
 
     // For each voxel, add data from individual voxels:  
-    float cmplxPtN[2];
-    float cmplxPtNNew[2];
-    float magnigutdValue; 
+    double cmplxPtN[2];
+    double cmplxPtNNew[2];
+    double magnigutdValue; 
 
 
     int outterLoopLimits[2];

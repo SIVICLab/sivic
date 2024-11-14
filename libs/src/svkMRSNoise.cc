@@ -328,7 +328,7 @@ void svkMRSNoise::InitAverageSpectrum()
     }
     
     int numVoxelsAveraged = 0; 
-    float avTuple[2];
+    double avTuple[2];
     for ( int cellID = 0; cellID < numCells; cellID++ ) {
 
         if (this->onlyUseSelectionBox == true ) {

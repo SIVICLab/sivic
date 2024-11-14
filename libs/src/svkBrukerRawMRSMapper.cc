@@ -1212,7 +1212,7 @@ void svkBrukerRawMRSMapper::ReorderKSpace( svkMrsImageData* data )
 
     int numCells = svkDcmHeader::GetNumberOfCells( &dimVector );
     int cellID = numCells - 1;     
-    float specTuple[2];
+    double specTuple[2];
 
     //for ( int time = 0; time < numTimePts; time++ ) {
         for ( int z = 0; z < numVoxels[2] ; z++ ) {

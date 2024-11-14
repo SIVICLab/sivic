@@ -61,8 +61,8 @@ svkImageInPlaceFilter::svkImageInPlaceFilter()
 
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 
-    vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
-    vtkInstantiator::RegisterInstantiator("svkMrsImageData", svkMrsImageData::NewObject);
+    //vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
+    //vtkInstantiator::RegisterInstantiator("svkMrsImageData", svkMrsImageData::NewObject);
 
 }
 

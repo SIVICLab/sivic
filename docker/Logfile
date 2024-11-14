@@ -1,2 +1,0 @@
-docker-compose up -d
-docker exec -i -t sivic_centos7_02 /bin/bash

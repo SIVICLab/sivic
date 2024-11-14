@@ -254,7 +254,7 @@ if( BUILD_EXAMPLES )
 endif ( BUILD_EXAMPLES )
 
 if( BUILD_TESTS )
-    add_subdirectory (tests/src)
+    add_subdirectory (/home/erdiaz/Desktop/sivic_next/tests/src)
     FIND_PATH( SVK_TEST_ROOT REQUIRED)
 endif ( BUILD_TESTS )
 

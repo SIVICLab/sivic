@@ -82,8 +82,8 @@ class svkPhaseSpec : public svkImageInPlaceFilter
         void            SetUpdateExtent( int* start, int* end );
         void            SetChannel( int channel);
         void            PhaseAllChannels();
-        static void     ZeroOrderPhase( float phi0, float* cmplxPt ); 
-        static void     ZeroOrderPhase( float phi0, vtkFloatArray* spectrum ); 
+        static void     ZeroOrderPhase( double phi0, double* cmplxPt ); 
+        static void     ZeroOrderPhase( double phi0, vtkFloatArray* spectrum ); 
         static void     FirstOrderPhase( float phi1, int pivotPoint, vtkFloatArray* spectrum ); 
         static void     FirstOrderPhase( float phi0, 
                                          vtkImageComplex* linearPhaseArray, 

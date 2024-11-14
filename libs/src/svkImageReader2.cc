@@ -70,8 +70,8 @@ svkImageReader2::svkImageReader2()
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() );
 
-    vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
-    vtkInstantiator::RegisterInstantiator("svkMrsImageData", svkMrsImageData::NewObject);
+    //vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
+    //vtkInstantiator::RegisterInstantiator("svkMrsImageData", svkMrsImageData::NewObject);
 
     this->dataArray = NULL;
     this->readOneInputFile = false;

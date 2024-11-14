@@ -93,7 +93,7 @@ int svkAlgoTemplate::RequestData( vtkInformation* request, vtkInformationVector*
     int rows       = hdr->GetIntValue( "Rows" );
     int slices     = hdr->GetNumberOfSlices();
 
-    float cmplxPt[2]; 
+    double cmplxPt[2]; 
 
     //  Iterate through 3D spatial locations
     for (int z = 0; z < slices; z++) {

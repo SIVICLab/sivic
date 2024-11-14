@@ -336,12 +336,12 @@ int svkPhaseSpec::ApplyGlobalPhase( )
  *      phi0, phase in radians
  *      cmplxPt, complex float array with 2 elements: real, imaginary 
  */
-void svkPhaseSpec::ZeroOrderPhase(float phi0, float* cmplxPt)
+void svkPhaseSpec::ZeroOrderPhase(double phi0, double* cmplxPt)
 {
-    float cosPhase = static_cast<float>( cos( phi0) );
-    float sinPhase = static_cast<float>( sin( phi0) );
-    float re = ( cmplxPt[0] * cosPhase ) - ( cmplxPt[1] * sinPhase );
-    float im = ( cmplxPt[0] * sinPhase ) + ( cmplxPt[1] * cosPhase );
+    double cosPhase = ( cos( phi0) );
+    double sinPhase = ( sin( phi0) );
+    double re = ( cmplxPt[0] * cosPhase ) - ( cmplxPt[1] * sinPhase );
+    double im = ( cmplxPt[0] * sinPhase ) + ( cmplxPt[1] * cosPhase );
     cmplxPt[0] = re; 
     cmplxPt[1] = im; 
 
@@ -354,15 +354,15 @@ void svkPhaseSpec::ZeroOrderPhase(float phi0, float* cmplxPt)
  *      phi0, phase in radians
  *      spectrum 
  */
-void svkPhaseSpec::ZeroOrderPhase(float phi0, vtkFloatArray* spectrum)
+void svkPhaseSpec::ZeroOrderPhase(double phi0, vtkFloatArray* spectrum)
 {
 
-    float cosPhase = static_cast<float>( cos( phi0) );
-    float sinPhase = static_cast<float>( sin( phi0) );
+    //float cosPhase = static_cast<float>( cos( phi0) );
+    //float sinPhase = static_cast<float>( sin( phi0) );
 
     int numPoints = spectrum->GetNumberOfTuples();     
 
-    float cmplxPt[2]; 
+    double cmplxPt[2]; 
     for ( int i = 0; i < numPoints; i++ ) {
 
         spectrum->GetTuple(i, cmplxPt);

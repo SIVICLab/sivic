@@ -146,7 +146,7 @@ public:
       if (event == vtkCommand::ResetWindowLevelEvent)
         {
         this->IV->GetInputAlgorithm()->UpdateInformation();
-        vtkStreamingDemandDrivenPipeline::SetExtent(
+        vtkStreamingDemandDrivenPipeline::SetWholeExtent(
           this->IV->GetInputInformation(),
           vtkStreamingDemandDrivenPipeline::GetWholeExtent(
             this->IV->GetInputInformation()));
@@ -779,7 +779,7 @@ void svkImageViewer2::UpdateInputInformation()
     vtkAlgorithm* input = this->GetInputAlgorithm();
     input->UpdateInformation();
 
-    vtkStreamingDemandDrivenPipeline::SetExtent(
+    vtkStreamingDemandDrivenPipeline::SetWholeExtent(
         this->GetInputInformation(),
         vtkStreamingDemandDrivenPipeline::GetWholeExtent(
             this->GetInputInformation()

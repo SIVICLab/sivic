@@ -56,7 +56,7 @@ svkImageClip::svkImageClip()
 #if VTK_DEBUG_ON
     this->DebugOn();
 #endif
-    vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
+    //vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
 }
 
 

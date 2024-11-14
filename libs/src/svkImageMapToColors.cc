@@ -60,7 +60,7 @@ svkImageMapToColors::svkImageMapToColors()
     this->SetNumberOfThreads(1); 
 #endif
 
-    vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
+    //vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
 
 }
 

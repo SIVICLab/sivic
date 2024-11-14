@@ -76,7 +76,7 @@ svkDCEBasicFit::svkDCEBasicFit()
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
-    vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
+    //vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
     
     this->SetNumberOfInputPorts(3);
     bool repeatable  = true;
