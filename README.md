@@ -45,6 +45,23 @@ https://sourceforge.net/projects/tcl/files/Tcl/8.5.19/tk8.5.19-src.tar.gz/downlo
 * make -j
 * make install
 
+    #### NOTES FOR MACOS USERS ON M1 CHIPSET
+    * `libTK` requires `libX11`. X11 is a UNIX [windowing system ](https://en.wikipedia.org/wiki/X_Window_System)
+    * To install `libX11` on MacOS, first install [Homebrew](https://brew.sh/) package manager.
+    * Then install `libX11` by executing `brew install libx11;` in the terminal.
+    * Depending on the version of MacOS and Homebrew, the `libX11` installation location might vary. For the version that was tested, the Homebrew installation location was `/opt/homebrew/Cellar/`. 
+    * Once `libX11` is installed in your Homebrew directory, then configure `libTK`. Remember to include and link `libX11`
+    *         cd tk/unix;
+              ./configure \
+	            --with-x \
+                --x-includes="/opt/homebrew/Cellar/libx11/1.8.10/include/" \
+	            --x-libraries=/opt/homebrew/Cellar/libx11/1.8.10/lib/ \
+	            --prefix=/usr/local/sivic/build/deps/tk8.5.19 \
+	            --with-tcl=/usr/local/sivic/build/deps/tcl8.5.19/lib \
+	            --enable-shared;
+              make;
+              make install;
+
 #### 2.Build and install DCMTK 3.6.7  
 https://dicom.offis.de/download/dcmtk/dcmtk367/dcmtk-3.6.7.tar.gz
 * Open up terminal and CD into DCMTK
