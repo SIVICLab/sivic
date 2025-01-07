@@ -1,2 +1,2 @@
-/home/erdiaz/Desktop/sivic_next/test/local/sivic/README
-/home/erdiaz/Desktop/sivic_next/test/local/sivic/LICENSE
+/home/erdiaz/Desktop/sivic_next/sivic_lib_build/local/sivic/README
+/home/erdiaz/Desktop/sivic_next/sivic_lib_build/local/sivic/LICENSE
