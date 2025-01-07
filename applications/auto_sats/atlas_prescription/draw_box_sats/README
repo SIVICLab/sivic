@@ -1,5 +1,0 @@
-Before running project call: 
-
-make prep_dir
-The Atlast_default.nii file is from here: 
-/netopt/fsl4/data/standard>fslview MNI152_T1_1mm
