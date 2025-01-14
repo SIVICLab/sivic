@@ -1,0 +1,171 @@
+#!/usr/bin/perl -w
+
+# 
+#   Copyright © 2009-2011 The Regents of the University of California.
+#   All Rights Reserved.
+# 
+#   Redistribution and use in source and binary forms, with or without
+#   modification, are permitted provided that the following conditions are met:
+#   •   Redistributions of source code must retain the above copyright notice,
+#       this list of conditions and the following disclaimer.
+#   •   Redistributions in binary form must reproduce the above copyright notice,
+#       this list of conditions and the following disclaimer in the documentation
+#       and/or other materials provided with the distribution.
+#   •   None of the names of any campus of the University of California, the name
+#       "The Regents of the University of California," or the names of any of its
+#       contributors may be used to endorse or promote products derived from this
+#       software without specific prior written permission.
+# 
+#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+#   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+#   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+#   IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+#   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+#   NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+#   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+#   OF SUCH DAMAGE.
+# /
+
+
+# 
+#   $URL$
+#   $Rev$
+#   $Author$
+#   $Date$
+# 
+#   Authors:
+#       Jason C. Crane, Ph.D.
+#       Beck Olson
+#  
+
+#  
+#   Program to set up a test, run and diff results with svk_file_convert
+#  
+
+use Cwd;
+use File::Spec;
+use Pod::Usage;
+use Getopt::Long;
+Getopt::Long::config("bundling");
+
+
+GetOptions(
+           "platform=s"         => \$platform,
+           "bin_path=s"         => \$bin_path,
+           "test_path=s"        => \$test_path,
+           "test_name=s"        => \$test_name,
+           "baseline_path=s"    => \$baseline_path, 
+           "opts=s"             => \$opts,
+           "h"                  => \$help
+) or pod2usage(-verbose=>2, -exitval=>2);
+
+
+#   Validate input:
+if ( !defined $platform || 
+     !defined $bin_path || 
+     !defined $test_path || 
+     !defined $test_name || 
+     !defined $baseline_path || 
+     !defined $opts || 
+      defined $help) 
+{
+    pod2usage(-verbose=>2, -exitval=>2);
+}
+
+print "cwd          : getcwd() \n";
+print "platform     : $platform\n"; 
+print "bin path     : $bin_path\n"; 
+print "test path    : $test_path\n"; 
+print "test name    : $test_name\n"; 
+print "baseline_path: $test_name\n"; 
+print "opts         : $opts\n"; 
+print "\n\n"; 
+
+
+#####################################################
+#   cd into test root 
+#####################################################
+chdir ( "$test_path" ) || die "Can't cd to $test_path: $!\n"; 
+
+
+#####################################################
+#   Clean then dd into sub-dir where results will be written:
+#####################################################
+$test_results_dir = "${test_name}_${platform}"; 
+
+
+if (-d $test_results_dir) {
+    @files = glob("$test_results_dir/*"); 
+    foreach $file (@files) {
+        unlink ("$file") || die "Can't remove old result file: $file\n"; 
+    }
+    rmdir ("$test_results_dir") || die "Can't remove existing output directory $test_results_dir: $! n"; 
+}
+mkdir ("$test_results_dir") || die "Can't make output directory for results $test_results_dir: $! n"; 
+
+
+#####################################################
+#   cd into sub-dir where results will be written:
+#####################################################
+chdir ( "$test_results_dir" ) || die "Can't cd to $test_results_dir: $!\n"; 
+
+
+#####################################################
+#   Run svk_file_convert with the specified opts: 
+#####################################################
+$cmd = "${bin_path}/svk_file_convert $opts"; 
+print "cmd:         : $cmd\n\n"; 
+#   Run the test and check output:
+if ( system($cmd) ) {
+    exit 1; 
+}
+
+
+#####################################################
+#   Diff the results: 
+#   ignore SVK_CMD provenance entries which will differ:
+#####################################################
+chdir ( "../" ) || die "Can't cd to ../: $!\n"; 
+
+$ignore_provenance = '--ignore-matching-lines=SVK_CMD'; 
+
+$diff_cmd = "diff -r ${test_results_dir} ${baseline_path}/${platform} $ignore_provenance\n"; 
+
+if ( system("$diff_cmd") ) { 
+    exit 1; 
+}
+
+exit 0; 
+
+
+###############################################################################
+#
+#   POD Usage docs
+#
+###############################################################################
+
+=head1 NAME
+
+test_svk_file_convert
+
+=head1 SYNOPSIS
+
+ test_svk_file_convert  --platform platform --bin_path path --test_root path --test_name name --opts opts [ -Dh ] 
+
+    --platform      platform    Test platform 
+    --bin_path      path        Path to svk_file_convert in local build. 
+    --test_path     path        Path to test root. 
+    --baseline_path path        Path to baseline data root (without platform). 
+    --test_name     name        Name of test. 
+    --opts          opts        options for svk_file_convert
+    -h                          Print this help. 
+
+=head1 DESCRIPTION
+
+    runs svk_file_convert and diffs output. Results are written to a sub-dir (test_name) in SVK_DATA_ROOT.  
+    A return value of 0 indicates the test passed. 
+
+=cut
+

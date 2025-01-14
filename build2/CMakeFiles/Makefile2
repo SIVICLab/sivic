@@ -64,14 +64,17 @@ CMAKE_BINARY_DIR = /home/erdiaz/Desktop/sivic_next/build2
 
 # The main recursive "all" target.
 all: libs/src/all
+all: test/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
 preinstall: libs/src/preinstall
+preinstall: test/preinstall
 .PHONY : preinstall
 
 # The main recursive "clean" target.
 clean: libs/src/clean
+clean: test/clean
 .PHONY : clean
 
 #=============================================================================
@@ -96,6 +99,21 @@ libs/src/clean: libs/src/CMakeFiles/svkTypeUtils.dir/clean
 libs/src/clean: libs/src/CMakeFiles/svkPSD.dir/clean
 libs/src/clean: libs/src/CMakeFiles/svkadapt.dir/clean
 .PHONY : libs/src/clean
+
+#=============================================================================
+# Directory level rules for directory test
+
+# Recursive "all" directory target.
+test/all:
+.PHONY : test/all
+
+# Recursive "preinstall" directory target.
+test/preinstall:
+.PHONY : test/preinstall
+
+# Recursive "clean" directory target.
+test/clean:
+.PHONY : test/clean
 
 #=============================================================================
 # Target rules for target libs/src/CMakeFiles/svk.dir

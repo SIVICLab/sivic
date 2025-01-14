@@ -19,3 +19,11 @@
 /home/erdiaz/Desktop/sivic_next/build2/libs/src/CMakeFiles/install.dir
 /home/erdiaz/Desktop/sivic_next/build2/libs/src/CMakeFiles/install/local.dir
 /home/erdiaz/Desktop/sivic_next/build2/libs/src/CMakeFiles/install/strip.dir
+/home/erdiaz/Desktop/sivic_next/build2/test/CMakeFiles/package.dir
+/home/erdiaz/Desktop/sivic_next/build2/test/CMakeFiles/package_source.dir
+/home/erdiaz/Desktop/sivic_next/build2/test/CMakeFiles/edit_cache.dir
+/home/erdiaz/Desktop/sivic_next/build2/test/CMakeFiles/rebuild_cache.dir
+/home/erdiaz/Desktop/sivic_next/build2/test/CMakeFiles/list_install_components.dir
+/home/erdiaz/Desktop/sivic_next/build2/test/CMakeFiles/install.dir
+/home/erdiaz/Desktop/sivic_next/build2/test/CMakeFiles/install/local.dir
+/home/erdiaz/Desktop/sivic_next/build2/test/CMakeFiles/install/strip.dir

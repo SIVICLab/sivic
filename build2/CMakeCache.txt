@@ -32,6 +32,9 @@ BUILD_EXAMPLES:BOOL=OFF
 //Build SIVIC for GE Console.
 BUILD_GE_CONSOLE:BOOL=OFF
 
+//Run graphics test.
+BUILD_GRAPHICS_TESTING:BOOL=OFF
+
 //For building classes that rely on ITK fitting routines.
 BUILD_ITK:BOOL=OFF
 
@@ -50,14 +53,41 @@ BUILD_SIVIC:BOOL=OFF
 //Build Slicer Plugin.
 BUILD_SLICER:BOOL=OFF
 
-//Build tests.
+//Build the testing tree.
 BUILD_TESTING:BOOL=OFF
 
 //Build test applications.
-BUILD_TESTS:BOOL=OFF
+BUILD_TESTS:BOOL=ON
 
 //Build visualization library.
 BUILD_VIZ_LIBRARY:BOOL=OFF
+
+//The directory containing a CMake configuration file for Boost.
+Boost_DIR:PATH=Boost_DIR-NOTFOUND
+
+//Path to a file.
+Boost_INCLUDE_DIR:PATH=/usr/include
+
+//Boost library directory DEBUG
+Boost_LIBRARY_DIR_DEBUG:PATH=/usr/lib64
+
+//Boost library directory RELEASE
+Boost_LIBRARY_DIR_RELEASE:PATH=/usr/lib64
+
+//Boost serialization library (debug)
+Boost_SERIALIZATION_LIBRARY_DEBUG:FILEPATH=/usr/lib64/libboost_serialization.so
+
+//Boost serialization library (release)
+Boost_SERIALIZATION_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libboost_serialization.so
+
+//CGNS include directory
+CGNS_INCLUDE_DIR:PATH=/usr/include
+
+//CGNS library
+CGNS_LIBRARY:FILEPATH=/usr/lib64/libcgns.so
+
+//The directory containing a CMake configuration file for CLI11.
+CLI11_DIR:PATH=/usr/share/cmake/CLI11
 
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=/usr/bin/addr2line
@@ -282,6 +312,9 @@ CPACK_SOURCE_ZIP:BOOL=OFF
 //Create wrapper scripts for executables.
 CREATE_WRAPPER_SCRIPTS:BOOL=ON
 
+//Path to a file.
+DCMTK_DIR:PATH=DCMTK_DIR-NOTFOUND
+
 //Path to a library.
 DCMTK_dcmdata_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/lib64/libdcmdata.so
 
@@ -301,6 +334,126 @@ DCMTK_ofstd_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7
 EXECUTABLE_OUTPUT_PATH:PATH=
 
 //Path to a file.
+EXPAT_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a library.
+EXPAT_LIBRARY:FILEPATH=/usr/lib64/libexpat.so
+
+//Eigen include directory
+Eigen3_INCLUDE_DIR:PATH=/usr/include/eigen3
+
+//Path to a file.
+FREETYPE_INCLUDE_DIR_freetype2:PATH=/usr/include/freetype2
+
+//Path to a file.
+FREETYPE_INCLUDE_DIR_ft2build:PATH=/usr/include/freetype2
+
+//Path to a library.
+FREETYPE_LIBRARY_DEBUG:FILEPATH=FREETYPE_LIBRARY_DEBUG-NOTFOUND
+
+//Path to a library.
+FREETYPE_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libfreetype.so
+
+//Path to a file.
+Fontconfig_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a library.
+Fontconfig_LIBRARY:FILEPATH=/usr/lib64/libfontconfig.so
+
+//Path to the gdal-config tool
+GDAL_CONFIG:FILEPATH=/usr/bin/gdal-config
+
+//Path to the GDAL include directory
+GDAL_INCLUDE_DIR:PATH=/usr/include/gdal
+
+//Path to the GDAL library
+GDAL_LIBRARY:FILEPATH=/usr/lib64/libgdal.so
+
+//glew include directory
+GLEW_INCLUDE_DIR:PATH=/usr/include
+
+//glew library
+GLEW_LIBRARY:FILEPATH=/usr/lib64/libGLEW.so
+
+//HDF5 C Wrapper compiler.  Used only to detect HDF5 compile flags.
+HDF5_C_COMPILER_EXECUTABLE:FILEPATH=/usr/bin/h5cc
+
+//Path to a library.
+HDF5_C_LIBRARY_hdf5:FILEPATH=/usr/lib64/libhdf5.so
+
+//Path to a library.
+HDF5_C_LIBRARY_hdf5_hl:FILEPATH=/usr/lib64/libhdf5_hl.so
+
+//HDF5 file differencing tool.
+HDF5_DIFF_EXECUTABLE:FILEPATH=/usr/bin/h5diff
+
+//The directory containing a CMake configuration file for HDF5.
+HDF5_DIR:PATH=HDF5_DIR-NOTFOUND
+
+//ICU derb executable
+ICU_DERB_EXECUTABLE:FILEPATH=ICU_DERB_EXECUTABLE-NOTFOUND
+
+//ICU genbrk executable
+ICU_GENBRK_EXECUTABLE:FILEPATH=ICU_GENBRK_EXECUTABLE-NOTFOUND
+
+//ICU genccode executable
+ICU_GENCCODE_EXECUTABLE:FILEPATH=ICU_GENCCODE_EXECUTABLE-NOTFOUND
+
+//ICU gencfu executable
+ICU_GENCFU_EXECUTABLE:FILEPATH=ICU_GENCFU_EXECUTABLE-NOTFOUND
+
+//ICU gencmn executable
+ICU_GENCMN_EXECUTABLE:FILEPATH=ICU_GENCMN_EXECUTABLE-NOTFOUND
+
+//ICU gencnval executable
+ICU_GENCNVAL_EXECUTABLE:FILEPATH=ICU_GENCNVAL_EXECUTABLE-NOTFOUND
+
+//ICU gendict executable
+ICU_GENDICT_EXECUTABLE:FILEPATH=ICU_GENDICT_EXECUTABLE-NOTFOUND
+
+//ICU gennorm2 executable
+ICU_GENNORM2_EXECUTABLE:FILEPATH=ICU_GENNORM2_EXECUTABLE-NOTFOUND
+
+//ICU genrb executable
+ICU_GENRB_EXECUTABLE:FILEPATH=ICU_GENRB_EXECUTABLE-NOTFOUND
+
+//ICU gensprep executable
+ICU_GENSPREP_EXECUTABLE:FILEPATH=ICU_GENSPREP_EXECUTABLE-NOTFOUND
+
+//ICU icu-config executable
+ICU_ICU-CONFIG_EXECUTABLE:FILEPATH=/usr/bin/icu-config
+
+//ICU icuinfo executable
+ICU_ICUINFO_EXECUTABLE:FILEPATH=/usr/bin/icuinfo
+
+//ICU icupkg executable
+ICU_ICUPKG_EXECUTABLE:FILEPATH=ICU_ICUPKG_EXECUTABLE-NOTFOUND
+
+//ICU include directory
+ICU_INCLUDE_DIR:PATH=/usr/include
+
+//ICU makeconv executable
+ICU_MAKECONV_EXECUTABLE:FILEPATH=ICU_MAKECONV_EXECUTABLE-NOTFOUND
+
+//ICU Makefile.inc data file
+ICU_MAKEFILE_INC:FILEPATH=/usr/lib64/icu/67.1/Makefile.inc
+
+//ICU pkgdata executable
+ICU_PKGDATA_EXECUTABLE:FILEPATH=ICU_PKGDATA_EXECUTABLE-NOTFOUND
+
+//ICU pkgdata.inc data file
+ICU_PKGDATA_INC:FILEPATH=/usr/lib64/icu/67.1/pkgdata.inc
+
+//ICU uconv executable
+ICU_UCONV_EXECUTABLE:FILEPATH=ICU_UCONV_EXECUTABLE-NOTFOUND
+
+//ICU uc library (debug)
+ICU_UC_LIBRARY_DEBUG:FILEPATH=ICU_UC_LIBRARY_DEBUG-NOTFOUND
+
+//ICU uc library (release)
+ICU_UC_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libicuuc.so
+
+//Path to a file.
 JPEG_INCLUDE_DIR:PATH=/usr/include
 
 //Path to a library.
@@ -309,11 +462,119 @@ JPEG_LIBRARY_DEBUG:FILEPATH=JPEG_LIBRARY_DEBUG-NOTFOUND
 //Path to a library.
 JPEG_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libjpeg.so
 
+//jsoncpp include directory
+JsonCpp_INCLUDE_DIR:PATH=/usr/include
+
+//jsoncpp library
+JsonCpp_LIBRARY:FILEPATH=/usr/lib64/libjsoncpp.so
+
 //The directory containing a CMake configuration file for KWWidgets.
 KWWidgets_DIR:PATH=KWWidgets_DIR-NOTFOUND
 
 //Single output directory for building all libraries.
 LIBRARY_OUTPUT_PATH:PATH=
+
+//Path to a file.
+LIBXML2_INCLUDE_DIR:PATH=/usr/include/libxml2
+
+//Path to a library.
+LIBXML2_LIBRARY:FILEPATH=/usr/lib64/libxml2.so
+
+//Path to a program.
+LIBXML2_XMLLINT_EXECUTABLE:FILEPATH=/usr/bin/xmllint
+
+//lz4 include directory
+LZ4_INCLUDE_DIR:PATH=/usr/include
+
+//lz4 library
+LZ4_LIBRARY:FILEPATH=/usr/lib64/liblz4.so
+
+//lzma include directory
+LZMA_INCLUDE_DIR:PATH=/usr/include
+
+//lzma library
+LZMA_LIBRARY:FILEPATH=/usr/lib64/liblzma.so
+
+//libarchive include directory
+LibArchive_INCLUDE_DIR:PATH=/usr/include
+
+//libarchive library
+LibArchive_LIBRARY:FILEPATH=/usr/lib64/libarchive.so
+
+//libharu include directory
+LibHaru_INCLUDE_DIR:PATH=/usr/include
+
+//libharu debug library
+LibHaru_LIBRARY_DEBUG:FILEPATH=LibHaru_LIBRARY_DEBUG-NOTFOUND
+
+//libharu release library
+LibHaru_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libhpdf.so
+
+//libproj include directories
+LibPROJ_INCLUDE_DIR:PATH=/usr/include
+
+//libproj debug library
+LibPROJ_LIBRARY_DEBUG:FILEPATH=LibPROJ_LIBRARY_DEBUG-NOTFOUND
+
+//libproj release library
+LibPROJ_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libproj.so
+
+//ogg include directory
+OGG_INCLUDE_DIR:PATH=/usr/include
+
+//ogg library
+OGG_LIBRARY:FILEPATH=/usr/lib64/libogg.so
+
+//Path to a file.
+OPENGL_EGL_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a file.
+OPENGL_GLES2_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a file.
+OPENGL_GLES3_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a file.
+OPENGL_GLX_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a file.
+OPENGL_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a library.
+OPENGL_egl_LIBRARY:FILEPATH=/usr/lib64/libEGL.so
+
+//Path to a library.
+OPENGL_gles2_LIBRARY:FILEPATH=/usr/lib64/libGLESv2.so
+
+//Path to a library.
+OPENGL_gles3_LIBRARY:FILEPATH=/usr/lib64/libGLESv2.so
+
+//Path to a library.
+OPENGL_glu_LIBRARY:FILEPATH=/usr/lib64/libGLU.so
+
+//Path to a library.
+OPENGL_glx_LIBRARY:FILEPATH=/usr/lib64/libGLX.so
+
+//Path to a library.
+OPENGL_opengl_LIBRARY:FILEPATH=/usr/lib64/libOpenGL.so
+
+//Path to a file.
+OPENGL_xmesa_INCLUDE_DIR:PATH=OPENGL_xmesa_INCLUDE_DIR-NOTFOUND
+
+//OpenSlide include directory
+OPENSLIDE_INCLUDE_DIR:PATH=/usr/include
+
+//OpenSlide library
+OPENSLIDE_LIBRARY:FILEPATH=/usr/lib64/libopenslide.so
+
+//Path to PEGTL headers
+PEGTL_INCLUDE_DIR:PATH=/usr/include/tao
+
+//Arguments to supply to pkg-config
+PKG_CONFIG_ARGN:STRING=
+
+//pkg-config executable
+PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
 
 //Path to a library.
 PNG_LIBRARY_DEBUG:FILEPATH=PNG_LIBRARY_DEBUG-NOTFOUND
@@ -324,9 +585,60 @@ PNG_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libpng.so
 //Path to a file.
 PNG_PNG_INCLUDE_DIR:PATH=/usr/include
 
+//The directory containing a CMake configuration file for Qt5Core.
+Qt5Core_DIR:PATH=/usr/lib64/cmake/Qt5Core
+
+//The directory containing a CMake configuration file for Qt5Gui.
+Qt5Gui_DIR:PATH=/usr/lib64/cmake/Qt5Gui
+
+//The directory containing a CMake configuration file for Qt5Network.
+Qt5Network_DIR:PATH=/usr/lib64/cmake/Qt5Network
+
+//The directory containing a CMake configuration file for Qt5OpenGL.
+Qt5OpenGL_DIR:PATH=/usr/lib64/cmake/Qt5OpenGL
+
+//The directory containing a CMake configuration file for Qt5QmlModels.
+Qt5QmlModels_DIR:PATH=/usr/lib64/cmake/Qt5QmlModels
+
+//The directory containing a CMake configuration file for Qt5Qml.
+Qt5Qml_DIR:PATH=/usr/lib64/cmake/Qt5Qml
+
+//The directory containing a CMake configuration file for Qt5Quick.
+Qt5Quick_DIR:PATH=/usr/lib64/cmake/Qt5Quick
+
+//The directory containing a CMake configuration file for Qt5Sql.
+Qt5Sql_DIR:PATH=/usr/lib64/cmake/Qt5Sql
+
+//The directory containing a CMake configuration file for Qt5Widgets.
+Qt5Widgets_DIR:PATH=/usr/lib64/cmake/Qt5Widgets
+
+//The directory containing a CMake configuration file for Qt5.
+Qt5_DIR:PATH=/usr/lib64/cmake/Qt5
+
+//Path to a file.
+SQLite3_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a library.
+SQLite3_LIBRARY:FILEPATH=/usr/lib64/libsqlite3.so
+
+//Path to a file.
+SVK_TEST_ROOT:PATH=/home/erdiaz/Desktop/sivic_next/tests/src
+
 //For exporting vector graphics formats, VTK must be built with
 // VTK_USE_GL2PS.
 SVK_USE_GL2PS:BOOL=OFF
+
+//theora include directory
+THEORA_INCLUDE_DIR:PATH=/usr/include
+
+//theora library
+THEORA_LIBRARY:FILEPATH=/usr/lib64/libtheora.so
+
+//theora decoding library
+THEORA_dec_LIBRARY:FILEPATH=/usr/lib64/libtheoradec.so
+
+//theora encoding library
+THEORA_enc_LIBRARY:FILEPATH=/usr/lib64/libtheoraenc.so
 
 //Path to a file.
 TIFF_INCLUDE_DIR:PATH=/usr/include
@@ -340,8 +652,260 @@ TIFF_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libtiff.so
 //For UCSF Internal builds only.
 UCSF_INTERNAL:BOOL=OFF
 
+//Use offscreen rendering if available.
+USE_OFF_SCREEN_TESTING:BOOL=ON
+
 //The directory containing a CMake configuration file for VTK.
 VTK_DIR:PATH=/usr/lib64/cmake/vtk
+
+//Path to a file.
+X11_ICE_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_ICE_LIB:FILEPATH=/usr/lib64/libICE.so
+
+//Path to a file.
+X11_SM_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_SM_LIB:FILEPATH=/usr/lib64/libSM.so
+
+//Path to a file.
+X11_X11_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_X11_LIB:FILEPATH=/usr/lib64/libX11.so
+
+//Path to a file.
+X11_X11_xcb_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_X11_xcb_LIB:FILEPATH=/usr/lib64/libX11-xcb.so
+
+//Path to a file.
+X11_XRes_INCLUDE_PATH:PATH=X11_XRes_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_XRes_LIB:FILEPATH=X11_XRes_LIB-NOTFOUND
+
+//Path to a file.
+X11_XShm_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a file.
+X11_XSync_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a file.
+X11_Xaccessrules_INCLUDE_PATH:PATH=X11_Xaccessrules_INCLUDE_PATH-NOTFOUND
+
+//Path to a file.
+X11_Xaccessstr_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a file.
+X11_Xau_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_Xau_LIB:FILEPATH=/usr/lib64/libXau.so
+
+//Path to a file.
+X11_Xaw_INCLUDE_PATH:PATH=X11_Xaw_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xaw_LIB:FILEPATH=X11_Xaw_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xcomposite_INCLUDE_PATH:PATH=X11_Xcomposite_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xcomposite_LIB:FILEPATH=X11_Xcomposite_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xcursor_INCLUDE_PATH:PATH=X11_Xcursor_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xcursor_LIB:FILEPATH=X11_Xcursor_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xdamage_INCLUDE_PATH:PATH=X11_Xdamage_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xdamage_LIB:FILEPATH=X11_Xdamage_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xdmcp_INCLUDE_PATH:PATH=X11_Xdmcp_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xdmcp_LIB:FILEPATH=X11_Xdmcp_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xext_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_Xext_LIB:FILEPATH=/usr/lib64/libXext.so
+
+//Path to a file.
+X11_Xfixes_INCLUDE_PATH:PATH=X11_Xfixes_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xfixes_LIB:FILEPATH=X11_Xfixes_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xft_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_Xft_LIB:FILEPATH=/usr/lib64/libXft.so
+
+//Path to a file.
+X11_Xi_INCLUDE_PATH:PATH=X11_Xi_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xi_LIB:FILEPATH=X11_Xi_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xinerama_INCLUDE_PATH:PATH=X11_Xinerama_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xinerama_LIB:FILEPATH=X11_Xinerama_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xkb_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a file.
+X11_Xkblib_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a file.
+X11_Xlib_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a file.
+X11_Xmu_INCLUDE_PATH:PATH=X11_Xmu_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xmu_LIB:FILEPATH=X11_Xmu_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xpm_INCLUDE_PATH:PATH=X11_Xpm_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xpm_LIB:FILEPATH=X11_Xpm_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xrandr_INCLUDE_PATH:PATH=X11_Xrandr_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xrandr_LIB:FILEPATH=X11_Xrandr_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xrender_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_Xrender_LIB:FILEPATH=/usr/lib64/libXrender.so
+
+//Path to a file.
+X11_Xshape_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a file.
+X11_Xss_INCLUDE_PATH:PATH=X11_Xss_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xss_LIB:FILEPATH=X11_Xss_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xt_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_Xt_LIB:FILEPATH=/usr/lib64/libXt.so
+
+//Path to a file.
+X11_Xtst_INCLUDE_PATH:PATH=X11_Xtst_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xtst_LIB:FILEPATH=X11_Xtst_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xutil_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a file.
+X11_Xv_INCLUDE_PATH:PATH=X11_Xv_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xv_LIB:FILEPATH=X11_Xv_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xxf86misc_INCLUDE_PATH:PATH=X11_Xxf86misc_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xxf86misc_LIB:FILEPATH=X11_Xxf86misc_LIB-NOTFOUND
+
+//Path to a file.
+X11_Xxf86vm_INCLUDE_PATH:PATH=X11_Xxf86vm_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_Xxf86vm_LIB:FILEPATH=X11_Xxf86vm_LIB-NOTFOUND
+
+//Path to a file.
+X11_dpms_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a file.
+X11_xcb_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_xcb_LIB:FILEPATH=/usr/lib64/libxcb.so
+
+//Path to a file.
+X11_xcb_icccm_INCLUDE_PATH:PATH=X11_xcb_icccm_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_xcb_icccm_LIB:FILEPATH=X11_xcb_icccm_LIB-NOTFOUND
+
+//Path to a file.
+X11_xcb_keysyms_INCLUDE_PATH:PATH=X11_xcb_keysyms_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_xcb_keysyms_LIB:FILEPATH=X11_xcb_keysyms_LIB-NOTFOUND
+
+//Path to a file.
+X11_xcb_randr_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_xcb_randr_LIB:FILEPATH=/usr/lib64/libxcb-randr.so
+
+//Path to a file.
+X11_xcb_util_INCLUDE_PATH:PATH=X11_xcb_util_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_xcb_util_LIB:FILEPATH=X11_xcb_util_LIB-NOTFOUND
+
+//Path to a file.
+X11_xcb_xfixes_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_xcb_xfixes_LIB:FILEPATH=/usr/lib64/libxcb-xfixes.so
+
+//Path to a library.
+X11_xcb_xkb_LIB:FILEPATH=/usr/lib64/libxcb-xkb.so
+
+//Path to a file.
+X11_xcb_xtest_INCLUDE_PATH:PATH=/usr/include
+
+//Path to a library.
+X11_xcb_xtest_LIB:FILEPATH=/usr/lib64/libxcb-xtest.so
+
+//Path to a file.
+X11_xkbcommon_INCLUDE_PATH:PATH=X11_xkbcommon_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_xkbcommon_LIB:FILEPATH=X11_xkbcommon_LIB-NOTFOUND
+
+//Path to a file.
+X11_xkbcommon_X11_INCLUDE_PATH:PATH=X11_xkbcommon_X11_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_xkbcommon_X11_LIB:FILEPATH=X11_xkbcommon_X11_LIB-NOTFOUND
+
+//Path to a file.
+X11_xkbfile_INCLUDE_PATH:PATH=X11_xkbfile_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+X11_xkbfile_LIB:FILEPATH=X11_xkbfile_LIB-NOTFOUND
 
 //Path to a file.
 ZLIB_INCLUDE_DIR:PATH=/usr/include
@@ -351,6 +915,33 @@ ZLIB_LIBRARY_DEBUG:FILEPATH=ZLIB_LIBRARY_DEBUG-NOTFOUND
 
 //Path to a library.
 ZLIB_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libz.so
+
+//double-conversion include directory
+double-conversion_INCLUDE_DIR:PATH=/usr/include/double-conversion
+
+//double-conversion library
+double-conversion_LIBRARY:FILEPATH=/usr/lib64/libdouble-conversion.so
+
+//The directory containing a CMake configuration file for netCDF.
+netCDF_DIR:PATH=netCDF_DIR-NOTFOUND
+
+//Path to a library.
+pkgcfg_lib_PC_EXPAT_expat:FILEPATH=/usr/lib64/libexpat.so
+
+//Path to a library.
+pkgcfg_lib_PC_LIBXML_xml2:FILEPATH=/usr/lib64/libxml2.so
+
+//Path to a library.
+pkgcfg_lib_PKG_FONTCONFIG_fontconfig:FILEPATH=/usr/lib64/libfontconfig.so
+
+//Path to a library.
+pkgcfg_lib_PKG_FONTCONFIG_freetype:FILEPATH=/usr/lib64/libfreetype.so
+
+//Path to a library.
+pkgcfg_lib__NetCDF_netcdf:FILEPATH=/usr/lib64/libnetcdf.so
+
+//Path to a library.
+pkgcfg_lib__libmariadb_mariadb:FILEPATH=/usr/lib64/libmariadb.so
 
 //The directory containing a CMake configuration file for pugixml.
 pugixml_DIR:PATH=/usr/lib64/cmake/pugixml
@@ -373,6 +964,15 @@ svk_IS_TOP_LEVEL:STATIC=OFF
 //Value Computed by CMake
 svk_SOURCE_DIR:STATIC=/home/erdiaz/Desktop/sivic_next/libs/src
 
+//Value Computed by CMake
+svk_test_BINARY_DIR:STATIC=/home/erdiaz/Desktop/sivic_next/build2/tests/src
+
+//Value Computed by CMake
+svk_test_IS_TOP_LEVEL:STATIC=OFF
+
+//Value Computed by CMake
+svk_test_SOURCE_DIR:STATIC=/home/erdiaz/Desktop/sivic_next/tests/src
+
 //utf8cpp include directory
 utf8cpp_INCLUDE_DIR:PATH=/usr/include/utf8cpp
 
@@ -385,8 +985,26 @@ utf8cpp_INCLUDE_DIR:PATH=/usr/include/utf8cpp
 BUILD_ITK-MODIFIED:INTERNAL=ON
 //MODIFIED property for variable: BUILD_SIVIC
 BUILD_SIVIC-MODIFIED:INTERNAL=ON
+//MODIFIED property for variable: BUILD_TESTS
+BUILD_TESTS-MODIFIED:INTERNAL=ON
 //MODIFIED property for variable: BUILD_VIZ_LIBRARY
 BUILD_VIZ_LIBRARY-MODIFIED:INTERNAL=ON
+//ADVANCED property for variable: Boost_DIR
+Boost_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_INCLUDE_DIR
+Boost_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_LIBRARY_DIR_DEBUG
+Boost_LIBRARY_DIR_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_LIBRARY_DIR_RELEASE
+Boost_LIBRARY_DIR_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_SERIALIZATION_LIBRARY_DEBUG
+Boost_SERIALIZATION_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_SERIALIZATION_LIBRARY_RELEASE
+Boost_SERIALIZATION_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CGNS_INCLUDE_DIR
+CGNS_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CGNS_LIBRARY
+CGNS_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_ADDR2LINE
 CMAKE_ADDR2LINE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_AR
@@ -469,8 +1087,16 @@ CMAKE_GENERATOR_INSTANCE:INTERNAL=
 CMAKE_GENERATOR_PLATFORM:INTERNAL=
 //Name of generator toolset.
 CMAKE_GENERATOR_TOOLSET:INTERNAL=
+//Have function connect
+CMAKE_HAVE_CONNECT:INTERNAL=1
+//Have function gethostbyname
+CMAKE_HAVE_GETHOSTBYNAME:INTERNAL=1
 //Test CMAKE_HAVE_LIBC_PTHREAD
 CMAKE_HAVE_LIBC_PTHREAD:INTERNAL=1
+//Have function remove
+CMAKE_HAVE_REMOVE:INTERNAL=1
+//Have function shmat
+CMAKE_HAVE_SHMAT:INTERNAL=1
 //Source directory with the top level CMakeLists.txt file for this
 // project
 CMAKE_HOME_DIRECTORY:INTERNAL=/home/erdiaz/Desktop/sivic_next
@@ -478,6 +1104,8 @@ CMAKE_HOME_DIRECTORY:INTERNAL=/home/erdiaz/Desktop/sivic_next
 CMAKE_INSTALL_PREFIX-MODIFIED:INTERNAL=ON
 //Install .so files without execute permission.
 CMAKE_INSTALL_SO_NO_EXE:INTERNAL=0
+//Have library ICE
+CMAKE_LIB_ICE_HAS_ICECONNECTIONNUMBER:INTERNAL=1
 //ADVANCED property for variable: CMAKE_LINKER
 CMAKE_LINKER-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_MAKE_PROGRAM
@@ -495,7 +1123,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=2
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=3
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -550,30 +1178,341 @@ CPACK_SOURCE_TXZ-ADVANCED:INTERNAL=1
 CPACK_SOURCE_TZ-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CPACK_SOURCE_ZIP
 CPACK_SOURCE_ZIP-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: EXPAT_INCLUDE_DIR
+EXPAT_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: EXPAT_LIBRARY
+EXPAT_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Eigen3_INCLUDE_DIR
+Eigen3_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//Details about finding Boost
+FIND_PACKAGE_MESSAGE_DETAILS_Boost:INTERNAL=[/usr/include][cfound components: serialization ][v1.75.0(1.75.0)]
+//Details about finding CGNS
+FIND_PACKAGE_MESSAGE_DETAILS_CGNS:INTERNAL=[/usr/include][/usr/lib64/libcgns.so][v4.30(4.1.1)]
+//Details about finding EXPAT
+FIND_PACKAGE_MESSAGE_DETAILS_EXPAT:INTERNAL=[/usr/lib64/libexpat.so][/usr/include][v2.5.0()]
+//Details about finding Eigen3
+FIND_PACKAGE_MESSAGE_DETAILS_Eigen3:INTERNAL=[/usr/include/eigen3][v3.4.0()]
+//Details about finding Freetype
+FIND_PACKAGE_MESSAGE_DETAILS_Freetype:INTERNAL=[/usr/lib64/libfreetype.so][/usr/include/freetype2][v2.10.4()]
+//Details about finding GDAL
+FIND_PACKAGE_MESSAGE_DETAILS_GDAL:INTERNAL=[/usr/lib64/libgdal.so][/usr/include/gdal][v3.4.3()]
+//Details about finding GLEW
+FIND_PACKAGE_MESSAGE_DETAILS_GLEW:INTERNAL=[/usr/lib64/libGLEW.so][/usr/include][v()]
+//Details about finding HDF5
+FIND_PACKAGE_MESSAGE_DETAILS_HDF5:INTERNAL=[/usr/lib64/libhdf5.so][/usr/lib64/libhdf5_hl.so][cfound components: C HL ][v1.12.1()]
 //Details about finding JPEG
 FIND_PACKAGE_MESSAGE_DETAILS_JPEG:INTERNAL=[/usr/lib64/libjpeg.so][/usr/include][v62()]
+//Details about finding JsonCpp
+FIND_PACKAGE_MESSAGE_DETAILS_JsonCpp:INTERNAL=[/usr/lib64/libjsoncpp.so][/usr/include][v1.9.5(0.7.0)]
+//Details about finding LZ4
+FIND_PACKAGE_MESSAGE_DETAILS_LZ4:INTERNAL=[/usr/lib64/liblz4.so][/usr/include][v1.9.3()]
+//Details about finding LZMA
+FIND_PACKAGE_MESSAGE_DETAILS_LZMA:INTERNAL=[/usr/lib64/liblzma.so][/usr/include][v5.2.5()]
+//Details about finding LibArchive
+FIND_PACKAGE_MESSAGE_DETAILS_LibArchive:INTERNAL=[/usr/lib64/libarchive.so][/usr/include][v3.5.3()]
+//Details about finding LibHaru
+FIND_PACKAGE_MESSAGE_DETAILS_LibHaru:INTERNAL=[/usr/lib64/libhpdf.so][/usr/include][v2.3.0-RC2(2.3.0)]
+//Details about finding LibPROJ
+FIND_PACKAGE_MESSAGE_DETAILS_LibPROJ:INTERNAL=[/usr/lib64/libproj.so][/usr/include][v8.2.0()]
+//Details about finding LibXml2
+FIND_PACKAGE_MESSAGE_DETAILS_LibXml2:INTERNAL=[/usr/lib64/libxml2.so][/usr/include/libxml2][v2.9.13()]
+//Details about finding NetCDF
+FIND_PACKAGE_MESSAGE_DETAILS_NetCDF:INTERNAL=[netcdf][v4.8.1()]
+//Details about finding OGG
+FIND_PACKAGE_MESSAGE_DETAILS_OGG:INTERNAL=[/usr/lib64/libogg.so][/usr/include][v()]
+//Details about finding OpenGL
+FIND_PACKAGE_MESSAGE_DETAILS_OpenGL:INTERNAL=[/usr/lib64/libOpenGL.so][/usr/lib64/libGLX.so][/usr/include][cfound components: OpenGL GLX ][v()]
+//Details about finding OpenSlide
+FIND_PACKAGE_MESSAGE_DETAILS_OpenSlide:INTERNAL=[/usr/lib64/libopenslide.so][/usr/include][v()]
+//Details about finding PEGTL
+FIND_PACKAGE_MESSAGE_DETAILS_PEGTL:INTERNAL=[/usr/include/tao][v2.8.3(2.0.0)]
 //Details about finding PNG
 FIND_PACKAGE_MESSAGE_DETAILS_PNG:INTERNAL=[/usr/lib64/libpng.so][/usr/include][v1.6.37()]
+//Details about finding PkgConfig
+FIND_PACKAGE_MESSAGE_DETAILS_PkgConfig:INTERNAL=[/usr/bin/pkg-config][v1.7.3()]
+//Details about finding Python3
+FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[/usr/bin/python3.9][/usr/include/python3.9][cfound components: Interpreter Development.Module Development.Embed ][v3.9.19(3.9)]
+//Details about finding SQLite3
+FIND_PACKAGE_MESSAGE_DETAILS_SQLite3:INTERNAL=[/usr/include][/usr/lib64/libsqlite3.so][v3.34.1()]
+//Details about finding THEORA
+FIND_PACKAGE_MESSAGE_DETAILS_THEORA:INTERNAL=[/usr/lib64/libtheora.so][/usr/lib64/libtheoraenc.so][/usr/lib64/libtheoradec.so][/usr/include][v()]
 //Details about finding TIFF
 FIND_PACKAGE_MESSAGE_DETAILS_TIFF:INTERNAL=[/usr/lib64/libtiff.so][/usr/include][c ][v4.4.0()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
+//Details about finding X11
+FIND_PACKAGE_MESSAGE_DETAILS_X11:INTERNAL=[/usr/include][/usr/lib64/libX11.so][c ][v()]
 //Details about finding ZLIB
 FIND_PACKAGE_MESSAGE_DETAILS_ZLIB:INTERNAL=[/usr/lib64/libz.so][/usr/include][c ][v1.2.11()]
+//Details about finding double-conversion
+FIND_PACKAGE_MESSAGE_DETAILS_double-conversion:INTERNAL=[/usr/lib64/libdouble-conversion.so][/usr/include/double-conversion][v()]
 //Details about finding utf8cpp
 FIND_PACKAGE_MESSAGE_DETAILS_utf8cpp:INTERNAL=[/usr/include/utf8cpp][v()]
+//ADVANCED property for variable: FREETYPE_INCLUDE_DIR_freetype2
+FREETYPE_INCLUDE_DIR_freetype2-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: FREETYPE_INCLUDE_DIR_ft2build
+FREETYPE_INCLUDE_DIR_ft2build-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: FREETYPE_LIBRARY_DEBUG
+FREETYPE_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: FREETYPE_LIBRARY_RELEASE
+FREETYPE_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Fontconfig_INCLUDE_DIR
+Fontconfig_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Fontconfig_LIBRARY
+Fontconfig_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: GDAL_CONFIG
+GDAL_CONFIG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: GDAL_INCLUDE_DIR
+GDAL_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: GDAL_LIBRARY
+GDAL_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: GLEW_INCLUDE_DIR
+GLEW_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: GLEW_LIBRARY
+GLEW_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HDF5_C_COMPILER_EXECUTABLE
+HDF5_C_COMPILER_EXECUTABLE-ADVANCED:INTERNAL=1
+//Result of TRY_COMPILE
+HDF5_C_COMPILER_NO_INTERROGATE:INTERNAL=FALSE
+//ADVANCED property for variable: HDF5_DIFF_EXECUTABLE
+HDF5_DIFF_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HDF5_DIR
+HDF5_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_DERB_EXECUTABLE
+ICU_DERB_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_GENBRK_EXECUTABLE
+ICU_GENBRK_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_GENCCODE_EXECUTABLE
+ICU_GENCCODE_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_GENCFU_EXECUTABLE
+ICU_GENCFU_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_GENCMN_EXECUTABLE
+ICU_GENCMN_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_GENCNVAL_EXECUTABLE
+ICU_GENCNVAL_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_GENDICT_EXECUTABLE
+ICU_GENDICT_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_GENNORM2_EXECUTABLE
+ICU_GENNORM2_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_GENRB_EXECUTABLE
+ICU_GENRB_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_GENSPREP_EXECUTABLE
+ICU_GENSPREP_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_ICU-CONFIG_EXECUTABLE
+ICU_ICU-CONFIG_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_ICUINFO_EXECUTABLE
+ICU_ICUINFO_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_ICUPKG_EXECUTABLE
+ICU_ICUPKG_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_MAKECONV_EXECUTABLE
+ICU_MAKECONV_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_MAKEFILE_INC
+ICU_MAKEFILE_INC-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_PKGDATA_EXECUTABLE
+ICU_PKGDATA_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_PKGDATA_INC
+ICU_PKGDATA_INC-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_UCONV_EXECUTABLE
+ICU_UCONV_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_UC_LIBRARY_DEBUG
+ICU_UC_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ICU_UC_LIBRARY_RELEASE
+ICU_UC_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: JPEG_INCLUDE_DIR
 JPEG_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: JPEG_LIBRARY_DEBUG
 JPEG_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: JPEG_LIBRARY_RELEASE
 JPEG_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: JsonCpp_INCLUDE_DIR
+JsonCpp_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: JsonCpp_LIBRARY
+JsonCpp_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBXML2_INCLUDE_DIR
+LIBXML2_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBXML2_LIBRARY
+LIBXML2_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBXML2_XMLLINT_EXECUTABLE
+LIBXML2_XMLLINT_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LZ4_INCLUDE_DIR
+LZ4_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LZ4_LIBRARY
+LZ4_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LibArchive_INCLUDE_DIR
+LibArchive_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LibArchive_LIBRARY
+LibArchive_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LibHaru_INCLUDE_DIR
+LibHaru_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LibHaru_LIBRARY_DEBUG
+LibHaru_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LibHaru_LIBRARY_RELEASE
+LibHaru_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LibPROJ_INCLUDE_DIR
+LibPROJ_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LibPROJ_LIBRARY_DEBUG
+LibPROJ_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LibPROJ_LIBRARY_RELEASE
+LibPROJ_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OGG_INCLUDE_DIR
+OGG_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OGG_LIBRARY
+OGG_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENGL_EGL_INCLUDE_DIR
+OPENGL_EGL_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENGL_GLX_INCLUDE_DIR
+OPENGL_GLX_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENGL_INCLUDE_DIR
+OPENGL_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENGL_egl_LIBRARY
+OPENGL_egl_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENGL_gles2_LIBRARY
+OPENGL_gles2_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENGL_gles3_LIBRARY
+OPENGL_gles3_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENGL_glu_LIBRARY
+OPENGL_glu_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENGL_glx_LIBRARY
+OPENGL_glx_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENGL_opengl_LIBRARY
+OPENGL_opengl_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENGL_xmesa_INCLUDE_DIR
+OPENGL_xmesa_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENSLIDE_INCLUDE_DIR
+OPENSLIDE_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENSLIDE_LIBRARY
+OPENSLIDE_LIBRARY-ADVANCED:INTERNAL=1
+PC_EXPAT_CFLAGS:INTERNAL=
+PC_EXPAT_CFLAGS_I:INTERNAL=
+PC_EXPAT_CFLAGS_OTHER:INTERNAL=
+PC_EXPAT_FOUND:INTERNAL=1
+PC_EXPAT_INCLUDEDIR:INTERNAL=/usr/include
+PC_EXPAT_INCLUDE_DIRS:INTERNAL=
+PC_EXPAT_LDFLAGS:INTERNAL=-L/usr/lib64;-lexpat
+PC_EXPAT_LDFLAGS_OTHER:INTERNAL=
+PC_EXPAT_LIBDIR:INTERNAL=/usr/lib64
+PC_EXPAT_LIBRARIES:INTERNAL=expat
+PC_EXPAT_LIBRARY_DIRS:INTERNAL=/usr/lib64
+PC_EXPAT_LIBS:INTERNAL=
+PC_EXPAT_LIBS_L:INTERNAL=
+PC_EXPAT_LIBS_OTHER:INTERNAL=
+PC_EXPAT_LIBS_PATHS:INTERNAL=
+PC_EXPAT_MODULE_NAME:INTERNAL=expat
+PC_EXPAT_PREFIX:INTERNAL=/usr
+PC_EXPAT_STATIC_CFLAGS:INTERNAL=
+PC_EXPAT_STATIC_CFLAGS_I:INTERNAL=
+PC_EXPAT_STATIC_CFLAGS_OTHER:INTERNAL=
+PC_EXPAT_STATIC_INCLUDE_DIRS:INTERNAL=
+PC_EXPAT_STATIC_LDFLAGS:INTERNAL=-L/usr/lib64;-lexpat;-lm
+PC_EXPAT_STATIC_LDFLAGS_OTHER:INTERNAL=
+PC_EXPAT_STATIC_LIBDIR:INTERNAL=
+PC_EXPAT_STATIC_LIBRARIES:INTERNAL=expat;m
+PC_EXPAT_STATIC_LIBRARY_DIRS:INTERNAL=/usr/lib64
+PC_EXPAT_STATIC_LIBS:INTERNAL=
+PC_EXPAT_STATIC_LIBS_L:INTERNAL=
+PC_EXPAT_STATIC_LIBS_OTHER:INTERNAL=
+PC_EXPAT_STATIC_LIBS_PATHS:INTERNAL=
+PC_EXPAT_VERSION:INTERNAL=2.5.0
+PC_EXPAT_expat_INCLUDEDIR:INTERNAL=
+PC_EXPAT_expat_LIBDIR:INTERNAL=
+PC_EXPAT_expat_PREFIX:INTERNAL=
+PC_EXPAT_expat_VERSION:INTERNAL=
+PC_LIBXML_CFLAGS:INTERNAL=-I/usr/include/libxml2
+PC_LIBXML_CFLAGS_I:INTERNAL=
+PC_LIBXML_CFLAGS_OTHER:INTERNAL=
+PC_LIBXML_FOUND:INTERNAL=1
+PC_LIBXML_INCLUDEDIR:INTERNAL=/usr/include
+PC_LIBXML_INCLUDE_DIRS:INTERNAL=/usr/include/libxml2
+PC_LIBXML_LDFLAGS:INTERNAL=-L/usr/lib64;-lxml2
+PC_LIBXML_LDFLAGS_OTHER:INTERNAL=
+PC_LIBXML_LIBDIR:INTERNAL=/usr/lib64
+PC_LIBXML_LIBRARIES:INTERNAL=xml2
+PC_LIBXML_LIBRARY_DIRS:INTERNAL=/usr/lib64
+PC_LIBXML_LIBS:INTERNAL=
+PC_LIBXML_LIBS_L:INTERNAL=
+PC_LIBXML_LIBS_OTHER:INTERNAL=
+PC_LIBXML_LIBS_PATHS:INTERNAL=
+PC_LIBXML_MODULE_NAME:INTERNAL=libxml-2.0
+PC_LIBXML_PREFIX:INTERNAL=/usr
+PC_LIBXML_STATIC_CFLAGS:INTERNAL=-I/usr/include/libxml2
+PC_LIBXML_STATIC_CFLAGS_I:INTERNAL=
+PC_LIBXML_STATIC_CFLAGS_OTHER:INTERNAL=
+PC_LIBXML_STATIC_INCLUDE_DIRS:INTERNAL=/usr/include/libxml2
+PC_LIBXML_STATIC_LDFLAGS:INTERNAL=-L/usr/lib64;-lxml2;-lz;-llzma;-lm
+PC_LIBXML_STATIC_LDFLAGS_OTHER:INTERNAL=
+PC_LIBXML_STATIC_LIBDIR:INTERNAL=
+PC_LIBXML_STATIC_LIBRARIES:INTERNAL=xml2;z;lzma;m
+PC_LIBXML_STATIC_LIBRARY_DIRS:INTERNAL=/usr/lib64
+PC_LIBXML_STATIC_LIBS:INTERNAL=
+PC_LIBXML_STATIC_LIBS_L:INTERNAL=
+PC_LIBXML_STATIC_LIBS_OTHER:INTERNAL=
+PC_LIBXML_STATIC_LIBS_PATHS:INTERNAL=
+PC_LIBXML_VERSION:INTERNAL=2.9.13
+PC_LIBXML_libxml-2.0_INCLUDEDIR:INTERNAL=
+PC_LIBXML_libxml-2.0_LIBDIR:INTERNAL=
+PC_LIBXML_libxml-2.0_PREFIX:INTERNAL=
+PC_LIBXML_libxml-2.0_VERSION:INTERNAL=
+//ADVANCED property for variable: PEGTL_INCLUDE_DIR
+PEGTL_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PKG_CONFIG_ARGN
+PKG_CONFIG_ARGN-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PKG_CONFIG_EXECUTABLE
+PKG_CONFIG_EXECUTABLE-ADVANCED:INTERNAL=1
+PKG_FONTCONFIG_CFLAGS:INTERNAL=-I/usr/include/freetype2;-I/usr/include/libpng16;-I/usr/include/harfbuzz;-I/usr/include/glib-2.0;-I/usr/lib64/glib-2.0/include;-I/usr/include/sysprof-4;-pthread;-I/usr/include/libxml2
+PKG_FONTCONFIG_CFLAGS_I:INTERNAL=
+PKG_FONTCONFIG_CFLAGS_OTHER:INTERNAL=-pthread
+PKG_FONTCONFIG_FOUND:INTERNAL=1
+PKG_FONTCONFIG_INCLUDEDIR:INTERNAL=/usr/include
+PKG_FONTCONFIG_INCLUDE_DIRS:INTERNAL=/usr/include/freetype2;/usr/include/libpng16;/usr/include/harfbuzz;/usr/include/glib-2.0;/usr/lib64/glib-2.0/include;/usr/include/sysprof-4;/usr/include/libxml2
+PKG_FONTCONFIG_LDFLAGS:INTERNAL=-L/usr/lib64;-lfontconfig;-lfreetype
+PKG_FONTCONFIG_LDFLAGS_OTHER:INTERNAL=
+PKG_FONTCONFIG_LIBDIR:INTERNAL=/usr/lib64
+PKG_FONTCONFIG_LIBRARIES:INTERNAL=fontconfig;freetype
+PKG_FONTCONFIG_LIBRARY_DIRS:INTERNAL=/usr/lib64
+PKG_FONTCONFIG_LIBS:INTERNAL=
+PKG_FONTCONFIG_LIBS_L:INTERNAL=
+PKG_FONTCONFIG_LIBS_OTHER:INTERNAL=
+PKG_FONTCONFIG_LIBS_PATHS:INTERNAL=
+PKG_FONTCONFIG_MODULE_NAME:INTERNAL=fontconfig
+PKG_FONTCONFIG_PREFIX:INTERNAL=/usr
+PKG_FONTCONFIG_STATIC_CFLAGS:INTERNAL=-I/usr/include/freetype2;-I/usr/include/libpng16;-I/usr/include/harfbuzz;-I/usr/include/glib-2.0;-I/usr/lib64/glib-2.0/include;-I/usr/include/sysprof-4;-pthread;-I/usr/include/libxml2
+PKG_FONTCONFIG_STATIC_CFLAGS_I:INTERNAL=
+PKG_FONTCONFIG_STATIC_CFLAGS_OTHER:INTERNAL=-pthread
+PKG_FONTCONFIG_STATIC_INCLUDE_DIRS:INTERNAL=/usr/include/freetype2;/usr/include/libpng16;/usr/include/harfbuzz;/usr/include/glib-2.0;/usr/lib64/glib-2.0/include;/usr/include/sysprof-4;/usr/include/libxml2
+PKG_FONTCONFIG_STATIC_LDFLAGS:INTERNAL=-L/usr/lib64;-lfontconfig;-lfreetype;-L/usr/lib64;-L/usr/lib64;-lz;-lbz2;-lpng16;-lm;-lm;-lz;-lharfbuzz;-lm;-L/usr/lib64;-lglib-2.0;-lm;-L/usr/lib64;-lpcre;-lsysprof-capture-4;-pthread;-lgraphite2;-lbrotlidec;-L/usr/lib64;-lbrotlicommon;-L/usr/lib64;-lxml2;-lz;-llzma;-lm
+PKG_FONTCONFIG_STATIC_LDFLAGS_OTHER:INTERNAL=-pthread
+PKG_FONTCONFIG_STATIC_LIBDIR:INTERNAL=
+PKG_FONTCONFIG_STATIC_LIBRARIES:INTERNAL=fontconfig;freetype;z;bz2;png16;m;m;z;harfbuzz;m;glib-2.0;m;pcre;sysprof-capture-4;graphite2;brotlidec;brotlicommon;xml2;z;lzma;m
+PKG_FONTCONFIG_STATIC_LIBRARY_DIRS:INTERNAL=/usr/lib64;/usr/lib64;/usr/lib64;/usr/lib64;/usr/lib64;/usr/lib64;/usr/lib64
+PKG_FONTCONFIG_STATIC_LIBS:INTERNAL=
+PKG_FONTCONFIG_STATIC_LIBS_L:INTERNAL=
+PKG_FONTCONFIG_STATIC_LIBS_OTHER:INTERNAL=
+PKG_FONTCONFIG_STATIC_LIBS_PATHS:INTERNAL=
+PKG_FONTCONFIG_VERSION:INTERNAL=2.14.0
+PKG_FONTCONFIG_fontconfig_INCLUDEDIR:INTERNAL=
+PKG_FONTCONFIG_fontconfig_LIBDIR:INTERNAL=
+PKG_FONTCONFIG_fontconfig_PREFIX:INTERNAL=
+PKG_FONTCONFIG_fontconfig_VERSION:INTERNAL=
 //ADVANCED property for variable: PNG_LIBRARY_DEBUG
 PNG_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PNG_LIBRARY_RELEASE
 PNG_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PNG_PNG_INCLUDE_DIR
 PNG_PNG_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: SQLite3_INCLUDE_DIR
+SQLite3_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: SQLite3_LIBRARY
+SQLite3_LIBRARY-ADVANCED:INTERNAL=1
+//MODIFIED property for variable: SVK_TEST_ROOT
+SVK_TEST_ROOT-MODIFIED:INTERNAL=ON
+//ADVANCED property for variable: THEORA_INCLUDE_DIR
+THEORA_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: THEORA_LIBRARY
+THEORA_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: THEORA_dec_LIBRARY
+THEORA_dec_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: THEORA_enc_LIBRARY
+THEORA_enc_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: TIFF_INCLUDE_DIR
 TIFF_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: TIFF_LIBRARY_DEBUG
@@ -582,14 +1521,310 @@ TIFF_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 TIFF_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //Number of processors available to run parallel tests.
 VTK_MPI_NUMPROCS:INTERNAL=2
+//ADVANCED property for variable: X11_ICE_INCLUDE_PATH
+X11_ICE_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_ICE_LIB
+X11_ICE_LIB-ADVANCED:INTERNAL=1
+//Have library /usr/lib64/libX11.so;/usr/lib64/libXext.so
+X11_LIB_X11_SOLO:INTERNAL=1
+//ADVANCED property for variable: X11_SM_INCLUDE_PATH
+X11_SM_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_SM_LIB
+X11_SM_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_X11_INCLUDE_PATH
+X11_X11_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_X11_LIB
+X11_X11_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_X11_xcb_INCLUDE_PATH
+X11_X11_xcb_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_X11_xcb_LIB
+X11_X11_xcb_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_XRes_INCLUDE_PATH
+X11_XRes_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_XRes_LIB
+X11_XRes_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_XShm_INCLUDE_PATH
+X11_XShm_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_XSync_INCLUDE_PATH
+X11_XSync_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xaccessrules_INCLUDE_PATH
+X11_Xaccessrules_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xaccessstr_INCLUDE_PATH
+X11_Xaccessstr_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xau_INCLUDE_PATH
+X11_Xau_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xau_LIB
+X11_Xau_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xaw_INCLUDE_PATH
+X11_Xaw_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xaw_LIB
+X11_Xaw_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xcomposite_INCLUDE_PATH
+X11_Xcomposite_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xcomposite_LIB
+X11_Xcomposite_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xcursor_INCLUDE_PATH
+X11_Xcursor_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xcursor_LIB
+X11_Xcursor_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xdamage_INCLUDE_PATH
+X11_Xdamage_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xdamage_LIB
+X11_Xdamage_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xdmcp_INCLUDE_PATH
+X11_Xdmcp_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xdmcp_LIB
+X11_Xdmcp_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xext_INCLUDE_PATH
+X11_Xext_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xext_LIB
+X11_Xext_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xfixes_INCLUDE_PATH
+X11_Xfixes_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xfixes_LIB
+X11_Xfixes_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xft_INCLUDE_PATH
+X11_Xft_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xft_LIB
+X11_Xft_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xi_INCLUDE_PATH
+X11_Xi_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xi_LIB
+X11_Xi_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xinerama_INCLUDE_PATH
+X11_Xinerama_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xinerama_LIB
+X11_Xinerama_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xkb_INCLUDE_PATH
+X11_Xkb_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xkblib_INCLUDE_PATH
+X11_Xkblib_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xlib_INCLUDE_PATH
+X11_Xlib_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xmu_INCLUDE_PATH
+X11_Xmu_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xmu_LIB
+X11_Xmu_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xpm_INCLUDE_PATH
+X11_Xpm_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xpm_LIB
+X11_Xpm_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xrandr_INCLUDE_PATH
+X11_Xrandr_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xrandr_LIB
+X11_Xrandr_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xrender_INCLUDE_PATH
+X11_Xrender_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xrender_LIB
+X11_Xrender_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xshape_INCLUDE_PATH
+X11_Xshape_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xss_INCLUDE_PATH
+X11_Xss_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xss_LIB
+X11_Xss_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xt_INCLUDE_PATH
+X11_Xt_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xt_LIB
+X11_Xt_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xtst_INCLUDE_PATH
+X11_Xtst_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xtst_LIB
+X11_Xtst_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xutil_INCLUDE_PATH
+X11_Xutil_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xv_INCLUDE_PATH
+X11_Xv_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xv_LIB
+X11_Xv_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xxf86misc_INCLUDE_PATH
+X11_Xxf86misc_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xxf86misc_LIB
+X11_Xxf86misc_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xxf86vm_INCLUDE_PATH
+X11_Xxf86vm_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_Xxf86vm_LIB
+X11_Xxf86vm_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_dpms_INCLUDE_PATH
+X11_dpms_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_INCLUDE_PATH
+X11_xcb_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_LIB
+X11_xcb_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_icccm_INCLUDE_PATH
+X11_xcb_icccm_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_icccm_LIB
+X11_xcb_icccm_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_keysyms_INCLUDE_PATH
+X11_xcb_keysyms_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_keysyms_LIB
+X11_xcb_keysyms_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_randr_INCLUDE_PATH
+X11_xcb_randr_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_randr_LIB
+X11_xcb_randr_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_util_INCLUDE_PATH
+X11_xcb_util_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_util_LIB
+X11_xcb_util_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_xfixes_INCLUDE_PATH
+X11_xcb_xfixes_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_xfixes_LIB
+X11_xcb_xfixes_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_xkb_LIB
+X11_xcb_xkb_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_xtest_INCLUDE_PATH
+X11_xcb_xtest_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xcb_xtest_LIB
+X11_xcb_xtest_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xkbcommon_INCLUDE_PATH
+X11_xkbcommon_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xkbcommon_LIB
+X11_xkbcommon_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xkbcommon_X11_INCLUDE_PATH
+X11_xkbcommon_X11_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xkbcommon_X11_LIB
+X11_xkbcommon_X11_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xkbfile_INCLUDE_PATH
+X11_xkbfile_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: X11_xkbfile_LIB
+X11_xkbfile_LIB-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: ZLIB_INCLUDE_DIR
 ZLIB_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: ZLIB_LIBRARY_DEBUG
 ZLIB_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: ZLIB_LIBRARY_RELEASE
 ZLIB_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//Components requested for this build tree.
+_Boost_COMPONENTS_SEARCHED:INTERNAL=serialization
+//Last used Boost_INCLUDE_DIR value.
+_Boost_INCLUDE_DIR_LAST:INTERNAL=/usr/include
+//Last used Boost_LIBRARY_DIR_DEBUG value.
+_Boost_LIBRARY_DIR_DEBUG_LAST:INTERNAL=/usr/lib64
+//Last used Boost_LIBRARY_DIR_RELEASE value.
+_Boost_LIBRARY_DIR_RELEASE_LAST:INTERNAL=/usr/lib64
+//Last used Boost_NAMESPACE value.
+_Boost_NAMESPACE_LAST:INTERNAL=boost
+//Last used Boost_USE_MULTITHREADED value.
+_Boost_USE_MULTITHREADED_LAST:INTERNAL=TRUE
 //linker supports push/pop state
 _CMAKE_LINKER_PUSHPOP_STATE_SUPPORTED:INTERNAL=TRUE
+_NetCDF_CFLAGS:INTERNAL=
+_NetCDF_CFLAGS_I:INTERNAL=
+_NetCDF_CFLAGS_OTHER:INTERNAL=
+_NetCDF_FOUND:INTERNAL=1
+_NetCDF_INCLUDEDIR:INTERNAL=/usr/include
+_NetCDF_INCLUDE_DIRS:INTERNAL=
+_NetCDF_LDFLAGS:INTERNAL=-L/usr/lib64;-lnetcdf
+_NetCDF_LDFLAGS_OTHER:INTERNAL=
+_NetCDF_LIBDIR:INTERNAL=/usr/lib64
+_NetCDF_LIBRARIES:INTERNAL=netcdf
+_NetCDF_LIBRARY_DIRS:INTERNAL=/usr/lib64
+_NetCDF_LIBS:INTERNAL=
+_NetCDF_LIBS_L:INTERNAL=
+_NetCDF_LIBS_OTHER:INTERNAL=
+_NetCDF_LIBS_PATHS:INTERNAL=
+_NetCDF_MODULE_NAME:INTERNAL=netcdf
+_NetCDF_PREFIX:INTERNAL=/usr
+_NetCDF_STATIC_CFLAGS:INTERNAL=
+_NetCDF_STATIC_CFLAGS_I:INTERNAL=
+_NetCDF_STATIC_CFLAGS_OTHER:INTERNAL=
+_NetCDF_STATIC_INCLUDE_DIRS:INTERNAL=
+_NetCDF_STATIC_LDFLAGS:INTERNAL=-L/usr/lib64;-lnetcdf;-ljpeg;-lmfhdf;-ldf;-ljpeg;-lhdf5_hl;-lhdf5;-lm;-lz;-lcurl;-ltirpc
+_NetCDF_STATIC_LDFLAGS_OTHER:INTERNAL=
+_NetCDF_STATIC_LIBDIR:INTERNAL=
+_NetCDF_STATIC_LIBRARIES:INTERNAL=netcdf;jpeg;mfhdf;df;jpeg;hdf5_hl;hdf5;m;z;curl;tirpc
+_NetCDF_STATIC_LIBRARY_DIRS:INTERNAL=/usr/lib64
+_NetCDF_STATIC_LIBS:INTERNAL=
+_NetCDF_STATIC_LIBS_L:INTERNAL=
+_NetCDF_STATIC_LIBS_OTHER:INTERNAL=
+_NetCDF_STATIC_LIBS_PATHS:INTERNAL=
+_NetCDF_VERSION:INTERNAL=4.8.1
+_NetCDF_netcdf_INCLUDEDIR:INTERNAL=
+_NetCDF_netcdf_LIBDIR:INTERNAL=
+_NetCDF_netcdf_PREFIX:INTERNAL=
+_NetCDF_netcdf_VERSION:INTERNAL=
+//Compiler reason failure
+_Python3_Compiler_REASON_FAILURE:INTERNAL=
+_Python3_DEVELOPMENT_EMBED_SIGNATURE:INTERNAL=be003d32f112cecf3d8d5a458b677dd7
+_Python3_DEVELOPMENT_MODULE_SIGNATURE:INTERNAL=8e11750cd0638db522e4d39a158d2442
+//Development reason failure
+_Python3_Development_REASON_FAILURE:INTERNAL=
+//Path to a program.
+_Python3_EXECUTABLE:INTERNAL=/usr/bin/python3.9
+//Path to a file.
+_Python3_INCLUDE_DIR:INTERNAL=/usr/include/python3.9
+//Python3 Properties
+_Python3_INTERPRETER_PROPERTIES:INTERNAL=Python;3;9;19;64;;cpython-39-x86_64-linux-gnu;abi3;/usr/lib64/python3.9;/usr/lib64/python3.9;/usr/lib/python3.9/site-packages;/usr/lib64/python3.9/site-packages
+_Python3_INTERPRETER_SIGNATURE:INTERNAL=0820be857fee647b3d54576d0160a80e
+//Interpreter reason failure
+_Python3_Interpreter_REASON_FAILURE:INTERNAL=
+//Path to a library.
+_Python3_LIBRARY_RELEASE:INTERNAL=/usr/lib64/libpython3.9.so
+//NumPy reason failure
+_Python3_NumPy_REASON_FAILURE:INTERNAL=
+__pkg_config_arguments_PC_EXPAT:INTERNAL=QUIET;expat
+__pkg_config_arguments_PC_LIBXML:INTERNAL=QUIET;libxml-2.0
+__pkg_config_arguments_PKG_FONTCONFIG:INTERNAL=QUIET;fontconfig
+__pkg_config_arguments__NetCDF:INTERNAL=QUIET;netcdf;IMPORTED_TARGET
+__pkg_config_arguments__libmariadb:INTERNAL=libmariadb;QUIET;IMPORTED_TARGET
+__pkg_config_checked_PC_EXPAT:INTERNAL=1
+__pkg_config_checked_PC_LIBXML:INTERNAL=1
+__pkg_config_checked_PKG_FONTCONFIG:INTERNAL=1
+__pkg_config_checked__NetCDF:INTERNAL=1
+__pkg_config_checked__libmariadb:INTERNAL=1
+_libmariadb_CFLAGS:INTERNAL=-I/usr/include/mysql/
+_libmariadb_CFLAGS_I:INTERNAL=
+_libmariadb_CFLAGS_OTHER:INTERNAL=
+_libmariadb_FOUND:INTERNAL=1
+_libmariadb_INCLUDEDIR:INTERNAL=/usr/include/mysql/
+_libmariadb_INCLUDE_DIRS:INTERNAL=/usr/include/mysql/
+_libmariadb_LDFLAGS:INTERNAL=-L/usr/lib64/;-lmariadb
+_libmariadb_LDFLAGS_OTHER:INTERNAL=
+_libmariadb_LIBDIR:INTERNAL=/usr/lib64/
+_libmariadb_LIBRARIES:INTERNAL=mariadb
+_libmariadb_LIBRARY_DIRS:INTERNAL=/usr/lib64/
+_libmariadb_LIBS:INTERNAL=
+_libmariadb_LIBS_L:INTERNAL=
+_libmariadb_LIBS_OTHER:INTERNAL=
+_libmariadb_LIBS_PATHS:INTERNAL=
+_libmariadb_MODULE_NAME:INTERNAL=libmariadb
+_libmariadb_PREFIX:INTERNAL=/usr
+_libmariadb_STATIC_CFLAGS:INTERNAL=-I/usr/include/mysql/
+_libmariadb_STATIC_CFLAGS_I:INTERNAL=
+_libmariadb_STATIC_CFLAGS_OTHER:INTERNAL=
+_libmariadb_STATIC_INCLUDE_DIRS:INTERNAL=/usr/include/mysql/
+_libmariadb_STATIC_LDFLAGS:INTERNAL=-L/usr/lib64/;-lmariadb;-lz;-ldl;-lm;-lssl;-lcrypto
+_libmariadb_STATIC_LDFLAGS_OTHER:INTERNAL=
+_libmariadb_STATIC_LIBDIR:INTERNAL=
+_libmariadb_STATIC_LIBRARIES:INTERNAL=mariadb;z;dl;m;ssl;crypto
+_libmariadb_STATIC_LIBRARY_DIRS:INTERNAL=/usr/lib64/
+_libmariadb_STATIC_LIBS:INTERNAL=
+_libmariadb_STATIC_LIBS_L:INTERNAL=
+_libmariadb_STATIC_LIBS_OTHER:INTERNAL=
+_libmariadb_STATIC_LIBS_PATHS:INTERNAL=
+_libmariadb_VERSION:INTERNAL=3.2.6
+_libmariadb_libmariadb_INCLUDEDIR:INTERNAL=
+_libmariadb_libmariadb_LIBDIR:INTERNAL=
+_libmariadb_libmariadb_PREFIX:INTERNAL=
+_libmariadb_libmariadb_VERSION:INTERNAL=
+//ADVANCED property for variable: double-conversion_INCLUDE_DIR
+double-conversion_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: double-conversion_LIBRARY
+double-conversion_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_PC_EXPAT_expat
+pkgcfg_lib_PC_EXPAT_expat-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_PC_LIBXML_xml2
+pkgcfg_lib_PC_LIBXML_xml2-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_PKG_FONTCONFIG_fontconfig
+pkgcfg_lib_PKG_FONTCONFIG_fontconfig-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_PKG_FONTCONFIG_freetype
+pkgcfg_lib_PKG_FONTCONFIG_freetype-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib__NetCDF_netcdf
+pkgcfg_lib__NetCDF_netcdf-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib__libmariadb_mariadb
+pkgcfg_lib__libmariadb_mariadb-ADVANCED:INTERNAL=1
+prefix_result:INTERNAL=/usr/lib64
 //ADVANCED property for variable: utf8cpp_INCLUDE_DIR
 utf8cpp_INCLUDE_DIR-ADVANCED:INTERNAL=1
 
