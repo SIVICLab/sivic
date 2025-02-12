@@ -112,6 +112,7 @@ https://gitlab.kitware.com/vtk/vtk/-/archive/v6.3.0/vtk-v6.3.0.tar.gz
 * export VTK_DIR=/usr/local/sivic/build/deps/VTK-6.3.0
 
 ### 7.Build and Install KWWidgets 
+* git@github.com:SIVICLab/KWWidgets.git
 * open up and terminal
 * CD into KWWidgets
 * cmake .
