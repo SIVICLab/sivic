@@ -155,5 +155,70 @@ Source Code Fixes
 5. cd /usr/local/sivic/build/deps/openssl-openssl-3.0.7
 6. ln -s lib64 lib
 
+### Build and Install KWWidgets
+1. Download [KWWidgets](git@github.com:SIVICLab/KWWidgets.git)
+2. cmake .
+3. ccmake ..
+   - BUILD_TESTING=OFF
+   - CMAKE_INSTALL_PREFIX=/usr/local/sivic/build/deps/KWWidgets
+   - VTK_DIR=/usr/local/sivic/build/deps/VTK-6.3.0/lib/cmake/vtk-6.3
+   - TCL_INCLUDE_PATH=/usr/local/sivic/build/deps/tcl8.5.19/include
+   - TCL_LIBRARY=/usr/local/sivic/build/deps/tcl8.5.19/lib/libtcl8.5.so
+   - TCL_TCLSH=/usr/local/sivic/build/deps/tcl8.5.19/bin/tclsh8.5
+   - TK_INCLUDE_PATH=/usr/local/sivic/build/deps/tk8.5.19/include
+   - TK_LIBRARY=/usr/local/sivic/build/deps/tk8.5.19/lib/libtk8.5.so
+
+Source Code Fixes
+1. In KWWidgets/CMakeLists.txt
+   - add target_link_libraries(KWWidgets vtkpng)
+2. In KWWidgets/Examples/Cxx/WidgetsTour/Widgets/VTK/vtkKWCornerAnnotationEditor.cxx 
+   - Change to SetInputdata
+3. In KWWidgets/Examples/Cxx/WidgetsTour/Widgets/VTK/vtkKWHeaderAnnotationEditor.cxx
+   - Change to SetInputdata
+4. In KWWidgets/Examples/Cxx/WidgetsTour/Widgets/VTK/vtkKWHistogram.cxx
+   - Change to SetInputdata
+   - Change to pfed_img_reslice->SetInputData(pfed_reader->GetOutput());
+5. To get a KWWidgets example to run, need to set LIBRARY
+6. Example: export TK_LIBRARY=/Users/magnottav/development/MRS/SIVIC/UCSFMac/local/tk8.5.19/lib/tk8.5
+
+### Build and install clapack
+1. Download [Clapack](https://www.netlib.org/clapack/clapack-3.2.1-CMAKE.tgz)
+2. Open up terminal and cd into clapack
+3. cmake .
+4. ccmake .
+   - BUILD_TESTING=OFF
+   - CMAKE_INSTALL_PREFIX=/usr/local/sivic/build/deps/clapack-3.2.1
+   - USE_BLAS_WRAP=ON
+5. Make
+6. Make install
+7. bash-4.2$ cd /usr/local/sivic/build/deps/clapack-3.2.1/lib
+8. bash-4.2$ ln -s liblapack.a libclapack.a
+9. bash-4.2$ ln -s libblas.a libcblas.a
+
+### Building SIVIC
+1. Download [SIVIC](https://github.com/SIVICLab/sivic)
+2. Open up termianl
+3. CD into SIVIC
+4. mkdir Build/Dep inside SIVIC
+5. cmake .
+6. ccmake 
+### Building SIVIC
+1. Download [SIVIC](https://github.com/SIVICLab/sivic)
+2. Open up termianl
+3. CD into SIVIC
+4. mkdir Build/Dep inside SIVIC
+5. cmake .
+6. ccmake 
+  - BUILD_CREATE_RAW=ON
+  - BUILD_CLAPACK=ON
+  - CLAPACK_DIR=/usr/local/sivic/build/deps/clapack-3.2.1/lib
+  - CMAKE_INSTALL_PREFIX=/usr/local/sivic/sivic
+  - DCMTK_DIR=/usr/local/sivic/build/deps/dcmtk-3.6.7
+  - ITK_DIR=/sivic/build/deps/ITK-4.4.1/lib/cmake/ITK-4.4
+  - KWWidgets_DIR=/usr/local/sivic/build/deps/KWWidgets/lib/KWWidgets
+  - VTK_DIR=/usr/local/sivic/build/deps/VTK-6.3.0/lib/cmake/vtk-6.3
+  - OPENSSL_DIR=/usr/local/sivic/build/deps/openssl-openssl-3.0.7
+7. Make
+8. Make install
 
 
