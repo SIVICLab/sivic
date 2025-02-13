@@ -49,9 +49,9 @@
 #include </usr/include/vtk/vtkObject.h>
 #include <svkDcmHeader.h>
 #include <svkDcmtkIod.h>
-#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/config/osconfig.h>
-#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/dcmdata/dctk.h>
-#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/dcmdata/dctag.h>
+#include "dcmtk/config/osconfig.h"
+#include "dcmtk/dcmdata/dctk.h"
+#include "dcmtk/dcmdata/dctag.h"
 
 
 namespace svk {

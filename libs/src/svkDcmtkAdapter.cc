@@ -44,8 +44,8 @@
 
 #include <svkUtils.h>
 #include <svkTypeUtils.h>
-#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/dcmdata/dcrleerg.h>
-#include </mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/dcmdata/dcrledrg.h> 
+#include "dcmtk/dcmdata/dcrleerg.h"
+#include "dcmtk/dcmdata/dcrledrg.h" 
 
 
 

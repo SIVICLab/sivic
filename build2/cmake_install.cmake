@@ -52,7 +52,7 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/erdiaz/Desktop/sivic_next/build2/libs/src/cmake_install.cmake")
-  include("/home/erdiaz/Desktop/sivic_next/build2/test/cmake_install.cmake")
+  include("/home/erdiaz/Desktop/sivic_next/build2/applications/cmd_line/src/cmake_install.cmake")
 
 endif()
 

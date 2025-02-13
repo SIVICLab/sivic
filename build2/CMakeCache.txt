@@ -15,7 +15,7 @@
 ########################
 
 //Build mini-applications.
-BUILD_APPS:BOOL=OFF
+BUILD_APPS:BOOL=ON
 
 //For building classes that rely on clapack fitting routines.
 BUILD_CLAPACK:BOOL=OFF
@@ -53,11 +53,11 @@ BUILD_SIVIC:BOOL=OFF
 //Build Slicer Plugin.
 BUILD_SLICER:BOOL=OFF
 
-//Build the testing tree.
+//Build tests.
 BUILD_TESTING:BOOL=OFF
 
 //Build test applications.
-BUILD_TESTS:BOOL=ON
+BUILD_TESTS:BOOL=OFF
 
 //Build visualization library.
 BUILD_VIZ_LIBRARY:BOOL=OFF
@@ -313,22 +313,22 @@ CPACK_SOURCE_ZIP:BOOL=OFF
 CREATE_WRAPPER_SCRIPTS:BOOL=ON
 
 //Path to a file.
-DCMTK_DIR:PATH=DCMTK_DIR-NOTFOUND
+DCMTK_DIR:PATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel
 
 //Path to a library.
-DCMTK_dcmdata_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/lib64/libdcmdata.so
+DCMTK_dcmdata_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64/libdcmdata.so
 
 //Path to a library.
-DCMTK_dcmimage_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/lib64/libdcmimage.so
+DCMTK_dcmimage_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64/libdcmimage.so
 
 //Path to a library.
-DCMTK_dcmimgle_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/lib64/libdcmimgle.so
+DCMTK_dcmimgle_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64/libdcmimgle.so
 
 //Path to a library.
-DCMTK_oflog_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/lib64/liboflog.so
+DCMTK_oflog_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64/liboflog.so
 
 //Path to a library.
-DCMTK_ofstd_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/lib64/libofstd.so
+DCMTK_ofstd_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64/libofstd.so
 
 //Single output directory for building all executables.
 EXECUTABLE_OUTPUT_PATH:PATH=
@@ -519,6 +519,15 @@ LibPROJ_LIBRARY_DEBUG:FILEPATH=LibPROJ_LIBRARY_DEBUG-NOTFOUND
 //libproj release library
 LibPROJ_LIBRARY_RELEASE:FILEPATH=/usr/lib64/libproj.so
 
+//Value Computed by CMake
+MyX11OpenGLProject_BINARY_DIR:STATIC=/home/erdiaz/Desktop/sivic_next/build2/applications/cmd_line/src
+
+//Value Computed by CMake
+MyX11OpenGLProject_IS_TOP_LEVEL:STATIC=OFF
+
+//Value Computed by CMake
+MyX11OpenGLProject_SOURCE_DIR:STATIC=/home/erdiaz/Desktop/sivic_next/applications/cmd_line/src
+
 //ogg include directory
 OGG_INCLUDE_DIR:PATH=/usr/include
 
@@ -656,7 +665,7 @@ UCSF_INTERNAL:BOOL=OFF
 USE_OFF_SCREEN_TESTING:BOOL=ON
 
 //The directory containing a CMake configuration file for VTK.
-VTK_DIR:PATH=/usr/lib64/cmake/vtk
+VTK_DIR:PATH=/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3
 
 //Path to a file.
 X11_ICE_INCLUDE_PATH:PATH=/usr/include
@@ -683,10 +692,10 @@ X11_X11_xcb_INCLUDE_PATH:PATH=/usr/include
 X11_X11_xcb_LIB:FILEPATH=/usr/lib64/libX11-xcb.so
 
 //Path to a file.
-X11_XRes_INCLUDE_PATH:PATH=X11_XRes_INCLUDE_PATH-NOTFOUND
+X11_XRes_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_XRes_LIB:FILEPATH=X11_XRes_LIB-NOTFOUND
+X11_XRes_LIB:FILEPATH=/usr/lib64/libXRes.so
 
 //Path to a file.
 X11_XShm_INCLUDE_PATH:PATH=/usr/include
@@ -695,7 +704,7 @@ X11_XShm_INCLUDE_PATH:PATH=/usr/include
 X11_XSync_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a file.
-X11_Xaccessrules_INCLUDE_PATH:PATH=X11_Xaccessrules_INCLUDE_PATH-NOTFOUND
+X11_Xaccessrules_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a file.
 X11_Xaccessstr_INCLUDE_PATH:PATH=/usr/include
@@ -710,31 +719,31 @@ X11_Xau_LIB:FILEPATH=/usr/lib64/libXau.so
 X11_Xaw_INCLUDE_PATH:PATH=X11_Xaw_INCLUDE_PATH-NOTFOUND
 
 //Path to a library.
-X11_Xaw_LIB:FILEPATH=X11_Xaw_LIB-NOTFOUND
+X11_Xaw_LIB:FILEPATH=/usr/lib64/libXaw.so
 
 //Path to a file.
-X11_Xcomposite_INCLUDE_PATH:PATH=X11_Xcomposite_INCLUDE_PATH-NOTFOUND
+X11_Xcomposite_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xcomposite_LIB:FILEPATH=X11_Xcomposite_LIB-NOTFOUND
+X11_Xcomposite_LIB:FILEPATH=/usr/lib64/libXcomposite.so
 
 //Path to a file.
-X11_Xcursor_INCLUDE_PATH:PATH=X11_Xcursor_INCLUDE_PATH-NOTFOUND
+X11_Xcursor_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xcursor_LIB:FILEPATH=X11_Xcursor_LIB-NOTFOUND
+X11_Xcursor_LIB:FILEPATH=/usr/lib64/libXcursor.so
 
 //Path to a file.
-X11_Xdamage_INCLUDE_PATH:PATH=X11_Xdamage_INCLUDE_PATH-NOTFOUND
+X11_Xdamage_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xdamage_LIB:FILEPATH=X11_Xdamage_LIB-NOTFOUND
+X11_Xdamage_LIB:FILEPATH=/usr/lib64/libXdamage.so
 
 //Path to a file.
-X11_Xdmcp_INCLUDE_PATH:PATH=X11_Xdmcp_INCLUDE_PATH-NOTFOUND
+X11_Xdmcp_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xdmcp_LIB:FILEPATH=X11_Xdmcp_LIB-NOTFOUND
+X11_Xdmcp_LIB:FILEPATH=/usr/lib64/libXdmcp.so
 
 //Path to a file.
 X11_Xext_INCLUDE_PATH:PATH=/usr/include
@@ -743,10 +752,10 @@ X11_Xext_INCLUDE_PATH:PATH=/usr/include
 X11_Xext_LIB:FILEPATH=/usr/lib64/libXext.so
 
 //Path to a file.
-X11_Xfixes_INCLUDE_PATH:PATH=X11_Xfixes_INCLUDE_PATH-NOTFOUND
+X11_Xfixes_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xfixes_LIB:FILEPATH=X11_Xfixes_LIB-NOTFOUND
+X11_Xfixes_LIB:FILEPATH=/usr/lib64/libXfixes.so
 
 //Path to a file.
 X11_Xft_INCLUDE_PATH:PATH=/usr/include
@@ -755,16 +764,16 @@ X11_Xft_INCLUDE_PATH:PATH=/usr/include
 X11_Xft_LIB:FILEPATH=/usr/lib64/libXft.so
 
 //Path to a file.
-X11_Xi_INCLUDE_PATH:PATH=X11_Xi_INCLUDE_PATH-NOTFOUND
+X11_Xi_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xi_LIB:FILEPATH=X11_Xi_LIB-NOTFOUND
+X11_Xi_LIB:FILEPATH=/usr/lib64/libXi.so
 
 //Path to a file.
-X11_Xinerama_INCLUDE_PATH:PATH=X11_Xinerama_INCLUDE_PATH-NOTFOUND
+X11_Xinerama_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xinerama_LIB:FILEPATH=X11_Xinerama_LIB-NOTFOUND
+X11_Xinerama_LIB:FILEPATH=/usr/lib64/libXinerama.so
 
 //Path to a file.
 X11_Xkb_INCLUDE_PATH:PATH=/usr/include
@@ -776,22 +785,22 @@ X11_Xkblib_INCLUDE_PATH:PATH=/usr/include
 X11_Xlib_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a file.
-X11_Xmu_INCLUDE_PATH:PATH=X11_Xmu_INCLUDE_PATH-NOTFOUND
+X11_Xmu_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xmu_LIB:FILEPATH=X11_Xmu_LIB-NOTFOUND
+X11_Xmu_LIB:FILEPATH=/usr/lib64/libXmu.so
 
 //Path to a file.
-X11_Xpm_INCLUDE_PATH:PATH=X11_Xpm_INCLUDE_PATH-NOTFOUND
+X11_Xpm_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xpm_LIB:FILEPATH=X11_Xpm_LIB-NOTFOUND
+X11_Xpm_LIB:FILEPATH=/usr/lib64/libXpm.so
 
 //Path to a file.
-X11_Xrandr_INCLUDE_PATH:PATH=X11_Xrandr_INCLUDE_PATH-NOTFOUND
+X11_Xrandr_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xrandr_LIB:FILEPATH=X11_Xrandr_LIB-NOTFOUND
+X11_Xrandr_LIB:FILEPATH=/usr/lib64/libXrandr.so
 
 //Path to a file.
 X11_Xrender_INCLUDE_PATH:PATH=/usr/include
@@ -803,10 +812,10 @@ X11_Xrender_LIB:FILEPATH=/usr/lib64/libXrender.so
 X11_Xshape_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a file.
-X11_Xss_INCLUDE_PATH:PATH=X11_Xss_INCLUDE_PATH-NOTFOUND
+X11_Xss_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xss_LIB:FILEPATH=X11_Xss_LIB-NOTFOUND
+X11_Xss_LIB:FILEPATH=/usr/lib64/libXss.so
 
 //Path to a file.
 X11_Xt_INCLUDE_PATH:PATH=/usr/include
@@ -815,19 +824,19 @@ X11_Xt_INCLUDE_PATH:PATH=/usr/include
 X11_Xt_LIB:FILEPATH=/usr/lib64/libXt.so
 
 //Path to a file.
-X11_Xtst_INCLUDE_PATH:PATH=X11_Xtst_INCLUDE_PATH-NOTFOUND
+X11_Xtst_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xtst_LIB:FILEPATH=X11_Xtst_LIB-NOTFOUND
+X11_Xtst_LIB:FILEPATH=/usr/lib64/libXtst.so
 
 //Path to a file.
 X11_Xutil_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a file.
-X11_Xv_INCLUDE_PATH:PATH=X11_Xv_INCLUDE_PATH-NOTFOUND
+X11_Xv_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xv_LIB:FILEPATH=X11_Xv_LIB-NOTFOUND
+X11_Xv_LIB:FILEPATH=/usr/lib64/libXv.so
 
 //Path to a file.
 X11_Xxf86misc_INCLUDE_PATH:PATH=X11_Xxf86misc_INCLUDE_PATH-NOTFOUND
@@ -836,10 +845,10 @@ X11_Xxf86misc_INCLUDE_PATH:PATH=X11_Xxf86misc_INCLUDE_PATH-NOTFOUND
 X11_Xxf86misc_LIB:FILEPATH=X11_Xxf86misc_LIB-NOTFOUND
 
 //Path to a file.
-X11_Xxf86vm_INCLUDE_PATH:PATH=X11_Xxf86vm_INCLUDE_PATH-NOTFOUND
+X11_Xxf86vm_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_Xxf86vm_LIB:FILEPATH=X11_Xxf86vm_LIB-NOTFOUND
+X11_Xxf86vm_LIB:FILEPATH=/usr/lib64/libXxf86vm.so
 
 //Path to a file.
 X11_dpms_INCLUDE_PATH:PATH=/usr/include
@@ -851,10 +860,10 @@ X11_xcb_INCLUDE_PATH:PATH=/usr/include
 X11_xcb_LIB:FILEPATH=/usr/lib64/libxcb.so
 
 //Path to a file.
-X11_xcb_icccm_INCLUDE_PATH:PATH=X11_xcb_icccm_INCLUDE_PATH-NOTFOUND
+X11_xcb_icccm_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_xcb_icccm_LIB:FILEPATH=X11_xcb_icccm_LIB-NOTFOUND
+X11_xcb_icccm_LIB:FILEPATH=/usr/lib64/libxcb-icccm.so
 
 //Path to a file.
 X11_xcb_keysyms_INCLUDE_PATH:PATH=X11_xcb_keysyms_INCLUDE_PATH-NOTFOUND
@@ -869,10 +878,10 @@ X11_xcb_randr_INCLUDE_PATH:PATH=/usr/include
 X11_xcb_randr_LIB:FILEPATH=/usr/lib64/libxcb-randr.so
 
 //Path to a file.
-X11_xcb_util_INCLUDE_PATH:PATH=X11_xcb_util_INCLUDE_PATH-NOTFOUND
+X11_xcb_util_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_xcb_util_LIB:FILEPATH=X11_xcb_util_LIB-NOTFOUND
+X11_xcb_util_LIB:FILEPATH=/usr/lib64/libxcb-util.so
 
 //Path to a file.
 X11_xcb_xfixes_INCLUDE_PATH:PATH=/usr/include
@@ -890,22 +899,22 @@ X11_xcb_xtest_INCLUDE_PATH:PATH=/usr/include
 X11_xcb_xtest_LIB:FILEPATH=/usr/lib64/libxcb-xtest.so
 
 //Path to a file.
-X11_xkbcommon_INCLUDE_PATH:PATH=X11_xkbcommon_INCLUDE_PATH-NOTFOUND
+X11_xkbcommon_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_xkbcommon_LIB:FILEPATH=X11_xkbcommon_LIB-NOTFOUND
+X11_xkbcommon_LIB:FILEPATH=/usr/lib64/libxkbcommon.so
 
 //Path to a file.
-X11_xkbcommon_X11_INCLUDE_PATH:PATH=X11_xkbcommon_X11_INCLUDE_PATH-NOTFOUND
+X11_xkbcommon_X11_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_xkbcommon_X11_LIB:FILEPATH=X11_xkbcommon_X11_LIB-NOTFOUND
+X11_xkbcommon_X11_LIB:FILEPATH=/usr/lib64/libxkbcommon-x11.so
 
 //Path to a file.
-X11_xkbfile_INCLUDE_PATH:PATH=X11_xkbfile_INCLUDE_PATH-NOTFOUND
+X11_xkbfile_INCLUDE_PATH:PATH=/usr/include
 
 //Path to a library.
-X11_xkbfile_LIB:FILEPATH=X11_xkbfile_LIB-NOTFOUND
+X11_xkbfile_LIB:FILEPATH=/usr/lib64/libxkbfile.so
 
 //Path to a file.
 ZLIB_INCLUDE_DIR:PATH=/usr/include
@@ -965,6 +974,15 @@ svk_IS_TOP_LEVEL:STATIC=OFF
 svk_SOURCE_DIR:STATIC=/home/erdiaz/Desktop/sivic_next/libs/src
 
 //Value Computed by CMake
+svk_applications_BINARY_DIR:STATIC=/home/erdiaz/Desktop/sivic_next/build2/applications/cmd_line/src
+
+//Value Computed by CMake
+svk_applications_IS_TOP_LEVEL:STATIC=OFF
+
+//Value Computed by CMake
+svk_applications_SOURCE_DIR:STATIC=/home/erdiaz/Desktop/sivic_next/applications/cmd_line/src
+
+//Value Computed by CMake
 svk_test_BINARY_DIR:STATIC=/home/erdiaz/Desktop/sivic_next/build2/tests/src
 
 //Value Computed by CMake
@@ -981,6 +999,8 @@ utf8cpp_INCLUDE_DIR:PATH=/usr/include/utf8cpp
 # INTERNAL cache entries
 ########################
 
+//MODIFIED property for variable: BUILD_APPS
+BUILD_APPS-MODIFIED:INTERNAL=ON
 //MODIFIED property for variable: BUILD_ITK
 BUILD_ITK-MODIFIED:INTERNAL=ON
 //MODIFIED property for variable: BUILD_SIVIC
@@ -1178,6 +1198,18 @@ CPACK_SOURCE_TXZ-ADVANCED:INTERNAL=1
 CPACK_SOURCE_TZ-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CPACK_SOURCE_ZIP
 CPACK_SOURCE_ZIP-ADVANCED:INTERNAL=1
+//MODIFIED property for variable: DCMTK_DIR
+DCMTK_DIR-MODIFIED:INTERNAL=ON
+//MODIFIED property for variable: DCMTK_dcmdata_LIBRARY
+DCMTK_dcmdata_LIBRARY-MODIFIED:INTERNAL=ON
+//MODIFIED property for variable: DCMTK_dcmimage_LIBRARY
+DCMTK_dcmimage_LIBRARY-MODIFIED:INTERNAL=ON
+//MODIFIED property for variable: DCMTK_dcmimgle_LIBRARY
+DCMTK_dcmimgle_LIBRARY-MODIFIED:INTERNAL=ON
+//MODIFIED property for variable: DCMTK_oflog_LIBRARY
+DCMTK_oflog_LIBRARY-MODIFIED:INTERNAL=ON
+//MODIFIED property for variable: DCMTK_ofstd_LIBRARY
+DCMTK_ofstd_LIBRARY-MODIFIED:INTERNAL=ON
 //ADVANCED property for variable: EXPAT_INCLUDE_DIR
 EXPAT_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: EXPAT_LIBRARY
@@ -1221,7 +1253,7 @@ FIND_PACKAGE_MESSAGE_DETAILS_NetCDF:INTERNAL=[netcdf][v4.8.1()]
 //Details about finding OGG
 FIND_PACKAGE_MESSAGE_DETAILS_OGG:INTERNAL=[/usr/lib64/libogg.so][/usr/include][v()]
 //Details about finding OpenGL
-FIND_PACKAGE_MESSAGE_DETAILS_OpenGL:INTERNAL=[/usr/lib64/libOpenGL.so][/usr/lib64/libGLX.so][/usr/include][cfound components: OpenGL GLX ][v()]
+FIND_PACKAGE_MESSAGE_DETAILS_OpenGL:INTERNAL=[/usr/lib64/libOpenGL.so][/usr/lib64/libGLX.so][/usr/include/GL][cfound components: OpenGL GLX ][v()]
 //Details about finding OpenSlide
 FIND_PACKAGE_MESSAGE_DETAILS_OpenSlide:INTERNAL=[/usr/lib64/libopenslide.so][/usr/include][v()]
 //Details about finding PEGTL
@@ -1519,6 +1551,8 @@ TIFF_INCLUDE_DIR-ADVANCED:INTERNAL=1
 TIFF_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: TIFF_LIBRARY_RELEASE
 TIFF_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//MODIFIED property for variable: VTK_DIR
+VTK_DIR-MODIFIED:INTERNAL=ON
 //Number of processors available to run parallel tests.
 VTK_MPI_NUMPROCS:INTERNAL=2
 //ADVANCED property for variable: X11_ICE_INCLUDE_PATH

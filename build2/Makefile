@@ -246,6 +246,617 @@ svkadapt/fast:
 	$(MAKE) $(MAKESILENT) -f libs/src/CMakeFiles/svkadapt.dir/build.make libs/src/CMakeFiles/svkadapt.dir/build
 .PHONY : svkadapt/fast
 
+#=============================================================================
+# Target rules for targets named svk_file_convert
+
+# Build rule for target.
+svk_file_convert: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_file_convert
+.PHONY : svk_file_convert
+
+# fast build rule for target.
+svk_file_convert/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/build
+.PHONY : svk_file_convert/fast
+
+#=============================================================================
+# Target rules for targets named svk_print_image_info
+
+# Build rule for target.
+svk_print_image_info: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_print_image_info
+.PHONY : svk_print_image_info
+
+# fast build rule for target.
+svk_print_image_info/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/build.make applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/build
+.PHONY : svk_print_image_info/fast
+
+#=============================================================================
+# Target rules for targets named svk_create_secondary_capture
+
+# Build rule for target.
+svk_create_secondary_capture: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_create_secondary_capture
+.PHONY : svk_create_secondary_capture
+
+# fast build rule for target.
+svk_create_secondary_capture/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/build.make applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/build
+.PHONY : svk_create_secondary_capture/fast
+
+#=============================================================================
+# Target rules for targets named svk_image_threshold
+
+# Build rule for target.
+svk_image_threshold: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_image_threshold
+.PHONY : svk_image_threshold
+
+# fast build rule for target.
+svk_image_threshold/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/build
+.PHONY : svk_image_threshold/fast
+
+#=============================================================================
+# Target rules for targets named svk_dilate_erode
+
+# Build rule for target.
+svk_dilate_erode: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_dilate_erode
+.PHONY : svk_dilate_erode
+
+# fast build rule for target.
+svk_dilate_erode/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/build
+.PHONY : svk_dilate_erode/fast
+
+#=============================================================================
+# Target rules for targets named svk_interpolate_spectra
+
+# Build rule for target.
+svk_interpolate_spectra: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_interpolate_spectra
+.PHONY : svk_interpolate_spectra
+
+# fast build rule for target.
+svk_interpolate_spectra/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/build.make applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/build
+.PHONY : svk_interpolate_spectra/fast
+
+#=============================================================================
+# Target rules for targets named svk_dcmdump
+
+# Build rule for target.
+svk_dcmdump: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_dcmdump
+.PHONY : svk_dcmdump
+
+# fast build rule for target.
+svk_dcmdump/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/build
+.PHONY : svk_dcmdump/fast
+
+#=============================================================================
+# Target rules for targets named svk_quick_view
+
+# Build rule for target.
+svk_quick_view: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_quick_view
+.PHONY : svk_quick_view
+
+# fast build rule for target.
+svk_quick_view/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/build
+.PHONY : svk_quick_view/fast
+
+#=============================================================================
+# Target rules for targets named svk_point_selector
+
+# Build rule for target.
+svk_point_selector: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_point_selector
+.PHONY : svk_point_selector
+
+# fast build rule for target.
+svk_point_selector/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/build.make applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/build
+.PHONY : svk_point_selector/fast
+
+#=============================================================================
+# Target rules for targets named svk_multi_view
+
+# Build rule for target.
+svk_multi_view: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_multi_view
+.PHONY : svk_multi_view
+
+# fast build rule for target.
+svk_multi_view/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/build
+.PHONY : svk_multi_view/fast
+
+#=============================================================================
+# Target rules for targets named svk_gepfile_reader
+
+# Build rule for target.
+svk_gepfile_reader: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_gepfile_reader
+.PHONY : svk_gepfile_reader
+
+# fast build rule for target.
+svk_gepfile_reader/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/build
+.PHONY : svk_gepfile_reader/fast
+
+#=============================================================================
+# Target rules for targets named svk_variable_flip_scaler
+
+# Build rule for target.
+svk_variable_flip_scaler: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_variable_flip_scaler
+.PHONY : svk_variable_flip_scaler
+
+# fast build rule for target.
+svk_variable_flip_scaler/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/build.make applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/build
+.PHONY : svk_variable_flip_scaler/fast
+
+#=============================================================================
+# Target rules for targets named svk_lcmodel_writer
+
+# Build rule for target.
+svk_lcmodel_writer: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_lcmodel_writer
+.PHONY : svk_lcmodel_writer
+
+# fast build rule for target.
+svk_lcmodel_writer/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/build
+.PHONY : svk_lcmodel_writer/fast
+
+#=============================================================================
+# Target rules for targets named svk_lcmodel_reader
+
+# Build rule for target.
+svk_lcmodel_reader: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_lcmodel_reader
+.PHONY : svk_lcmodel_reader
+
+# fast build rule for target.
+svk_lcmodel_reader/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/build
+.PHONY : svk_lcmodel_reader/fast
+
+#=============================================================================
+# Target rules for targets named svk_gepfile_anon
+
+# Build rule for target.
+svk_gepfile_anon: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_gepfile_anon
+.PHONY : svk_gepfile_anon
+
+# fast build rule for target.
+svk_gepfile_anon/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/build
+.PHONY : svk_gepfile_anon/fast
+
+#=============================================================================
+# Target rules for targets named svk_get_filetype
+
+# Build rule for target.
+svk_get_filetype: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_get_filetype
+.PHONY : svk_get_filetype
+
+# fast build rule for target.
+svk_get_filetype/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/build.make applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/build
+.PHONY : svk_get_filetype/fast
+
+#=============================================================================
+# Target rules for targets named svk_spec_diff
+
+# Build rule for target.
+svk_spec_diff: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_spec_diff
+.PHONY : svk_spec_diff
+
+# fast build rule for target.
+svk_spec_diff/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/build
+.PHONY : svk_spec_diff/fast
+
+#=============================================================================
+# Target rules for targets named svk_integrate_dynamic
+
+# Build rule for target.
+svk_integrate_dynamic: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_integrate_dynamic
+.PHONY : svk_integrate_dynamic
+
+# fast build rule for target.
+svk_integrate_dynamic/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/build.make applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/build
+.PHONY : svk_integrate_dynamic/fast
+
+#=============================================================================
+# Target rules for targets named svk_quantify
+
+# Build rule for target.
+svk_quantify: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_quantify
+.PHONY : svk_quantify
+
+# fast build rule for target.
+svk_quantify/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quantify.dir/build
+.PHONY : svk_quantify/fast
+
+#=============================================================================
+# Target rules for targets named svk_dce_quantify
+
+# Build rule for target.
+svk_dce_quantify: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_dce_quantify
+.PHONY : svk_dce_quantify
+
+# fast build rule for target.
+svk_dce_quantify/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/build
+.PHONY : svk_dce_quantify/fast
+
+#=============================================================================
+# Target rules for targets named svk_reslice
+
+# Build rule for target.
+svk_reslice: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_reslice
+.PHONY : svk_reslice
+
+# fast build rule for target.
+svk_reslice/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reslice.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reslice.dir/build
+.PHONY : svk_reslice/fast
+
+#=============================================================================
+# Target rules for targets named svk_svrecon
+
+# Build rule for target.
+svk_svrecon: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_svrecon
+.PHONY : svk_svrecon
+
+# fast build rule for target.
+svk_svrecon/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/build
+.PHONY : svk_svrecon/fast
+
+#=============================================================================
+# Target rules for targets named svk_surface_area
+
+# Build rule for target.
+svk_surface_area: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_surface_area
+.PHONY : svk_surface_area
+
+# fast build rule for target.
+svk_surface_area/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/build.make applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/build
+.PHONY : svk_surface_area/fast
+
+#=============================================================================
+# Target rules for targets named svk_fft
+
+# Build rule for target.
+svk_fft: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_fft
+.PHONY : svk_fft
+
+# fast build rule for target.
+svk_fft/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_fft.dir/build.make applications/cmd_line/src/CMakeFiles/svk_fft.dir/build
+.PHONY : svk_fft/fast
+
+#=============================================================================
+# Target rules for targets named svk_noise
+
+# Build rule for target.
+svk_noise: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_noise
+.PHONY : svk_noise
+
+# fast build rule for target.
+svk_noise/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_noise.dir/build.make applications/cmd_line/src/CMakeFiles/svk_noise.dir/build
+.PHONY : svk_noise/fast
+
+#=============================================================================
+# Target rules for targets named svk_peak_pick
+
+# Build rule for target.
+svk_peak_pick: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_peak_pick
+.PHONY : svk_peak_pick
+
+# fast build rule for target.
+svk_peak_pick/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/build.make applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/build
+.PHONY : svk_peak_pick/fast
+
+#=============================================================================
+# Target rules for targets named svk_reorder_epsi
+
+# Build rule for target.
+svk_reorder_epsi: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_reorder_epsi
+.PHONY : svk_reorder_epsi
+
+# fast build rule for target.
+svk_reorder_epsi/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/build
+.PHONY : svk_reorder_epsi/fast
+
+#=============================================================================
+# Target rules for targets named svk_phase_spec
+
+# Build rule for target.
+svk_phase_spec: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_phase_spec
+.PHONY : svk_phase_spec
+
+# fast build rule for target.
+svk_phase_spec/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/build
+.PHONY : svk_phase_spec/fast
+
+#=============================================================================
+# Target rules for targets named svk_freq_correct
+
+# Build rule for target.
+svk_freq_correct: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_freq_correct
+.PHONY : svk_freq_correct
+
+# fast build rule for target.
+svk_freq_correct/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/build.make applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/build
+.PHONY : svk_freq_correct/fast
+
+#=============================================================================
+# Target rules for targets named svk_dcm_deid
+
+# Build rule for target.
+svk_dcm_deid: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_dcm_deid
+.PHONY : svk_dcm_deid
+
+# fast build rule for target.
+svk_dcm_deid/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/build
+.PHONY : svk_dcm_deid/fast
+
+#=============================================================================
+# Target rules for targets named svk_image_mathematics
+
+# Build rule for target.
+svk_image_mathematics: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_image_mathematics
+.PHONY : svk_image_mathematics
+
+# fast build rule for target.
+svk_image_mathematics/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/build
+.PHONY : svk_image_mathematics/fast
+
+#=============================================================================
+# Target rules for targets named svk_zscore
+
+# Build rule for target.
+svk_zscore: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_zscore
+.PHONY : svk_zscore
+
+# fast build rule for target.
+svk_zscore/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zscore.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zscore.dir/build
+.PHONY : svk_zscore/fast
+
+#=============================================================================
+# Target rules for targets named svk_extract_spec
+
+# Build rule for target.
+svk_extract_spec: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_extract_spec
+.PHONY : svk_extract_spec
+
+# fast build rule for target.
+svk_extract_spec/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/build
+.PHONY : svk_extract_spec/fast
+
+#=============================================================================
+# Target rules for targets named svk_combine_spec
+
+# Build rule for target.
+svk_combine_spec: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_combine_spec
+.PHONY : svk_combine_spec
+
+# fast build rule for target.
+svk_combine_spec/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/build
+.PHONY : svk_combine_spec/fast
+
+#=============================================================================
+# Target rules for targets named svk_scale_image
+
+# Build rule for target.
+svk_scale_image: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_scale_image
+.PHONY : svk_scale_image
+
+# fast build rule for target.
+svk_scale_image/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/build.make applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/build
+.PHONY : svk_scale_image/fast
+
+#=============================================================================
+# Target rules for targets named svk_volume_diff
+
+# Build rule for target.
+svk_volume_diff: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_volume_diff
+.PHONY : svk_volume_diff
+
+# fast build rule for target.
+svk_volume_diff/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/build
+.PHONY : svk_volume_diff/fast
+
+#=============================================================================
+# Target rules for targets named svk_average_spec
+
+# Build rule for target.
+svk_average_spec: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_average_spec
+.PHONY : svk_average_spec
+
+# fast build rule for target.
+svk_average_spec/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/build
+.PHONY : svk_average_spec/fast
+
+#=============================================================================
+# Target rules for targets named svk_mrs_combine
+
+# Build rule for target.
+svk_mrs_combine: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_mrs_combine
+.PHONY : svk_mrs_combine
+
+# fast build rule for target.
+svk_mrs_combine/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/build.make applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/build
+.PHONY : svk_mrs_combine/fast
+
+#=============================================================================
+# Target rules for targets named svk_apodize
+
+# Build rule for target.
+svk_apodize: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_apodize
+.PHONY : svk_apodize
+
+# fast build rule for target.
+svk_apodize/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_apodize.dir/build.make applications/cmd_line/src/CMakeFiles/svk_apodize.dir/build
+.PHONY : svk_apodize/fast
+
+#=============================================================================
+# Target rules for targets named svk_simulate
+
+# Build rule for target.
+svk_simulate: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_simulate
+.PHONY : svk_simulate
+
+# fast build rule for target.
+svk_simulate/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_simulate.dir/build.make applications/cmd_line/src/CMakeFiles/svk_simulate.dir/build
+.PHONY : svk_simulate/fast
+
+#=============================================================================
+# Target rules for targets named svk_zerofill
+
+# Build rule for target.
+svk_zerofill: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_zerofill
+.PHONY : svk_zerofill
+
+# fast build rule for target.
+svk_zerofill/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/build
+.PHONY : svk_zerofill/fast
+
+#=============================================================================
+# Target rules for targets named svk_channel2time
+
+# Build rule for target.
+svk_channel2time: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_channel2time
+.PHONY : svk_channel2time
+
+# fast build rule for target.
+svk_channel2time/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/build.make applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/build
+.PHONY : svk_channel2time/fast
+
+#=============================================================================
+# Target rules for targets named svk_psd_prescription_convert
+
+# Build rule for target.
+svk_psd_prescription_convert: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_psd_prescription_convert
+.PHONY : svk_psd_prescription_convert
+
+# fast build rule for target.
+svk_psd_prescription_convert/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/build
+.PHONY : svk_psd_prescription_convert/fast
+
+#=============================================================================
+# Target rules for targets named svk_image_stats
+
+# Build rule for target.
+svk_image_stats: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_image_stats
+.PHONY : svk_image_stats
+
+# fast build rule for target.
+svk_image_stats/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/build
+.PHONY : svk_image_stats/fast
+
+#=============================================================================
+# Target rules for targets named svk_image_pipeline
+
+# Build rule for target.
+svk_image_pipeline: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_image_pipeline
+.PHONY : svk_image_pipeline
+
+# fast build rule for target.
+svk_image_pipeline/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/build
+.PHONY : svk_image_pipeline/fast
+
+#=============================================================================
+# Target rules for targets named svk_transform
+
+# Build rule for target.
+svk_transform: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_transform
+.PHONY : svk_transform
+
+# fast build rule for target.
+svk_transform/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_transform.dir/build.make applications/cmd_line/src/CMakeFiles/svk_transform.dir/build
+.PHONY : svk_transform/fast
+
+#=============================================================================
+# Target rules for targets named svk_app_template
+
+# Build rule for target.
+svk_app_template: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_app_template
+.PHONY : svk_app_template
+
+# fast build rule for target.
+svk_app_template/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build.make applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build
+.PHONY : svk_app_template/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -264,6 +875,53 @@ help:
 	@echo "... svkPSD"
 	@echo "... svkTypeUtils"
 	@echo "... svkXMLUtils"
+	@echo "... svk_apodize"
+	@echo "... svk_app_template"
+	@echo "... svk_average_spec"
+	@echo "... svk_channel2time"
+	@echo "... svk_combine_spec"
+	@echo "... svk_create_secondary_capture"
+	@echo "... svk_dce_quantify"
+	@echo "... svk_dcm_deid"
+	@echo "... svk_dcmdump"
+	@echo "... svk_dilate_erode"
+	@echo "... svk_extract_spec"
+	@echo "... svk_fft"
+	@echo "... svk_file_convert"
+	@echo "... svk_freq_correct"
+	@echo "... svk_gepfile_anon"
+	@echo "... svk_gepfile_reader"
+	@echo "... svk_get_filetype"
+	@echo "... svk_image_mathematics"
+	@echo "... svk_image_pipeline"
+	@echo "... svk_image_stats"
+	@echo "... svk_image_threshold"
+	@echo "... svk_integrate_dynamic"
+	@echo "... svk_interpolate_spectra"
+	@echo "... svk_lcmodel_reader"
+	@echo "... svk_lcmodel_writer"
+	@echo "... svk_mrs_combine"
+	@echo "... svk_multi_view"
+	@echo "... svk_noise"
+	@echo "... svk_peak_pick"
+	@echo "... svk_phase_spec"
+	@echo "... svk_point_selector"
+	@echo "... svk_print_image_info"
+	@echo "... svk_psd_prescription_convert"
+	@echo "... svk_quantify"
+	@echo "... svk_quick_view"
+	@echo "... svk_reorder_epsi"
+	@echo "... svk_reslice"
+	@echo "... svk_scale_image"
+	@echo "... svk_simulate"
+	@echo "... svk_spec_diff"
+	@echo "... svk_surface_area"
+	@echo "... svk_svrecon"
+	@echo "... svk_transform"
+	@echo "... svk_variable_flip_scaler"
+	@echo "... svk_volume_diff"
+	@echo "... svk_zerofill"
+	@echo "... svk_zscore"
 	@echo "... svkadapt"
 .PHONY : help
 

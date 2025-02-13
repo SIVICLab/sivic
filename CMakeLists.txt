@@ -147,22 +147,22 @@ include_directories(${VTK_INCLUDE_DIRS})
 
 ###################################
 #   KWWidgets
-###################################
-IF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
-    FIND_PACKAGE(KWWidgets REQUIRED PATHS ${KWWidgets_DIR} HINTS ${KWWidgets_DIR} )
-    MESSAGE(${KWWidgets_USE_FILE})
-    INCLUDE(${KWWidgets_USE_FILE})
-    IF( NOT BUILD_VIZ_LIBRARY  )
-        message( FATAL_ERROR "ERROR: You must turn BUILD_VIZ_LIBRARY on to build requested components (BUILD_SIVIC, BUILD_EXAMPLES, BUILD_APPS, BUILD_OSIRIX, BUILD_SLICER)")
-    ENDIF( NOT BUILD_VIZ_LIBRARY )
-    
-ENDIF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
 
+#IF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
+    #FIND_PACKAGE(KWWidgets REQUIRED PATHS ${KWWidgets_DIR} HINTS ${KWWidgets_DIR} )
+    #INCLUDE(${KWWidgets_USE_FILE})
+    #IF( NOT BUILD_VIZ_LIBRARY  )
+        #message( FATAL_ERROR "ERROR: You must turn BUILD_VIZ_LIBRARY on to build requested components (BUILD_SIVIC, BUILD_EXAMPLES, BUILD_APPS, BUILD_OSIRIX, BUILD_SLICER)")
+    #ENDIF( NOT BUILD_VIZ_LIBRARY )
+    
+#ENDIF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
+
+###################################
 #   DCMTK
 ###################################
 # Set DCMTK include and library directories
-set(DCMTK_INCLUDE_DIRS "/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include")
-set(DCMTK_LIBRARY_DIRS "/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/lib64")
+set(DCMTK_INCLUDE_DIRS "/mnt/nfs/rad/apps/netopt/versions/dcmtk/src/dcmtk-3.6.7src/lnx64")
+set(DCMTK_LIBRARY_DIRS "/mnt/nfs/rad/apps/netopt/versions/dcmtk/src/dcmtk-3.6.7src/lnx64")
 
 # Include DCMTK headers
 include_directories(${DCMTK_INCLUDE_DIRS})
@@ -201,13 +201,6 @@ set(DCMTK_LIBRARIES
   ${DCMTK_ofstd_LIBRARY}
 )
 
-# If you have a specific target that requires DCMTK, link the libraries
-# Replace 'your_target_name' with the actual target name(s)
-# target_link_libraries(your_target_name ${DCMTK_LIBRARIES})
-
-# For example, if you have a library target named 'svk'
-# You might link it like this:
-# target_link_libraries(svk ${DCMTK_LIBRARIES})
 ####################
 
 if( BUILD_PROFILER)

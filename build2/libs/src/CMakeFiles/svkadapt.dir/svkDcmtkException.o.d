@@ -107,26 +107,25 @@ libs/src/CMakeFiles/svkadapt.dir/svkDcmtkException.o: \
  /usr/include/bits/types/error_t.h /usr/include/c++/11/bits/charconv.h \
  /usr/include/c++/11/bits/functional_hash.h \
  /usr/include/c++/11/bits/basic_string.tcc \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/config/osconfig.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/latest/include/dcmtk/dcmdata/dctk.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/config/osconfig.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dctypes.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/oflog.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/logger.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/config.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofdefine.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofcast.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofexport.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/config/osconfig.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dctk.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dctypes.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/oflog.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/logger.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/config.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofdefine.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofcast.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofexport.h \
  /usr/include/c++/11/cstring /usr/include/string.h /usr/include/strings.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofstdinc.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/config/defines.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/helpers/threadcf.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/loglevel.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofvector.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofstdinc.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/config/defines.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/helpers/threadcf.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/loglevel.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofvector.h \
  /usr/include/c++/11/cassert /usr/include/assert.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/oftypes.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/oftypes.h \
  /usr/include/c++/11/cstddef /usr/include/inttypes.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofstream.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofstream.h \
  /usr/include/c++/11/iostream /usr/include/c++/11/ostream \
  /usr/include/c++/11/ios /usr/include/c++/11/bits/ios_base.h \
  /usr/include/c++/11/bits/locale_classes.h \
@@ -160,26 +159,26 @@ libs/src/CMakeFiles/svkadapt.dir/svkDcmtkException.o: \
  /usr/include/c++/11/bits/invoke.h \
  /usr/include/c++/11/bits/quoted_string.h /usr/include/c++/11/sstream \
  /usr/include/c++/11/bits/sstream.tcc \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/tstring.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofstring.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/tchar.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/spi/apndatch.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/appender.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofmem.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofutil.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/oftraits.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/variadic/tuplefwd.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/layout.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/streams.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/helpers/pointer.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/thread/syncprim.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/tstring.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofstring.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/tchar.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/spi/apndatch.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/appender.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofmem.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofutil.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/oftraits.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/variadic/tuplefwd.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/layout.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/streams.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/helpers/pointer.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/thread/syncprim.h \
  /usr/include/c++/11/algorithm /usr/include/c++/11/bits/stl_algo.h \
  /usr/include/c++/11/bits/algorithmfwd.h \
  /usr/include/c++/11/bits/stl_heap.h \
  /usr/include/c++/11/bits/stl_tempbuf.h \
  /usr/include/c++/11/bits/uniform_int_dist.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/spi/filter.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/helpers/lockfile.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/spi/filter.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/helpers/lockfile.h \
  /usr/include/c++/11/memory /usr/include/c++/11/bits/stl_uninitialized.h \
  /usr/include/c++/11/bits/stl_raw_storage_iter.h \
  /usr/include/c++/11/bits/align.h /usr/include/c++/11/bit \
@@ -193,26 +192,26 @@ libs/src/CMakeFiles/svkadapt.dir/svkDcmtkException.o: \
  /usr/include/c++/11/bits/atomic_base.h \
  /usr/include/c++/11/bits/atomic_lockfree_defines.h \
  /usr/include/c++/11/backward/auto_ptr.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/spi/logfact.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/logmacro.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/helpers/snprintf.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/spi/logfact.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/logmacro.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/helpers/snprintf.h \
  /usr/include/c++/11/cstdarg \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/oflog/tracelog.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcdefine.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcswap.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcerror.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofcond.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcxfer.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvr.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofglobal.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofthread.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcistrma.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/offile.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofstd.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/oflist.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/oflog/tracelog.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcdefine.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcswap.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcerror.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofcond.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcxfer.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvr.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofglobal.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofthread.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcistrma.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/offile.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofstd.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/oflist.h \
  /usr/include/c++/11/iterator /usr/include/c++/11/bits/stream_iterator.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/oflimits.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/config/arith.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/oflimits.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/config/arith.h \
  /usr/include/c++/11/climits \
  /usr/lib/gcc/x86_64-redhat-linux/11/include/limits.h \
  /usr/lib/gcc/x86_64-redhat-linux/11/include/syslimits.h \
@@ -228,7 +227,7 @@ libs/src/CMakeFiles/svkadapt.dir/svkDcmtkException.o: \
  /usr/include/bits/mathcalls-helper-functions.h \
  /usr/include/bits/mathcalls.h /usr/include/bits/mathcalls-narrow.h \
  /usr/include/bits/iscanonical.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/oferror.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/oferror.h \
  /usr/include/unistd.h /usr/include/bits/posix_opt.h \
  /usr/include/bits/environments.h /usr/include/bits/confname.h \
  /usr/include/bits/getopt_posix.h /usr/include/bits/getopt_core.h \
@@ -244,71 +243,71 @@ libs/src/CMakeFiles/svkadapt.dir/svkDcmtkException.o: \
  /usr/include/bits/statx-generic.h \
  /usr/include/bits/types/struct_statx_timestamp.h \
  /usr/include/bits/types/struct_statx.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcostrma.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcuid.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dctagkey.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofdiag.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/diag/push.def \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/diag/ignrattr.def \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/diag/pop.def \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dctag.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcdicent.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dchashdi.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcdict.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcdeftag.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcobject.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcstack.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcelem.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcitem.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dclist.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcpcache.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcmetinf.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcdatset.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcsequen.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcfilefo.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcdicdir.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofmap.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcdirrec.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrulup.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrul.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcpixseq.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcofsetl.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcbytstr.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrae.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvras.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrcs.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrda.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofdate.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrds.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrdt.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/ofdatime.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/ofstd/oftime.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvris.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrtm.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrui.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrur.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcchrstr.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrlo.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrlt.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrpn.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrsh.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrst.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvruc.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrut.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrobow.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcpixel.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrpobw.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcovlay.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrat.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrss.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrus.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrsl.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrsv.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvruv.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrfl.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrfd.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrof.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrod.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrol.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/dcvrov.h \
- /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7/include/dcmtk/dcmdata/cmdlnarg.h
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcostrma.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcuid.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dctagkey.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofdiag.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/diag/push.def \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/diag/ignrattr.def \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/diag/pop.def \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dctag.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcdicent.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dchashdi.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcdict.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcdeftag.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcobject.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcstack.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcelem.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcitem.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dclist.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcpcache.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcmetinf.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcdatset.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcsequen.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcfilefo.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcdicdir.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofmap.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcdirrec.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrulup.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrul.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcpixseq.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcofsetl.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcbytstr.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrae.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvras.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrcs.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrda.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofdate.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrds.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrdt.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/ofdatime.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/ofstd/oftime.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvris.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrtm.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrui.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrur.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcchrstr.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrlo.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrlt.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrpn.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrsh.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrst.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvruc.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrut.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrobow.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcpixel.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrpobw.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcovlay.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrat.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrss.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrus.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrsl.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrsv.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvruv.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrfl.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrfd.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrof.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrod.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrol.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/dcvrov.h \
+ /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/include/dcmtk/dcmdata/cmdlnarg.h
