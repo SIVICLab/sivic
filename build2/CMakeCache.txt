@@ -1253,7 +1253,7 @@ FIND_PACKAGE_MESSAGE_DETAILS_NetCDF:INTERNAL=[netcdf][v4.8.1()]
 //Details about finding OGG
 FIND_PACKAGE_MESSAGE_DETAILS_OGG:INTERNAL=[/usr/lib64/libogg.so][/usr/include][v()]
 //Details about finding OpenGL
-FIND_PACKAGE_MESSAGE_DETAILS_OpenGL:INTERNAL=[/usr/lib64/libOpenGL.so][/usr/lib64/libGLX.so][/usr/include/GL][cfound components: OpenGL GLX ][v()]
+FIND_PACKAGE_MESSAGE_DETAILS_OpenGL:INTERNAL=[/usr/lib64/libOpenGL.so][/usr/lib64/libGLX.so][/usr/include][cfound components: OpenGL GLX ][v()]
 //Details about finding OpenSlide
 FIND_PACKAGE_MESSAGE_DETAILS_OpenSlide:INTERNAL=[/usr/lib64/libopenslide.so][/usr/include][v()]
 //Details about finding PEGTL
