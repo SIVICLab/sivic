@@ -7,14 +7,14 @@
 
 OSTYPE := $(shell uname -s)
 
-VTK_DIR         	= /mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3
-#VTK6_DIR_DIST   	= /netopt/VTK/VTK-6.3.0/lib/cmake/vtk-6.3/
-#VTK6_DIR_DBG    	= /netopt/VTK/VTK-6.3.0_debug/lib/cmake/vtk-6.3/
+VTK_DIR         	= /netopt/lib/vtk-5.6
+VTK6_DIR_DIST   	= /netopt/VTK/VTK-6.3.0/lib/cmake/vtk-6.3/
+VTK6_DIR_DBG    	= /netopt/VTK/VTK-6.3.0_debug/lib/cmake/vtk-6.3/
 VTK6_DIR_M32_EPIC	= /netopt/VTK/VTK-6.3.0_m32_epic/lib/cmake/vtk-6.3/
 KWW_DIR     		= /netopt/kwwidgets_2.0_56/lib/KWWidgets/
 #KWW6_DIR_DIST		= /netopt/kwwidgets_vtk6/
 #KWW6_DIR_DBG 		= /netopt/kwwidgets_vtk6_debug/
-DCMTK_DIR           = /mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/
+DCMTK_DIR           = /mnt/nfs/rad/apps/netopt/version/dcmtk/dcmtk-3.6.7
 #DCMTK_DIR       	= /netopt/rhel7/versions/dcmtk/dcmtk-3.6.7
 #DCMTK_DIR       	= /netopt/rhel7/dicom
 #DCMTK_DIR       	= /netopt/dicom

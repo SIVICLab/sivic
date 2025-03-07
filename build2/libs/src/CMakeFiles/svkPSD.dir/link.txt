@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../Linux_x86_64/libsvkPSD.a CMakeFiles/svkPSD.dir/svkFileUtils.o CMakeFiles/svkPSD.dir/svkSatBandsXML.o CMakeFiles/svkPSD.dir/svkDataAcquisitionDescriptionXML.o
-/usr/bin/ranlib ../Linux_x86_64/libsvkPSD.a

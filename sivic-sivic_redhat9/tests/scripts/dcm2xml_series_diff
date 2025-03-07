@@ -1,0 +1,204 @@
+#!/usr/bin/perl -w
+# 
+#   Copyright © 2009-2011 The Regents of the University of California.
+#   All Rights Reserved.
+# 
+#   Redistribution and use in source and binary forms, with or without
+#   modification, are permitted provided that the following conditions are met:
+#   •   Redistributions of source code must retain the above copyright notice,
+#       this list of conditions and the following disclaimer.
+#   •   Redistributions in binary form must reproduce the above copyright notice,
+#       this list of conditions and the following disclaimer in the documentation
+#       and/or other materials provided with the distribution.
+#   •   None of the names of any campus of the University of California, the name
+#       "The Regents of the University of California," or the names of any of its
+#       contributors may be used to endorse or promote products derived from this
+#       software without specific prior written permission.
+# 
+#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+#   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+#   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+#   IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+#   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+#   NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+#   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+#   OF SUCH DAMAGE.
+# /
+
+#   $URL$
+#   $Rev$
+#   $Author$
+#   $Date$
+#
+#   This script uses dcmtk's dcm2xml script to diff dicom images. 
+#
+
+use strict;
+use Getopt::Long;
+Getopt::Long::config("bundling");
+use Pod::Usage;
+use Cwd;
+use Cwd 'abs_path';
+use File::Path qw(rmtree);
+
+sub exit_gracefully( $ );
+
+GetOptions(
+    "dir_one=s"   => \my $series_dir_one,
+    "dir_two=s"   => \my $series_dir_two,
+    "diff_opts=s" => \my $diff_opts,
+    "bin_dir=s"   => \my $bin_dir,
+    "diff=s"      => \my $diff,
+    "v"           => \my $verbose,
+    "retain"      => \my $retainTempResults,
+    "help"        => \my $help,
+) or pod2usage(-verbose=>2, -exitval=>2);
+
+if( !defined($series_dir_one) || !defined($series_dir_two) || defined($help) ) {
+    pod2usage(-verbose=>2, -exitval=>2);
+}
+
+if( !defined($diff_opts) ) {
+    $diff_opts = "";
+}
+
+if( !defined($bin_dir) ) { 
+    $bin_dir = "";
+} else {
+    # Make sure there is a slash
+    $bin_dir .= "/";
+}
+
+if( !defined($diff) ) { 
+    $diff = "diff";
+} 
+
+# If we are not in verbose mode let's redirect the output
+my $redirect_output ="";
+if( !$verbose && $^O ne "MSWin32") { 
+    $redirect_output =" >& /dev/null ";
+}
+
+# Create temporary directories
+
+my $start_dir = cwd();
+my $temp_dir = $start_dir . "/dcm_series_diff_temp$$";
+my $xml_one_dir = "$temp_dir/xml_one";
+my $xml_two_dir = "$temp_dir/xml_two";
+
+if( $verbose ) {
+    print "Making temporary directores: $temp_dir\n";
+    print "                           : $xml_one_dir\n";
+    print "                           : $xml_two_dir\n";
+}
+
+mkdir "$temp_dir" or die $!;
+mkdir "$temp_dir/xml_one" or die $!;
+mkdir "$temp_dir/xml_two" or die $!;
+
+##############################################################################
+# First we convert to xml files....
+##############################################################################
+
+my $convert_to_xml = "${bin_dir}dcm2xml  +M +Wb ";
+
+# get the filenames for the first directory
+chdir $series_dir_one;
+my @dcm_one_files = glob("*.dcm *.DCM");
+chdir $start_dir;
+
+# Convert the first directory
+foreach my $file (@dcm_one_files) {
+    my $dcm2xml_cmd = "$convert_to_xml $series_dir_one/$file $xml_one_dir/$file.xml";
+    if( $verbose ) {
+        print "$dcm2xml_cmd\n";
+    }
+    if( system("$dcm2xml_cmd$redirect_output") != 0 ) {
+            print "ERROR: could not execute command: $dcm2xml_cmd\n"; 
+            exit_gracefully(1);
+    }
+} 
+
+# get the filenames for the second directory
+chdir $series_dir_two;
+my @dcm_two_files = glob("*.dcm *.DCM");
+chdir $start_dir;
+
+# Convert the second directory
+foreach my $file (@dcm_two_files) {
+    my $dcm2xml_cmd = "$convert_to_xml $series_dir_two/$file $xml_two_dir/$file.xml";
+    if( $verbose ) {
+        print "$dcm2xml_cmd\n";
+    }
+    if( system("$dcm2xml_cmd$redirect_output") != 0 ) {
+            print "ERROR: could not execute command: $dcm2xml_cmd\n"; 
+            exit_gracefully(1);
+    }
+    
+} 
+
+##############################################################################
+# Then we diff the xml directories using any input options....
+##############################################################################
+
+my $diff_cmd = "$diff $diff_opts $xml_one_dir $xml_two_dir";
+
+if( system("$diff_cmd") != 0 ) {
+    print "Series differ!\n"; 
+    exit_gracefully(1);
+} else {
+    print "Series match!\n"; 
+    exit_gracefully(0); 
+}
+
+# If we got here something is really wrong...
+exit_gracefully(1); 
+
+sub exit_gracefully( $ ) {
+    my ($exit_status) = @_;
+    if ( ! $retainTempResults ) {
+        rmtree($temp_dir);
+    }
+    exit( $exit_status );
+}
+
+###############################################################################
+#
+#   POD Usage docs
+#
+###############################################################################
+
+=head1 NAME
+
+dcm2xml_series_diff
+
+=head1 SYNOPSIS
+
+Diffs two DICOM series dirs. Filenames must be the same. Files are first 
+converted to xml then they are diffed directly. Any options to diff can be
+passed in with the --diff_opts flage, but they must be quoted. Requires
+dcmtk's dcm2xml installed.
+
+dcm2xml_series_diff --dir_one series_dir_one --dir_two series_dir_two
+                    [--diff_opts "-options for_diff"]
+                    [--bin_dir "/usr/bin"]
+                    [--diff "C:\gnudiffutils\bin\diff.exe"]
+
+        -v                        display debugging messages
+        --help                    print usage message
+        --bin_dir                 bin directory for dcm2xml 
+        --diff                    diff command to use (for Windows) 
+
+=head1 DESCRIPTION
+
+Diffs DICOM series by using dcm2xml to convert images DICOM to xml, then
+diffs the xml 
+
+EXAMPLE:
+
+    dcm2xml_series_diff --dir_one series_one --dir_two series_two --diff_opts  "--ignore-matching-lines=UID --exclude=.svn"
+
+=cut
+

@@ -1,0 +1,871 @@
+{
+   <spectra 1>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XlcCreateLC
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtDisplayInitialize
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+}
+{
+   <spectra 2>
+   Memcheck:Leak
+   fun:malloc
+   fun:XextCreateExtension
+   obj:/usr/lib64/libGL.so.1.2
+   fun:__glXInitialize
+   obj:/usr/lib64/libGL.so.1.2
+   fun:glXChooseVisual
+   fun:_ZN22vtkXOpenGLRenderWindow20GetDesiredVisualInfoEv
+   fun:_ZN22vtkXOpenGLRenderWindow15GetDesiredDepthEv
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk11svkDataView7RefreshEv
+}
+{
+   <spectra 3>
+   Memcheck:Leak
+   fun:malloc
+   fun:XCreateRegion
+   fun:_XtEventInitialize
+   fun:XtToolkitInitialize
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk11svkDataView7RefreshEv
+   fun:_ZN3svk15svkPlotGridView7RefreshEv
+   fun:_ZN3svk11svkDataView10UpdateViewEP9vtkObjectmPvS3_
+   fun:_ZN18vtkCallbackCommand7ExecuteEP9vtkObjectmPv
+   fun:_ZN16vtkSubjectHelper11InvokeEventEmPvP9vtkObject
+}
+{
+   <spectra 4>
+   Memcheck:Leak
+   fun:malloc
+   fun:XtMalloc
+   fun:XtRegisterGrabAction
+   fun:_XtGrabInitialize
+   fun:XtCreateApplicationContext
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk11svkDataView7RefreshEv
+   fun:_ZN3svk15svkPlotGridView7RefreshEv
+   fun:_ZN3svk11svkDataView10UpdateViewEP9vtkObjectmPvS3_
+   fun:_ZN18vtkCallbackCommand7ExecuteEP9vtkObjectmPv
+}
+{
+   <spectra 5>
+   Memcheck:Leak
+   fun:malloc
+   fun:XtMalloc
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+}
+{
+   <spectra 6>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XrmInternalStringToQuark
+   fun:XrmInitialize
+   fun:XtToolkitInitialize
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk11svkDataView7RefreshEv
+   fun:_ZN3svk15svkPlotGridView7RefreshEv
+   fun:_ZN3svk11svkDataView10UpdateViewEP9vtkObjectmPvS3_
+   fun:_ZN18vtkCallbackCommand7ExecuteEP9vtkObjectmPv
+   fun:_ZN16vtkSubjectHelper11InvokeEventEmPvP9vtkObject
+}
+{
+   <spectra 7>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcInitCTInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+}
+{
+   <spectra 8>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcAddUtf8Converters
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtDisplayInitialize
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+}
+{
+   <spectra 9>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtDisplayInitialize
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+}
+{
+   <spectra 10>
+   Memcheck:Leak
+   fun:realloc
+   obj:/usr/lib64/libX11.so.6.2.0
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtDisplayInitialize
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk11svkDataView7RefreshEv
+   fun:_ZN3svk15svkPlotGridView7RefreshEv
+}
+{
+   <spectra 11>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib64/libX11.so.6.2.0
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XlcCreateLC
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtDisplayInitialize
+}
+{
+   <spectra 12>
+   Memcheck:Leak
+   fun:realloc
+   obj:/usr/lib64/libX11.so.6.2.0
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XlcCreateLC
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtDisplayInitialize
+}
+{
+   <spectra 13>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib64/libGL.so.1.2
+   fun:__glXGetClientExtensions
+   fun:_ZN25vtkOpenGLExtensionManager20ReadOpenGLExtensionsEv
+   fun:_ZN25vtkOpenGLExtensionManager6UpdateEv
+   fun:_ZN25vtkOpenGLExtensionManager18ExtensionSupportedEPKc
+   fun:_ZN21vtkOpenGLRenderWindow10OpenGLInitEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk11svkDataView7RefreshEv
+}
+{
+   <spectra 14>
+   Memcheck:Leak
+   fun:malloc
+   fun:__glXInitVertexArrayState
+   fun:glXMakeContextCurrent
+   fun:_ZN22vtkXOpenGLRenderWindow11MakeCurrentEv
+   fun:_ZN22vtkXOpenGLRenderWindow16WindowInitializeEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk11svkDataView7RefreshEv
+   fun:_ZN3svk15svkPlotGridView7RefreshEv
+   fun:_ZN3svk11svkDataView10UpdateViewEP9vtkObjectmPvS3_
+}
+{
+   <spectra 15>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XlcAddCharSet
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+}
+{
+   <spectra 16>
+   Memcheck:Leak
+   fun:malloc
+   fun:XtMalloc
+   fun:_XtDependencies
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+}
+{
+   <spectra 17>
+   Memcheck:Leak
+   fun:calloc
+   fun:__glXInitVertexArrayState
+   fun:glXMakeContextCurrent
+   fun:_ZN22vtkXOpenGLRenderWindow11MakeCurrentEv
+   fun:_ZN22vtkXOpenGLRenderWindow16WindowInitializeEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk11svkDataView7RefreshEv
+   fun:_ZN3svk15svkPlotGridView7RefreshEv
+   fun:_ZN3svk11svkDataView10UpdateViewEP9vtkObjectmPvS3_
+}
+{
+   <spectra 18>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib64/libX11.so.6.2.0
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+}
+{
+   <spectra 19>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+}
+{
+   <spectra 20>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XlcCreateDefaultCharSet
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+}
+{
+   <spectra 21>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XrmInternalStringToQuark
+   fun:XrmInitialize
+   fun:XtToolkitInitialize
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk11svkDataView7RefreshEv
+   fun:_ZN3svk15svkPlotGridView7RefreshEv
+   fun:_ZN3svk11svkDataView10UpdateViewEP9vtkObjectmPvS3_
+   fun:_ZN18vtkCallbackCommand7ExecuteEP9vtkObjectmPv
+}
+{
+   <spectra 22>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XrmInternalStringToQuark
+   fun:_XtCompileResourceList
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:XtInitializeWidgetClass
+}
+{
+   <spectra 23>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XrmInternalStringToQuark
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:XtInitializeWidgetClass
+   fun:XtInitializeWidgetClass
+   fun:XtInitializeWidgetClass
+   fun:XtInitializeWidgetClass
+   fun:XtInitializeWidgetClass
+   fun:XtInitializeWidgetClass
+   fun:XtInitializeWidgetClass
+   fun:XtInitializeWidgetClass
+   fun:XtInitializeWidgetClass
+}
+{
+   <spectra 24>
+   Memcheck:Leak
+   fun:malloc
+   fun:__glXNewIndirectAPI
+   fun:glXMakeContextCurrent
+   fun:_ZN22vtkXOpenGLRenderWindow11MakeCurrentEv
+   fun:_ZN22vtkXOpenGLRenderWindow16WindowInitializeEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk11svkDataView7RefreshEv
+   fun:_ZN3svk15svkPlotGridView7RefreshEv
+   fun:_ZN3svk11svkDataView10UpdateViewEP9vtkObjectmPvS3_
+}
+{
+   <image 1>
+   Memcheck:Leak
+   fun:malloc
+   fun:XextCreateExtension
+   obj:/usr/lib64/libGL.so.1.2
+   fun:__glXInitialize
+   obj:/usr/lib64/libGL.so.1.2
+   fun:glXChooseVisual
+   fun:_ZN22vtkXOpenGLRenderWindow20GetDesiredVisualInfoEv
+   fun:_ZN22vtkXOpenGLRenderWindow15GetDesiredDepthEv
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk15svkImageViewer26RenderEv
+}
+{
+   <image 2>
+   Memcheck:Leak
+   fun:malloc
+   fun:XCreateRegion
+   fun:_XtEventInitialize
+   fun:XtToolkitInitialize
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk15svkImageViewer26RenderEv
+   fun:_ZN3svk15svkImageViewer211ResetCameraEv
+   fun:_ZN3svk14svkOverlayView11AlignCameraEv
+   fun:_ZN3svk14svkOverlayView12SetupMrInputEb
+   fun:_ZN3svk14svkOverlayView8SetInputEPNS_12svkImageDataEi
+}
+{
+   <image 3>
+   Memcheck:Leak
+   fun:malloc
+   fun:XtMalloc
+   fun:XtRegisterGrabAction
+   fun:_XtGrabInitialize
+   fun:XtCreateApplicationContext
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk15svkImageViewer26RenderEv
+   fun:_ZN3svk15svkImageViewer211ResetCameraEv
+   fun:_ZN3svk14svkOverlayView11AlignCameraEv
+   fun:_ZN3svk14svkOverlayView12SetupMrInputEb
+}
+{
+   <image 4>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XrmInternalStringToQuark
+   fun:XrmInitialize
+   fun:XtToolkitInitialize
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk15svkImageViewer26RenderEv
+   fun:_ZN3svk15svkImageViewer211ResetCameraEv
+   fun:_ZN3svk14svkOverlayView11AlignCameraEv
+   fun:_ZN3svk14svkOverlayView12SetupMrInputEb
+   fun:_ZN3svk14svkOverlayView8SetInputEPNS_12svkImageDataEi
+}
+{
+   <image 5>
+   Memcheck:Leak
+   fun:realloc
+   obj:/usr/lib64/libX11.so.6.2.0
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtDisplayInitialize
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk15svkImageViewer26RenderEv
+   fun:_ZN3svk15svkImageViewer211ResetCameraEv
+}
+{
+   <image 6>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib64/libGL.so.1.2
+   fun:__glXGetClientExtensions
+   fun:_ZN25vtkOpenGLExtensionManager20ReadOpenGLExtensionsEv
+   fun:_ZN25vtkOpenGLExtensionManager6UpdateEv
+   fun:_ZN25vtkOpenGLExtensionManager18ExtensionSupportedEPKc
+   fun:_ZN21vtkOpenGLRenderWindow10OpenGLInitEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk15svkImageViewer26RenderEv
+}
+{
+   <image 7>
+   Memcheck:Leak
+   fun:malloc
+   fun:__glXInitVertexArrayState
+   fun:glXMakeContextCurrent
+   fun:_ZN22vtkXOpenGLRenderWindow11MakeCurrentEv
+   fun:_ZN22vtkXOpenGLRenderWindow16WindowInitializeEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk15svkImageViewer26RenderEv
+   fun:_ZN3svk15svkImageViewer211ResetCameraEv
+   fun:_ZN3svk14svkOverlayView11AlignCameraEv
+}
+{
+   <image 8>
+   Memcheck:Leak
+   fun:calloc
+   fun:__glXInitVertexArrayState
+   fun:glXMakeContextCurrent
+   fun:_ZN22vtkXOpenGLRenderWindow11MakeCurrentEv
+   fun:_ZN22vtkXOpenGLRenderWindow16WindowInitializeEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk15svkImageViewer26RenderEv
+   fun:_ZN3svk15svkImageViewer211ResetCameraEv
+   fun:_ZN3svk14svkOverlayView11AlignCameraEv
+}
+{
+   <image 9>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XrmInternalStringToQuark
+   fun:XrmInitialize
+   fun:XtToolkitInitialize
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk15svkImageViewer26RenderEv
+   fun:_ZN3svk15svkImageViewer211ResetCameraEv
+   fun:_ZN3svk14svkOverlayView11AlignCameraEv
+   fun:_ZN3svk14svkOverlayView12SetupMrInputEb
+}
+{
+   <image 10>
+   Memcheck:Leak
+   fun:malloc
+   fun:__glXNewIndirectAPI
+   fun:glXMakeContextCurrent
+   fun:_ZN22vtkXOpenGLRenderWindow11MakeCurrentEv
+   fun:_ZN22vtkXOpenGLRenderWindow16WindowInitializeEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:_ZN3svk15svkImageViewer26RenderEv
+   fun:_ZN3svk15svkImageViewer211ResetCameraEv
+   fun:_ZN3svk14svkOverlayView11AlignCameraEv
+}
+{
+   <image 11>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XSend
+   fun:__glXSendLargeChunk
+   fun:__glXSendLargeImage
+   obj:/usr/lib64/libGL.so.1.2
+   obj:/usr/lib64/libGL.so.1.2
+   fun:_ZN3svk27svkOpenGLOrientedImageActor4LoadEP11vtkRenderer
+   fun:_ZN3svk27svkOpenGLOrientedImageActor14InternalRenderEP11vtkRenderer
+   fun:_ZN3svk27svkOpenGLOrientedImageActor6RenderEP11vtkRenderer
+   fun:_ZN13vtkImageActor34RenderTranslucentPolygonalGeometryEP11vtkViewport
+   fun:_ZN11vtkRenderer34UpdateTranslucentPolygonalGeometryEv
+}
+{
+   <image 12>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XSend
+   fun:__glXFlushRenderBuffer
+   obj:/usr/lib64/libGL.so.1.2
+   fun:_ZN16vtkOpenGLTexture4LoadEP11vtkRenderer
+   fun:_ZN12vtkTextActor13RenderOverlayEP11vtkViewport
+   fun:_ZN11vtkRenderer14UpdateGeometryEv
+   fun:_ZN17vtkOpenGLRenderer12DeviceRenderEv
+   fun:_ZN11vtkRenderer6RenderEv
+   fun:_ZN21vtkRendererCollection6RenderEv
+   fun:_ZN15vtkRenderWindow14DoStereoRenderEv
+}
+{
+   <image with spectra 1>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XSend
+   fun:__glXFlushRenderBuffer
+   obj:/usr/lib64/libGL.so.1.2
+   fun:_ZN16vtkOpenGLTexture4LoadEP11vtkRenderer
+   fun:_ZN12vtkTextActor13RenderOverlayEP11vtkViewport
+   fun:_ZN11vtkRenderer14UpdateGeometryEv
+   fun:_ZN17vtkOpenGLRenderer12DeviceRenderEv
+   fun:_ZN11vtkRenderer6RenderEv
+   fun:_ZN3svk11svkDataView10TurnPropOnEi
+   fun:_ZN3svk14svkOverlayView12SetupMsInputEb
+   fun:_ZN3svk14svkOverlayView8SetInputEPNS_12svkImageDataEi
+   fun:_ZN3svk24svkOverlayViewController8SetInputEPNS_12svkImageDataEi
+   fun:_Z13RenderingTestv
+   fun:main
+}
+{
+   <vtk_1>
+   Memcheck:Leak
+   fun:malloc
+   fun:XextCreateExtension
+   obj:/usr/lib64/libGL.so.1.2
+   fun:__glXInitialize
+   obj:/usr/lib64/libGL.so.1.2
+   fun:glXChooseVisual
+   fun:_ZN22vtkXOpenGLRenderWindow20GetDesiredVisualInfoEv
+   fun:_ZN22vtkXOpenGLRenderWindow13CreateAWindowEv
+   fun:_ZN22vtkXOpenGLRenderWindow16WindowInitializeEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN15vtkRenderWindow14DoStereoRenderEv
+   fun:_ZN15vtkRenderWindow10DoFDRenderEv
+}
+{
+   <vtk_2>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib64/libGL.so.1.2
+   fun:__glXGetClientExtensions
+   fun:_ZN25vtkOpenGLExtensionManager20ReadOpenGLExtensionsEv
+   fun:_ZN25vtkOpenGLExtensionManager6UpdateEv
+   fun:_ZN25vtkOpenGLExtensionManager18ExtensionSupportedEPKc
+   fun:_ZN21vtkOpenGLRenderWindow10OpenGLInitEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN15vtkRenderWindow14DoStereoRenderEv
+   fun:_ZN15vtkRenderWindow10DoFDRenderEv
+   fun:_ZN15vtkRenderWindow10DoAARenderEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+}
+{
+   <vtk_3>
+   Memcheck:Leak
+   fun:malloc
+   fun:__glXInitVertexArrayState
+   fun:glXMakeContextCurrent
+   fun:_ZN22vtkXOpenGLRenderWindow11MakeCurrentEv
+   fun:_ZN22vtkXOpenGLRenderWindow16WindowInitializeEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN15vtkRenderWindow14DoStereoRenderEv
+   fun:_ZN15vtkRenderWindow10DoFDRenderEv
+   fun:_ZN15vtkRenderWindow10DoAARenderEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:main
+}
+{
+   <vtk_4>
+   Memcheck:Leak
+   fun:calloc
+   fun:__glXInitVertexArrayState
+   fun:glXMakeContextCurrent
+   fun:_ZN22vtkXOpenGLRenderWindow11MakeCurrentEv
+   fun:_ZN22vtkXOpenGLRenderWindow16WindowInitializeEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN15vtkRenderWindow14DoStereoRenderEv
+   fun:_ZN15vtkRenderWindow10DoFDRenderEv
+   fun:_ZN15vtkRenderWindow10DoAARenderEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:main
+}
+{
+   <vtk_5>
+   Memcheck:Leak
+   fun:calloc
+   fun:__glXInitVertexArrayState
+   fun:glXMakeContextCurrent
+   fun:_ZN22vtkXOpenGLRenderWindow11MakeCurrentEv
+   fun:_ZN22vtkXOpenGLRenderWindow16WindowInitializeEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN15vtkRenderWindow14DoStereoRenderEv
+   fun:_ZN15vtkRenderWindow10DoFDRenderEv
+   fun:_ZN15vtkRenderWindow10DoAARenderEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:main
+}
+{
+   <vtk_6>
+   Memcheck:Leak
+   fun:malloc
+   fun:__glXNewIndirectAPI
+   fun:glXMakeContextCurrent
+   fun:_ZN22vtkXOpenGLRenderWindow11MakeCurrentEv
+   fun:_ZN22vtkXOpenGLRenderWindow16WindowInitializeEv
+   fun:_ZN22vtkXOpenGLRenderWindow5StartEv
+   fun:_ZN15vtkRenderWindow14DoStereoRenderEv
+   fun:_ZN15vtkRenderWindow10DoFDRenderEv
+   fun:_ZN15vtkRenderWindow10DoAARenderEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+   fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
+   fun:main
+}
+{
+   <glibc_1>
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   obj:/usr/lib64/libGL.so.256.53
+}
+{
+   <libgl_1>
+   Memcheck:Cond
+   obj:/usr/lib64/libGL.so.256.53
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <libgl_2>
+   Memcheck:Cond
+   obj:/usr/lib64/libGL.so.256.53
+   obj:*
+}
+{
+   <libgl_3>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XSend
+   obj:/usr/lib64/libGL.so.256.53
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <libgl_4>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XSend
+   obj:/usr/lib64/libGL.so.256.53
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib64/libGL.so.256.53
+}
+{
+   <nvidia_1>
+   Memcheck:Cond
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+   obj:*
+   obj:*
+}
+{
+   <nvidia_2>
+   Memcheck:Cond
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+}
+{
+   <nvidia_3>
+   Memcheck:Cond
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+
+{
+   <nvidia_4>
+   Memcheck:Value8
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+
+{
+   <nvidia_5>
+   Memcheck:Cond
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+}
+
+{
+   <nvidia_6>
+   Memcheck:Cond
+   obj:/usr/lib64/libnvidia-glcore.so.290.10
+
+}
+{
+   <nvidia_7>
+   Memcheck:Value8
+   obj:/usr/lib64/libnvidia-glcore.so.290.10
+}
+
+{
+   <x11_leak>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XlcCreateLC
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtOpenDisplay
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+}
+
+{
+   <gl_leak>
+   Memcheck:Leak
+   fun:malloc
+   fun:XextCreateExtension
+   obj:/usr/lib64/libGL.so.280.13
+}
+
+{
+   <render_window_leak>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtOpenDisplay
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+}
+
+{
+   <render_window_leak_2>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcAddUtf8Converters
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtOpenDisplay
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+}

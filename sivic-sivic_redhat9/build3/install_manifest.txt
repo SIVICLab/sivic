@@ -1,0 +1,2 @@
+/home/erdiaz/Desktop/sivic-sivic_redhat9/sivic_build/local/sivic/README
+/home/erdiaz/Desktop/sivic-sivic_redhat9/sivic_build/local/sivic/LICENSE

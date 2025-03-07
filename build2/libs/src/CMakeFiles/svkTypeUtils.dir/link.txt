@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../Linux_x86_64/libsvkTypeUtils.a CMakeFiles/svkTypeUtils.dir/svkTypeUtils.o
-/usr/bin/ranlib ../Linux_x86_64/libsvkTypeUtils.a

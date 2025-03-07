@@ -27,13 +27,11 @@
 #
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 PROJECT( sivic )
 
 add_definitions(-D__STDC_FORMAT_MACROS)
-
+add_definitions(-DVTK_LEGACY_REMOVE)
 add_definitions(-Dvtkstd=std)
 
 # Detect the compiler and set the C++ standard flags accordingly
@@ -125,22 +123,28 @@ ENDIF(WIN32)
 ###################################
 #   VTK
 ###################################
-# 1) Point to the correct VTK cmake config directory
-set(VTK_DIR "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3")
+set(VTK_INCLUDE_DIRS "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3")
 
-# 2) Find VTK
-find_package(VTK 9.3 REQUIRED NO_DEFAULT_PATH)
+FIND_PACKAGE(VTK 9.3 REQUIRED COMPONENTS
+    CommonCore
+    CommonDataModel
+    CommonSystem
+    IOImage
+    ImagingCore
+    ImagingFourier
+    ImagingGeneral
+    FiltersCore
+    FiltersGeneral
+    FiltersSources
+    # Add other required modules as needed
+)
 
-message(STATUS "VTK_VERSION: ${VTK_VERSION}")
-message(STATUS "VTK_DIR: ${VTK_DIR}")
+include_directories(
+    /mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3
+)
 
-
-
-
-# If building legacy-free code, keep the define:
-
-
-
+# Remove deprecated include
+#INCLUDE(${VTK_USE_FILE})
 
 
 ###################################
