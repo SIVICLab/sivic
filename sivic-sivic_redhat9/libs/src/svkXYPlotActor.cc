@@ -132,10 +132,10 @@ svkXYPlotActor::svkXYPlotActor()
 
   this->Title = NULL;
   this->XTitle = new char[7];
-  sprintf( this->XTitle,<%s<,<X Axis<);
+  sprintf( this->XTitle,"%s","X Axis");
 
   this->YTitleActor = vtkTextActor::New();
-  this->YTitleActor->SetInput( <Y Axis< );
+  this->YTitleActor->SetInput( "Y Axis" );
   this->YTitleActor->GetPositionCoordinate()->SetCoordinateSystemToViewport();
   this->YTitleActor->GetPosition2Coordinate()->SetCoordinateSystemToViewport();
 
@@ -166,10 +166,10 @@ svkXYPlotActor::svkXYPlotActor()
   this->AxisTitleTextProperty->SetFontFamilyToArial();
 
   this->XLabelFormat = new char[8];
-  sprintf( this->XLabelFormat,<%s<,<%-#6.3g<);
+  sprintf( this->XLabelFormat,"%s","%-#6.3g");
 
   this->YLabelFormat = new char[8];
-  sprintf( this->YLabelFormat,<%s<,<%-#6.3g<);
+  sprintf( this->YLabelFormat,"%s","%-#6.3g");
 
   this->Logx = 0;
 
@@ -506,7 +506,7 @@ void svkXYPlotActor::AddDataSetInputConnection( vtkAlgorithmOutput *in,
   // I have to store the list of string array names.
 
   idx = this->IsInputPresent( in, arrayName, component );
-  // idx starts at 1 and goes to <NumberOfItems<.
+  // idx starts at 1 and goes to "NumberOfItems".
   if ( idx != 0 )
     {
     return;
@@ -700,7 +700,7 @@ int svkXYPlotActor::RenderOverlay( vtkViewport *viewport )
   if ( this->InputConnectionHolder->GetNumberOfInputConnections( 0 ) < 1 &&
        this->DataObjectInputConnectionHolder->GetNumberOfInputConnections( 0 ) < 1 )
     {
-    vtkErrorMacro(<< <Nothing to plot!<);
+    vtkErrorMacro(<< "Nothing to plot!");
     return 0;
     }
 
@@ -754,7 +754,7 @@ int svkXYPlotActor::RenderOpaqueGeometry( vtkViewport* viewport )
   numDO = this->DataObjectInputConnectionHolder->GetNumberOfInputConnections( 0 );
   if ( numDS > 0 )
     {
-    vtkDebugMacro(<<<Plotting input data sets<);
+    vtkDebugMacro(<<"Plotting input data sets");
     mtime = 0;
     for ( int i = 0; i < numDS; i++)
       {
@@ -773,7 +773,7 @@ int svkXYPlotActor::RenderOpaqueGeometry( vtkViewport* viewport )
     }
   else if ( numDO > 0 )
     {
-    vtkDebugMacro(<<<Plotting input data objects<);
+    vtkDebugMacro(<<"Plotting input data objects");
     mtime = 0;
     for ( int i=0 ; i<numDO; i++)
       {
@@ -792,13 +792,13 @@ int svkXYPlotActor::RenderOpaqueGeometry( vtkViewport* viewport )
     }
   else
     {
-    vtkErrorMacro(<< <Nothing to plot!<);
+    vtkErrorMacro(<< "Nothing to plot!");
     return 0;
     }
 
   if ( this->Title && this->Title[0] && !this->TitleTextProperty )
     {
-    vtkErrorMacro(<< <Need a title text property to render plot title<);
+    vtkErrorMacro(<< "Need a title text property to render plot title");
     return 0;
     }
 
@@ -821,12 +821,12 @@ int svkXYPlotActor::RenderOpaqueGeometry( vtkViewport* viewport )
     int stringSize[2];
     int num = ( numDS > 0 ? numDS : numDO );
 
-    vtkDebugMacro(<<<Rebuilding plot<);
+    vtkDebugMacro(<<"Rebuilding plot");
     this->CachedSize[0] = size[0];
     this->CachedSize[1] = size[1];
 
     // manage legend
-    vtkDebugMacro(<<<Rebuilding legend<);
+    vtkDebugMacro(<<"Rebuilding legend");
     if ( this->Legend )
       {
       int legPos[2], legPos2[2];
@@ -851,7 +851,7 @@ int svkXYPlotActor::RenderOpaqueGeometry( vtkViewport* viewport )
         if ( ! this->LegendActor->GetEntryString( i ) )
           {
           static char legendString[12];
-          sprintf( legendString, <%s%d<, <Curve <, i );
+          sprintf( legendString, "%s%d", "Curve ", i );
           this->LegendActor->SetEntryString( i,legendString );
           }
         }
@@ -903,7 +903,7 @@ int svkXYPlotActor::RenderOpaqueGeometry( vtkViewport* viewport )
       }
 
     // setup x-axis
-    vtkDebugMacro(<<<Rebuilding x-axis<);
+    vtkDebugMacro(<<"Rebuilding x-axis");
 
     this->XAxis->SetTitle( this->XTitle );
     this->XAxis->SetNumberOfLabels( this->NumberOfXLabels );
@@ -963,7 +963,7 @@ int svkXYPlotActor::RenderOpaqueGeometry( vtkViewport* viewport )
       }
 
     // setup y-axis
-    vtkDebugMacro(<<<Rebuilding y-axis<);
+    vtkDebugMacro(<<"Rebuilding y-axis");
     this->YAxis->SetNumberOfLabels( this->NumberOfYLabels );
 
     if ( this->YRange[0] >= this->YRange[1] )
@@ -1021,7 +1021,7 @@ int svkXYPlotActor::RenderOpaqueGeometry( vtkViewport* viewport )
 
     // Update y axis title position
     // NB: Must be done after call to PlaceAxes() which calculates YTitleSize and YAxisTitleSize
-    if( strcmp( this->YTitleActor->GetInput(), < ) )
+    if( strcmp( this->YTitleActor->GetInput(), "" ) )
       {
       this->YTitleActor->GetTextProperty()->SetFontSize( this->YAxisTitleSize );
 
@@ -1220,7 +1220,7 @@ int svkXYPlotActor::RenderOpaqueGeometry( vtkViewport* viewport )
       // copy the color/linewidth/opacity...
       this->ReferenceLinesActor->SetProperty( this->GetProperty() );
       }
-    vtkDebugMacro(<<<Creating Plot Data<);
+    vtkDebugMacro(<<"Creating Plot Data");
     // Okay, now create the plot data and set up the pipeline
     this->CreatePlotData( pos, pos2, xRange, yRange, lengths, numDS, numDO );
     delete [] lengths;
@@ -1229,7 +1229,7 @@ int svkXYPlotActor::RenderOpaqueGeometry( vtkViewport* viewport )
 
     }//if need to rebuild the plot
 
-  vtkDebugMacro(<<<Rendering Box<);
+  vtkDebugMacro(<<"Rendering Box");
   if ( this->ChartBox )
     {
     renderedSomething += this->ChartBoxActor->RenderOpaqueGeometry( viewport );
@@ -1242,27 +1242,27 @@ int svkXYPlotActor::RenderOpaqueGeometry( vtkViewport* viewport )
     {
     renderedSomething += this->ReferenceLinesActor->RenderOpaqueGeometry( viewport );
     }
-  vtkDebugMacro(<<<Rendering Axes<);
+  vtkDebugMacro(<<"Rendering Axes");
   renderedSomething += this->XAxis->RenderOpaqueGeometry( viewport );
   renderedSomething += this->YAxis->RenderOpaqueGeometry( viewport );
   if( this->YTitleActor )
     {
-    vtkDebugMacro(<<<Rendering ytitleactor<);
+    vtkDebugMacro(<<"Rendering ytitleactor");
     renderedSomething += this->YTitleActor->RenderOpaqueGeometry( viewport );
     }
   for ( int i = 0; i < this->NumberOfInputs; ++ i )
     {
-    vtkDebugMacro(<<<Rendering plotactors<);
+    vtkDebugMacro(<<"Rendering plotactors");
     renderedSomething += this->PlotActor[i]->RenderOpaqueGeometry( viewport );
     }
   if ( this->Title )
     {
-    vtkDebugMacro(<<<Rendering titleactors<);
+    vtkDebugMacro(<<"Rendering titleactors");
     renderedSomething += this->TitleActor->RenderOpaqueGeometry( viewport );
     }
   if ( this->Legend )
     {
-    vtkDebugMacro(<<<Rendering legendeactors<);
+    vtkDebugMacro(<<"Rendering legendeactors");
     renderedSomething += this->LegendActor->RenderOpaqueGeometry( viewport );
     }
 
@@ -1283,13 +1283,13 @@ const char *svkXYPlotActor::GetXValuesAsString()
   switch ( this->XValues )
     {
     case VTK_XYPLOT_INDEX:
-      return <Index<;
+      return "Index";
     case VTK_XYPLOT_ARC_LENGTH:
-      return <ArcLength<;
+      return "ArcLength";
     case VTK_XYPLOT_NORMALIZED_ARC_LENGTH:
-      return <NormalizedArcLength<;
+      return "NormalizedArcLength";
     default:
-      return <Value<;
+      return "Value";
     }
 }
 
@@ -1298,11 +1298,11 @@ const char *svkXYPlotActor::GetDataObjectPlotModeAsString()
 {
   if ( this->DataObjectPlotMode == VTK_XYPLOT_ROW )
     {
-    return <Plot Rows<;
+    return "Plot Rows";
     }
   else
     {
-    return <Plot Columns<;
+    return "Plot Columns";
     }
 }
 
@@ -1368,7 +1368,7 @@ void svkXYPlotActor::PrintSelf( ostream& os, vtkIndent indent )
   this->Superclass::PrintSelf( os,indent );
 
   num = this->InputConnectionHolder->GetNumberOfInputConnections( 0 );
-  os << indent << <DataSetInputs: < << endl;
+  os << indent << "DataSetInputs: " << endl;
   for ( idx = 0; idx < num; ++idx )
     {
     input = this->InputConnectionHolder->GetInputConnection( 0, idx );
@@ -1376,15 +1376,15 @@ void svkXYPlotActor::PrintSelf( ostream& os, vtkIndent indent )
     component = this->SelectedInputScalarsComponent->GetValue( ( vtkIdType )idx );
     if ( array == NULL )
       {
-      os << i2 << <(< << input << <) Default Scalars,  Component = < << component << endl;
+      os << i2 << "(" << input << ") Default Scalars,  Component = " << component << endl;
       }
     else
       {
-      os << i2 << <(< << input << <) < << array << <,  Component = < << component << endl;
+      os << i2 << "(" << input << ") " << array << ",  Component = " << component << endl;
       }
     }
 
-  os << indent << <Input DataObjects:\n<;
+  os << indent << "Input DataObjects:\n";
   num = this->DataObjectInputConnectionHolder->GetNumberOfInputConnections( 0 );
   for ( idx = 0; idx < num; ++idx )
     {
@@ -1394,121 +1394,121 @@ void svkXYPlotActor::PrintSelf( ostream& os, vtkIndent indent )
 
   if ( this->TitleTextProperty )
     {
-    os << indent << <Title Text Property:\n<;
+    os << indent << "Title Text Property:\n";
     this->TitleTextProperty->PrintSelf( os,indent.GetNextIndent() );
     }
   else
     {
-    os << indent << <Title Text Property: ( none )\n<;
+    os << indent << "Title Text Property: ( none )\n";
     }
 
   if ( this->AxisTitleTextProperty )
     {
-    os << indent << <Axis Title Text Property:\n<;
+    os << indent << "Axis Title Text Property:\n";
     this->AxisTitleTextProperty->PrintSelf( os,indent.GetNextIndent() );
     }
   else
     {
-    os << indent << <Axis Title Text Property: ( none )\n<;
+    os << indent << "Axis Title Text Property: ( none )\n";
     }
 
   if ( this->AxisLabelTextProperty )
     {
-    os << indent << <Axis Label Text Property:\n<;
+    os << indent << "Axis Label Text Property:\n";
     this->AxisLabelTextProperty->PrintSelf( os,indent.GetNextIndent() );
     }
   else
     {
-    os << indent << <Axis Label Text Property: ( none )\n<;
+    os << indent << "Axis Label Text Property: ( none )\n";
     }
 
-  os << indent << <Data Object Plot Mode: < << this->GetDataObjectPlotModeAsString() << endl;
+  os << indent << "Data Object Plot Mode: " << this->GetDataObjectPlotModeAsString() << endl;
 
-  os << indent << <Title: < << ( this->Title ? this->Title : <( none )<) << <\n<;
-  os << indent << <X Title: <
-     << ( this->XTitle ? this->XTitle : <( none )<) << <\n<;
+  os << indent << "Title: " << ( this->Title ? this->Title : "( none )") << "\n";
+  os << indent << "X Title: "
+     << ( this->XTitle ? this->XTitle : "( none )") << "\n";
 
-  os << indent << <X Values: < << this->GetXValuesAsString() << endl;
-  os << indent << <Log X Values: < << ( this->Logx ? <On\n< : <Off\n<);
+  os << indent << "X Values: " << this->GetXValuesAsString() << endl;
+  os << indent << "Log X Values: " << ( this->Logx ? "On\n" : "Off\n");
 
-  os << indent << <Plot global-points: < << ( this->PlotPoints ? <On\n< : <Off\n<);
-  os << indent << <Plot global-lines: < << ( this->PlotLines ? <On\n< : <Off\n<);
-  os << indent << <Plot per-curve points: < << ( this->PlotCurvePoints ? <On\n< : <Off\n<);
-  os << indent << <Plot per-curve lines: < << ( this->PlotCurveLines ? <On\n< : <Off\n<);
-  os << indent << <Exchange Axes: < << ( this->ExchangeAxes ? <On\n< : <Off\n<);
-  os << indent << <Reverse X Axis: < << ( this->ReverseXAxis ? <On\n< : <Off\n<);
-  os << indent << <Reverse Y Axis: < << ( this->ReverseYAxis ? <On\n< : <Off\n<);
+  os << indent << "Plot global-points: " << ( this->PlotPoints ? "On\n" : "Off\n");
+  os << indent << "Plot global-lines: " << ( this->PlotLines ? "On\n" : "Off\n");
+  os << indent << "Plot per-curve points: " << ( this->PlotCurvePoints ? "On\n" : "Off\n");
+  os << indent << "Plot per-curve lines: " << ( this->PlotCurveLines ? "On\n" : "Off\n");
+  os << indent << "Exchange Axes: " << ( this->ExchangeAxes ? "On\n" : "Off\n");
+  os << indent << "Reverse X Axis: " << ( this->ReverseXAxis ? "On\n" : "Off\n");
+  os << indent << "Reverse Y Axis: " << ( this->ReverseYAxis ? "On\n" : "Off\n");
 
-  os << indent << <Number Of X Labels: < << this->NumberOfXLabels << <\n<;
-  os << indent << <Number Of Y Labels: < << this->NumberOfYLabels << <\n<;
+  os << indent << "Number Of X Labels: " << this->NumberOfXLabels << "\n";
+  os << indent << "Number Of Y Labels: " << this->NumberOfYLabels << "\n";
 
-  os << indent << <X Label Format: < << this->XLabelFormat << <\n<;
-  os << indent << <Y Label Format: < << this->YLabelFormat << <\n<;
-  os << indent << <Border: < << this->Border << <\n<;
+  os << indent << "X Label Format: " << this->XLabelFormat << "\n";
+  os << indent << "Y Label Format: " << this->YLabelFormat << "\n";
+  os << indent << "Border: " << this->Border << "\n";
 
-  os << indent << <X Range: <;
+  os << indent << "X Range: ";
   if ( this->XRange[0] >= this->XRange[1] )
     {
-    os << indent << <( Automatically Computed )\n<;
+    os << indent << "( Automatically Computed )\n";
     }
   else
     {
-    os << <(< << this->XRange[0] << <, < << this->XRange[1] << <)\n<;
+    os << "(" << this->XRange[0] << ", " << this->XRange[1] << ")\n";
     }
 
-  os << indent << <Y Range: <;
+  os << indent << "Y Range: ";
   if ( this->XRange[0] >= this->YRange[1] )
     {
-    os << indent << <( Automatically Computed )\n<;
+    os << indent << "( Automatically Computed )\n";
     }
   else
     {
-    os << <(< << this->YRange[0] << <, < << this->YRange[1] << <)\n<;
+    os << "(" << this->YRange[0] << ", " << this->YRange[1] << ")\n";
     }
 
-  os << indent << <Viewport Coordinate: (<
-     << this->ViewportCoordinate[0] << <, <
-     << this->ViewportCoordinate[1] << <)\n<;
+  os << indent << "Viewport Coordinate: ("
+     << this->ViewportCoordinate[0] << ", "
+     << this->ViewportCoordinate[1] << ")\n";
 
-  os << indent << <Plot Coordinate: (<
-     << this->PlotCoordinate[0] << <, <
-     << this->PlotCoordinate[1] << <)\n<;
+  os << indent << "Plot Coordinate: ("
+     << this->PlotCoordinate[0] << ", "
+     << this->PlotCoordinate[1] << ")\n";
 
-  os << indent << <Legend: < << ( this->Legend ? <On\n< : <Off\n<);
-  os << indent << <Legend Position: (<
-     << this->LegendPosition[0] << <, <
-     << this->LegendPosition[1] << <)\n<;
-  os << indent << <Legend Position2: (<
-     << this->LegendPosition2[0] << <, <
-     << this->LegendPosition2[1] << <)\n<;
+  os << indent << "Legend: " << ( this->Legend ? "On\n" : "Off\n");
+  os << indent << "Legend Position: ("
+     << this->LegendPosition[0] << ", "
+     << this->LegendPosition[1] << ")\n";
+  os << indent << "Legend Position2: ("
+     << this->LegendPosition2[0] << ", "
+     << this->LegendPosition2[1] << ")\n";
 
-  os << indent << <Glyph Size: < << this->GlyphSize << endl;
+  os << indent << "Glyph Size: " << this->GlyphSize << endl;
 
-  os << indent << <Legend Actor:<;
+  os << indent << "Legend Actor:";
   this->LegendActor->PrintSelf( os << endl, i2 );
-  os << indent << <Glyph Source:<;
+  os << indent << "Glyph Source:";
   this->GlyphSource->PrintSelf( os << endl, i2 );
 
-  os << indent << <AdjustXLabels: <
+  os << indent << "AdjustXLabels: "
      << this->AdjustXLabels << endl;
-  os << indent << <AdjustYLabels: <
+  os << indent << "AdjustYLabels: "
      << this->AdjustYLabels << endl;
-  os << indent << <AdjustTitlePosition: <
+  os << indent << "AdjustTitlePosition: "
      << this->AdjustTitlePosition << endl;
-  os << indent << <TitlePosition: <
-     << this->TitlePosition[0] << < <
-     << this->TitlePosition[1] << < <
+  os << indent << "TitlePosition: "
+     << this->TitlePosition[0] << " "
+     << this->TitlePosition[1] << " "
      << endl;
-  os << indent << <AdjustTitlePositionMode: <
+  os << indent << "AdjustTitlePositionMode: "
      << this->AdjustTitlePositionMode << endl;
-  os << indent << <ChartBox: < << ( this->ChartBox ? <On\n< : <Off\n<);
-  os << indent << <ChartBorder: < << ( this->ChartBorder ? <On\n< : <Off\n<);
-  os << indent << <ShowReferenceXLine: <
-     << ( this->ShowReferenceXLine ? <On\n< : <Off\n<);
-  os << indent << <ReferenceXValue: < << this->ReferenceXValue << endl;
-  os << indent << <ShowReferenceYLine: <
-     << ( this->ShowReferenceYLine ? <On\n< : <Off\n<);
-  os << indent << <ReferenceYValue: < << this->ReferenceYValue << endl;
+  os << indent << "ChartBox: " << ( this->ChartBox ? "On\n" : "Off\n");
+  os << indent << "ChartBorder: " << ( this->ChartBorder ? "On\n" : "Off\n");
+  os << indent << "ShowReferenceXLine: "
+     << ( this->ShowReferenceXLine ? "On\n" : "Off\n");
+  os << indent << "ReferenceXValue: " << this->ReferenceXValue << endl;
+  os << indent << "ShowReferenceYLine: "
+     << ( this->ShowReferenceYLine ? "On\n" : "Off\n");
+  os << indent << "ReferenceYValue: " << this->ReferenceYValue << endl;
 }
 
 //----------------------------------------------------------------------------
@@ -1532,7 +1532,7 @@ void svkXYPlotActor::ComputeXRange( double range[2], double *lengths )
     numPts = ds->GetNumberOfPoints();
     if ( numPts == 0 )
       {
-      vtkErrorMacro(<<<No scalar data to plot!<);
+      vtkErrorMacro(<<"No scalar data to plot!");
       continue;
       }
 
@@ -1622,7 +1622,7 @@ void svkXYPlotActor::ComputeXRange( double range[2], double *lengths )
         }
       break; //range computed in for loop above
     default:
-      vtkErrorMacro(<< <Unknown X-Value option.<);
+      vtkErrorMacro(<< "Unknown X-Value option.");
       return;
     }
 }
@@ -1649,12 +1649,12 @@ void svkXYPlotActor::ComputeYRange( double range[2] )
     component = this->SelectedInputScalarsComponent->GetValue( count );
     if ( !scalars )
       {
-      vtkErrorMacro(<<<No scalar data to plot!<);
+      vtkErrorMacro(<<"No scalar data to plot!");
       continue;
       }
     if ( component < 0 || component >= scalars->GetNumberOfComponents() )
       {
-      vtkErrorMacro(<<<Bad component!<);
+      vtkErrorMacro(<<"Bad component!");
       continue;
       }
 
@@ -1724,7 +1724,7 @@ void svkXYPlotActor::ComputeDORange( double xrange[2], double yrange[2],
 
     lengths[doNum] = 0.;
     field = dobj->GetFieldData();
-    numColumns = field->GetNumberOfComponents();  //number of <columns<
+    numColumns = field->GetNumberOfComponents();  //number of "columns"
     // numColumns includes the components for non-numeric arrays as well.
     for ( numRows = VTK_ID_MAX, i=0; i<field->GetNumberOfArrays(); i++)
       {
@@ -1874,7 +1874,7 @@ void svkXYPlotActor::ComputeDORange( double xrange[2], double yrange[2],
         }
       break;
     default:
-      vtkErrorMacro(<< <Unknown X-Value option<);
+      vtkErrorMacro(<< "Unknown X-Value option");
       return;
     }
 }
@@ -1977,8 +1977,8 @@ void svkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
         }
       if (scalars->GetNumberOfTuples() < numPts)
         {
-        vtkErrorMacro(<Number of points: < << numPts
-                      << < exceeds number of scalar tuples: <
+        vtkErrorMacro("Number of points: " << numPts
+                      << " exceeds number of scalar tuples: "
                       << scalars->GetNumberOfTuples());
         continue;
         }
@@ -2016,7 +2016,7 @@ void svkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
             xyz[0] = x[this->XComponent->GetValue( dsNum )];
             break;
           default:
-            vtkErrorMacro(<< <Unknown X-Component option<);
+            vtkErrorMacro(<< "Unknown X-Component option");
           }
 
         if ( this->GetLogx() == 1 )
@@ -2090,7 +2090,7 @@ void svkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
 
       // determine the shape of the field
       field = dobj->GetFieldData();
-      numColumns = field->GetNumberOfComponents(); //number of <columns<
+      numColumns = field->GetNumberOfComponents(); //number of "columns"
       // numColumns also includes non-numeric array components.
       for ( numRows = VTK_ID_MAX, i=0; i<field->GetNumberOfArrays(); i++)
         {
@@ -2137,7 +2137,7 @@ void svkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
 
           if (!status1 )
             {
-            vtkWarningMacro(<< this->XComponent->GetValue( doNum ) << < is a non-numeric component.<);
+            vtkWarningMacro(<< this->XComponent->GetValue( doNum ) << " is a non-numeric component.");
             }
 
           status2 = ::svkXYPlotActorGetComponent( field,
@@ -2145,7 +2145,7 @@ void svkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
 
           if (!status2 )
             {
-            vtkWarningMacro(<< this->YComponent->GetValue( doNum ) << < is a non-numeric component.<);
+            vtkWarningMacro(<< this->YComponent->GetValue( doNum ) << " is a non-numeric component.");
             }
           }
         if (!status1 || !status2 )
@@ -2174,7 +2174,7 @@ void svkXYPlotActor::CreatePlotData( int *pos, int *pos2, double xRange[2],
             xyz[0] = x[0];
             break;
           default:
-            vtkErrorMacro(<< <Unknown X-Value option<);
+            vtkErrorMacro(<< "Unknown X-Value option");
           }
 
         if ( this->GetLogx() == 1 )
@@ -2331,7 +2331,7 @@ void svkXYPlotActor::PlaceAxes( vtkViewport *viewport, int *size,
   switch( this->YTitlePosition )
     {
     case VTK_XYPLOT_Y_AXIS_TOP:
-      SNPRINTF( tmp, len, <%s<, YTitleActor->GetInput() );
+      SNPRINTF( tmp, len, "%s", YTitleActor->GetInput() );
       textMapper->SetInput( tmp );
       break;
     case VTK_XYPLOT_Y_AXIS_HCENTER:
@@ -2339,7 +2339,7 @@ void svkXYPlotActor::PlaceAxes( vtkViewport *viewport, int *size,
       break;
     case VTK_XYPLOT_Y_AXIS_VCENTER:
       // Create a dummy title to ensure that the added YTitleActor is visible
-      textMapper->SetInput(<AABB<);
+      textMapper->SetInput("AABB");
       break;
     }
   delete [] tmp;
@@ -2615,7 +2615,8 @@ void svkXYPlotActor::ClipPlotData( int *pos, int *pos2, vtkPolyData *pd )
   vtkIdType numPts=pd->GetNumberOfPoints();
   vtkIdType npts = 0;
   vtkIdType newPts[2];
-  const vtkIdType *pts=0;
+  //vtkIdType *pts=0;
+  const vtkIdType* pts;
   vtkIdType i, id;
   int j;
   double x1[3], x2[3], px[3], n[3], xint[3], t;
@@ -2963,7 +2964,7 @@ void svkXYPlotActor::PrintAsCSV( ostream &os )
     ds = vtkDataSet::SafeDownCast( alg->GetOutputDataObject( portIndex ) );
     vtkIdType numPts = ds->GetNumberOfPoints();
     scalars = ds->GetPointData()->GetScalars( this->SelectedInputScalars[dsNum] );
-    os << this->SelectedInputScalars[dsNum] << <,<;
+    os << this->SelectedInputScalars[dsNum] << ",";
 
     component = this->SelectedInputScalarsComponent->GetValue( dsNum );
     for ( vtkIdType ptId=0; ptId < numPts; ptId++ )
@@ -2975,14 +2976,14 @@ void svkXYPlotActor::PrintAsCSV( ostream &os )
         }
       else
         {
-        os << <,< << s;
+        os << "," << s;
         }
       }
     os << endl;
 
     if ( dsNum == numDS-1 )
       {
-      os << <X or T,<;
+      os << "X or T,";
       for ( vtkIdType ptId=0; ptId < numPts; ptId++ )
         {
         double *x = ds->GetPoint( ptId );
@@ -2992,7 +2993,7 @@ void svkXYPlotActor::PrintAsCSV( ostream &os )
           }
         else
           {
-          os << <,< << x[0];
+          os << "," << x[0];
           }
         }
       os << endl;

@@ -120,6 +120,11 @@ IF (WIN32)
     FIND_PATH(TK_INCLUDE "TK Include Path" )
 ENDIF(WIN32)
 
+# Find OpenGL and X11 correctly:
+find_package(OpenGL REQUIRED)
+find_package(X11 REQUIRED)
+
+
 ###################################
 #   VTK
 ###################################

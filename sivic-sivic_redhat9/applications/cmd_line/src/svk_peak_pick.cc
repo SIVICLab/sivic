@@ -188,8 +188,8 @@ float tuple[2];
 
 vtkFloatArray* avSpec = noise->GetAverageMagnitudeSpectrum();
 for (int i = 0; i < numTimePoints; i++ ) { 
-    avSpec->GetTupleValue(i, tupleAv);
-    cell0->GetTupleValue(i, tuple);
+    avSpec->GetTypedTuple(i, tupleAv);
+    cell0->GetTypedTuple(i, tuple);
     tuple[0] = tupleAv[0];
     tuple[1] = tupleAv[1];
     cell0->SetTuple(i, tuple);

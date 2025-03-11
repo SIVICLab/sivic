@@ -54,26 +54,26 @@
 =========================================================================*/
 #include "svkLabeledDataMapper.h"
 
-#include "/usr/include/vtk/vtkActor2D.h"
-#include "/usr/include/vtk/vtkCompositeDataIterator.h"
-#include "/usr/include/vtk/vtkCompositeDataSet.h"
-#include "/usr/include/vtk/vtkDataArray.h"
-#include "/usr/include/vtk/vtkDataSet.h"
-#include "/usr/include/vtk/vtkExecutive.h"
-#include "/usr/include/vtk/vtkInformation.h"
-#include "/usr/include/vtk/vtkIntArray.h"
-#include "/usr/include/vtk/vtkObjectFactory.h"
-#include "/usr/include/vtk/vtkPointData.h"
-#include "/usr/include/vtk/vtkPointSet.h"
-#include "/usr/include/vtk/vtkSmartPointer.h"
-#include "/usr/include/vtk/vtkStringArray.h"
-#include "/usr/include/vtk/vtkTable.h"
-#include "/usr/include/vtk/vtkTextMapper.h"
-#include "/usr/include/vtk/vtkTextProperty.h"
-#include "/usr/include/vtk/vtkTypeTraits.h"
-#include "/usr/include/vtk/vtkType.h"
-#include "/usr/include/vtk/vtkTransform.h"
-#include "/usr/include/vtk/vtkUnicodeStringArray.h"
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkActor2D.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkCompositeDataIterator.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkCompositeDataSet.h>
+#include</mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDataArray.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDataSet.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkExecutive.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkInformation.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkIntArray.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkObjectFactory.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkPointData.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkPointSet.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkSmartPointer.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkStringArray.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkTable.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkTextMapper.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkTextProperty.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkTypeTraits.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkType.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkTransform.h>
+//#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.1.0/include/vtk-9.1/vtkUnicodeStringArray.h>
 
 #include <map>
 
@@ -405,7 +405,7 @@ void svkLabeledDataMapper::BuildLabelsInternal(vtkDataSet* input)
   vtkAbstractArray *abstractData = NULL;
   vtkDataArray *numericData = NULL;
   vtkStringArray *stringData = NULL;
-  vtkUnicodeStringArray *uStringData = NULL;
+  //vtkUnicodeStringArray *uStringData = NULL;
 
   if (input->GetNumberOfPoints() == 0)
     {
@@ -468,7 +468,7 @@ void svkLabeledDataMapper::BuildLabelsInternal(vtkDataSet* input)
       }
     numericData = vtkDataArray::SafeDownCast(abstractData);
     stringData = vtkStringArray::SafeDownCast(abstractData);
-    uStringData = vtkUnicodeStringArray::SafeDownCast(abstractData);
+   //uStringData = vtkUnicodeStringArray::SafeDownCast(abstractData);
     }; break;
     }
 
@@ -494,10 +494,10 @@ void svkLabeledDataMapper::BuildLabelsInternal(vtkDataSet* input)
       {
       numComp = stringData->GetNumberOfComponents();
       }
-    else if( uStringData )
-      {
-      numComp = uStringData->GetNumberOfComponents();
-      }
+   // else if( uStringData )
+      //{
+     // numComp = uStringData->GetNumberOfComponents();
+     // }
     else
       {
       if (this->FieldDataName)
@@ -587,11 +587,11 @@ void svkLabeledDataMapper::BuildLabelsInternal(vtkDataSet* input)
       {
       FormatString = ""; // we'll use vtkStdString::operator+ instead of sprintf
       }
-    else if (uStringData)
-      {
-      vtkWarningMacro( "Unicode string arrays are not adequately supported by the svkLabeledDataMapper.  Unicode strings will be converted to vtkStdStrings for rendering.");
-      FormatString = "unicode"; // we'll use vtkStdString::operator+ instead of sprintf
-      }
+   // else if (uStringData)
+     // {
+      //vtkWarningMacro( "Unicode string arrays are not adequately supported by the svkLabeledDataMapper.  Unicode strings will be converted to vtkStdStrings for rendering.");
+     // FormatString = "unicode"; // we'll use vtkStdString::operator+ instead of sprintf
+      //}
     else
       {
       FormatString = "BUG - COULDN'T DETECT DATA TYPE"; 
@@ -704,14 +704,14 @@ void svkLabeledDataMapper::BuildLabelsInternal(vtkDataSet* input)
         // we'll sidestep a lot of sprintf nonsense.
         if (this->LabelFormat == NULL)
           {
-          if( uStringData )
-            {
-            ResultString = uStringData->GetValue(i).utf8_str();
-            }
-          else
-            {
+          //if( uStringData )
+          //  {
+           // ResultString = uStringData->GetValue(i).utf8_str();
+          //  }
+          //else
+            //{
             ResultString = stringData->GetValue(i);
-            }
+           // }
           }
         else // the user specified a label format
           {
