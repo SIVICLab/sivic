@@ -1,5 +1,5 @@
 # SIVIC M1 BUILD Instructions
-## BUILD_LIBRARY ONLY
+## BUILDING_Build_LIBS(TESTED)
 
 ### Install X11
 1. Download [Homebrew](https://brew.sh/)
@@ -195,6 +195,11 @@ Source Code Fixes
 8. bash-4.2$ ln -s liblapack.a libclapack.a
 9. bash-4.2$ ln -s libblas.a libcblas.a
 
+Source Code Fixes
+1. In clapack-3.2.1-CMAKE/BLAS/SRC/xerbla.c
+  - Provide a prototype for printf
+  - int printf ( const char * format, ... );
+
 ### Building SIVIC
 1. Download [SIVIC](https://github.com/SIVICLab/sivic)
 2. Open up termianl
@@ -220,5 +225,3 @@ Source Code Fixes
   - OPENSSL_DIR=/usr/local/sivic/build/deps/openssl-openssl-3.0.7
 7. Make
 8. Make install
-
-
