@@ -67,6 +67,7 @@ class svkIdfVolumeReader : public svkImageReader2
         static svkIdfVolumeReader* New();
         vtkTypeMacro( svkIdfVolumeReader, svkImageReader2);
 
+        //virtual int RequestDataObject(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
 
         typedef enum {
             BYTE_DATA = 2,

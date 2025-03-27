@@ -5,7 +5,7 @@ import sys
 
 def replace_includes(path):
     for filename in os.listdir(path):
-        if filename.endswith(".h"):
+        if filename.endswith(".cc"):
          files = os.path.join(path,filename)
          with open(files, 'r') as f:
           print(files)  

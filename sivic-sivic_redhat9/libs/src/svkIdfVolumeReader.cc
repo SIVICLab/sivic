@@ -44,7 +44,8 @@
 #include <svkDcmMriVolumeReader.h>
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDebugLeaks.h>
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkByteSwap.h>
-
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkInformation.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkInformationVector.h>
 #include <sys/stat.h>
 
 
@@ -53,6 +54,27 @@ using namespace svk;
 
 //vtkCxxRevisionMacro(svkIdfVolumeReader, "$Rev$");
 vtkStandardNewMacro(svkIdfVolumeReader);
+
+
+
+// int svkIdfVolumeReader::RequestDataObject(
+//     vtkInformation* request,
+//     vtkInformationVector** inputVector,
+//     vtkInformationVector* outputVector
+// ) {
+//     vtkInformation* outInfo = outputVector->GetInformationObject(0);
+
+//     // Manually create your subclass
+//     svkMriImageData* output = svkMriImageData::New();
+
+//     outInfo->Set(vtkDataObject::DATA_OBJECT(), output);
+//     // "FastDelete" so we don't hold an extra reference
+//     output->FastDelete();
+
+//     return 1;  // success
+// }
+
+
 
 
 /*!
@@ -94,7 +116,7 @@ svkIdfVolumeReader::~svkIdfVolumeReader()
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
 
     if ( this->volumeHdr != NULL )  {
-        delete volumeHdr; 
+        delete volumeHdr;
         this->volumeHdr = NULL; 
     }
 
@@ -1094,5 +1116,15 @@ int svkIdfVolumeReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInfo
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
     return 1;
 }
+
+// int svkIdfVolumeReader::FillOutputPortInformation(int port, vtkInformation* info)
+// {
+//     // Let the superclass do any default setup:
+//     this->Superclass::FillOutputPortInformation(port, info);
+
+//     // Report that we produce something that at least inherits from vtkImageData
+//     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
+//     return 1;
+// }
 
 
