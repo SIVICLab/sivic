@@ -1,5 +1,7 @@
 # SIVIC
 
+![SIVIC_icon](https://github.com/user-attachments/assets/4bc9db19-0cc0-4b3c-8d5a-4df53c13b272)
+
 This is an early stage relese of SIVIC.  All comments/questions are welcome.  This is a community project and 
 participation is encouraged.  Please see the following links for further information. 
 
