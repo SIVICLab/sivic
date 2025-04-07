@@ -1113,7 +1113,8 @@ bool svkIdfVolumeReader::IsIdfStudyIdAccessionNumber()
  */
 int svkIdfVolumeReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), svkMriImageData::GetClassName())
+    // info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
     return 1;
 }
 

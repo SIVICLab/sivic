@@ -32,6 +32,9 @@ BUILD_EXAMPLES:BOOL=OFF
 //Build SIVIC for GE Console.
 BUILD_GE_CONSOLE:BOOL=OFF
 
+//No help, variable specified on the command line.
+BUILD_GRAPHICS_TESTING:UNINITIALIZED=OFF
+
 //For building classes that rely on ITK fitting routines.
 BUILD_ITK:BOOL=OFF
 
@@ -59,6 +62,9 @@ BUILD_TESTS:BOOL=OFF
 //Build visualization library.
 BUILD_VIZ_LIBRARY:BOOL=ON
 
+//No help, variable specified on the command line.
+CLAPACK_DIR:UNINITIALIZED=/opt/src/freeware/clapack/clapack-3.2.1-CMAKE
+
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=/usr/bin/addr2line
 
@@ -71,7 +77,7 @@ CMAKE_BACKWARDS_COMPATIBILITY:STRING=2.4
 
 //Choose the type of build, options are: None Debug Release RelWithDebInfo
 // MinSizeRel ...
-CMAKE_BUILD_TYPE:STRING=
+CMAKE_BUILD_TYPE:STRING=None
 
 //Enable/Disable color output during build.
 CMAKE_COLOR_MAKEFILE:BOOL=ON
@@ -95,6 +101,9 @@ CMAKE_CXX_FLAGS_DEBUG:STRING=-g
 
 //Flags used by the CXX compiler during MINSIZEREL builds.
 CMAKE_CXX_FLAGS_MINSIZEREL:STRING=-Os -DNDEBUG
+
+//Flags used by the CXX compiler during NONE builds.
+CMAKE_CXX_FLAGS_NONE:STRING=
 
 //Flags used by the CXX compiler during RELEASE builds.
 CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
@@ -122,6 +131,9 @@ CMAKE_C_FLAGS_DEBUG:STRING=-g
 //Flags used by the C compiler during MINSIZEREL builds.
 CMAKE_C_FLAGS_MINSIZEREL:STRING=-Os -DNDEBUG
 
+//Flags used by the C compiler during NONE builds.
+CMAKE_C_FLAGS_NONE:STRING=
+
 //Flags used by the C compiler during RELEASE builds.
 CMAKE_C_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 
@@ -139,6 +151,9 @@ CMAKE_EXE_LINKER_FLAGS_DEBUG:STRING=
 
 //Flags used by the linker during MINSIZEREL builds.
 CMAKE_EXE_LINKER_FLAGS_MINSIZEREL:STRING=
+
+//Flags used by the linker during NONE builds.
+CMAKE_EXE_LINKER_FLAGS_NONE:STRING=
 
 //Flags used by the linker during RELEASE builds.
 CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=
@@ -174,6 +189,10 @@ CMAKE_MODULE_LINKER_FLAGS_DEBUG:STRING=
 CMAKE_MODULE_LINKER_FLAGS_MINSIZEREL:STRING=
 
 //Flags used by the linker during the creation of modules during
+// NONE builds.
+CMAKE_MODULE_LINKER_FLAGS_NONE:STRING=
+
+//Flags used by the linker during the creation of modules during
 // RELEASE builds.
 CMAKE_MODULE_LINKER_FLAGS_RELEASE:STRING=
 
@@ -189,6 +208,9 @@ CMAKE_OBJCOPY:FILEPATH=/usr/bin/objcopy
 
 //Path to a program.
 CMAKE_OBJDUMP:FILEPATH=/usr/bin/objdump
+
+//No help, variable specified on the command line.
+CMAKE_PREFIX_PATH:UNINITIALIZED=/netopt/VTK/VTK-6.3.0_debug/lib/cmake/vtk-6.3/
 
 //Value Computed by CMake
 CMAKE_PROJECT_DESCRIPTION:STATIC=
@@ -218,6 +240,10 @@ CMAKE_SHARED_LINKER_FLAGS_DEBUG:STRING=
 CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL:STRING=
 
 //Flags used by the linker during the creation of shared libraries
+// during NONE builds.
+CMAKE_SHARED_LINKER_FLAGS_NONE:STRING=
+
+//Flags used by the linker during the creation of shared libraries
 // during RELEASE builds.
 CMAKE_SHARED_LINKER_FLAGS_RELEASE:STRING=
 
@@ -245,6 +271,10 @@ CMAKE_STATIC_LINKER_FLAGS_DEBUG:STRING=
 CMAKE_STATIC_LINKER_FLAGS_MINSIZEREL:STRING=
 
 //Flags used by the linker during the creation of static libraries
+// during NONE builds.
+CMAKE_STATIC_LINKER_FLAGS_NONE:STRING=
+
+//Flags used by the linker during the creation of static libraries
 // during RELEASE builds.
 CMAKE_STATIC_LINKER_FLAGS_RELEASE:STRING=
 
@@ -259,7 +289,7 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 // .SILENT directive, and all commands will be echoed to the console
 // during the make.  This is useful for debugging only. With Visual
 // Studio IDE projects all commands are done without /nologo.
-CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
+CMAKE_VERBOSE_MAKEFILE:BOOL=ON
 
 //Enable to build RPM source packages
 CPACK_SOURCE_RPM:BOOL=OFF
@@ -280,7 +310,10 @@ CPACK_SOURCE_TZ:BOOL=ON
 CPACK_SOURCE_ZIP:BOOL=OFF
 
 //Create wrapper scripts for executables.
-CREATE_WRAPPER_SCRIPTS:BOOL=OFF
+CREATE_WRAPPER_SCRIPTS:BOOL=ON
+
+//No help, variable specified on the command line.
+DCMTK_DIR:UNINITIALIZED=/mnt/nfs/rad/apps/netopt/version/dcmtk/dcmtk-3.6.7
 
 //Path to a library.
 DCMTK_dcmdata_LIBRARY:FILEPATH=/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64/libdcmdata.so
@@ -318,8 +351,20 @@ Fontconfig_INCLUDE_DIR:PATH=/usr/include
 //Path to a library.
 Fontconfig_LIBRARY:FILEPATH=/usr/lib64/libfontconfig.so
 
+//No help, variable specified on the command line.
+GETOPT_LIB:UNINITIALIZED=
+
+//No help, variable specified on the command line.
+ITK_DIR:UNINITIALIZED=/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4
+
+//No help, variable specified on the command line.
+KWWidgets_DIR:UNINITIALIZED=
+
 //Single output directory for building all libraries.
 LIBRARY_OUTPUT_PATH:PATH=
+
+//No help, variable specified on the command line.
+MAKECOMMAND:UNINITIALIZED=/usr/bin/gmake -i -j16
 
 //Path to a file.
 OPENGL_EGL_INCLUDE_DIR:PATH=/usr/include
@@ -368,10 +413,16 @@ PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
 
 //For exporting vector graphics formats, VTK must be built with
 // VTK_USE_GL2PS.
-SVK_USE_GL2PS:BOOL=OFF
+SVK_USE_GL2PS:BOOL=ON
+
+//No help, variable specified on the command line.
+SVNCOMMAND:UNINITIALIZED=/netopt/bin/svn
 
 //For UCSF Internal builds only.
-UCSF_INTERNAL:BOOL=OFF
+UCSF_INTERNAL:BOOL=ON
+
+//No help, variable specified on the command line.
+USE_OFF_SCREEN_TESTING:UNINITIALIZED=OFF
 
 //The directory containing a CMake configuration file for VTK.
 VTK_DIR:PATH=/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3
@@ -663,18 +714,20 @@ svk_applications_SOURCE_DIR:STATIC=/home/erdiaz/Desktop/sivic_next/sivic-sivic_r
 # INTERNAL cache entries
 ########################
 
-//MODIFIED property for variable: BUILD_APPS
-BUILD_APPS-MODIFIED:INTERNAL=ON
+//MODIFIED property for variable: BUILD_CLAPACK
+BUILD_CLAPACK-MODIFIED:INTERNAL=ON
+//MODIFIED property for variable: BUILD_CREATE_RAW
+BUILD_CREATE_RAW-MODIFIED:INTERNAL=ON
 //MODIFIED property for variable: BUILD_ITK
 BUILD_ITK-MODIFIED:INTERNAL=ON
 //MODIFIED property for variable: BUILD_SIVIC
 BUILD_SIVIC-MODIFIED:INTERNAL=ON
-//MODIFIED property for variable: BUILD_VIZ_LIBRARY
-BUILD_VIZ_LIBRARY-MODIFIED:INTERNAL=ON
 //ADVANCED property for variable: CMAKE_ADDR2LINE
 CMAKE_ADDR2LINE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_AR
 CMAKE_AR-ADVANCED:INTERNAL=1
+//MODIFIED property for variable: CMAKE_BUILD_TYPE
+CMAKE_BUILD_TYPE-MODIFIED:INTERNAL=ON
 //This is the directory where this CMakeCache.txt was created
 CMAKE_CACHEFILE_DIR:INTERNAL=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3
 //Major version of cmake used to create the current loaded cache
@@ -703,6 +756,8 @@ CMAKE_CXX_FLAGS-ADVANCED:INTERNAL=1
 CMAKE_CXX_FLAGS_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_CXX_FLAGS_MINSIZEREL
 CMAKE_CXX_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_CXX_FLAGS_NONE
+CMAKE_CXX_FLAGS_NONE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_CXX_FLAGS_RELEASE
 CMAKE_CXX_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_CXX_FLAGS_RELWITHDEBINFO
@@ -719,6 +774,8 @@ CMAKE_C_FLAGS-ADVANCED:INTERNAL=1
 CMAKE_C_FLAGS_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_C_FLAGS_MINSIZEREL
 CMAKE_C_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_C_FLAGS_NONE
+CMAKE_C_FLAGS_NONE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_C_FLAGS_RELEASE
 CMAKE_C_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_C_FLAGS_RELWITHDEBINFO
@@ -735,6 +792,8 @@ CMAKE_EXE_LINKER_FLAGS-ADVANCED:INTERNAL=1
 CMAKE_EXE_LINKER_FLAGS_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_EXE_LINKER_FLAGS_MINSIZEREL
 CMAKE_EXE_LINKER_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_EXE_LINKER_FLAGS_NONE
+CMAKE_EXE_LINKER_FLAGS_NONE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_EXE_LINKER_FLAGS_RELEASE
 CMAKE_EXE_LINKER_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO
@@ -780,6 +839,8 @@ CMAKE_MODULE_LINKER_FLAGS-ADVANCED:INTERNAL=1
 CMAKE_MODULE_LINKER_FLAGS_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_MODULE_LINKER_FLAGS_MINSIZEREL
 CMAKE_MODULE_LINKER_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_MODULE_LINKER_FLAGS_NONE
+CMAKE_MODULE_LINKER_FLAGS_NONE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_MODULE_LINKER_FLAGS_RELEASE
 CMAKE_MODULE_LINKER_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO
@@ -806,6 +867,8 @@ CMAKE_SHARED_LINKER_FLAGS-ADVANCED:INTERNAL=1
 CMAKE_SHARED_LINKER_FLAGS_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL
 CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_SHARED_LINKER_FLAGS_NONE
+CMAKE_SHARED_LINKER_FLAGS_NONE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_SHARED_LINKER_FLAGS_RELEASE
 CMAKE_SHARED_LINKER_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO
@@ -820,6 +883,8 @@ CMAKE_STATIC_LINKER_FLAGS-ADVANCED:INTERNAL=1
 CMAKE_STATIC_LINKER_FLAGS_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_STATIC_LINKER_FLAGS_MINSIZEREL
 CMAKE_STATIC_LINKER_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_STATIC_LINKER_FLAGS_NONE
+CMAKE_STATIC_LINKER_FLAGS_NONE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_STATIC_LINKER_FLAGS_RELEASE
 CMAKE_STATIC_LINKER_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO
@@ -842,8 +907,6 @@ CPACK_SOURCE_TXZ-ADVANCED:INTERNAL=1
 CPACK_SOURCE_TZ-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CPACK_SOURCE_ZIP
 CPACK_SOURCE_ZIP-ADVANCED:INTERNAL=1
-//MODIFIED property for variable: CREATE_WRAPPER_SCRIPTS
-CREATE_WRAPPER_SCRIPTS-MODIFIED:INTERNAL=ON
 //Details about finding OpenGL
 FIND_PACKAGE_MESSAGE_DETAILS_OpenGL:INTERNAL=[/usr/lib64/libOpenGL.so][/usr/lib64/libGLX.so][/usr/include][cfound components: OpenGL GLX ][v()]
 //Details about finding Threads
