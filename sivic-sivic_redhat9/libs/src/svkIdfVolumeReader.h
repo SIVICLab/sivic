@@ -46,6 +46,12 @@
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkInformation.h>
 #include <map>
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkStringArray.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkExecutive.h>
+//  Add once, near the other VTK includes
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDataObject.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkImageData.h>
+
+
 #include <string>
 
 #include <svkUtils.h>
@@ -68,6 +74,18 @@ class svkIdfVolumeReader : public svkImageReader2
         vtkTypeMacro( svkIdfVolumeReader, svkImageReader2);
 
         //virtual int RequestDataObject(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
+    //  svkIdfVolumeReader.h  (only the additions shown)
+
+
+        // int RequestDataObject(vtkInformation*,
+        //                   vtkInformationVector**,
+        //                   vtkInformationVector*) override;
+
+        // int FillOutputPortInformation(int port,
+        //                           vtkInformation* info) override;
+
+
+        
 
         typedef enum {
             BYTE_DATA = 2,
@@ -97,6 +115,19 @@ class svkIdfVolumeReader : public svkImageReader2
         //  Methods:
         virtual int             CanReadFile(const char* fname);
         void                    SetReadIntAsSigned(bool readIntAsSigned);
+
+    // ↓ add just before the closing class brace
+    protected:
+    /** Tell the VTK pipeline what data type we output. */
+     int FillOutputPortInformation(int port,
+                                  vtkInformation* info) override;
+
+    /** (Optional but safer) create the output object ourselves. */
+     int RequestDataObject(vtkInformation*,
+                          vtkInformationVector**,
+                          vtkInformationVector*) override;
+  
+
 
     protected:
 
@@ -166,4 +197,3 @@ class svkIdfVolumeReader : public svkImageReader2
 
 
 #endif //SVK_IDF_VOLUME_READER_H
-

@@ -1,0 +1,52 @@
+// .vscode/tasks.json
+
+{
+  "version": "2.0.0",
+  "tasks": [
+      {
+          // 1) Configure step: runs "cmake .. -DCMAKE_BUILD_TYPE=Debug"
+          "type": "shell",
+          "label": "CMake Configure",
+          "command": "cmake",
+          "args": [
+              "..",
+              "-DCMAKE_BUILD_TYPE=Debug"
+          ],
+          "options": {
+              "cwd": "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3" 
+          },
+          "problemMatcher": [
+              "$gcc"
+          ],
+          "group": {
+              "kind": "build",
+              "isDefault": false
+          }
+      },
+      {
+          // 2) Build step: runs "cmake --build . --target svk_file_convert --config Debug"
+          "type": "shell",
+          "label": "CMake Build svk_file_convert",
+          "command": "cmake",
+          "args": [
+              "--build",
+              ".",
+              "--target", "svk_file_convert",
+              "--config", "Debug",
+              "--", "-j"
+          ],
+          "options": {
+              "cwd": "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3"
+          },
+          "problemMatcher": [
+              "$gcc"
+          ],
+          "group": {
+              "kind": "build",
+              "isDefault": true  // <--- if you want it to be the default build
+          },
+          // Make sure the configure step runs first.
+          "dependsOn": "CMake Configure"
+      }
+  ]
+}

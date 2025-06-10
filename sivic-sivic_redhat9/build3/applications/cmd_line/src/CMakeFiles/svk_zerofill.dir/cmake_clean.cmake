@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/svk_zerofill"
-  "../Linux_x86_64/svk_zerofill.pdb"
-  "CMakeFiles/svk_zerofill.dir/svk_zerofill.o"
-  "CMakeFiles/svk_zerofill.dir/svk_zerofill.o.d"
+  "../Linux_x86_64_debug/svk_zerofill"
+  "../Linux_x86_64_debug/svk_zerofill.pdb"
+  "CMakeFiles/svk_zerofill.dir/svk_zerofill.cc.o"
+  "CMakeFiles/svk_zerofill.dir/svk_zerofill.cc.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

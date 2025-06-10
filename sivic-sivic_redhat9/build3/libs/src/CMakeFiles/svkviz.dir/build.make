@@ -423,37 +423,37 @@ svkviz_OBJECTS = \
 # External object files for target svkviz
 svkviz_EXTERNAL_OBJECTS =
 
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkDataView.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkDataViewController.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkPlotGridView.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkPlotGridViewController.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkOverlaySelector.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkLabeledDataMapper.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkSatBandSet.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkImageTopologyGenerator.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkMrsTopoGenerator.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkPlotLine.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkPlotLineGrid.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkSpecGridSelector.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkImageViewer2.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkImageMapToWindowLevelColors.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkImageMapToColors.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkVizUtils.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkXYPlotActor.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkXYPlotActorConnections.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkOverlayView.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkOverlayViewController.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkDetailedPlotDirector.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkOverlayContourDirector.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkImageActor.o
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/build.make
-libs/Linux_x86_64/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Linking CXX static library ../Linux_x86_64/libsvkviz.a"
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkDataView.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkDataViewController.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkPlotGridView.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkPlotGridViewController.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkOverlaySelector.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkLabeledDataMapper.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkSatBandSet.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkImageTopologyGenerator.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkMrsTopoGenerator.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkPlotLine.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkPlotLineGrid.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkSpecGridSelector.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkImageViewer2.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkImageMapToWindowLevelColors.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkImageMapToColors.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkVizUtils.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkXYPlotActor.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkXYPlotActorConnections.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkOverlayView.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkOverlayViewController.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkDetailedPlotDirector.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkOverlayContourDirector.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/svkImageActor.o
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/build.make
+libs/Linux_x86_64_debug/libsvkviz.a: libs/src/CMakeFiles/svkviz.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Linking CXX static library ../Linux_x86_64_debug/libsvkviz.a"
 	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/libs/src && $(CMAKE_COMMAND) -P CMakeFiles/svkviz.dir/cmake_clean_target.cmake
 	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/libs/src && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/svkviz.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
-libs/src/CMakeFiles/svkviz.dir/build: libs/Linux_x86_64/libsvkviz.a
+libs/src/CMakeFiles/svkviz.dir/build: libs/Linux_x86_64_debug/libsvkviz.a
 .PHONY : libs/src/CMakeFiles/svkviz.dir/build
 
 libs/src/CMakeFiles/svkviz.dir/clean:

@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/svk_peak_pick"
-  "../Linux_x86_64/svk_peak_pick.pdb"
-  "CMakeFiles/svk_peak_pick.dir/svk_peak_pick.o"
-  "CMakeFiles/svk_peak_pick.dir/svk_peak_pick.o.d"
+  "../Linux_x86_64_debug/svk_peak_pick"
+  "../Linux_x86_64_debug/svk_peak_pick.pdb"
+  "CMakeFiles/svk_peak_pick.dir/svk_peak_pick.cc.o"
+  "CMakeFiles/svk_peak_pick.dir/svk_peak_pick.cc.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

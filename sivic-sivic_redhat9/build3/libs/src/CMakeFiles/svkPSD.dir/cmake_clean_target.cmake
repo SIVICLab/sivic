@@ -1,3 +1,3 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/libsvkPSD.a"
+  "../Linux_x86_64_debug/libsvkPSD.a"
 )

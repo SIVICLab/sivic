@@ -1,3 +1,3 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/libsvkviz.a"
+  "../Linux_x86_64_debug/libsvkviz.a"
 )

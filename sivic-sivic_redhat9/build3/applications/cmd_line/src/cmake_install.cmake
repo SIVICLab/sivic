@@ -12,7 +12,7 @@ if(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
     string(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
            CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
   else()
-    set(CMAKE_INSTALL_CONFIG_NAME "None")
+    set(CMAKE_INSTALL_CONFIG_NAME "Debug")
   endif()
   message(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
 endif()
@@ -197,12 +197,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_file_convert"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_file_convert")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_file_convert")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_file_convert" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_file_convert")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_file_convert"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_file_convert")
@@ -217,12 +217,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_threshold"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_image_threshold")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_image_threshold")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_threshold" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_threshold")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_threshold"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_threshold")
@@ -237,12 +237,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_dilate_erode"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_dilate_erode")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_dilate_erode")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_dilate_erode" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_dilate_erode")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_dilate_erode"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_dilate_erode")
@@ -257,12 +257,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_interpolate_spectra"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_interpolate_spectra")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_interpolate_spectra")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_interpolate_spectra" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_interpolate_spectra")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_interpolate_spectra"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_interpolate_spectra")
@@ -277,12 +277,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_dcmdump"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_dcmdump")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_dcmdump")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_dcmdump" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_dcmdump")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_dcmdump"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_dcmdump")
@@ -297,12 +297,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_quick_view"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_quick_view")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_quick_view")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_quick_view" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_quick_view")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_quick_view"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_quick_view")
@@ -317,12 +317,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_point_selector"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_point_selector")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_point_selector")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_point_selector" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_point_selector")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_point_selector"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_point_selector")
@@ -337,12 +337,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_multi_view"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_multi_view")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_multi_view")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_multi_view" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_multi_view")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_multi_view"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_multi_view")
@@ -357,12 +357,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_gepfile_reader"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_gepfile_reader")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_gepfile_reader")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_gepfile_reader" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_gepfile_reader")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_gepfile_reader"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_gepfile_reader")
@@ -377,12 +377,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_variable_flip_scaler"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_variable_flip_scaler")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_variable_flip_scaler")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_variable_flip_scaler" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_variable_flip_scaler")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_variable_flip_scaler"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_variable_flip_scaler")
@@ -397,12 +397,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_lcmodel_writer"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_lcmodel_writer")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_lcmodel_writer")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_lcmodel_writer" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_lcmodel_writer")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_lcmodel_writer"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_lcmodel_writer")
@@ -417,12 +417,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_lcmodel_reader"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_lcmodel_reader")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_lcmodel_reader")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_lcmodel_reader" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_lcmodel_reader")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_lcmodel_reader"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_lcmodel_reader")
@@ -437,12 +437,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_gepfile_anon"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_gepfile_anon")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_gepfile_anon")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_gepfile_anon" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_gepfile_anon")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_gepfile_anon"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_gepfile_anon")
@@ -457,12 +457,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_spec_diff"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_spec_diff")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_spec_diff")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_spec_diff" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_spec_diff")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_spec_diff"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_spec_diff")
@@ -477,12 +477,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_integrate_dynamic"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_integrate_dynamic")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_integrate_dynamic")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_integrate_dynamic" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_integrate_dynamic")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_integrate_dynamic"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_integrate_dynamic")
@@ -497,12 +497,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_quantify"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_quantify")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_quantify")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_quantify" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_quantify")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_quantify"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_quantify")
@@ -517,12 +517,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_reslice"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_reslice")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_reslice")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_reslice" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_reslice")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_reslice"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_reslice")
@@ -537,12 +537,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_fft"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_fft")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_fft")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_fft" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_fft")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_fft"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_fft")
@@ -557,12 +557,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_noise"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_noise")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_noise")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_noise" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_noise")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_noise"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_noise")
@@ -577,12 +577,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_peak_pick"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_peak_pick")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_peak_pick")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_peak_pick" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_peak_pick")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_peak_pick"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_peak_pick")
@@ -597,12 +597,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_reorder_epsi"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_reorder_epsi")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_reorder_epsi")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_reorder_epsi" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_reorder_epsi")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_reorder_epsi"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_reorder_epsi")
@@ -617,12 +617,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_phase_spec"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_phase_spec")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_phase_spec")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_phase_spec" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_phase_spec")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_phase_spec"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_phase_spec")
@@ -637,12 +637,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_freq_correct"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_freq_correct")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_freq_correct")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_freq_correct" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_freq_correct")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_freq_correct"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_freq_correct")
@@ -657,12 +657,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_mathematics"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_image_mathematics")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_image_mathematics")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_mathematics" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_mathematics")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_mathematics"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_mathematics")
@@ -677,12 +677,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_zscore"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_zscore")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_zscore")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_zscore" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_zscore")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_zscore"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_zscore")
@@ -697,12 +697,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_extract_spec"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_extract_spec")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_extract_spec")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_extract_spec" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_extract_spec")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_extract_spec"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_extract_spec")
@@ -717,12 +717,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_combine_spec"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_combine_spec")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_combine_spec")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_combine_spec" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_combine_spec")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_combine_spec"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_combine_spec")
@@ -737,12 +737,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_scale_image"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_scale_image")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_scale_image")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_scale_image" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_scale_image")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_scale_image"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_scale_image")
@@ -757,12 +757,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_volume_diff"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_volume_diff")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_volume_diff")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_volume_diff" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_volume_diff")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_volume_diff"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_volume_diff")
@@ -777,12 +777,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_average_spec"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_average_spec")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_average_spec")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_average_spec" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_average_spec")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_average_spec"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_average_spec")
@@ -797,12 +797,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_mrs_combine"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_mrs_combine")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_mrs_combine")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_mrs_combine" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_mrs_combine")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_mrs_combine"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_mrs_combine")
@@ -817,12 +817,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_apodize"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_apodize")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_apodize")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_apodize" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_apodize")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_apodize"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_apodize")
@@ -837,12 +837,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_zerofill"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_zerofill")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_zerofill")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_zerofill" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_zerofill")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_zerofill"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_zerofill")
@@ -857,12 +857,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_psd_prescription_convert"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_psd_prescription_convert")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_psd_prescription_convert")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_psd_prescription_convert" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_psd_prescription_convert")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_psd_prescription_convert"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_psd_prescription_convert")
@@ -877,12 +877,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_stats"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_image_stats")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_image_stats")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_stats" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_stats")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_stats"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_stats")
@@ -897,12 +897,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_pipeline"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_image_pipeline")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_image_pipeline")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_pipeline" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_pipeline")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_pipeline"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_image_pipeline")
@@ -917,12 +917,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_transform"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64/svk_transform")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE EXECUTABLE FILES "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_transform")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_transform" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_transform")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_transform"
-         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:../Linux_x86_64:../../../libs/Linux_x86_64:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib:/mnt/nfs/rad/apps/netopt/versions/dcmtk/dcmtk-3.6.7-devel/lib64:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
+         OLD_RPATH "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3/../..:/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/local/sivic/svk_transform")

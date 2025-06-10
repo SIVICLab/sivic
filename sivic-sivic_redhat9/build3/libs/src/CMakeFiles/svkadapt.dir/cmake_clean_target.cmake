@@ -1,3 +1,3 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/libsvkadapt.a"
+  "../Linux_x86_64_debug/libsvkadapt.a"
 )

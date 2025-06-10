@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/svk_zscore"
-  "../Linux_x86_64/svk_zscore.pdb"
-  "CMakeFiles/svk_zscore.dir/svk_zscore.o"
-  "CMakeFiles/svk_zscore.dir/svk_zscore.o.d"
+  "../Linux_x86_64_debug/svk_zscore"
+  "../Linux_x86_64_debug/svk_zscore.pdb"
+  "CMakeFiles/svk_zscore.dir/svk_zscore.cc.o"
+  "CMakeFiles/svk_zscore.dir/svk_zscore.cc.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

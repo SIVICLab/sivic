@@ -1,0 +1,3 @@
+/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/Test_Image/build/CMakeFiles/ImageReslice.dir
+/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/Test_Image/build/CMakeFiles/edit_cache.dir
+/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/Test_Image/build/CMakeFiles/rebuild_cache.dir

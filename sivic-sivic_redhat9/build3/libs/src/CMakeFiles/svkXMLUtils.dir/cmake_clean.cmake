@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/libsvkXMLUtils.a"
-  "../Linux_x86_64/libsvkXMLUtils.pdb"
+  "../Linux_x86_64_debug/libsvkXMLUtils.a"
+  "../Linux_x86_64_debug/libsvkXMLUtils.pdb"
   "CMakeFiles/svkXMLUtils.dir/svkXMLUtils.o"
   "CMakeFiles/svkXMLUtils.dir/svkXMLUtils.o.d"
 )

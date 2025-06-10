@@ -199,6 +199,20 @@ svk_file_convert/fast:
 .PHONY : svk_file_convert/fast
 
 # Convenience name for target.
+applications/cmd_line/src/CMakeFiles/svk_test.dir/rule:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_test.dir/rule
+.PHONY : applications/cmd_line/src/CMakeFiles/svk_test.dir/rule
+
+# Convenience name for target.
+svk_test: applications/cmd_line/src/CMakeFiles/svk_test.dir/rule
+.PHONY : svk_test
+
+# fast build rule for target.
+svk_test/fast:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_test.dir/build.make applications/cmd_line/src/CMakeFiles/svk_test.dir/build
+.PHONY : svk_test/fast
+
+# Convenience name for target.
 applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/rule:
 	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/rule
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/rule
@@ -842,710 +856,1157 @@ svk_app_template/fast:
 	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build.make applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build
 .PHONY : svk_app_template/fast
 
-# target to build an object file
-svk_apodize.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_apodize.dir/build.make applications/cmd_line/src/CMakeFiles/svk_apodize.dir/svk_apodize.o
+svk_apodize.o: svk_apodize.cc.o
 .PHONY : svk_apodize.o
 
-# target to preprocess a source file
-svk_apodize.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_apodize.dir/build.make applications/cmd_line/src/CMakeFiles/svk_apodize.dir/svk_apodize.i
+# target to build an object file
+svk_apodize.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_apodize.dir/build.make applications/cmd_line/src/CMakeFiles/svk_apodize.dir/svk_apodize.cc.o
+.PHONY : svk_apodize.cc.o
+
+svk_apodize.i: svk_apodize.cc.i
 .PHONY : svk_apodize.i
 
-# target to generate assembly for a file
-svk_apodize.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_apodize.dir/build.make applications/cmd_line/src/CMakeFiles/svk_apodize.dir/svk_apodize.s
+# target to preprocess a source file
+svk_apodize.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_apodize.dir/build.make applications/cmd_line/src/CMakeFiles/svk_apodize.dir/svk_apodize.cc.i
+.PHONY : svk_apodize.cc.i
+
+svk_apodize.s: svk_apodize.cc.s
 .PHONY : svk_apodize.s
 
-# target to build an object file
-svk_app_template.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build.make applications/cmd_line/src/CMakeFiles/svk_app_template.dir/svk_app_template.o
+# target to generate assembly for a file
+svk_apodize.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_apodize.dir/build.make applications/cmd_line/src/CMakeFiles/svk_apodize.dir/svk_apodize.cc.s
+.PHONY : svk_apodize.cc.s
+
+svk_app_template.o: svk_app_template.cc.o
 .PHONY : svk_app_template.o
 
-# target to preprocess a source file
-svk_app_template.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build.make applications/cmd_line/src/CMakeFiles/svk_app_template.dir/svk_app_template.i
+# target to build an object file
+svk_app_template.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build.make applications/cmd_line/src/CMakeFiles/svk_app_template.dir/svk_app_template.cc.o
+.PHONY : svk_app_template.cc.o
+
+svk_app_template.i: svk_app_template.cc.i
 .PHONY : svk_app_template.i
 
-# target to generate assembly for a file
-svk_app_template.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build.make applications/cmd_line/src/CMakeFiles/svk_app_template.dir/svk_app_template.s
+# target to preprocess a source file
+svk_app_template.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build.make applications/cmd_line/src/CMakeFiles/svk_app_template.dir/svk_app_template.cc.i
+.PHONY : svk_app_template.cc.i
+
+svk_app_template.s: svk_app_template.cc.s
 .PHONY : svk_app_template.s
 
-# target to build an object file
-svk_average_spec.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/svk_average_spec.o
+# target to generate assembly for a file
+svk_app_template.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build.make applications/cmd_line/src/CMakeFiles/svk_app_template.dir/svk_app_template.cc.s
+.PHONY : svk_app_template.cc.s
+
+svk_average_spec.o: svk_average_spec.cc.o
 .PHONY : svk_average_spec.o
 
-# target to preprocess a source file
-svk_average_spec.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/svk_average_spec.i
+# target to build an object file
+svk_average_spec.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/svk_average_spec.cc.o
+.PHONY : svk_average_spec.cc.o
+
+svk_average_spec.i: svk_average_spec.cc.i
 .PHONY : svk_average_spec.i
 
-# target to generate assembly for a file
-svk_average_spec.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/svk_average_spec.s
+# target to preprocess a source file
+svk_average_spec.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/svk_average_spec.cc.i
+.PHONY : svk_average_spec.cc.i
+
+svk_average_spec.s: svk_average_spec.cc.s
 .PHONY : svk_average_spec.s
 
-# target to build an object file
-svk_channel2time.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/build.make applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/svk_channel2time.o
+# target to generate assembly for a file
+svk_average_spec.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/svk_average_spec.cc.s
+.PHONY : svk_average_spec.cc.s
+
+svk_channel2time.o: svk_channel2time.cc.o
 .PHONY : svk_channel2time.o
 
-# target to preprocess a source file
-svk_channel2time.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/build.make applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/svk_channel2time.i
+# target to build an object file
+svk_channel2time.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/build.make applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/svk_channel2time.cc.o
+.PHONY : svk_channel2time.cc.o
+
+svk_channel2time.i: svk_channel2time.cc.i
 .PHONY : svk_channel2time.i
 
-# target to generate assembly for a file
-svk_channel2time.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/build.make applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/svk_channel2time.s
+# target to preprocess a source file
+svk_channel2time.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/build.make applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/svk_channel2time.cc.i
+.PHONY : svk_channel2time.cc.i
+
+svk_channel2time.s: svk_channel2time.cc.s
 .PHONY : svk_channel2time.s
 
-# target to build an object file
-svk_combine_spec.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/svk_combine_spec.o
+# target to generate assembly for a file
+svk_channel2time.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/build.make applications/cmd_line/src/CMakeFiles/svk_channel2time.dir/svk_channel2time.cc.s
+.PHONY : svk_channel2time.cc.s
+
+svk_combine_spec.o: svk_combine_spec.cc.o
 .PHONY : svk_combine_spec.o
 
-# target to preprocess a source file
-svk_combine_spec.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/svk_combine_spec.i
+# target to build an object file
+svk_combine_spec.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/svk_combine_spec.cc.o
+.PHONY : svk_combine_spec.cc.o
+
+svk_combine_spec.i: svk_combine_spec.cc.i
 .PHONY : svk_combine_spec.i
 
-# target to generate assembly for a file
-svk_combine_spec.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/svk_combine_spec.s
+# target to preprocess a source file
+svk_combine_spec.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/svk_combine_spec.cc.i
+.PHONY : svk_combine_spec.cc.i
+
+svk_combine_spec.s: svk_combine_spec.cc.s
 .PHONY : svk_combine_spec.s
 
-# target to build an object file
-svk_create_secondary_capture.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/build.make applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/svk_create_secondary_capture.o
+# target to generate assembly for a file
+svk_combine_spec.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/svk_combine_spec.cc.s
+.PHONY : svk_combine_spec.cc.s
+
+svk_create_secondary_capture.o: svk_create_secondary_capture.cc.o
 .PHONY : svk_create_secondary_capture.o
 
-# target to preprocess a source file
-svk_create_secondary_capture.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/build.make applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/svk_create_secondary_capture.i
+# target to build an object file
+svk_create_secondary_capture.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/build.make applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/svk_create_secondary_capture.cc.o
+.PHONY : svk_create_secondary_capture.cc.o
+
+svk_create_secondary_capture.i: svk_create_secondary_capture.cc.i
 .PHONY : svk_create_secondary_capture.i
 
-# target to generate assembly for a file
-svk_create_secondary_capture.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/build.make applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/svk_create_secondary_capture.s
+# target to preprocess a source file
+svk_create_secondary_capture.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/build.make applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/svk_create_secondary_capture.cc.i
+.PHONY : svk_create_secondary_capture.cc.i
+
+svk_create_secondary_capture.s: svk_create_secondary_capture.cc.s
 .PHONY : svk_create_secondary_capture.s
 
-# target to build an object file
-svk_dce_quantify.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/svk_dce_quantify.o
+# target to generate assembly for a file
+svk_create_secondary_capture.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/build.make applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/svk_create_secondary_capture.cc.s
+.PHONY : svk_create_secondary_capture.cc.s
+
+svk_dce_quantify.o: svk_dce_quantify.cc.o
 .PHONY : svk_dce_quantify.o
 
-# target to preprocess a source file
-svk_dce_quantify.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/svk_dce_quantify.i
+# target to build an object file
+svk_dce_quantify.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/svk_dce_quantify.cc.o
+.PHONY : svk_dce_quantify.cc.o
+
+svk_dce_quantify.i: svk_dce_quantify.cc.i
 .PHONY : svk_dce_quantify.i
 
-# target to generate assembly for a file
-svk_dce_quantify.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/svk_dce_quantify.s
+# target to preprocess a source file
+svk_dce_quantify.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/svk_dce_quantify.cc.i
+.PHONY : svk_dce_quantify.cc.i
+
+svk_dce_quantify.s: svk_dce_quantify.cc.s
 .PHONY : svk_dce_quantify.s
 
-# target to build an object file
-svk_dcm_deid.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/svk_dcm_deid.o
+# target to generate assembly for a file
+svk_dce_quantify.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/svk_dce_quantify.cc.s
+.PHONY : svk_dce_quantify.cc.s
+
+svk_dcm_deid.o: svk_dcm_deid.cc.o
 .PHONY : svk_dcm_deid.o
 
-# target to preprocess a source file
-svk_dcm_deid.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/svk_dcm_deid.i
+# target to build an object file
+svk_dcm_deid.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/svk_dcm_deid.cc.o
+.PHONY : svk_dcm_deid.cc.o
+
+svk_dcm_deid.i: svk_dcm_deid.cc.i
 .PHONY : svk_dcm_deid.i
 
-# target to generate assembly for a file
-svk_dcm_deid.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/svk_dcm_deid.s
+# target to preprocess a source file
+svk_dcm_deid.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/svk_dcm_deid.cc.i
+.PHONY : svk_dcm_deid.cc.i
+
+svk_dcm_deid.s: svk_dcm_deid.cc.s
 .PHONY : svk_dcm_deid.s
 
-# target to build an object file
-svk_dcmdump.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/svk_dcmdump.o
+# target to generate assembly for a file
+svk_dcm_deid.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcm_deid.dir/svk_dcm_deid.cc.s
+.PHONY : svk_dcm_deid.cc.s
+
+svk_dcmdump.o: svk_dcmdump.cc.o
 .PHONY : svk_dcmdump.o
 
-# target to preprocess a source file
-svk_dcmdump.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/svk_dcmdump.i
+# target to build an object file
+svk_dcmdump.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/svk_dcmdump.cc.o
+.PHONY : svk_dcmdump.cc.o
+
+svk_dcmdump.i: svk_dcmdump.cc.i
 .PHONY : svk_dcmdump.i
 
-# target to generate assembly for a file
-svk_dcmdump.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/svk_dcmdump.s
+# target to preprocess a source file
+svk_dcmdump.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/svk_dcmdump.cc.i
+.PHONY : svk_dcmdump.cc.i
+
+svk_dcmdump.s: svk_dcmdump.cc.s
 .PHONY : svk_dcmdump.s
 
-# target to build an object file
-svk_dilate_erode.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/svk_dilate_erode.o
+# target to generate assembly for a file
+svk_dcmdump.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/svk_dcmdump.cc.s
+.PHONY : svk_dcmdump.cc.s
+
+svk_dilate_erode.o: svk_dilate_erode.cc.o
 .PHONY : svk_dilate_erode.o
 
-# target to preprocess a source file
-svk_dilate_erode.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/svk_dilate_erode.i
+# target to build an object file
+svk_dilate_erode.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/svk_dilate_erode.cc.o
+.PHONY : svk_dilate_erode.cc.o
+
+svk_dilate_erode.i: svk_dilate_erode.cc.i
 .PHONY : svk_dilate_erode.i
 
-# target to generate assembly for a file
-svk_dilate_erode.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/svk_dilate_erode.s
+# target to preprocess a source file
+svk_dilate_erode.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/svk_dilate_erode.cc.i
+.PHONY : svk_dilate_erode.cc.i
+
+svk_dilate_erode.s: svk_dilate_erode.cc.s
 .PHONY : svk_dilate_erode.s
 
-# target to build an object file
-svk_extract_spec.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/svk_extract_spec.o
+# target to generate assembly for a file
+svk_dilate_erode.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/svk_dilate_erode.cc.s
+.PHONY : svk_dilate_erode.cc.s
+
+svk_extract_spec.o: svk_extract_spec.cc.o
 .PHONY : svk_extract_spec.o
 
-# target to preprocess a source file
-svk_extract_spec.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/svk_extract_spec.i
+# target to build an object file
+svk_extract_spec.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/svk_extract_spec.cc.o
+.PHONY : svk_extract_spec.cc.o
+
+svk_extract_spec.i: svk_extract_spec.cc.i
 .PHONY : svk_extract_spec.i
 
-# target to generate assembly for a file
-svk_extract_spec.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/svk_extract_spec.s
+# target to preprocess a source file
+svk_extract_spec.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/svk_extract_spec.cc.i
+.PHONY : svk_extract_spec.cc.i
+
+svk_extract_spec.s: svk_extract_spec.cc.s
 .PHONY : svk_extract_spec.s
 
-# target to build an object file
-svk_fft.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_fft.dir/build.make applications/cmd_line/src/CMakeFiles/svk_fft.dir/svk_fft.o
+# target to generate assembly for a file
+svk_extract_spec.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_extract_spec.dir/svk_extract_spec.cc.s
+.PHONY : svk_extract_spec.cc.s
+
+svk_fft.o: svk_fft.cc.o
 .PHONY : svk_fft.o
 
-# target to preprocess a source file
-svk_fft.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_fft.dir/build.make applications/cmd_line/src/CMakeFiles/svk_fft.dir/svk_fft.i
+# target to build an object file
+svk_fft.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_fft.dir/build.make applications/cmd_line/src/CMakeFiles/svk_fft.dir/svk_fft.cc.o
+.PHONY : svk_fft.cc.o
+
+svk_fft.i: svk_fft.cc.i
 .PHONY : svk_fft.i
 
-# target to generate assembly for a file
-svk_fft.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_fft.dir/build.make applications/cmd_line/src/CMakeFiles/svk_fft.dir/svk_fft.s
+# target to preprocess a source file
+svk_fft.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_fft.dir/build.make applications/cmd_line/src/CMakeFiles/svk_fft.dir/svk_fft.cc.i
+.PHONY : svk_fft.cc.i
+
+svk_fft.s: svk_fft.cc.s
 .PHONY : svk_fft.s
 
-# target to build an object file
-svk_file_convert.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/svk_file_convert.o
+# target to generate assembly for a file
+svk_fft.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_fft.dir/build.make applications/cmd_line/src/CMakeFiles/svk_fft.dir/svk_fft.cc.s
+.PHONY : svk_fft.cc.s
+
+svk_file_convert.o: svk_file_convert.cc.o
 .PHONY : svk_file_convert.o
 
-# target to preprocess a source file
-svk_file_convert.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/svk_file_convert.i
+# target to build an object file
+svk_file_convert.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/svk_file_convert.cc.o
+.PHONY : svk_file_convert.cc.o
+
+svk_file_convert.i: svk_file_convert.cc.i
 .PHONY : svk_file_convert.i
 
-# target to generate assembly for a file
-svk_file_convert.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/svk_file_convert.s
+# target to preprocess a source file
+svk_file_convert.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/svk_file_convert.cc.i
+.PHONY : svk_file_convert.cc.i
+
+svk_file_convert.s: svk_file_convert.cc.s
 .PHONY : svk_file_convert.s
 
-# target to build an object file
-svk_freq_correct.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/build.make applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/svk_freq_correct.o
+# target to generate assembly for a file
+svk_file_convert.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/svk_file_convert.cc.s
+.PHONY : svk_file_convert.cc.s
+
+svk_freq_correct.o: svk_freq_correct.cc.o
 .PHONY : svk_freq_correct.o
 
-# target to preprocess a source file
-svk_freq_correct.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/build.make applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/svk_freq_correct.i
+# target to build an object file
+svk_freq_correct.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/build.make applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/svk_freq_correct.cc.o
+.PHONY : svk_freq_correct.cc.o
+
+svk_freq_correct.i: svk_freq_correct.cc.i
 .PHONY : svk_freq_correct.i
 
-# target to generate assembly for a file
-svk_freq_correct.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/build.make applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/svk_freq_correct.s
+# target to preprocess a source file
+svk_freq_correct.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/build.make applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/svk_freq_correct.cc.i
+.PHONY : svk_freq_correct.cc.i
+
+svk_freq_correct.s: svk_freq_correct.cc.s
 .PHONY : svk_freq_correct.s
 
-# target to build an object file
-svk_gepfile_anon.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/svk_gepfile_anon.o
+# target to generate assembly for a file
+svk_freq_correct.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/build.make applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/svk_freq_correct.cc.s
+.PHONY : svk_freq_correct.cc.s
+
+svk_gepfile_anon.o: svk_gepfile_anon.cc.o
 .PHONY : svk_gepfile_anon.o
 
-# target to preprocess a source file
-svk_gepfile_anon.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/svk_gepfile_anon.i
+# target to build an object file
+svk_gepfile_anon.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/svk_gepfile_anon.cc.o
+.PHONY : svk_gepfile_anon.cc.o
+
+svk_gepfile_anon.i: svk_gepfile_anon.cc.i
 .PHONY : svk_gepfile_anon.i
 
-# target to generate assembly for a file
-svk_gepfile_anon.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/svk_gepfile_anon.s
+# target to preprocess a source file
+svk_gepfile_anon.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/svk_gepfile_anon.cc.i
+.PHONY : svk_gepfile_anon.cc.i
+
+svk_gepfile_anon.s: svk_gepfile_anon.cc.s
 .PHONY : svk_gepfile_anon.s
 
-# target to build an object file
-svk_gepfile_reader.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/svk_gepfile_reader.o
+# target to generate assembly for a file
+svk_gepfile_anon.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_anon.dir/svk_gepfile_anon.cc.s
+.PHONY : svk_gepfile_anon.cc.s
+
+svk_gepfile_reader.o: svk_gepfile_reader.cc.o
 .PHONY : svk_gepfile_reader.o
 
-# target to preprocess a source file
-svk_gepfile_reader.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/svk_gepfile_reader.i
+# target to build an object file
+svk_gepfile_reader.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/svk_gepfile_reader.cc.o
+.PHONY : svk_gepfile_reader.cc.o
+
+svk_gepfile_reader.i: svk_gepfile_reader.cc.i
 .PHONY : svk_gepfile_reader.i
 
-# target to generate assembly for a file
-svk_gepfile_reader.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/svk_gepfile_reader.s
+# target to preprocess a source file
+svk_gepfile_reader.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/svk_gepfile_reader.cc.i
+.PHONY : svk_gepfile_reader.cc.i
+
+svk_gepfile_reader.s: svk_gepfile_reader.cc.s
 .PHONY : svk_gepfile_reader.s
 
-# target to build an object file
-svk_get_filetype.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/build.make applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/svk_get_filetype.o
+# target to generate assembly for a file
+svk_gepfile_reader.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/svk_gepfile_reader.cc.s
+.PHONY : svk_gepfile_reader.cc.s
+
+svk_get_filetype.o: svk_get_filetype.cc.o
 .PHONY : svk_get_filetype.o
 
-# target to preprocess a source file
-svk_get_filetype.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/build.make applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/svk_get_filetype.i
+# target to build an object file
+svk_get_filetype.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/build.make applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/svk_get_filetype.cc.o
+.PHONY : svk_get_filetype.cc.o
+
+svk_get_filetype.i: svk_get_filetype.cc.i
 .PHONY : svk_get_filetype.i
 
-# target to generate assembly for a file
-svk_get_filetype.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/build.make applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/svk_get_filetype.s
+# target to preprocess a source file
+svk_get_filetype.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/build.make applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/svk_get_filetype.cc.i
+.PHONY : svk_get_filetype.cc.i
+
+svk_get_filetype.s: svk_get_filetype.cc.s
 .PHONY : svk_get_filetype.s
 
-# target to build an object file
-svk_image_mathematics.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/svk_image_mathematics.o
+# target to generate assembly for a file
+svk_get_filetype.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/build.make applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/svk_get_filetype.cc.s
+.PHONY : svk_get_filetype.cc.s
+
+svk_image_mathematics.o: svk_image_mathematics.cc.o
 .PHONY : svk_image_mathematics.o
 
-# target to preprocess a source file
-svk_image_mathematics.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/svk_image_mathematics.i
+# target to build an object file
+svk_image_mathematics.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/svk_image_mathematics.cc.o
+.PHONY : svk_image_mathematics.cc.o
+
+svk_image_mathematics.i: svk_image_mathematics.cc.i
 .PHONY : svk_image_mathematics.i
 
-# target to generate assembly for a file
-svk_image_mathematics.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/svk_image_mathematics.s
+# target to preprocess a source file
+svk_image_mathematics.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/svk_image_mathematics.cc.i
+.PHONY : svk_image_mathematics.cc.i
+
+svk_image_mathematics.s: svk_image_mathematics.cc.s
 .PHONY : svk_image_mathematics.s
 
-# target to build an object file
-svk_image_pipeline.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/svk_image_pipeline.o
+# target to generate assembly for a file
+svk_image_mathematics.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_mathematics.dir/svk_image_mathematics.cc.s
+.PHONY : svk_image_mathematics.cc.s
+
+svk_image_pipeline.o: svk_image_pipeline.cc.o
 .PHONY : svk_image_pipeline.o
 
-# target to preprocess a source file
-svk_image_pipeline.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/svk_image_pipeline.i
+# target to build an object file
+svk_image_pipeline.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/svk_image_pipeline.cc.o
+.PHONY : svk_image_pipeline.cc.o
+
+svk_image_pipeline.i: svk_image_pipeline.cc.i
 .PHONY : svk_image_pipeline.i
 
-# target to generate assembly for a file
-svk_image_pipeline.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/svk_image_pipeline.s
+# target to preprocess a source file
+svk_image_pipeline.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/svk_image_pipeline.cc.i
+.PHONY : svk_image_pipeline.cc.i
+
+svk_image_pipeline.s: svk_image_pipeline.cc.s
 .PHONY : svk_image_pipeline.s
 
-# target to build an object file
-svk_image_stats.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/svk_image_stats.o
+# target to generate assembly for a file
+svk_image_pipeline.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/svk_image_pipeline.cc.s
+.PHONY : svk_image_pipeline.cc.s
+
+svk_image_stats.o: svk_image_stats.cc.o
 .PHONY : svk_image_stats.o
 
-# target to preprocess a source file
-svk_image_stats.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/svk_image_stats.i
+# target to build an object file
+svk_image_stats.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/svk_image_stats.cc.o
+.PHONY : svk_image_stats.cc.o
+
+svk_image_stats.i: svk_image_stats.cc.i
 .PHONY : svk_image_stats.i
 
-# target to generate assembly for a file
-svk_image_stats.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/svk_image_stats.s
+# target to preprocess a source file
+svk_image_stats.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/svk_image_stats.cc.i
+.PHONY : svk_image_stats.cc.i
+
+svk_image_stats.s: svk_image_stats.cc.s
 .PHONY : svk_image_stats.s
 
-# target to build an object file
-svk_image_threshold.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/svk_image_threshold.o
+# target to generate assembly for a file
+svk_image_stats.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/svk_image_stats.cc.s
+.PHONY : svk_image_stats.cc.s
+
+svk_image_threshold.o: svk_image_threshold.cc.o
 .PHONY : svk_image_threshold.o
 
-# target to preprocess a source file
-svk_image_threshold.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/svk_image_threshold.i
+# target to build an object file
+svk_image_threshold.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/svk_image_threshold.cc.o
+.PHONY : svk_image_threshold.cc.o
+
+svk_image_threshold.i: svk_image_threshold.cc.i
 .PHONY : svk_image_threshold.i
 
-# target to generate assembly for a file
-svk_image_threshold.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/svk_image_threshold.s
+# target to preprocess a source file
+svk_image_threshold.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/svk_image_threshold.cc.i
+.PHONY : svk_image_threshold.cc.i
+
+svk_image_threshold.s: svk_image_threshold.cc.s
 .PHONY : svk_image_threshold.s
 
-# target to build an object file
-svk_integrate_dynamic.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/build.make applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/svk_integrate_dynamic.o
+# target to generate assembly for a file
+svk_image_threshold.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/svk_image_threshold.cc.s
+.PHONY : svk_image_threshold.cc.s
+
+svk_integrate_dynamic.o: svk_integrate_dynamic.cc.o
 .PHONY : svk_integrate_dynamic.o
 
-# target to preprocess a source file
-svk_integrate_dynamic.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/build.make applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/svk_integrate_dynamic.i
+# target to build an object file
+svk_integrate_dynamic.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/build.make applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/svk_integrate_dynamic.cc.o
+.PHONY : svk_integrate_dynamic.cc.o
+
+svk_integrate_dynamic.i: svk_integrate_dynamic.cc.i
 .PHONY : svk_integrate_dynamic.i
 
-# target to generate assembly for a file
-svk_integrate_dynamic.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/build.make applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/svk_integrate_dynamic.s
+# target to preprocess a source file
+svk_integrate_dynamic.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/build.make applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/svk_integrate_dynamic.cc.i
+.PHONY : svk_integrate_dynamic.cc.i
+
+svk_integrate_dynamic.s: svk_integrate_dynamic.cc.s
 .PHONY : svk_integrate_dynamic.s
 
-# target to build an object file
-svk_interpolate_spectra.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/build.make applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/svk_interpolate_spectra.o
+# target to generate assembly for a file
+svk_integrate_dynamic.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/build.make applications/cmd_line/src/CMakeFiles/svk_integrate_dynamic.dir/svk_integrate_dynamic.cc.s
+.PHONY : svk_integrate_dynamic.cc.s
+
+svk_interpolate_spectra.o: svk_interpolate_spectra.cc.o
 .PHONY : svk_interpolate_spectra.o
 
-# target to preprocess a source file
-svk_interpolate_spectra.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/build.make applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/svk_interpolate_spectra.i
+# target to build an object file
+svk_interpolate_spectra.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/build.make applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/svk_interpolate_spectra.cc.o
+.PHONY : svk_interpolate_spectra.cc.o
+
+svk_interpolate_spectra.i: svk_interpolate_spectra.cc.i
 .PHONY : svk_interpolate_spectra.i
 
-# target to generate assembly for a file
-svk_interpolate_spectra.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/build.make applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/svk_interpolate_spectra.s
+# target to preprocess a source file
+svk_interpolate_spectra.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/build.make applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/svk_interpolate_spectra.cc.i
+.PHONY : svk_interpolate_spectra.cc.i
+
+svk_interpolate_spectra.s: svk_interpolate_spectra.cc.s
 .PHONY : svk_interpolate_spectra.s
 
-# target to build an object file
-svk_lcmodel_reader.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/svk_lcmodel_reader.o
+# target to generate assembly for a file
+svk_interpolate_spectra.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/build.make applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/svk_interpolate_spectra.cc.s
+.PHONY : svk_interpolate_spectra.cc.s
+
+svk_lcmodel_reader.o: svk_lcmodel_reader.cc.o
 .PHONY : svk_lcmodel_reader.o
 
-# target to preprocess a source file
-svk_lcmodel_reader.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/svk_lcmodel_reader.i
+# target to build an object file
+svk_lcmodel_reader.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/svk_lcmodel_reader.cc.o
+.PHONY : svk_lcmodel_reader.cc.o
+
+svk_lcmodel_reader.i: svk_lcmodel_reader.cc.i
 .PHONY : svk_lcmodel_reader.i
 
-# target to generate assembly for a file
-svk_lcmodel_reader.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/svk_lcmodel_reader.s
+# target to preprocess a source file
+svk_lcmodel_reader.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/svk_lcmodel_reader.cc.i
+.PHONY : svk_lcmodel_reader.cc.i
+
+svk_lcmodel_reader.s: svk_lcmodel_reader.cc.s
 .PHONY : svk_lcmodel_reader.s
 
-# target to build an object file
-svk_lcmodel_writer.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/svk_lcmodel_writer.o
+# target to generate assembly for a file
+svk_lcmodel_reader.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/svk_lcmodel_reader.cc.s
+.PHONY : svk_lcmodel_reader.cc.s
+
+svk_lcmodel_writer.o: svk_lcmodel_writer.cc.o
 .PHONY : svk_lcmodel_writer.o
 
-# target to preprocess a source file
-svk_lcmodel_writer.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/svk_lcmodel_writer.i
+# target to build an object file
+svk_lcmodel_writer.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/svk_lcmodel_writer.cc.o
+.PHONY : svk_lcmodel_writer.cc.o
+
+svk_lcmodel_writer.i: svk_lcmodel_writer.cc.i
 .PHONY : svk_lcmodel_writer.i
 
-# target to generate assembly for a file
-svk_lcmodel_writer.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/svk_lcmodel_writer.s
+# target to preprocess a source file
+svk_lcmodel_writer.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/svk_lcmodel_writer.cc.i
+.PHONY : svk_lcmodel_writer.cc.i
+
+svk_lcmodel_writer.s: svk_lcmodel_writer.cc.s
 .PHONY : svk_lcmodel_writer.s
 
-# target to build an object file
-svk_mrs_combine.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/build.make applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/svk_mrs_combine.o
+# target to generate assembly for a file
+svk_lcmodel_writer.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/svk_lcmodel_writer.cc.s
+.PHONY : svk_lcmodel_writer.cc.s
+
+svk_mrs_combine.o: svk_mrs_combine.cc.o
 .PHONY : svk_mrs_combine.o
 
-# target to preprocess a source file
-svk_mrs_combine.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/build.make applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/svk_mrs_combine.i
+# target to build an object file
+svk_mrs_combine.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/build.make applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/svk_mrs_combine.cc.o
+.PHONY : svk_mrs_combine.cc.o
+
+svk_mrs_combine.i: svk_mrs_combine.cc.i
 .PHONY : svk_mrs_combine.i
 
-# target to generate assembly for a file
-svk_mrs_combine.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/build.make applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/svk_mrs_combine.s
+# target to preprocess a source file
+svk_mrs_combine.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/build.make applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/svk_mrs_combine.cc.i
+.PHONY : svk_mrs_combine.cc.i
+
+svk_mrs_combine.s: svk_mrs_combine.cc.s
 .PHONY : svk_mrs_combine.s
 
-# target to build an object file
-svk_multi_view.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/svk_multi_view.o
+# target to generate assembly for a file
+svk_mrs_combine.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/build.make applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/svk_mrs_combine.cc.s
+.PHONY : svk_mrs_combine.cc.s
+
+svk_multi_view.o: svk_multi_view.cc.o
 .PHONY : svk_multi_view.o
 
-# target to preprocess a source file
-svk_multi_view.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/svk_multi_view.i
+# target to build an object file
+svk_multi_view.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/svk_multi_view.cc.o
+.PHONY : svk_multi_view.cc.o
+
+svk_multi_view.i: svk_multi_view.cc.i
 .PHONY : svk_multi_view.i
 
-# target to generate assembly for a file
-svk_multi_view.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/svk_multi_view.s
+# target to preprocess a source file
+svk_multi_view.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/svk_multi_view.cc.i
+.PHONY : svk_multi_view.cc.i
+
+svk_multi_view.s: svk_multi_view.cc.s
 .PHONY : svk_multi_view.s
 
-# target to build an object file
-svk_noise.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_noise.dir/build.make applications/cmd_line/src/CMakeFiles/svk_noise.dir/svk_noise.o
+# target to generate assembly for a file
+svk_multi_view.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/svk_multi_view.cc.s
+.PHONY : svk_multi_view.cc.s
+
+svk_noise.o: svk_noise.cc.o
 .PHONY : svk_noise.o
 
-# target to preprocess a source file
-svk_noise.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_noise.dir/build.make applications/cmd_line/src/CMakeFiles/svk_noise.dir/svk_noise.i
+# target to build an object file
+svk_noise.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_noise.dir/build.make applications/cmd_line/src/CMakeFiles/svk_noise.dir/svk_noise.cc.o
+.PHONY : svk_noise.cc.o
+
+svk_noise.i: svk_noise.cc.i
 .PHONY : svk_noise.i
 
-# target to generate assembly for a file
-svk_noise.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_noise.dir/build.make applications/cmd_line/src/CMakeFiles/svk_noise.dir/svk_noise.s
+# target to preprocess a source file
+svk_noise.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_noise.dir/build.make applications/cmd_line/src/CMakeFiles/svk_noise.dir/svk_noise.cc.i
+.PHONY : svk_noise.cc.i
+
+svk_noise.s: svk_noise.cc.s
 .PHONY : svk_noise.s
 
-# target to build an object file
-svk_peak_pick.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/build.make applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/svk_peak_pick.o
+# target to generate assembly for a file
+svk_noise.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_noise.dir/build.make applications/cmd_line/src/CMakeFiles/svk_noise.dir/svk_noise.cc.s
+.PHONY : svk_noise.cc.s
+
+svk_peak_pick.o: svk_peak_pick.cc.o
 .PHONY : svk_peak_pick.o
 
-# target to preprocess a source file
-svk_peak_pick.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/build.make applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/svk_peak_pick.i
+# target to build an object file
+svk_peak_pick.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/build.make applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/svk_peak_pick.cc.o
+.PHONY : svk_peak_pick.cc.o
+
+svk_peak_pick.i: svk_peak_pick.cc.i
 .PHONY : svk_peak_pick.i
 
-# target to generate assembly for a file
-svk_peak_pick.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/build.make applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/svk_peak_pick.s
+# target to preprocess a source file
+svk_peak_pick.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/build.make applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/svk_peak_pick.cc.i
+.PHONY : svk_peak_pick.cc.i
+
+svk_peak_pick.s: svk_peak_pick.cc.s
 .PHONY : svk_peak_pick.s
 
-# target to build an object file
-svk_phase_spec.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/svk_phase_spec.o
+# target to generate assembly for a file
+svk_peak_pick.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/build.make applications/cmd_line/src/CMakeFiles/svk_peak_pick.dir/svk_peak_pick.cc.s
+.PHONY : svk_peak_pick.cc.s
+
+svk_phase_spec.o: svk_phase_spec.cc.o
 .PHONY : svk_phase_spec.o
 
-# target to preprocess a source file
-svk_phase_spec.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/svk_phase_spec.i
+# target to build an object file
+svk_phase_spec.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/svk_phase_spec.cc.o
+.PHONY : svk_phase_spec.cc.o
+
+svk_phase_spec.i: svk_phase_spec.cc.i
 .PHONY : svk_phase_spec.i
 
-# target to generate assembly for a file
-svk_phase_spec.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/svk_phase_spec.s
+# target to preprocess a source file
+svk_phase_spec.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/svk_phase_spec.cc.i
+.PHONY : svk_phase_spec.cc.i
+
+svk_phase_spec.s: svk_phase_spec.cc.s
 .PHONY : svk_phase_spec.s
 
-# target to build an object file
-svk_point_selector.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/build.make applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/svk_point_selector.o
+# target to generate assembly for a file
+svk_phase_spec.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/svk_phase_spec.cc.s
+.PHONY : svk_phase_spec.cc.s
+
+svk_point_selector.o: svk_point_selector.cc.o
 .PHONY : svk_point_selector.o
 
-# target to preprocess a source file
-svk_point_selector.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/build.make applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/svk_point_selector.i
+# target to build an object file
+svk_point_selector.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/build.make applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/svk_point_selector.cc.o
+.PHONY : svk_point_selector.cc.o
+
+svk_point_selector.i: svk_point_selector.cc.i
 .PHONY : svk_point_selector.i
 
-# target to generate assembly for a file
-svk_point_selector.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/build.make applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/svk_point_selector.s
+# target to preprocess a source file
+svk_point_selector.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/build.make applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/svk_point_selector.cc.i
+.PHONY : svk_point_selector.cc.i
+
+svk_point_selector.s: svk_point_selector.cc.s
 .PHONY : svk_point_selector.s
 
-# target to build an object file
-svk_print_image_info.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/build.make applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/svk_print_image_info.o
+# target to generate assembly for a file
+svk_point_selector.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/build.make applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/svk_point_selector.cc.s
+.PHONY : svk_point_selector.cc.s
+
+svk_print_image_info.o: svk_print_image_info.cc.o
 .PHONY : svk_print_image_info.o
 
-# target to preprocess a source file
-svk_print_image_info.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/build.make applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/svk_print_image_info.i
+# target to build an object file
+svk_print_image_info.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/build.make applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/svk_print_image_info.cc.o
+.PHONY : svk_print_image_info.cc.o
+
+svk_print_image_info.i: svk_print_image_info.cc.i
 .PHONY : svk_print_image_info.i
 
-# target to generate assembly for a file
-svk_print_image_info.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/build.make applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/svk_print_image_info.s
+# target to preprocess a source file
+svk_print_image_info.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/build.make applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/svk_print_image_info.cc.i
+.PHONY : svk_print_image_info.cc.i
+
+svk_print_image_info.s: svk_print_image_info.cc.s
 .PHONY : svk_print_image_info.s
 
-# target to build an object file
-svk_psd_prescription_convert.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/svk_psd_prescription_convert.o
+# target to generate assembly for a file
+svk_print_image_info.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/build.make applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/svk_print_image_info.cc.s
+.PHONY : svk_print_image_info.cc.s
+
+svk_psd_prescription_convert.o: svk_psd_prescription_convert.cc.o
 .PHONY : svk_psd_prescription_convert.o
 
-# target to preprocess a source file
-svk_psd_prescription_convert.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/svk_psd_prescription_convert.i
+# target to build an object file
+svk_psd_prescription_convert.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/svk_psd_prescription_convert.cc.o
+.PHONY : svk_psd_prescription_convert.cc.o
+
+svk_psd_prescription_convert.i: svk_psd_prescription_convert.cc.i
 .PHONY : svk_psd_prescription_convert.i
 
-# target to generate assembly for a file
-svk_psd_prescription_convert.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/svk_psd_prescription_convert.s
+# target to preprocess a source file
+svk_psd_prescription_convert.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/svk_psd_prescription_convert.cc.i
+.PHONY : svk_psd_prescription_convert.cc.i
+
+svk_psd_prescription_convert.s: svk_psd_prescription_convert.cc.s
 .PHONY : svk_psd_prescription_convert.s
 
-# target to build an object file
-svk_quantify.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quantify.dir/svk_quantify.o
+# target to generate assembly for a file
+svk_psd_prescription_convert.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/svk_psd_prescription_convert.cc.s
+.PHONY : svk_psd_prescription_convert.cc.s
+
+svk_quantify.o: svk_quantify.cc.o
 .PHONY : svk_quantify.o
 
-# target to preprocess a source file
-svk_quantify.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quantify.dir/svk_quantify.i
+# target to build an object file
+svk_quantify.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quantify.dir/svk_quantify.cc.o
+.PHONY : svk_quantify.cc.o
+
+svk_quantify.i: svk_quantify.cc.i
 .PHONY : svk_quantify.i
 
-# target to generate assembly for a file
-svk_quantify.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quantify.dir/svk_quantify.s
+# target to preprocess a source file
+svk_quantify.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quantify.dir/svk_quantify.cc.i
+.PHONY : svk_quantify.cc.i
+
+svk_quantify.s: svk_quantify.cc.s
 .PHONY : svk_quantify.s
 
-# target to build an object file
-svk_quick_view.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/svk_quick_view.o
+# target to generate assembly for a file
+svk_quantify.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quantify.dir/svk_quantify.cc.s
+.PHONY : svk_quantify.cc.s
+
+svk_quick_view.o: svk_quick_view.cc.o
 .PHONY : svk_quick_view.o
 
-# target to preprocess a source file
-svk_quick_view.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/svk_quick_view.i
+# target to build an object file
+svk_quick_view.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/svk_quick_view.cc.o
+.PHONY : svk_quick_view.cc.o
+
+svk_quick_view.i: svk_quick_view.cc.i
 .PHONY : svk_quick_view.i
 
-# target to generate assembly for a file
-svk_quick_view.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/svk_quick_view.s
+# target to preprocess a source file
+svk_quick_view.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/svk_quick_view.cc.i
+.PHONY : svk_quick_view.cc.i
+
+svk_quick_view.s: svk_quick_view.cc.s
 .PHONY : svk_quick_view.s
 
-# target to build an object file
-svk_reorder_epsi.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/svk_reorder_epsi.o
+# target to generate assembly for a file
+svk_quick_view.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/svk_quick_view.cc.s
+.PHONY : svk_quick_view.cc.s
+
+svk_reorder_epsi.o: svk_reorder_epsi.cc.o
 .PHONY : svk_reorder_epsi.o
 
-# target to preprocess a source file
-svk_reorder_epsi.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/svk_reorder_epsi.i
+# target to build an object file
+svk_reorder_epsi.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/svk_reorder_epsi.cc.o
+.PHONY : svk_reorder_epsi.cc.o
+
+svk_reorder_epsi.i: svk_reorder_epsi.cc.i
 .PHONY : svk_reorder_epsi.i
 
-# target to generate assembly for a file
-svk_reorder_epsi.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/svk_reorder_epsi.s
+# target to preprocess a source file
+svk_reorder_epsi.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/svk_reorder_epsi.cc.i
+.PHONY : svk_reorder_epsi.cc.i
+
+svk_reorder_epsi.s: svk_reorder_epsi.cc.s
 .PHONY : svk_reorder_epsi.s
 
-# target to build an object file
-svk_reslice.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reslice.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reslice.dir/svk_reslice.o
+# target to generate assembly for a file
+svk_reorder_epsi.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reorder_epsi.dir/svk_reorder_epsi.cc.s
+.PHONY : svk_reorder_epsi.cc.s
+
+svk_reslice.o: svk_reslice.cc.o
 .PHONY : svk_reslice.o
 
-# target to preprocess a source file
-svk_reslice.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reslice.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reslice.dir/svk_reslice.i
+# target to build an object file
+svk_reslice.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reslice.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reslice.dir/svk_reslice.cc.o
+.PHONY : svk_reslice.cc.o
+
+svk_reslice.i: svk_reslice.cc.i
 .PHONY : svk_reslice.i
 
-# target to generate assembly for a file
-svk_reslice.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reslice.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reslice.dir/svk_reslice.s
+# target to preprocess a source file
+svk_reslice.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reslice.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reslice.dir/svk_reslice.cc.i
+.PHONY : svk_reslice.cc.i
+
+svk_reslice.s: svk_reslice.cc.s
 .PHONY : svk_reslice.s
 
-# target to build an object file
-svk_scale_image.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/build.make applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/svk_scale_image.o
+# target to generate assembly for a file
+svk_reslice.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reslice.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reslice.dir/svk_reslice.cc.s
+.PHONY : svk_reslice.cc.s
+
+svk_scale_image.o: svk_scale_image.cc.o
 .PHONY : svk_scale_image.o
 
-# target to preprocess a source file
-svk_scale_image.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/build.make applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/svk_scale_image.i
+# target to build an object file
+svk_scale_image.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/build.make applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/svk_scale_image.cc.o
+.PHONY : svk_scale_image.cc.o
+
+svk_scale_image.i: svk_scale_image.cc.i
 .PHONY : svk_scale_image.i
 
-# target to generate assembly for a file
-svk_scale_image.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/build.make applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/svk_scale_image.s
+# target to preprocess a source file
+svk_scale_image.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/build.make applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/svk_scale_image.cc.i
+.PHONY : svk_scale_image.cc.i
+
+svk_scale_image.s: svk_scale_image.cc.s
 .PHONY : svk_scale_image.s
 
-# target to build an object file
-svk_simulate.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_simulate.dir/build.make applications/cmd_line/src/CMakeFiles/svk_simulate.dir/svk_simulate.o
+# target to generate assembly for a file
+svk_scale_image.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/build.make applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/svk_scale_image.cc.s
+.PHONY : svk_scale_image.cc.s
+
+svk_simulate.o: svk_simulate.cc.o
 .PHONY : svk_simulate.o
 
-# target to preprocess a source file
-svk_simulate.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_simulate.dir/build.make applications/cmd_line/src/CMakeFiles/svk_simulate.dir/svk_simulate.i
+# target to build an object file
+svk_simulate.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_simulate.dir/build.make applications/cmd_line/src/CMakeFiles/svk_simulate.dir/svk_simulate.cc.o
+.PHONY : svk_simulate.cc.o
+
+svk_simulate.i: svk_simulate.cc.i
 .PHONY : svk_simulate.i
 
-# target to generate assembly for a file
-svk_simulate.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_simulate.dir/build.make applications/cmd_line/src/CMakeFiles/svk_simulate.dir/svk_simulate.s
+# target to preprocess a source file
+svk_simulate.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_simulate.dir/build.make applications/cmd_line/src/CMakeFiles/svk_simulate.dir/svk_simulate.cc.i
+.PHONY : svk_simulate.cc.i
+
+svk_simulate.s: svk_simulate.cc.s
 .PHONY : svk_simulate.s
 
-# target to build an object file
-svk_spec_diff.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/svk_spec_diff.o
+# target to generate assembly for a file
+svk_simulate.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_simulate.dir/build.make applications/cmd_line/src/CMakeFiles/svk_simulate.dir/svk_simulate.cc.s
+.PHONY : svk_simulate.cc.s
+
+svk_spec_diff.o: svk_spec_diff.cc.o
 .PHONY : svk_spec_diff.o
 
-# target to preprocess a source file
-svk_spec_diff.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/svk_spec_diff.i
+# target to build an object file
+svk_spec_diff.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/svk_spec_diff.cc.o
+.PHONY : svk_spec_diff.cc.o
+
+svk_spec_diff.i: svk_spec_diff.cc.i
 .PHONY : svk_spec_diff.i
 
-# target to generate assembly for a file
-svk_spec_diff.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/svk_spec_diff.s
+# target to preprocess a source file
+svk_spec_diff.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/svk_spec_diff.cc.i
+.PHONY : svk_spec_diff.cc.i
+
+svk_spec_diff.s: svk_spec_diff.cc.s
 .PHONY : svk_spec_diff.s
 
-# target to build an object file
-svk_surface_area.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/build.make applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/svk_surface_area.o
+# target to generate assembly for a file
+svk_spec_diff.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/svk_spec_diff.cc.s
+.PHONY : svk_spec_diff.cc.s
+
+svk_surface_area.o: svk_surface_area.cc.o
 .PHONY : svk_surface_area.o
 
-# target to preprocess a source file
-svk_surface_area.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/build.make applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/svk_surface_area.i
+# target to build an object file
+svk_surface_area.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/build.make applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/svk_surface_area.cc.o
+.PHONY : svk_surface_area.cc.o
+
+svk_surface_area.i: svk_surface_area.cc.i
 .PHONY : svk_surface_area.i
 
-# target to generate assembly for a file
-svk_surface_area.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/build.make applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/svk_surface_area.s
+# target to preprocess a source file
+svk_surface_area.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/build.make applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/svk_surface_area.cc.i
+.PHONY : svk_surface_area.cc.i
+
+svk_surface_area.s: svk_surface_area.cc.s
 .PHONY : svk_surface_area.s
 
-# target to build an object file
-svk_svrecon.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/svk_svrecon.o
+# target to generate assembly for a file
+svk_surface_area.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/build.make applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/svk_surface_area.cc.s
+.PHONY : svk_surface_area.cc.s
+
+svk_svrecon.o: svk_svrecon.cc.o
 .PHONY : svk_svrecon.o
 
-# target to preprocess a source file
-svk_svrecon.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/svk_svrecon.i
+# target to build an object file
+svk_svrecon.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/svk_svrecon.cc.o
+.PHONY : svk_svrecon.cc.o
+
+svk_svrecon.i: svk_svrecon.cc.i
 .PHONY : svk_svrecon.i
 
-# target to generate assembly for a file
-svk_svrecon.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/svk_svrecon.s
+# target to preprocess a source file
+svk_svrecon.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/svk_svrecon.cc.i
+.PHONY : svk_svrecon.cc.i
+
+svk_svrecon.s: svk_svrecon.cc.s
 .PHONY : svk_svrecon.s
 
+# target to generate assembly for a file
+svk_svrecon.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/svk_svrecon.cc.s
+.PHONY : svk_svrecon.cc.s
+
+svk_test.o: svk_test.cc.o
+.PHONY : svk_test.o
+
 # target to build an object file
-svk_transform.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_transform.dir/build.make applications/cmd_line/src/CMakeFiles/svk_transform.dir/svk_transform.o
+svk_test.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_test.dir/build.make applications/cmd_line/src/CMakeFiles/svk_test.dir/svk_test.cc.o
+.PHONY : svk_test.cc.o
+
+svk_test.i: svk_test.cc.i
+.PHONY : svk_test.i
+
+# target to preprocess a source file
+svk_test.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_test.dir/build.make applications/cmd_line/src/CMakeFiles/svk_test.dir/svk_test.cc.i
+.PHONY : svk_test.cc.i
+
+svk_test.s: svk_test.cc.s
+.PHONY : svk_test.s
+
+# target to generate assembly for a file
+svk_test.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_test.dir/build.make applications/cmd_line/src/CMakeFiles/svk_test.dir/svk_test.cc.s
+.PHONY : svk_test.cc.s
+
+svk_transform.o: svk_transform.cc.o
 .PHONY : svk_transform.o
 
-# target to preprocess a source file
-svk_transform.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_transform.dir/build.make applications/cmd_line/src/CMakeFiles/svk_transform.dir/svk_transform.i
+# target to build an object file
+svk_transform.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_transform.dir/build.make applications/cmd_line/src/CMakeFiles/svk_transform.dir/svk_transform.cc.o
+.PHONY : svk_transform.cc.o
+
+svk_transform.i: svk_transform.cc.i
 .PHONY : svk_transform.i
 
-# target to generate assembly for a file
-svk_transform.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_transform.dir/build.make applications/cmd_line/src/CMakeFiles/svk_transform.dir/svk_transform.s
+# target to preprocess a source file
+svk_transform.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_transform.dir/build.make applications/cmd_line/src/CMakeFiles/svk_transform.dir/svk_transform.cc.i
+.PHONY : svk_transform.cc.i
+
+svk_transform.s: svk_transform.cc.s
 .PHONY : svk_transform.s
 
-# target to build an object file
-svk_variable_flip_scaler.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/build.make applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/svk_variable_flip_scaler.o
+# target to generate assembly for a file
+svk_transform.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_transform.dir/build.make applications/cmd_line/src/CMakeFiles/svk_transform.dir/svk_transform.cc.s
+.PHONY : svk_transform.cc.s
+
+svk_variable_flip_scaler.o: svk_variable_flip_scaler.cc.o
 .PHONY : svk_variable_flip_scaler.o
 
-# target to preprocess a source file
-svk_variable_flip_scaler.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/build.make applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/svk_variable_flip_scaler.i
+# target to build an object file
+svk_variable_flip_scaler.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/build.make applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/svk_variable_flip_scaler.cc.o
+.PHONY : svk_variable_flip_scaler.cc.o
+
+svk_variable_flip_scaler.i: svk_variable_flip_scaler.cc.i
 .PHONY : svk_variable_flip_scaler.i
 
-# target to generate assembly for a file
-svk_variable_flip_scaler.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/build.make applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/svk_variable_flip_scaler.s
+# target to preprocess a source file
+svk_variable_flip_scaler.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/build.make applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/svk_variable_flip_scaler.cc.i
+.PHONY : svk_variable_flip_scaler.cc.i
+
+svk_variable_flip_scaler.s: svk_variable_flip_scaler.cc.s
 .PHONY : svk_variable_flip_scaler.s
 
-# target to build an object file
-svk_volume_diff.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/svk_volume_diff.o
+# target to generate assembly for a file
+svk_variable_flip_scaler.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/build.make applications/cmd_line/src/CMakeFiles/svk_variable_flip_scaler.dir/svk_variable_flip_scaler.cc.s
+.PHONY : svk_variable_flip_scaler.cc.s
+
+svk_volume_diff.o: svk_volume_diff.cc.o
 .PHONY : svk_volume_diff.o
 
-# target to preprocess a source file
-svk_volume_diff.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/svk_volume_diff.i
+# target to build an object file
+svk_volume_diff.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/svk_volume_diff.cc.o
+.PHONY : svk_volume_diff.cc.o
+
+svk_volume_diff.i: svk_volume_diff.cc.i
 .PHONY : svk_volume_diff.i
 
-# target to generate assembly for a file
-svk_volume_diff.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/svk_volume_diff.s
+# target to preprocess a source file
+svk_volume_diff.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/svk_volume_diff.cc.i
+.PHONY : svk_volume_diff.cc.i
+
+svk_volume_diff.s: svk_volume_diff.cc.s
 .PHONY : svk_volume_diff.s
 
-# target to build an object file
-svk_zerofill.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/svk_zerofill.o
+# target to generate assembly for a file
+svk_volume_diff.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_volume_diff.dir/svk_volume_diff.cc.s
+.PHONY : svk_volume_diff.cc.s
+
+svk_zerofill.o: svk_zerofill.cc.o
 .PHONY : svk_zerofill.o
 
-# target to preprocess a source file
-svk_zerofill.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/svk_zerofill.i
+# target to build an object file
+svk_zerofill.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/svk_zerofill.cc.o
+.PHONY : svk_zerofill.cc.o
+
+svk_zerofill.i: svk_zerofill.cc.i
 .PHONY : svk_zerofill.i
 
-# target to generate assembly for a file
-svk_zerofill.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/svk_zerofill.s
+# target to preprocess a source file
+svk_zerofill.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/svk_zerofill.cc.i
+.PHONY : svk_zerofill.cc.i
+
+svk_zerofill.s: svk_zerofill.cc.s
 .PHONY : svk_zerofill.s
 
-# target to build an object file
-svk_zscore.o:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zscore.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zscore.dir/svk_zscore.o
+# target to generate assembly for a file
+svk_zerofill.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zerofill.dir/svk_zerofill.cc.s
+.PHONY : svk_zerofill.cc.s
+
+svk_zscore.o: svk_zscore.cc.o
 .PHONY : svk_zscore.o
 
-# target to preprocess a source file
-svk_zscore.i:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zscore.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zscore.dir/svk_zscore.i
+# target to build an object file
+svk_zscore.cc.o:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zscore.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zscore.dir/svk_zscore.cc.o
+.PHONY : svk_zscore.cc.o
+
+svk_zscore.i: svk_zscore.cc.i
 .PHONY : svk_zscore.i
 
-# target to generate assembly for a file
-svk_zscore.s:
-	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zscore.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zscore.dir/svk_zscore.s
+# target to preprocess a source file
+svk_zscore.cc.i:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zscore.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zscore.dir/svk_zscore.cc.i
+.PHONY : svk_zscore.cc.i
+
+svk_zscore.s: svk_zscore.cc.s
 .PHONY : svk_zscore.s
+
+# target to generate assembly for a file
+svk_zscore.cc.s:
+	cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3 && $(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_zscore.dir/build.make applications/cmd_line/src/CMakeFiles/svk_zscore.dir/svk_zscore.cc.s
+.PHONY : svk_zscore.cc.s
 
 # Help Target
 help:
@@ -1603,6 +2064,7 @@ help:
 	@echo "... svk_spec_diff"
 	@echo "... svk_surface_area"
 	@echo "... svk_svrecon"
+	@echo "... svk_test"
 	@echo "... svk_transform"
 	@echo "... svk_variable_flip_scaler"
 	@echo "... svk_volume_diff"
@@ -1734,6 +2196,9 @@ help:
 	@echo "... svk_svrecon.o"
 	@echo "... svk_svrecon.i"
 	@echo "... svk_svrecon.s"
+	@echo "... svk_test.o"
+	@echo "... svk_test.i"
+	@echo "... svk_test.s"
 	@echo "... svk_transform.o"
 	@echo "... svk_transform.i"
 	@echo "... svk_transform.s"

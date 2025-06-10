@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/svk_scale_image"
-  "../Linux_x86_64/svk_scale_image.pdb"
-  "CMakeFiles/svk_scale_image.dir/svk_scale_image.o"
-  "CMakeFiles/svk_scale_image.dir/svk_scale_image.o.d"
+  "../Linux_x86_64_debug/svk_scale_image"
+  "../Linux_x86_64_debug/svk_scale_image.pdb"
+  "CMakeFiles/svk_scale_image.dir/svk_scale_image.cc.o"
+  "CMakeFiles/svk_scale_image.dir/svk_scale_image.cc.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

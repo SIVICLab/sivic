@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/svk_point_selector"
-  "../Linux_x86_64/svk_point_selector.pdb"
-  "CMakeFiles/svk_point_selector.dir/svk_point_selector.o"
-  "CMakeFiles/svk_point_selector.dir/svk_point_selector.o.d"
+  "../Linux_x86_64_debug/svk_point_selector"
+  "../Linux_x86_64_debug/svk_point_selector.pdb"
+  "CMakeFiles/svk_point_selector.dir/svk_point_selector.cc.o"
+  "CMakeFiles/svk_point_selector.dir/svk_point_selector.cc.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

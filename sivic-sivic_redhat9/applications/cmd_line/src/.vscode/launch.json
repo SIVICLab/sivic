@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug svk_file_convert",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/svk_file_convert",
+        "args": [
+          "-i", "/mnt/nfs/rad/data/bioe3/new_seq_dev/b5612/t16607/images/t16607_t1v.idf",
+          "-o", "/tmp/test_dicomhi",
+          "-t5"
+        ],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": true,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "Build svk_file_convert"
+      }
+    ]
+  }

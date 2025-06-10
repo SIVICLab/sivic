@@ -125,6 +125,8 @@ find_package(OpenGL REQUIRED)
 find_package(X11 REQUIRED)
 
 
+
+
 ###################################
 #   VTK
 ###################################
@@ -151,7 +153,36 @@ include_directories(
 # Remove deprecated include
 #INCLUDE(${VTK_USE_FILE})
 
-
+function(svk_use_vtk target)
+  # Link against the imported VTK targets
+  target_link_libraries(${target} PRIVATE
+        VTK::CommonCore
+        VTK::CommonDataModel
+        VTK::CommonSystem
+        VTK::IOImage
+        VTK::ImagingCore
+        VTK::ImagingFourier
+        VTK::ImagingGeneral
+        VTK::FiltersCore
+        VTK::FiltersGeneral
+        VTK::FiltersSources)
+  # If VTK was built STATIC, we must add the AutoInit symbols
+  if (NOT VTK_BUILD_SHARED_LIBS)
+    vtk_module_autoinit(
+        TARGETS ${target}
+        MODULES
+          VTK::CommonCore
+          VTK::CommonDataModel
+          VTK::CommonSystem
+          VTK::IOImage
+          VTK::ImagingCore
+          VTK::ImagingFourier
+          VTK::ImagingGeneral
+          VTK::FiltersCore
+          VTK::FiltersGeneral
+          VTK::FiltersSources)
+  endif()
+endfunction()
 ###################################
 #   KWWidgets
 

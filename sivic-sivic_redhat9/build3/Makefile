@@ -276,6 +276,19 @@ svk_file_convert/fast:
 .PHONY : svk_file_convert/fast
 
 #=============================================================================
+# Target rules for targets named svk_test
+
+# Build rule for target.
+svk_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_test
+.PHONY : svk_test
+
+# fast build rule for target.
+svk_test/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_test.dir/build.make applications/cmd_line/src/CMakeFiles/svk_test.dir/build
+.PHONY : svk_test/fast
+
+#=============================================================================
 # Target rules for targets named svk_print_image_info
 
 # Build rule for target.
@@ -933,6 +946,7 @@ help:
 	@echo "... svk_spec_diff"
 	@echo "... svk_surface_area"
 	@echo "... svk_svrecon"
+	@echo "... svk_test"
 	@echo "... svk_transform"
 	@echo "... svk_variable_flip_scaler"
 	@echo "... svk_volume_diff"

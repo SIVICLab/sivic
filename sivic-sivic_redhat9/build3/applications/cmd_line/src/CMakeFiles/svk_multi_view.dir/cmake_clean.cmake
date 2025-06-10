@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/svk_multi_view"
-  "../Linux_x86_64/svk_multi_view.pdb"
-  "CMakeFiles/svk_multi_view.dir/svk_multi_view.o"
-  "CMakeFiles/svk_multi_view.dir/svk_multi_view.o.d"
+  "../Linux_x86_64_debug/svk_multi_view"
+  "../Linux_x86_64_debug/svk_multi_view.pdb"
+  "CMakeFiles/svk_multi_view.dir/svk_multi_view.cc.o"
+  "CMakeFiles/svk_multi_view.dir/svk_multi_view.cc.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

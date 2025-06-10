@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/libsvk.a"
-  "../Linux_x86_64/libsvk.pdb"
+  "../Linux_x86_64_debug/libsvk.a"
+  "../Linux_x86_64_debug/libsvk.pdb"
   "CMakeFiles/svk.dir/svk4DImageData.o"
   "CMakeFiles/svk.dir/svk4DImageData.o.d"
   "CMakeFiles/svk.dir/svkAlgoTemplate.o"

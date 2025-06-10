@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/libsvkviz.a"
-  "../Linux_x86_64/libsvkviz.pdb"
+  "../Linux_x86_64_debug/libsvkviz.a"
+  "../Linux_x86_64_debug/libsvkviz.pdb"
   "CMakeFiles/svkviz.dir/svkDataView.o"
   "CMakeFiles/svkviz.dir/svkDataView.o.d"
   "CMakeFiles/svkviz.dir/svkDataViewController.o"

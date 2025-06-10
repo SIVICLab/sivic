@@ -1,0 +1,45 @@
+// .vscode/launch.json
+
+{
+  "version": "0.2.0",
+  "configurations": [
+      {
+          "name": "Debug svk_file_convert",
+          "type": "cppdbg",
+          "request": "launch",
+
+          // The path to the compiled binary from step 5:
+          "program": "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug/svk_file_convert",
+
+          //Arguments to pass to svk_file_convert:
+          "args": [
+              "-i", "/mnt/nfs/rad/data/bioe3/new_seq_dev/b5612/t16607/images/t16607_t1v.idf",
+              "-o", "/tmp/test_dicomhi",
+              "-t5"
+          ],
+
+          // If true, the debugger will stop at main() immediately.
+          "stopAtEntry": true,
+
+          // The directory from which your program runs.
+          "cwd": "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/Linux_x86_64_debug",
+
+          "environment": [],
+          "externalConsole": true,
+
+          // Tells VS Code to use GDB as the backend.
+          "MIMode": "gdb",
+
+          "setupCommands": [
+              {
+                  "description": "Enable pretty-printing for gdb",
+                  "text": "-enable-pretty-printing",
+                  "ignoreFailures": false
+              }
+          ],
+
+          // This references the "label" from tasks.json that builds svk_file_convert
+          "preLaunchTask": "CMake Build svk_file_convert"
+      }
+  ]
+}

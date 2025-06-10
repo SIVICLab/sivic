@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/svk_phase_spec"
-  "../Linux_x86_64/svk_phase_spec.pdb"
-  "CMakeFiles/svk_phase_spec.dir/svk_phase_spec.o"
-  "CMakeFiles/svk_phase_spec.dir/svk_phase_spec.o.d"
+  "../Linux_x86_64_debug/svk_phase_spec"
+  "../Linux_x86_64_debug/svk_phase_spec.pdb"
+  "CMakeFiles/svk_phase_spec.dir/svk_phase_spec.cc.o"
+  "CMakeFiles/svk_phase_spec.dir/svk_phase_spec.cc.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

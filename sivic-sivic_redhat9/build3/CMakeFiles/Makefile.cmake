@@ -137,6 +137,7 @@ set(CMAKE_DEPEND_INFO_FILES
   "libs/src/CMakeFiles/svkviz.dir/DependInfo.cmake"
   "libs/src/CMakeFiles/svkadapt.dir/DependInfo.cmake"
   "applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/DependInfo.cmake"
+  "applications/cmd_line/src/CMakeFiles/svk_test.dir/DependInfo.cmake"
   "applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/DependInfo.cmake"
   "applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/DependInfo.cmake"
   "applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/DependInfo.cmake"

@@ -61,17 +61,21 @@ extern "C" {
 #include <svkIdfVolumeWriter.h>
 #include <svkDcmHeader.h>
 #include <svkBurnResearchPixels.h>
-#include <vtkIndent.h>
-#include <vtkXMLImageDataWriter.h>
-
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkIndent.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkXMLImageDataWriter.h>
+#include <svkMriImageData.h>
 
 using namespace svk;
 
 
+
 int main (int argc, char** argv)
 {
-
+//Look for RegisterFactory Method. You may need to create a new subclass of vtkObjectFactory
+//for creating svkMriImageData objects, then run the static vtkObjectFactory::RegisterFactory method…. Not sure the exact syntax.    
+//svkMriImageData* my_data = svkMriImageData::New();
     string usemsg("\n") ; 
+    usemsg += " TEST \n";
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_file_convert -i input_file_name -o output_file_name -t output_data_type  \n"; 
     usemsg += "                 [ --deid_type type [ --deid_id id ] ]                       \n";
@@ -141,12 +145,14 @@ int main (int argc, char** argv)
     usemsg += "============================================================================ \n";  
     usemsg += "                                                                             \n";  
 
+    
+
     string inputFileName; 
     string outputFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
     svkDcmHeader::PHIType deidType = svkDcmHeader::PHI_IDENTIFIED;
     string deidStudyId = ""; 
-    bool   burnResearchHeader = false;  
+    bool   burnResearchHeader = false; 
     bool   useCompression = false;  
     bool   verbose = false;
     bool   onlyLoadSingleFile = false;
@@ -293,6 +299,11 @@ int main (int argc, char** argv)
         cout << "file name: " << inputFileName << endl;
     }
 
+    svkMriImageData* my_data = svkMriImageData::New();
+    cout << "Successfully instantiated svkMriImageData: " << *my_data << endl;
+    my_data->Print(cout);
+    my_data->PrintSelf(cout, vtkIndent(2));
+    my_data->Delete();
 
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
     svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
@@ -416,4 +427,3 @@ int main (int argc, char** argv)
 
     return 0; 
 }
-

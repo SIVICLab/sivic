@@ -21,6 +21,7 @@
 /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/libs/src/CMakeFiles/install/local.dir
 /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/libs/src/CMakeFiles/install/strip.dir
 /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/src/CMakeFiles/svk_file_convert.dir
+/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/src/CMakeFiles/svk_test.dir
 /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir
 /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir
 /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir

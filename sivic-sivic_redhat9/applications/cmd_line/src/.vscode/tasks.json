@@ -1,0 +1,24 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "type": "shell",
+        "label": "Build svk_file_convert",
+        "command": "/usr/bin/g++",
+        "args": [
+          "-g",
+          "${workspaceFolder}/svk_file_convert.cc",
+          "-o",
+          "${workspaceFolder}/svk_file_convert"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder}"
+        },
+        "problemMatcher": ["$gcc"],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      }
+    ]
+  }

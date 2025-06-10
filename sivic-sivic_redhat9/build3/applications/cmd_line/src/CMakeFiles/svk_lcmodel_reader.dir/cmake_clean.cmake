@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/svk_lcmodel_reader"
-  "../Linux_x86_64/svk_lcmodel_reader.pdb"
-  "CMakeFiles/svk_lcmodel_reader.dir/svk_lcmodel_reader.o"
-  "CMakeFiles/svk_lcmodel_reader.dir/svk_lcmodel_reader.o.d"
+  "../Linux_x86_64_debug/svk_lcmodel_reader"
+  "../Linux_x86_64_debug/svk_lcmodel_reader.pdb"
+  "CMakeFiles/svk_lcmodel_reader.dir/svk_lcmodel_reader.cc.o"
+  "CMakeFiles/svk_lcmodel_reader.dir/svk_lcmodel_reader.cc.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

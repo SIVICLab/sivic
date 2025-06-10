@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64/libsvkadapt.a"
-  "../Linux_x86_64/libsvkadapt.pdb"
+  "../Linux_x86_64_debug/libsvkadapt.a"
+  "../Linux_x86_64_debug/libsvkadapt.pdb"
   "CMakeFiles/svkadapt.dir/svkDcmtkAdapter.o"
   "CMakeFiles/svkadapt.dir/svkDcmtkAdapter.o.d"
   "CMakeFiles/svkadapt.dir/svkDcmtkException.o"

@@ -57,35 +57,14 @@ vtkStandardNewMacro(svkIdfVolumeReader);
 
 
 
-// int svkIdfVolumeReader::RequestDataObject(
-//     vtkInformation* request,
-//     vtkInformationVector** inputVector,
-//     vtkInformationVector* outputVector
-// ) {
-//     vtkInformation* outInfo = outputVector->GetInformationObject(0);
 
-//     // Manually create your subclass
-//     svkMriImageData* output = svkMriImageData::New();
-
-//     outInfo->Set(vtkDataObject::DATA_OBJECT(), output);
-//     // "FastDelete" so we don't hold an extra reference
-//     output->FastDelete();
-
-//     return 1;  // success
-// }
-
-
-
-
-/*!
- *  
- */
 svkIdfVolumeReader::svkIdfVolumeReader()
 {
-
+    
 #if VTK_DEBUG_ON
     this->DebugOn();
     vtkDebugLeaks::ConstructClass("svkIdfVolumeReader");
+    this->SetNumberOfOutputPorts(1); 
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
@@ -104,6 +83,7 @@ svkIdfVolumeReader::svkIdfVolumeReader()
     // IDF files are always big-endian.
     this->SetDataByteOrderToBigEndian();
 
+    this->SetNumberOfOutputPorts(1); 
 }
 
 
@@ -1107,25 +1087,50 @@ bool svkIdfVolumeReader::IsIdfStudyIdAccessionNumber()
     return isAccession; 
 }
 
+// ---------------------------------------------------------------------------
+// Guarantee the pipeline has a real svkMriImageData to work with
+// ---------------------------------------------------------------------------
+int svkIdfVolumeReader::RequestDataObject(vtkInformation*,
+                                          vtkInformationVector**,
+                                          vtkInformationVector*)
+{
+    vtkDataObject* current = this->GetExecutive()->GetOutputData(0);
+    if (!current || !current->IsA("svkMriImageData"))
+    {
+        auto* out = svkMriImageData::New();
+        this->GetExecutive()->SetOutputData(0, out);
+        out->Delete();               // pipeline owns the reference
+    }
+    return 1;
+}
+
 
 /*!
  *
  */
-int svkIdfVolumeReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
-{
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), svkMriImageData::GetClassName())
-    // info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
-    return 1;
-}
-
-// int svkIdfVolumeReader::FillOutputPortInformation(int port, vtkInformation* info)
+// int svkIdfVolumeReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 // {
-//     // Let the superclass do any default setup:
-//     this->Superclass::FillOutputPortInformation(port, info);
-
-//     // Report that we produce something that at least inherits from vtkImageData
-//     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
+//     info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
 //     return 1;
 // }
 
+int svkIdfVolumeReader::FillOutputPortInformation(int port,
+                                                  vtkInformation* info)
+{
+    if (port == 0) {
+        // This is the magic string vtkDataObjectTypes uses.
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
+        return 1;
+    }
+    return 0;
+}
 
+// int svkIdfVolumeReader::FillOutputPortInformation(int port,
+//                                                   vtkInformation* info)
+// {
+//     if (port == 0)
+//     {
+//         info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
+//     }
+//     return this->Superclass::FillOutputPortInformation(port, info);
+// }

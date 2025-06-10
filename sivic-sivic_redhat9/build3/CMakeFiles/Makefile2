@@ -85,6 +85,7 @@ clean: applications/cmd_line/src/clean
 
 # Recursive "all" directory target.
 applications/cmd_line/src/all: applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/all
+applications/cmd_line/src/all: applications/cmd_line/src/CMakeFiles/svk_test.dir/all
 applications/cmd_line/src/all: applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/all
 applications/cmd_line/src/all: applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/all
 applications/cmd_line/src/all: applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/all
@@ -139,6 +140,7 @@ applications/cmd_line/src/preinstall:
 
 # Recursive "clean" directory target.
 applications/cmd_line/src/clean: applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/clean
+applications/cmd_line/src/clean: applications/cmd_line/src/CMakeFiles/svk_test.dir/clean
 applications/cmd_line/src/clean: applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/clean
 applications/cmd_line/src/clean: applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/clean
 applications/cmd_line/src/clean: applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/clean
@@ -245,12 +247,12 @@ libs/src/CMakeFiles/svk.dir/clean:
 libs/src/CMakeFiles/svkXMLUtils.dir/all:
 	$(MAKE) $(MAKESILENT) -f libs/src/CMakeFiles/svkXMLUtils.dir/build.make libs/src/CMakeFiles/svkXMLUtils.dir/depend
 	$(MAKE) $(MAKESILENT) -f libs/src/CMakeFiles/svkXMLUtils.dir/build.make libs/src/CMakeFiles/svkXMLUtils.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svkXMLUtils"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=55 "Built target svkXMLUtils"
 .PHONY : libs/src/CMakeFiles/svkXMLUtils.dir/all
 
 # Build rule for subdir invocation for target.
 libs/src/CMakeFiles/svkXMLUtils.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 1
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 libs/src/CMakeFiles/svkXMLUtils.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : libs/src/CMakeFiles/svkXMLUtils.dir/rule
@@ -271,7 +273,7 @@ libs/src/CMakeFiles/svkXMLUtils.dir/clean:
 libs/src/CMakeFiles/svkTypeUtils.dir/all:
 	$(MAKE) $(MAKESILENT) -f libs/src/CMakeFiles/svkTypeUtils.dir/build.make libs/src/CMakeFiles/svkTypeUtils.dir/depend
 	$(MAKE) $(MAKESILENT) -f libs/src/CMakeFiles/svkTypeUtils.dir/build.make libs/src/CMakeFiles/svkTypeUtils.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=55 "Built target svkTypeUtils"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=54 "Built target svkTypeUtils"
 .PHONY : libs/src/CMakeFiles/svkTypeUtils.dir/all
 
 # Build rule for subdir invocation for target.
@@ -297,12 +299,12 @@ libs/src/CMakeFiles/svkTypeUtils.dir/clean:
 libs/src/CMakeFiles/svkPSD.dir/all:
 	$(MAKE) $(MAKESILENT) -f libs/src/CMakeFiles/svkPSD.dir/build.make libs/src/CMakeFiles/svkPSD.dir/depend
 	$(MAKE) $(MAKESILENT) -f libs/src/CMakeFiles/svkPSD.dir/build.make libs/src/CMakeFiles/svkPSD.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=53,54 "Built target svkPSD"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=53 "Built target svkPSD"
 .PHONY : libs/src/CMakeFiles/svkPSD.dir/all
 
 # Build rule for subdir invocation for target.
 libs/src/CMakeFiles/svkPSD.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 1
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 libs/src/CMakeFiles/svkPSD.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : libs/src/CMakeFiles/svkPSD.dir/rule
@@ -379,7 +381,7 @@ applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/all: libs/src/CMakeFil
 applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=65 "Built target svk_file_convert"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=64 "Built target svk_file_convert"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/all
 
 # Build rule for subdir invocation for target.
@@ -399,6 +401,36 @@ applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/clean:
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_file_convert.dir/clean
 
 #=============================================================================
+# Target rules for target applications/cmd_line/src/CMakeFiles/svk_test.dir
+
+# All Build rule for target.
+applications/cmd_line/src/CMakeFiles/svk_test.dir/all: libs/src/CMakeFiles/svk.dir/all
+applications/cmd_line/src/CMakeFiles/svk_test.dir/all: libs/src/CMakeFiles/svkXMLUtils.dir/all
+applications/cmd_line/src/CMakeFiles/svk_test.dir/all: libs/src/CMakeFiles/svkTypeUtils.dir/all
+applications/cmd_line/src/CMakeFiles/svk_test.dir/all: libs/src/CMakeFiles/svkPSD.dir/all
+applications/cmd_line/src/CMakeFiles/svk_test.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_test.dir/build.make applications/cmd_line/src/CMakeFiles/svk_test.dir/depend
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_test.dir/build.make applications/cmd_line/src/CMakeFiles/svk_test.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=86 "Built target svk_test"
+.PHONY : applications/cmd_line/src/CMakeFiles/svk_test.dir/all
+
+# Build rule for subdir invocation for target.
+applications/cmd_line/src/CMakeFiles/svk_test.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_test.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
+.PHONY : applications/cmd_line/src/CMakeFiles/svk_test.dir/rule
+
+# Convenience name for target.
+svk_test: applications/cmd_line/src/CMakeFiles/svk_test.dir/rule
+.PHONY : svk_test
+
+# clean rule for target.
+applications/cmd_line/src/CMakeFiles/svk_test.dir/clean:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_test.dir/build.make applications/cmd_line/src/CMakeFiles/svk_test.dir/clean
+.PHONY : applications/cmd_line/src/CMakeFiles/svk_test.dir/clean
+
+#=============================================================================
 # Target rules for target applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir
 
 # All Build rule for target.
@@ -409,12 +441,12 @@ applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/all: libs/src/CMak
 applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/build.make applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/build.make applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_print_image_info"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=78 "Built target svk_print_image_info"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_print_image_info.dir/rule
@@ -439,7 +471,7 @@ applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/all: libs/
 applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/build.make applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/build.make applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=60 "Built target svk_create_secondary_capture"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=59 "Built target svk_create_secondary_capture"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_create_secondary_capture.dir/all
 
 # Build rule for subdir invocation for target.
@@ -469,12 +501,12 @@ applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/all: libs/src/CMake
 applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_image_threshold"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=70 "Built target svk_image_threshold"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_image_threshold.dir/rule
@@ -499,12 +531,12 @@ applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/all: libs/src/CMakeFil
 applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_dilate_erode"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=62 "Built target svk_dilate_erode"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_dilate_erode.dir/rule
@@ -529,12 +561,12 @@ applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/all: libs/src/C
 applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/build.make applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/build.make applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=72 "Built target svk_interpolate_spectra"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_interpolate_spectra"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_interpolate_spectra.dir/rule
@@ -559,12 +591,12 @@ applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/all: libs/src/CMakeFiles/sv
 applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=62 "Built target svk_dcmdump"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_dcmdump"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_dcmdump.dir/rule
@@ -590,12 +622,12 @@ applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/all: libs/src/CMakeFiles
 applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_quick_view"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=80 "Built target svk_quick_view"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 66
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 67
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_quick_view.dir/rule
@@ -621,7 +653,7 @@ applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/all: libs/src/CMakeF
 applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/build.make applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/build.make applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=78 "Built target svk_point_selector"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=77 "Built target svk_point_selector"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_point_selector.dir/all
 
 # Build rule for subdir invocation for target.
@@ -652,7 +684,7 @@ applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/all: libs/src/CMakeFiles
 applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/build.make applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=75 "Built target svk_multi_view"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=74 "Built target svk_multi_view"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_multi_view.dir/all
 
 # Build rule for subdir invocation for target.
@@ -682,12 +714,12 @@ applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/all: libs/src/CMakeF
 applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=67 "Built target svk_gepfile_reader"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_gepfile_reader"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_gepfile_reader.dir/rule
@@ -742,12 +774,12 @@ applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/all: libs/src/CMakeF
 applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_lcmodel_writer"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=73 "Built target svk_lcmodel_writer"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_lcmodel_writer.dir/rule
@@ -772,7 +804,7 @@ applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/all: libs/src/CMakeF
 applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/build.make applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=73 "Built target svk_lcmodel_reader"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=72 "Built target svk_lcmodel_reader"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_lcmodel_reader.dir/all
 
 # Build rule for subdir invocation for target.
@@ -832,12 +864,12 @@ applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/all: libs/src/CMakeFil
 applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/build.make applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/build.make applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_get_filetype"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=67 "Built target svk_get_filetype"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_get_filetype.dir/rule
@@ -862,12 +894,12 @@ applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/all: libs/src/CMakeFiles/
 applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/build.make applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=84 "Built target svk_spec_diff"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_spec_diff"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_spec_diff.dir/rule
@@ -922,7 +954,7 @@ applications/cmd_line/src/CMakeFiles/svk_quantify.dir/all: libs/src/CMakeFiles/s
 applications/cmd_line/src/CMakeFiles/svk_quantify.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quantify.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_quantify.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=80 "Built target svk_quantify"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=79 "Built target svk_quantify"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_quantify.dir/all
 
 # Build rule for subdir invocation for target.
@@ -952,12 +984,12 @@ applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/all: libs/src/CMakeFil
 applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/build.make applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_dce_quantify"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=60 "Built target svk_dce_quantify"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_dce_quantify.dir/rule
@@ -982,12 +1014,12 @@ applications/cmd_line/src/CMakeFiles/svk_reslice.dir/all: libs/src/CMakeFiles/sv
 applications/cmd_line/src/CMakeFiles/svk_reslice.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reslice.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reslice.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_reslice.dir/build.make applications/cmd_line/src/CMakeFiles/svk_reslice.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=82 "Built target svk_reslice"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_reslice"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_reslice.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_reslice.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_reslice.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_reslice.dir/rule
@@ -1012,12 +1044,12 @@ applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/all: libs/src/CMakeFiles/sv
 applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/build.make applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_svrecon"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=85 "Built target svk_svrecon"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_svrecon.dir/rule
@@ -1043,7 +1075,7 @@ applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/all: libs/src/CMakeFil
 applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/build.make applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/build.make applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=85 "Built target svk_surface_area"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=84 "Built target svk_surface_area"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_surface_area.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1073,12 +1105,12 @@ applications/cmd_line/src/CMakeFiles/svk_fft.dir/all: libs/src/CMakeFiles/svkPSD
 applications/cmd_line/src/CMakeFiles/svk_fft.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_fft.dir/build.make applications/cmd_line/src/CMakeFiles/svk_fft.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_fft.dir/build.make applications/cmd_line/src/CMakeFiles/svk_fft.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=64 "Built target svk_fft"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_fft"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_fft.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_fft.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_fft.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_fft.dir/rule
@@ -1103,12 +1135,12 @@ applications/cmd_line/src/CMakeFiles/svk_noise.dir/all: libs/src/CMakeFiles/svkP
 applications/cmd_line/src/CMakeFiles/svk_noise.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_noise.dir/build.make applications/cmd_line/src/CMakeFiles/svk_noise.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_noise.dir/build.make applications/cmd_line/src/CMakeFiles/svk_noise.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_noise"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=75 "Built target svk_noise"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_noise.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_noise.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_noise.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_noise.dir/rule
@@ -1193,12 +1225,12 @@ applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/all: libs/src/CMakeFiles
 applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=77 "Built target svk_phase_spec"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_phase_spec"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_phase_spec.dir/rule
@@ -1223,12 +1255,12 @@ applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/all: libs/src/CMakeFil
 applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/build.make applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/build.make applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_freq_correct"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=65 "Built target svk_freq_correct"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_freq_correct.dir/rule
@@ -1373,12 +1405,12 @@ applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/all: libs/src/CMakeFil
 applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=59 "Built target svk_combine_spec"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_combine_spec"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_combine_spec.dir/rule
@@ -1403,7 +1435,7 @@ applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/all: libs/src/CMakeFile
 applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/build.make applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/build.make applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=83 "Built target svk_scale_image"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=82 "Built target svk_scale_image"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_scale_image.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1463,12 +1495,12 @@ applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/all: libs/src/CMakeFil
 applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/build.make applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_average_spec"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=57 "Built target svk_average_spec"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_average_spec.dir/rule
@@ -1493,12 +1525,12 @@ applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/all: libs/src/CMakeFile
 applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/build.make applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/build.make applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=74 "Built target svk_mrs_combine"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_mrs_combine"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_mrs_combine.dir/rule
@@ -1553,12 +1585,12 @@ applications/cmd_line/src/CMakeFiles/svk_simulate.dir/all: libs/src/CMakeFiles/s
 applications/cmd_line/src/CMakeFiles/svk_simulate.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_simulate.dir/build.make applications/cmd_line/src/CMakeFiles/svk_simulate.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_simulate.dir/build.make applications/cmd_line/src/CMakeFiles/svk_simulate.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_simulate"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=83 "Built target svk_simulate"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_simulate.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_simulate.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_simulate.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_simulate.dir/rule
@@ -1643,12 +1675,12 @@ applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/all: libs/
 applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/build.make applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=79 "Built target svk_psd_prescription_convert"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_psd_prescription_convert"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_psd_prescription_convert.dir/rule
@@ -1673,7 +1705,7 @@ applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/all: libs/src/CMakeFile
 applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=70 "Built target svk_image_stats"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=69 "Built target svk_image_stats"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_image_stats.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1703,12 +1735,12 @@ applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/all: libs/src/CMakeF
 applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/build.make applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=69 "Built target svk_image_pipeline"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_image_pipeline"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_image_pipeline.dir/rule
@@ -1733,12 +1765,12 @@ applications/cmd_line/src/CMakeFiles/svk_transform.dir/all: libs/src/CMakeFiles/
 applications/cmd_line/src/CMakeFiles/svk_transform.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_transform.dir/build.make applications/cmd_line/src/CMakeFiles/svk_transform.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_transform.dir/build.make applications/cmd_line/src/CMakeFiles/svk_transform.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=86 "Built target svk_transform"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_transform"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_transform.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_transform.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_transform.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_transform.dir/rule
@@ -1763,12 +1795,12 @@ applications/cmd_line/src/CMakeFiles/svk_app_template.dir/all: libs/src/CMakeFil
 applications/cmd_line/src/CMakeFiles/svk_app_template.dir/all: libs/src/CMakeFiles/svkadapt.dir/all
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build.make applications/cmd_line/src/CMakeFiles/svk_app_template.dir/depend
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build.make applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num=57 "Built target svk_app_template"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles --progress-num= "Built target svk_app_template"
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_app_template.dir/all
 
 # Build rule for subdir invocation for target.
 applications/cmd_line/src/CMakeFiles/svk_app_template.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 applications/cmd_line/src/CMakeFiles/svk_app_template.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
 .PHONY : applications/cmd_line/src/CMakeFiles/svk_app_template.dir/rule
