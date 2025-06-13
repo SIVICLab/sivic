@@ -137,7 +137,7 @@ endif( BUILD_CLAPACK )
 
 IF(WIN32)
 	ADD_LIBRARY( getopt
-			     STATIC
+			     STATICt
 				 ../getopt/getopt.c
 				 ../getopt/getopt_long.c
 			    )
