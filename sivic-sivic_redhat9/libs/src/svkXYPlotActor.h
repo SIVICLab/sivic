@@ -144,11 +144,12 @@
 #define VTK_XYPLOT_Y_AXIS_TOP     0
 #define VTK_XYPLOT_Y_AXIS_HCENTER 1
 #define VTK_XYPLOT_Y_AXIS_VCENTER 2 // rotate by 90 degrees (y-axis aligned)
-
+/* MSH modified*/
 #include <svkXYPlotActorConnections.h>
-#include "/usr/include/vtk/vtkRenderingAnnotationModule.h"
-#include "/usr/include/vtk/vtkActor2D.h"
-#include "/usr/include/vtk/vtkSmartPointer.h"
+#include "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkPointData.h"
+#include "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkRenderingAnnotationModule.h"
+#include "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkActor2D.h"
+#include "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkSmartPointer.h" 
 
 class vtkAlgorithmOutput;
 class vtkAppendPolyData;

@@ -47,6 +47,7 @@
 #include <svkDcmVolumeReader.h>
 #include <vector>
 #include <string>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h>
 
 
 namespace svk {
@@ -88,8 +89,10 @@ class svkDcmMriVolumeReader : public svkDcmVolumeReader
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
         virtual void                             InitDcmHeader();
         virtual bool                             CheckForMultiVolume();
-
-
+/*MSH*/
+		int ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector) override; 
     private:
 
         virtual void    LoadData(svkImageData* data); 

@@ -54,7 +54,8 @@
 
 #include <map>
 #include <string>
-
+/*MSH for VTK 9.3*/
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h> /*MSH*/
 
 namespace svk {
 
@@ -94,8 +95,10 @@ class svkDdfVolumeReader : public svkImageReader2
         virtual void                             ExecuteInformation();
         virtual void                             ExecuteDataWithInformation( vtkDataObject *output, vtkInformation* outInfo );
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
-
-
+/*MSH for RHEL9 system, vtk9.3 */
+     int ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector) override; 
     private:
 
         //  Methods:

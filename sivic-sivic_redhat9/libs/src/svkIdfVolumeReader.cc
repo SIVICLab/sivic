@@ -48,7 +48,6 @@
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkInformationVector.h>
 #include <sys/stat.h>
 
-
 using namespace svk;
 
 
@@ -82,7 +81,7 @@ svkIdfVolumeReader::svkIdfVolumeReader()
 
     // IDF files are always big-endian.
     this->SetDataByteOrderToBigEndian();
-
+	this->SetNumberOfInputPorts(0);/*MSH*/
     this->SetNumberOfOutputPorts(1); 
 }
 
@@ -1087,50 +1086,33 @@ bool svkIdfVolumeReader::IsIdfStudyIdAccessionNumber()
     return isAccession; 
 }
 
-// ---------------------------------------------------------------------------
-// Guarantee the pipeline has a real svkMriImageData to work with
-// ---------------------------------------------------------------------------
-int svkIdfVolumeReader::RequestDataObject(vtkInformation*,
-                                          vtkInformationVector**,
-                                          vtkInformationVector*)
+
+
+/*MSH*/
+int svkIdfVolumeReader::ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector)
 {
-    vtkDataObject* current = this->GetExecutive()->GetOutputData(0);
-    if (!current || !current->IsA("svkMriImageData"))
+    // Handle REQUEST_DATA_OBJECT: create our output object
+    if (request->Has(vtkDemandDrivenPipeline::REQUEST_DATA_OBJECT()))
     {
-        auto* out = svkMriImageData::New();
-        this->GetExecutive()->SetOutputData(0, out);
-        out->Delete();               // pipeline owns the reference
+        vtkDataObject* current = this->GetExecutive()->GetOutputData(0);
+        if (!current || !current->IsA("svkMriImageData"))
+        {
+            svkMriImageData* out = svkMriImageData::New();
+            this->GetExecutive()->SetOutputData(0, out);
+            out->Delete(); // pipeline owns reference now
+        }
     }
-    return 1;
+
+    // Call superclass to handle other request types (REQUEST_INFORMATION, REQUEST_DATA)
+    return this->Superclass::ProcessRequest(request, inputVector, outputVector);
 }
+int svkIdfVolumeReader::FillOutputPortInformation( int port, vtkInformation* info )
+
+ {
+     info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData"); /*MSH*/
 
 
-/*!
- *
- */
-// int svkIdfVolumeReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
-// {
-//     info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
-//     return 1;
-// }
-
-int svkIdfVolumeReader::FillOutputPortInformation(int port,
-                                                  vtkInformation* info)
-{
-    if (port == 0) {
-        // This is the magic string vtkDataObjectTypes uses.
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
-        return 1;
-    }
-    return 0;
-}
-
-// int svkIdfVolumeReader::FillOutputPortInformation(int port,
-//                                                   vtkInformation* info)
-// {
-//     if (port == 0)
-//     {
-//         info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
-//     }
-//     return this->Superclass::FillOutputPortInformation(port, info);
-// }
+     return 1;
+ }

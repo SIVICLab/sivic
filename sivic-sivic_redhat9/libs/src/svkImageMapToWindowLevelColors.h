@@ -48,9 +48,11 @@
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkInformation.h>
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDataObject.h>
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkImageMapToWindowLevelColors.h>
-//#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkInstantiator.h>
+/*#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkInstantiator.h> */
 #include <svkMriImageData.h>
 
+/* MSH, for upgrade with vtk 9.3*/
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h> 
 
 namespace svk {
 
@@ -82,7 +84,9 @@ class svkImageMapToWindowLevelColors : public vtkImageMapToWindowLevelColors
           vtkInformation *request,
           vtkInformationVector **inputVector,
           vtkInformationVector *outputVector);
-
+		int ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector) override; 
         //virtual int FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info);
         virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info);
 

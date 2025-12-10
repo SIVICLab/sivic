@@ -62,6 +62,7 @@
 #include <svkImageInPlaceFilter.h>
 
 
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h> 
 namespace svk {
 
 
@@ -118,6 +119,10 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         ~svkMrsImageFFT();
 
         virtual int     FillInputPortInformation(int port, vtkInformation* info);
+		/*MSH for upgrade with VTK9.3*/
+        int ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector) override; 
 
 
         //  Methods:

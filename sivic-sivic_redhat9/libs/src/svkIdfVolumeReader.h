@@ -50,8 +50,7 @@
 //  Add once, near the other VTK includes
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDataObject.h>
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkImageData.h>
-
-
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h>
 #include <string>
 
 #include <svkUtils.h>
@@ -73,7 +72,8 @@ class svkIdfVolumeReader : public svkImageReader2
         static svkIdfVolumeReader* New();
         vtkTypeMacro( svkIdfVolumeReader, svkImageReader2);
 
-        //virtual int RequestDataObject(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
+        //virtual int R
+        //equestDataObject(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
     //  svkIdfVolumeReader.h  (only the additions shown)
 
 
@@ -116,17 +116,8 @@ class svkIdfVolumeReader : public svkImageReader2
         virtual int             CanReadFile(const char* fname);
         void                    SetReadIntAsSigned(bool readIntAsSigned);
 
-    // ↓ add just before the closing class brace
-    protected:
-    /** Tell the VTK pipeline what data type we output. */
-     int FillOutputPortInformation(int port,
-                                  vtkInformation* info) override;
 
-    /** (Optional but safer) create the output object ourselves. */
-     int RequestDataObject(vtkInformation*,
-                          vtkInformationVector**,
-                          vtkInformationVector*) override;
-  
+
 
 
     protected:
@@ -134,10 +125,17 @@ class svkIdfVolumeReader : public svkImageReader2
         svkIdfVolumeReader();
         ~svkIdfVolumeReader();
 
-        virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
+        int                              FillOutputPortInformation(int port, vtkInformation* info) override;
         virtual void                             ExecuteInformation();
         virtual void                             ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo);
-        virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
+        virtual svkDcmHeader::DcmPixelDataFormat GetFileType();/*MSH*/
+	/*virtual int RequestDataObject(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;*/
+/*	int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;*/
+
+/*	int RequestDataObject(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector);*/
+	int ProcessRequest(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
+
+
 
 
     private:

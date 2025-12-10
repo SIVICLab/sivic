@@ -53,7 +53,8 @@
 #include <svkMrsImageData.h>
 #include <svkImageAlgorithmWithPortMapper.h>
 #include <svkDcmHeader.h>
-
+/*MSH for VTK 9.3*/
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h> 
 
 namespace svk {
 
@@ -95,7 +96,10 @@ class svkImageCopy : public svkImageAlgorithmWithPortMapper
                                     vtkInformationVector** inputVector, 
                                     vtkInformationVector* outputVector 
                                 );
-
+		/*MSH for VTK 9.3 */
+		int ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector) override; 
 
     private:
 

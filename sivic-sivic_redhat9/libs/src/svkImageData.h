@@ -112,6 +112,7 @@ class svkImageData: public vtkImageData
 
     public:
 
+/*		static svkImageData* New();*//*MSH removed again*/
         vtkTypeMacro( svkImageData, vtkImageData );
         virtual void       PrintSelf( ostream &os, vtkIndent indent );
 

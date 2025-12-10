@@ -48,7 +48,8 @@
 using namespace svk;
 
 
-//vtkCxxRevisionMacro(svkMriImageData, "$Rev$");
+/*vtkCxxRevisionMacro(svkMriImageData, "$Rev$");*/
+
 vtkStandardNewMacro(svkMriImageData);
 
 
@@ -60,6 +61,7 @@ svkMriImageData::svkMriImageData()
     pixelBuffer = NULL;
 #if VTK_DEBUG_ON
     this->DebugOn();
+	cerr << ">>> svkMriImageData constructed! this" << this << endl;
 #endif
     this->cellDataRepresentation = NULL;
 

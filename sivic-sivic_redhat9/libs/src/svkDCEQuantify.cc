@@ -51,8 +51,7 @@
 
 #include <time.h>
 #include <sys/stat.h>
-
-
+/* MSH for VTK 9.3*/
 using namespace svk;
 
 
@@ -95,6 +94,37 @@ svkDCEQuantify::~svkDCEQuantify()
     vtkDebugMacro(<<this->GetClassName()<<"::~"<<this->GetClassName());
 }
 
+
+/*MSH added for update with VTK 9.3.*/
+// ProcessRequest handles pipeline requests
+int svkDCEQuantify::ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector)
+{
+    // Handle REQUEST_DATA_OBJECT: create our output object
+    if (request->Has(vtkDemandDrivenPipeline::REQUEST_DATA_OBJECT()))
+    {
+
+		for (int port = 0; port < this->GetNumberOfOutputPorts(); port++) {
+            vtkDataObject* current = this->GetExecutive()->GetOutputData(port);
+            if (!current || !current->IsA("svkMriImageData")) {
+                svkMriImageData* out = svkMriImageData::New();
+                this->GetExecutive()->SetOutputData(port, out);
+                out->Delete();
+            }
+        }
+
+    }
+
+    // Call superclass to handle other request types (REQUEST_INFORMATION, REQUEST_DATA)
+    return this->Superclass::ProcessRequest(request, inputVector, outputVector);
+}
+
+/*MSH add for VTK 9.3*/
+int svkDCEQuantify::FillOutputPortInformation(int port, vtkInformation* info) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
+    return 1;
+}
 
 /*!
  * Utility setter for input port: Timepoint Start

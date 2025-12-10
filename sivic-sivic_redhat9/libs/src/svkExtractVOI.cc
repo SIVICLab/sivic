@@ -50,16 +50,17 @@
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
  */
-
+/* MSH upgraded*/
 #include "svkExtractVOI.h"
 
-#include "/usr/include/vtk/vtkCellData.h"
-#include "/usr/include/vtk/vtkImageData.h"
-#include "/usr/include/vtk/vtkInformation.h"
-#include "/usr/include/vtk/vtkInformationVector.h"
-#include "/usr/include/vtk/vtkObjectFactory.h"
-#include "/usr/include/vtk/vtkStreamingDemandDrivenPipeline.h"
-#include "/usr/include/vtk/vtkPointData.h"
+#include "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkCellData.h"
+#include "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkImageData.h"
+#include "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkInformation.h"
+#include "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkInformationVector.h"
+#include "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkObjectFactory.h"
+#include "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkStreamingDemandDrivenPipeline.h"
+#include "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkPointData.h"
+
 using namespace svk;
 
 //vtkCxxRevisionMacro(svkExtractVOI, "$Rev$");

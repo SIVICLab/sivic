@@ -51,7 +51,8 @@
 
 #include <svkImageInPlaceFilter.h>
 #include <svkApodizationWindow.h>
-
+/*MSH for vtk 9.3 use*/
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h>
 
 namespace svk {
 
@@ -87,9 +88,9 @@ class svkMrsApodizationFilter : public svkImageInPlaceFilter
 
         svkMrsApodizationFilter();
         ~svkMrsApodizationFilter();
-
+		
         virtual int     FillInputPortInformation(int port, vtkInformation* info);
-
+		
 
         //  Methods:
         virtual int     RequestInformation(
@@ -102,6 +103,9 @@ class svkMrsApodizationFilter : public svkImageInPlaceFilter
                             vtkInformationVector** inputVector,
                             vtkInformationVector* outputVector
                         );
+		int ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector) override; 
 
 
     private:

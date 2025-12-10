@@ -73,10 +73,10 @@ class svkMriImageData: public svkImageData
 {
 
     public:
-
-        vtkTypeMacro( svkMriImageData, svkImageData);
-        static svkMriImageData* New();
-        static vtkObject*       NewObject();
+      static svkMriImageData* New();
+       vtkTypeMacro( svkMriImageData, svkImageData);
+	 
+       static vtkObject*       NewObject();
 
 
         double*                 GetImagePixels( int slice );

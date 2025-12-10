@@ -45,6 +45,7 @@
 
 #include <svkDcmVolumeReader.h>
 
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h>
 
 namespace svk {
 
@@ -85,7 +86,10 @@ class svkDcmMrsVolumeReader : public svkDcmVolumeReader
 
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
-
+		/*MSH for RHEL9*/
+     	int ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector) override; 
 
     private:
 

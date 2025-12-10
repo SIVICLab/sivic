@@ -39,15 +39,13 @@
  *      Beck Olson
  */
 
+#include <vtkObjectFactory.h>
 
-#include <svkImageData.h>
 #include <svk4DImageData.h>
-
+#include <svkImageData.h>
 
 using namespace svk;
 
-
-//vtkCxxRevisionMacro(svkImageData, "$Rev$");
 
 
 /*!

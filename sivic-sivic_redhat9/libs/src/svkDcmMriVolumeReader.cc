@@ -184,7 +184,25 @@ void svkDcmMriVolumeReader::InitPrivateHeader()
 {
 }
 
+int svkDcmMriVolumeReader::ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector)
+{
+    // Handle REQUEST_DATA_OBJECT: create our output object
+    if (request->Has(vtkDemandDrivenPipeline::REQUEST_DATA_OBJECT()))
+    {
+        vtkDataObject* current = this->GetExecutive()->GetOutputData(0);
+        if (!current || !current->IsA("svkMriImageData"))
+        {
+            svkMriImageData* out = svkMriImageData::New();
+            this->GetExecutive()->SetOutputData(0, out);
+            out->Delete(); // pipeline owns reference now
+        }
+    }
 
+    // Call superclass to handle other request types (REQUEST_INFORMATION, REQUEST_DATA)
+    return this->Superclass::ProcessRequest(request, inputVector, outputVector);
+}
 /*! 
  *  Read the data for each volume into a separate point array in the vtkImageData object: 
  *  file names are in the following order: 

@@ -46,7 +46,7 @@
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkGlobFileNames.h>
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkSortFileNames.h>
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkByteSwap.h>
-
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h>
 #include <sys/stat.h>
 
 
@@ -104,6 +104,29 @@ svkDdfVolumeReader::~svkDdfVolumeReader()
 
 }
 
+
+
+/*MSH added for update with VTK 9.3*/
+// ProcessRequest handles pipeline requests
+int svkDdfVolumeReader::ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector)
+{
+    // Handle REQUEST_DATA_OBJECT: create our output object
+    if (request->Has(vtkDemandDrivenPipeline::REQUEST_DATA_OBJECT()))
+    {
+        vtkDataObject* current = this->GetExecutive()->GetOutputData(0);
+        if (!current || !current->IsA("svkMrsImageData"))
+        {
+            svkMrsImageData* out = svkMrsImageData::New();
+            this->GetExecutive()->SetOutputData(0, out);
+            out->Delete(); // pipeline owns reference now
+        }
+    }
+
+    // Call superclass to handle other request types (REQUEST_INFORMATION, REQUEST_DATA)
+    return this->Superclass::ProcessRequest(request, inputVector, outputVector);
+}
 
 
 /*!
@@ -233,6 +256,9 @@ void svkDdfVolumeReader::ExecuteDataWithInformation(vtkDataObject* output, vtkIn
     this->GetOutput()->GetProvenance()->AddAlgorithm( this->GetClassName() );
 
 }
+
+
+
 
 
 /*!

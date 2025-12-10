@@ -53,6 +53,8 @@
 #include <svkImageInPlaceFilter.h>
 #include <svkPhaseSpec.h>
 
+/*MSH*/
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h> 
 
 namespace svk {
 
@@ -80,6 +82,10 @@ class svkCorrectDCOffset : public svkImageInPlaceFilter
 
         virtual int     FillOutputPortInformation(int port, vtkInformation* info);
         virtual int     FillInputPortInformation(int port, vtkInformation* info);
+		int ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector) override; 
+
 
 
         //  Methods:
@@ -89,7 +95,6 @@ class svkCorrectDCOffset : public svkImageInPlaceFilter
                             vtkInformationVector* outputVector
                         );
         virtual void    SetProvenance(); 
-
 
     private: 
         bool            WasKSpacePtSampled( vtkFloatArray* spectrum, int numPts );

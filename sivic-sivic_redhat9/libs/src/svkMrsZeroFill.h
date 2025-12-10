@@ -50,6 +50,10 @@
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkInformationVector.h>
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkStreamingDemandDrivenPipeline.h>
 
+/*MSH added for VTK 9.3*/
+
+
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h> 
 #include <svkUtils.h>
 #include <svkMriZeroFill.h>
 #include <svkImageInPlaceFilter.h>
@@ -146,6 +150,11 @@ class svkMrsZeroFill : public svkImageInPlaceFilter
 
         virtual void    InitializeOutputWholeExtent();
 
+
+	/*MSH added for VTK 9.3 update */
+     int ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector) override; 
     private:
         
         //  Members:

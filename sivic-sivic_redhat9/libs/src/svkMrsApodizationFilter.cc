@@ -158,6 +158,29 @@ int svkMrsApodizationFilter::RequestDataSpectral()
     return 1; 
 } 
 
+/* MSH for RHEL9 system */
+// ProcessRequest handles pipeline requests
+int svkMrsApodizationFilter::ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector)
+{
+    // Handle REQUEST_DATA_OBJECT: create our output object
+    if (request->Has(vtkDemandDrivenPipeline::REQUEST_DATA_OBJECT()))
+    {
+        vtkDataObject* current = this->GetExecutive()->GetOutputData(0);
+        if (!current || !current->IsA("svkMrsImageData"))
+        {
+            svkMrsImageData* out = svkMrsImageData::New();
+            this->GetExecutive()->SetOutputData(0, out);
+            out->Delete(); // pipeline owns reference now
+        }
+    }
+
+    // Call superclass to handle other request types (REQUEST_INFORMATION, REQUEST_DATA)
+    return this->Superclass::ProcessRequest(request, inputVector, outputVector);
+}
+
+
 
 /*!
  *  Call the spatial filtering subroutine apply filter to 3D image at each frequency point. 

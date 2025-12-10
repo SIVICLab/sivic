@@ -65,8 +65,6 @@ svkDcmMrsVolumeReader::svkDcmMrsVolumeReader()
 #endif
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 }
-
-
 /*!
  *
  */
@@ -128,6 +126,27 @@ void svkDcmMrsVolumeReader::InitPrivateHeader()
     }
 
 }
+/*MSH for VTK 9.3 */ 
+int svkDcmMrsVolumeReader::ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector)
+{
+    // Handle REQUEST_DATA_OBJECT: create our output object
+    if (request->Has(vtkDemandDrivenPipeline::REQUEST_DATA_OBJECT()))
+    {
+        vtkDataObject* current = this->GetExecutive()->GetOutputData(0);
+        if (!current || !current->IsA("svkMrsImageData"))
+        {
+            svkMrsImageData* out = svkMrsImageData::New();
+            this->GetExecutive()->SetOutputData(0, out);
+            out->Delete(); // pipeline owns reference now
+        }
+    }
+
+    // Call superclass to handle other request types (REQUEST_INFORMATION, REQUEST_DATA)
+    return this->Superclass::ProcessRequest(request, inputVector, outputVector);
+}
+
 
 
 /*! 
@@ -201,6 +220,9 @@ void svkDcmMrsVolumeReader::LoadData( svkImageData* data )
     //this->GetOutput()->GetDcmHeader()->PrintDcmHeader(); 
     this->GetOutput()->GetDcmHeader()->ClearElement( "SpectroscopyData" ); 
 }
+
+
+
 
 
 /*!
