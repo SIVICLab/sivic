@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_image_pipeline"
-  "../Linux_x86_64_debug/svk_image_pipeline.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_image_pipeline"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_image_pipeline.pdb"
   "CMakeFiles/svk_image_pipeline.dir/svk_image_pipeline.cc.o"
   "CMakeFiles/svk_image_pipeline.dir/svk_image_pipeline.cc.o.d"
 )

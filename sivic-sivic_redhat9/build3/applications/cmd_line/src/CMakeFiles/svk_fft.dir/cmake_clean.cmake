@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_fft"
-  "../Linux_x86_64_debug/svk_fft.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_fft"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_fft.pdb"
   "CMakeFiles/svk_fft.dir/svk_fft.cc.o"
   "CMakeFiles/svk_fft.dir/svk_fft.cc.o.d"
 )

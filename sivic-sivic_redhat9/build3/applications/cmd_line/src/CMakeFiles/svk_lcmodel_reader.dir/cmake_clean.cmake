@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_lcmodel_reader"
-  "../Linux_x86_64_debug/svk_lcmodel_reader.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_lcmodel_reader"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_lcmodel_reader.pdb"
   "CMakeFiles/svk_lcmodel_reader.dir/svk_lcmodel_reader.cc.o"
   "CMakeFiles/svk_lcmodel_reader.dir/svk_lcmodel_reader.cc.o.d"
 )

@@ -49,7 +49,7 @@ endif()
 
 option( BUILD_TESTING "Build tests." FALSE )
 
-INCLUDE( CMakeSivicInclude.cmake )
+INCLUDE(CMakeSivicInclude.cmake )
 include(CMakeSivicInstall.cmake)
 include(CPack)
 
@@ -82,8 +82,9 @@ INCLUDE(CheckCCompilerFlag)
 IF(COMMAND CMAKE_POLICY)
     CMAKE_POLICY(SET CMP0005 OLD)
 ENDIF(COMMAND CMAKE_POLICY)
-
-
+#MSH
+message(STATUS "CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
+message(STATUS "CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
 option( BUILD_LIBRARY "Build library." TRUE )
 option( BUILD_VIZ_LIBRARY "Build visualization library." TRUE )
 option( BUILD_SIVIC "Build stand-alone application." TRUE )
@@ -98,13 +99,17 @@ option( BUILD_ITK "For building classes that rely on ITK fitting routines."  TRU
 option( BUILD_CLAPACK "For building classes that rely on clapack fitting routines."  FALSE )
 option( BUILD_PROFILER "Build for profiling with gprof." FALSE)
 option( BUILD_TESTS "Build test applications." FALSE)
-option( BUILD_CREATE_RAW "Build svk_create_raw. Requires open ssl" FALSE)
+option( BUILD_CREATE_RAW "Build svk_create_raw. Requires open ssl" TRUE)
 option( BUILD_EPIC "Build for EPIC PSD linking." FALSE)
 option( CREATE_WRAPPER_SCRIPTS "Create wrapper scripts for executables." TRUE)
 
 ADD_DEFINITIONS(-DSVK_RELEASE_VERSION="\\"${SVK_RELEASE_VERSION}\\"" )
 ADD_DEFINITIONS( -DSVK_MAJOR_VERSION="${SVK_MAJOR_VERSION}" )
 ADD_DEFINITIONS( -DSVK_MINOR_VERSION="${SVK_MINOR_VERSION}" )
+
+#MSH
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/bin/Debug")
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release")
 
 IF(UNIX)
     IF( NOT BUILD_EPIC )
@@ -124,15 +129,18 @@ ENDIF(WIN32)
 find_package(OpenGL REQUIRED)
 find_package(X11 REQUIRED)
 
-
+message("vtk_libraries:${VTK_LIBRARIES}")
 
 
 ###################################
 #   VTK
 ###################################
-set(VTK_INCLUDE_DIRS "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3")
+#set(VTK_INCLUDE_DIRS "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3")
+#set(VTK_INCLUDE_DIRS "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3")
 
-FIND_PACKAGE(VTK 9.3 REQUIRED COMPONENTS
+
+
+find_package(VTK 9.3 COMPONENTS
     CommonCore
     CommonDataModel
     CommonSystem
@@ -152,6 +160,21 @@ include_directories(
 
 # Remove deprecated include
 #INCLUDE(${VTK_USE_FILE})
+
+
+if (VTK_FOUND)
+    message(STATUS "VTK version: ${VTK_VERSION}")
+    message(STATUS "VTK libraries: ${VTK_LIBRARIES}")
+    message(STATUS "VTK include dirs: ${VTK_INCLUDE_DIRS}")
+else()
+    message(STATUS "VTK not found!")
+	message(STATUS "VTK manual set")
+	
+	set(VTK_DIR "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3")
+	message(STATUS ${VTK_DIR})
+endif()
+
+set(VTK_DIR "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3")
 
 function(svk_use_vtk target)
   # Link against the imported VTK targets
@@ -263,9 +286,9 @@ endif( BUILD_GE_CONSOLE )
 
 if( Slicer3_DIR )
     SET(VTK_DIR FORCE)
-    SET(KWWidgets_DIR FORCE)
+   # SET(KWWidgets_DIR FORCE) #MSH
     FIND_PACKAGE(VTK REQUIRED NO_DEFAULT_PATH PATHS ${Slicer3_DIR}/../Slicer3-lib/VTK-build)
-    FIND_PACKAGE(KWWidgets REQUIRED NO_DEFAULT_PATH PATHS ${Slicer3_DIR}/../Slicer3-lib/KWWidgets-build)
+   # FIND_PACKAGE(KWWidgets REQUIRED NO_DEFAULT_PATH PATHS ${Slicer3_DIR}/../Slicer3-lib/KWWidgets-build)
 endif ( Slicer3_DIR )
 
 if( BUILD_LIBRARY )
@@ -297,13 +320,29 @@ if( BUILD_CLAPACK )
     FIND_PATH( CLAPACK_DIR REQUIRED )
 endif ( BUILD_CLAPACK )
 
+
+set(OPENSSL_ROOT_DIR "/home/hmisung/bin/openssl-3.3.2.")
+set(OPENSSL_INCLUDE_DIR "/home/hmisung/bin/openssl-3.3.2/include")
+set(OPENSSL_LIBRARIES "/home/hmisung/bin/openssl-3.3.2/lib")
+set(OPENSSL_DIR "/home/hmisung/bin/openssl-3.3.2")
+
+
+
 if( BUILD_CREATE_RAW )
-    FIND_PATH( OPENSSL_DIR REQUIRED )
+#    FIND_PATH( OPENSSL_DIR REQUIRED )
+    #find_package( OpenSSL REQUIRED ) # MSH
+	#-DOPENSSL_ROOT_DIR=/home/hmisung/bin/openssl
 endif ( BUILD_CREATE_RAW )
+
 
 IF(CLION_BUILD)
     FILE(GLOB CLION_VTK_INCLUDE ${VTK_DIR}/../../../include/*)
     message(CLION_VTK_INCLUDE = ${CLION_VTK_INCLUDE})
 ENDIF(CLION_BUILD)
 
+
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin") # Not working
+message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 INSTALL_FILES( /local/sivic FILES README LICENSE)
+#INSTALL_FILES( /data/lilab1 FILES README LICENSE)
+

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_channel2time"
-  "../Linux_x86_64_debug/svk_channel2time.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_channel2time"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_channel2time.pdb"
   "CMakeFiles/svk_channel2time.dir/svk_channel2time.cc.o"
   "CMakeFiles/svk_channel2time.dir/svk_channel2time.cc.o.d"
 )

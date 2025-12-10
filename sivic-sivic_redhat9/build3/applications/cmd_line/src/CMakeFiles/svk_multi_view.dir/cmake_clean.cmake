@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_multi_view"
-  "../Linux_x86_64_debug/svk_multi_view.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_multi_view"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_multi_view.pdb"
   "CMakeFiles/svk_multi_view.dir/svk_multi_view.cc.o"
   "CMakeFiles/svk_multi_view.dir/svk_multi_view.cc.o.d"
 )

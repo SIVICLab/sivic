@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_quantify"
-  "../Linux_x86_64_debug/svk_quantify.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_quantify"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_quantify.pdb"
   "CMakeFiles/svk_quantify.dir/svk_quantify.cc.o"
   "CMakeFiles/svk_quantify.dir/svk_quantify.cc.o.d"
 )

@@ -1,8 +1,8 @@
-# Install script for directory: /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9
+# Install script for directory: /home/hmisung/sivic/sivic-sivic_redhat9
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/sivic_build")
+  set(CMAKE_INSTALL_PREFIX "/usr/local")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -12,7 +12,7 @@ if(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
     string(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
            CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
   else()
-    set(CMAKE_INSTALL_CONFIG_NAME "Debug")
+    set(CMAKE_INSTALL_CONFIG_NAME "")
   endif()
   message(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
 endif()
@@ -44,15 +44,15 @@ endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/local/sivic" TYPE FILE FILES
-    "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/README"
-    "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/LICENSE"
+    "/home/hmisung/sivic/sivic-sivic_redhat9/build4/README"
+    "/home/hmisung/sivic/sivic-sivic_redhat9/LICENSE"
     )
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/libs/src/cmake_install.cmake")
-  include("/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/applications/cmd_line/src/cmake_install.cmake")
+  include("/home/hmisung/sivic/sivic-sivic_redhat9/build4/libs/src/cmake_install.cmake")
+  include("/home/hmisung/sivic/sivic-sivic_redhat9/build4/applications/cmd_line/src/cmake_install.cmake")
 
 endif()
 
@@ -64,5 +64,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/hmisung/sivic/sivic-sivic_redhat9/build4/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

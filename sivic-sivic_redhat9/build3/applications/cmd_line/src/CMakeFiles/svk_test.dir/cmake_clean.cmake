@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_test"
-  "../Linux_x86_64_debug/svk_test.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_test"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_test.pdb"
   "CMakeFiles/svk_test.dir/svk_test.cc.o"
   "CMakeFiles/svk_test.dir/svk_test.cc.o.d"
 )

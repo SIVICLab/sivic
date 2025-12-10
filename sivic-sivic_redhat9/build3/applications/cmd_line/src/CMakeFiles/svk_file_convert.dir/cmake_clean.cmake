@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_file_convert"
-  "../Linux_x86_64_debug/svk_file_convert.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_file_convert"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_file_convert.pdb"
   "CMakeFiles/svk_file_convert.dir/svk_file_convert.cc.o"
   "CMakeFiles/svk_file_convert.dir/svk_file_convert.cc.o.d"
 )

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_noise"
-  "../Linux_x86_64_debug/svk_noise.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_noise"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_noise.pdb"
   "CMakeFiles/svk_noise.dir/svk_noise.cc.o"
   "CMakeFiles/svk_noise.dir/svk_noise.cc.o.d"
 )

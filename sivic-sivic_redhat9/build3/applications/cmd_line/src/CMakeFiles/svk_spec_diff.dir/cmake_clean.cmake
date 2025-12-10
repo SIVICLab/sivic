@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_spec_diff"
-  "../Linux_x86_64_debug/svk_spec_diff.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_spec_diff"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_spec_diff.pdb"
   "CMakeFiles/svk_spec_diff.dir/svk_spec_diff.cc.o"
   "CMakeFiles/svk_spec_diff.dir/svk_spec_diff.cc.o.d"
 )

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_reorder_epsi"
-  "../Linux_x86_64_debug/svk_reorder_epsi.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_reorder_epsi"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_reorder_epsi.pdb"
   "CMakeFiles/svk_reorder_epsi.dir/svk_reorder_epsi.cc.o"
   "CMakeFiles/svk_reorder_epsi.dir/svk_reorder_epsi.cc.o.d"
 )

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_dcmdump"
-  "../Linux_x86_64_debug/svk_dcmdump.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_dcmdump"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_dcmdump.pdb"
   "CMakeFiles/svk_dcmdump.dir/svk_dcmdump.cc.o"
   "CMakeFiles/svk_dcmdump.dir/svk_dcmdump.cc.o.d"
 )

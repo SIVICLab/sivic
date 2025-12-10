@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_peak_pick"
-  "../Linux_x86_64_debug/svk_peak_pick.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_peak_pick"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_peak_pick.pdb"
   "CMakeFiles/svk_peak_pick.dir/svk_peak_pick.cc.o"
   "CMakeFiles/svk_peak_pick.dir/svk_peak_pick.cc.o.d"
 )

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_freq_correct"
-  "../Linux_x86_64_debug/svk_freq_correct.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_freq_correct"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_freq_correct.pdb"
   "CMakeFiles/svk_freq_correct.dir/svk_freq_correct.cc.o"
   "CMakeFiles/svk_freq_correct.dir/svk_freq_correct.cc.o.d"
 )

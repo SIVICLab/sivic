@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_integrate_dynamic"
-  "../Linux_x86_64_debug/svk_integrate_dynamic.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_integrate_dynamic"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_integrate_dynamic.pdb"
   "CMakeFiles/svk_integrate_dynamic.dir/svk_integrate_dynamic.cc.o"
   "CMakeFiles/svk_integrate_dynamic.dir/svk_integrate_dynamic.cc.o.d"
 )

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_variable_flip_scaler"
-  "../Linux_x86_64_debug/svk_variable_flip_scaler.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_variable_flip_scaler"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_variable_flip_scaler.pdb"
   "CMakeFiles/svk_variable_flip_scaler.dir/svk_variable_flip_scaler.cc.o"
   "CMakeFiles/svk_variable_flip_scaler.dir/svk_variable_flip_scaler.cc.o.d"
 )

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_combine_spec"
-  "../Linux_x86_64_debug/svk_combine_spec.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_combine_spec"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_combine_spec.pdb"
   "CMakeFiles/svk_combine_spec.dir/svk_combine_spec.cc.o"
   "CMakeFiles/svk_combine_spec.dir/svk_combine_spec.cc.o.d"
 )

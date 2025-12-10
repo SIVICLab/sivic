@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_image_stats"
-  "../Linux_x86_64_debug/svk_image_stats.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_image_stats"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_image_stats.pdb"
   "CMakeFiles/svk_image_stats.dir/svk_image_stats.cc.o"
   "CMakeFiles/svk_image_stats.dir/svk_image_stats.cc.o.d"
 )

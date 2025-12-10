@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_image_threshold"
-  "../Linux_x86_64_debug/svk_image_threshold.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_image_threshold"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_image_threshold.pdb"
   "CMakeFiles/svk_image_threshold.dir/svk_image_threshold.cc.o"
   "CMakeFiles/svk_image_threshold.dir/svk_image_threshold.cc.o.d"
 )

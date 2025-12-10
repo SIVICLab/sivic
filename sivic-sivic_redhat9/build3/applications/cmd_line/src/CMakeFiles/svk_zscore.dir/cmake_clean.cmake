@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_zscore"
-  "../Linux_x86_64_debug/svk_zscore.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_zscore"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_zscore.pdb"
   "CMakeFiles/svk_zscore.dir/svk_zscore.cc.o"
   "CMakeFiles/svk_zscore.dir/svk_zscore.cc.o.d"
 )

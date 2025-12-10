@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_apodize"
-  "../Linux_x86_64_debug/svk_apodize.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_apodize"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_apodize.pdb"
   "CMakeFiles/svk_apodize.dir/svk_apodize.cc.o"
   "CMakeFiles/svk_apodize.dir/svk_apodize.cc.o.d"
 )

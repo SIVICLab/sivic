@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_psd_prescription_convert"
-  "../Linux_x86_64_debug/svk_psd_prescription_convert.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_psd_prescription_convert"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_psd_prescription_convert.pdb"
   "CMakeFiles/svk_psd_prescription_convert.dir/svk_psd_prescription_convert.cc.o"
   "CMakeFiles/svk_psd_prescription_convert.dir/svk_psd_prescription_convert.cc.o.d"
 )

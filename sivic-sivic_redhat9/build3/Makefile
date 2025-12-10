@@ -31,9 +31,6 @@ default_target: all
 
 .SUFFIXES: .hpux_make_needs_suffix_list
 
-# Produce verbose output by default.
-VERBOSE = 1
-
 # Command-line flag to silence nested $(MAKE).
 $(VERBOSE)MAKESILENT = -s
 
@@ -60,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9
+CMAKE_SOURCE_DIR = /home/hmisung/sivic/sivic-sivic_redhat9
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3
+CMAKE_BINARY_DIR = /home/hmisung/sivic/sivic-sivic_redhat9/build4
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -81,7 +78,7 @@ package/fast: package
 # Special rule for the target package_source
 package_source:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool for source..."
-	/usr/bin/cpack --config ./CPackSourceConfig.cmake /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CPackSourceConfig.cmake
+	/usr/bin/cpack --config ./CPackSourceConfig.cmake /home/hmisung/sivic/sivic-sivic_redhat9/build4/CPackSourceConfig.cmake
 .PHONY : package_source
 
 # Special rule for the target package_source
@@ -155,9 +152,9 @@ install/strip/fast: preinstall/fast
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/hmisung/sivic/sivic-sivic_redhat9/build4/CMakeFiles /home/hmisung/sivic/sivic-sivic_redhat9/build4//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/hmisung/sivic/sivic-sivic_redhat9/build4/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -886,6 +883,19 @@ svk_app_template/fast:
 	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build.make applications/cmd_line/src/CMakeFiles/svk_app_template.dir/build
 .PHONY : svk_app_template/fast
 
+#=============================================================================
+# Target rules for targets named svk_create_dcmraw
+
+# Build rule for target.
+svk_create_dcmraw: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 svk_create_dcmraw
+.PHONY : svk_create_dcmraw
+
+# fast build rule for target.
+svk_create_dcmraw/fast:
+	$(MAKE) $(MAKESILENT) -f applications/cmd_line/src/CMakeFiles/svk_create_dcmraw.dir/build.make applications/cmd_line/src/CMakeFiles/svk_create_dcmraw.dir/build
+.PHONY : svk_create_dcmraw/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -909,6 +919,7 @@ help:
 	@echo "... svk_average_spec"
 	@echo "... svk_channel2time"
 	@echo "... svk_combine_spec"
+	@echo "... svk_create_dcmraw"
 	@echo "... svk_create_secondary_capture"
 	@echo "... svk_dce_quantify"
 	@echo "... svk_dcm_deid"

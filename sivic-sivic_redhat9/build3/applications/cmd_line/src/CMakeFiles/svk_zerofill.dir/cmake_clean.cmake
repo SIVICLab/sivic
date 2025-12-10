@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_zerofill"
-  "../Linux_x86_64_debug/svk_zerofill.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_zerofill"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_zerofill.pdb"
   "CMakeFiles/svk_zerofill.dir/svk_zerofill.cc.o"
   "CMakeFiles/svk_zerofill.dir/svk_zerofill.cc.o.d"
 )

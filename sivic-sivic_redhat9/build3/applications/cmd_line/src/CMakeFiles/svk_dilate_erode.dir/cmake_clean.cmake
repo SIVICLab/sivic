@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_dilate_erode"
-  "../Linux_x86_64_debug/svk_dilate_erode.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_dilate_erode"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_dilate_erode.pdb"
   "CMakeFiles/svk_dilate_erode.dir/svk_dilate_erode.cc.o"
   "CMakeFiles/svk_dilate_erode.dir/svk_dilate_erode.cc.o.d"
 )

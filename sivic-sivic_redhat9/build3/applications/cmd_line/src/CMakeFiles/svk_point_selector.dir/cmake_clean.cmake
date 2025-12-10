@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_point_selector"
-  "../Linux_x86_64_debug/svk_point_selector.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_point_selector"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_point_selector.pdb"
   "CMakeFiles/svk_point_selector.dir/svk_point_selector.cc.o"
   "CMakeFiles/svk_point_selector.dir/svk_point_selector.cc.o.d"
 )

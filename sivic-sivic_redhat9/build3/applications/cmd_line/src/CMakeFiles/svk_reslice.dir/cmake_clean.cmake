@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../Linux_x86_64_debug/svk_reslice"
-  "../Linux_x86_64_debug/svk_reslice.pdb"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_reslice"
+  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_reslice.pdb"
   "CMakeFiles/svk_reslice.dir/svk_reslice.cc.o"
   "CMakeFiles/svk_reslice.dir/svk_reslice.cc.o.d"
 )
