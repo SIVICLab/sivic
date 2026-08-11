@@ -59,6 +59,7 @@
 #include <svkBool.h>
 #include <svkXML.h>
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkAlgorithmOutput.h>
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h>
 #include <svkImageReaderFactory.h>
 #include <string>
 
@@ -275,13 +276,14 @@ class svkAlgorithmPortMapper : public vtkObject
         vector<svkOutputPortInfo>   outputPorts;
 
 
-
+ 
     private:
 
         //! Sets a single input port
         void             SetInputPortFromXML( int port, vtkXMLDataElement* parameterElement );
 
-        //! Internal algorithm object
+
+	       //! Internal algorithm object
         vtkAlgorithm*    algo;
 
 };

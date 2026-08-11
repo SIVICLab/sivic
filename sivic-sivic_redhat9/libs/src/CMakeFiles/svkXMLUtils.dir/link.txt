@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../Linux_x86_64/libsvkXMLUtils.a CMakeFiles/svkXMLUtils.dir/svkXMLUtils.o
+/usr/bin/ranlib ../Linux_x86_64/libsvkXMLUtils.a

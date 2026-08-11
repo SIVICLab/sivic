@@ -110,7 +110,9 @@ class svkObliqueReslice : public svkImageAlgorithmWithPortMapper
                                 vtkInformationVector** inputVector, 
                                 vtkInformationVector* outputVector 
                             ); 
-
+		int ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector) override; 
 
 
     private:

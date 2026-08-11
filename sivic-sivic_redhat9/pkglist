@@ -1,0 +1,2 @@
+ 
+libX11-devel libXrender-devel libXrandr-devel libXdamage-devel libXcomposite-devel libXcursor-devel libXi-devel libXinerama-devel libXres-devel libXv-devel libXaw-devel libXmu-devel libXpm-devel libXtst-devel libXau-devel libXdmcp-devel libXScrnSaver-devel libxcb-devel xcb-util-wm-devel

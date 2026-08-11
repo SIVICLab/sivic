@@ -42,7 +42,6 @@
  */
 
 #include <vtkSmartPointer.h>
-
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
 #include <svkDdfVolumeReader.h>
@@ -66,8 +65,6 @@ extern "C" {
 #define UNDEFINED_TEMP -1111
 
 using namespace svk;
-
-
 
 int main (int argc, char** argv)
 {
@@ -299,6 +296,7 @@ int main (int argc, char** argv)
     }
 
     reader->Deidentify();
+
 
     return 0; 
 }

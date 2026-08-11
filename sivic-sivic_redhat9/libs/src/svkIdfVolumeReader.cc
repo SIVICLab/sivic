@@ -81,8 +81,9 @@ svkIdfVolumeReader::svkIdfVolumeReader()
 
     // IDF files are always big-endian.
     this->SetDataByteOrderToBigEndian();
-	this->SetNumberOfInputPorts(0);/*MSH*/
-    this->SetNumberOfOutputPorts(1); 
+/*MSH */
+	/*this->SetNumberOfInputPorts(0);
+    this->SetNumberOfOutputPorts(1); */
 }
 
 
@@ -859,6 +860,37 @@ void svkIdfVolumeReader::ParseIdfComment(string comment, string* PatientName,
     }
 }
 
+/* MSH */
+int svkIdfVolumeReader::ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector)
+{
+    // Handle REQUEST_DATA_OBJECT: create our output object
+    if (request->Has(vtkDemandDrivenPipeline::REQUEST_DATA_OBJECT()))
+    {
+        vtkDataObject* current = this->GetExecutive()->GetOutputData(0);
+        if (!current || !current->IsA("svkMriImageData"))
+        {
+            svkMriImageData* out = svkMriImageData::New();
+            this->GetExecutive()->SetOutputData(0, out);
+            out->Delete(); // pipeline owns reference now
+        }
+    }
+
+    // Call superclass to handle other request types (REQUEST_INFORMATION, REQUEST_DATA)
+    return this->Superclass::ProcessRequest(request, inputVector, outputVector);
+}
+
+int svkIdfVolumeReader::FillOutputPortInformation( int port, vtkInformation* info )
+
+ {
+    cerr << ">>> MSH, FillOutPortInformation called" << endl;
+     info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData"); /*MSH*/
+
+
+     return 1;
+ }
+
 
 /*
  *  Read IDF header fields into a string STL map for use during initialization 
@@ -1088,31 +1120,4 @@ bool svkIdfVolumeReader::IsIdfStudyIdAccessionNumber()
 
 
 
-/*MSH*/
-int svkIdfVolumeReader::ProcessRequest(vtkInformation* request,
-                                       vtkInformationVector** inputVector,
-                                       vtkInformationVector* outputVector)
-{
-    // Handle REQUEST_DATA_OBJECT: create our output object
-    if (request->Has(vtkDemandDrivenPipeline::REQUEST_DATA_OBJECT()))
-    {
-        vtkDataObject* current = this->GetExecutive()->GetOutputData(0);
-        if (!current || !current->IsA("svkMriImageData"))
-        {
-            svkMriImageData* out = svkMriImageData::New();
-            this->GetExecutive()->SetOutputData(0, out);
-            out->Delete(); // pipeline owns reference now
-        }
-    }
 
-    // Call superclass to handle other request types (REQUEST_INFORMATION, REQUEST_DATA)
-    return this->Superclass::ProcessRequest(request, inputVector, outputVector);
-}
-int svkIdfVolumeReader::FillOutputPortInformation( int port, vtkInformation* info )
-
- {
-     info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData"); /*MSH*/
-
-
-     return 1;
- }

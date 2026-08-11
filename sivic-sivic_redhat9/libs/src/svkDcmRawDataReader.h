@@ -46,6 +46,8 @@
 
 #include <svkDcmVolumeReader.h>
 
+/* MSH for VTK 9.3*/
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h>
 
 namespace svk {
 
@@ -84,6 +86,11 @@ class svkDcmRawDataReader : public svkDcmVolumeReader
 
         svkDcmRawDataReader();
         ~svkDcmRawDataReader();
+
+
+        int ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector) override; 
       
         virtual int             FillOutputPortInformation(int port, vtkInformation* info);
         virtual void            ExecuteInformation();

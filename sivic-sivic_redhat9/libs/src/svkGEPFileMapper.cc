@@ -40,6 +40,8 @@
  */
 
 
+
+
 #include <svkGEPFileMapper.h>
 #include <svkMrsImageData.h>
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkCellData.h>
@@ -2631,7 +2633,10 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
 
         cout << "LOAD_AVG OF ACQUISITIONS" << endl;
 
-        double cmplxPt[2];
+       double cmplxPt[2];
+	/*MSH, for DV30, based on Sana*/
+/*		float cmplxPt[2];*/
+	
         float cmplxPtAv[2];
 
         int numFreqPts = this->dcmHeader->GetIntValue( "DataPointColumns" );
@@ -2663,6 +2668,7 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
                         mrsData->GetSpectrum( 0, 0, 0, acq, coil)
                     ); 
                     spectrum->GetTuple(freq, cmplxPt);
+					/*spectrum->GetTupleValue(freq, cmplxPt);*/
                     cmplxPtAv[0] += cmplxPt[0]; 
                     cmplxPtAv[1] += cmplxPt[1]; 
                     if ( freq == 0) {

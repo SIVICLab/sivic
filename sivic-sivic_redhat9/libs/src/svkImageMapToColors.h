@@ -49,7 +49,7 @@
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDataObject.h>
 #include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkImageMapToColors.h>
 //#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkInstantiator.h>
-
+#include </mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3/vtkDemandDrivenPipeline.h> 
 #include <svkMriImageData.h>
 #include <svkImageData.h>
 
@@ -82,6 +82,9 @@ class svkImageMapToColors : public vtkImageMapToColors
           vtkInformationVector *outputVector);
 
         virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info);
+		int ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector) override; 
 
 };
 

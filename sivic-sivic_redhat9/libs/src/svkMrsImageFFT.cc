@@ -108,7 +108,7 @@ int svkMrsImageFFT::ProcessRequest(vtkInformation* request,
     if (request->Has(vtkDemandDrivenPipeline::REQUEST_DATA_OBJECT()))
     {
         vtkDataObject* current = this->GetExecutive()->GetOutputData(0);
-        if (!current || !current->IsA("svkMriImageData"))
+        if (!current || !current->IsA("svkMrsImageData"))
         {
             svkMrsImageData* out = svkMrsImageData::New();
             this->GetExecutive()->SetOutputData(0, out);

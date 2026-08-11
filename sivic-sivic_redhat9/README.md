@@ -19,13 +19,20 @@ participation is encouraged.  Please see the following links for further informa
     
     https://lists.sourceforge.net/lists/listinfo/sivic-users
     
+SIVIC RHEL 9
+How to build:
 
+git clone git@github.com:SIVICLab/sivic.git
+Make sure it's sivic_redhat 9 branch
+cd /home/erdiaz/Desktop/sivic_next/sivic-sivic_redhat9/build3
+ccmake .. gives you access to Cmake Configurations
+Currently Cmake Build Type is in DEBUG, change it to None or just leave it as Debug
+Press C to configure, then g to generate
+do make
+then make install
+The options to the command lines is Build Apps = ON, Build_Libs = On, and Build_Viz_LIb = ON.
 NOTES FOR WINDOWS USERS:
-    * To run sivic simply double click on sivic_windows/bin/sivic.bat, or run from the msdos prompt.
-    * This version of sivic should run on Windows Vista, Windows 7, and Windows 2003 Server.
-    * Some features are disabled in the Windows version (using the "exam" button and the quantification demo). These features should be available soon.
-    * Command line tools are not yet available, but also should be soon.
-    * Please contact us via the sourceforge site above if you have any problems.
+
 
 ## Citations
 

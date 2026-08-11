@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../Linux_x86_64/libsvkadapt.a CMakeFiles/svkadapt.dir/svkDcmtkAdapter.o CMakeFiles/svkadapt.dir/svkDcmtkIod.o CMakeFiles/svkadapt.dir/svkDcmtkUtils.o CMakeFiles/svkadapt.dir/svkDcmtkException.o
+/usr/bin/ranlib ../Linux_x86_64/libsvkadapt.a

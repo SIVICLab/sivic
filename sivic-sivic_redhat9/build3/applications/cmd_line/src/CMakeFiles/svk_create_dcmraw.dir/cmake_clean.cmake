@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_create_dcmraw"
-  "/home/hmisung/sivic/sivic-sivic_redhat9/Linux_x86_64/svk_create_dcmraw.pdb"
+  "../../../bin/Release/svk_create_dcmraw"
+  "../../../bin/Release/svk_create_dcmraw.pdb"
   "CMakeFiles/svk_create_dcmraw.dir/svk_create_dcmraw.cc.o"
   "CMakeFiles/svk_create_dcmraw.dir/svk_create_dcmraw.cc.o.d"
 )

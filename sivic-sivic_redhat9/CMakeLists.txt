@@ -83,8 +83,15 @@ IF(COMMAND CMAKE_POLICY)
     CMAKE_POLICY(SET CMP0005 OLD)
 ENDIF(COMMAND CMAKE_POLICY)
 #MSH
+cmake_policy(SET CMP0072 NEW)
+set(OpenGL_GL_PREFERENCE GLVND)
+
+#MSH
 message(STATUS "CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "CMAKE_BINARY_DIR = ${CMAKE_BINARY_DIR}")
+
+
 option( BUILD_LIBRARY "Build library." TRUE )
 option( BUILD_VIZ_LIBRARY "Build visualization library." TRUE )
 option( BUILD_SIVIC "Build stand-alone application." TRUE )
@@ -107,9 +114,13 @@ ADD_DEFINITIONS(-DSVK_RELEASE_VERSION="\\"${SVK_RELEASE_VERSION}\\"" )
 ADD_DEFINITIONS( -DSVK_MAJOR_VERSION="${SVK_MAJOR_VERSION}" )
 ADD_DEFINITIONS( -DSVK_MINOR_VERSION="${SVK_MINOR_VERSION}" )
 
+#cmake -DCMAKE_LIBRARY_PATH=set(SDK_ROOT "/scratch/flatpak/runtime/org.freedesktop.Sdk/x86_64/25.08/c87b8601d7175338caaa578aafd21cfd3dd8ff0d8519257c5ac7f98728739968/files/lib/x86_64-linux-gnu/")
+link_directories(${SDK_ROOT})
 #MSH
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/bin/Debug")
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/bin/Debug")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release")
+set(EXECUTABLE_OUTPUTPATH "${CMAKE_SOURCE_DIR}/Linux_x86_64")
+
 
 IF(UNIX)
     IF( NOT BUILD_EPIC )
@@ -135,8 +146,8 @@ message("vtk_libraries:${VTK_LIBRARIES}")
 ###################################
 #   VTK
 ###################################
-#set(VTK_INCLUDE_DIRS "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3")
-#set(VTK_INCLUDE_DIRS "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3")
+set(VTK_INCLUDE_DIRS "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/lib64/cmake/vtk-9.3")
+set(VTK_INCLUDE_DIRS "/mnt/nfs/rad/apps/netopt/versions/vtk/VTK-9.3.0/include/vtk-9.3")
 
 
 
@@ -343,6 +354,6 @@ ENDIF(CLION_BUILD)
 
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin") # Not working
 message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-INSTALL_FILES( /local/sivic FILES README LICENSE)
-#INSTALL_FILES( /data/lilab1 FILES README LICENSE)
+#INSTALL_FILES( /local/sivic FILES README LICENSE)
+INSTALL_FILES( /home/hmisung/tmp/sivic FILES README LICENSE)
 

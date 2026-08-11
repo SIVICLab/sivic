@@ -96,6 +96,30 @@ int svkImageMapToColors::RequestData(
  */
 int svkImageMapToColors::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
-    info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData" );
+    info->Set( vtkDataObject::DATA_TYPE_NAME(), "Debug:svkMriImageData" );
     return 1;
 }
+
+/*MSH added for update with VTK 9.3*/
+// ProcessRequest handles pipeline requests
+int svkImageMapToColors::ProcessRequest(vtkInformation* request,
+                                       vtkInformationVector** inputVector,
+                                       vtkInformationVector* outputVector)
+{
+    // Handle REQUEST_DATA_OBJECT: create our output object
+    if (request->Has(vtkDemandDrivenPipeline::REQUEST_DATA_OBJECT()))
+    {
+        vtkDataObject* current = this->GetExecutive()->GetOutputData(0);
+        if (!current || !current->IsA("svkMriImageData"))
+        {
+            svkMriImageData* out = svkMriImageData::New();
+            this->GetExecutive()->SetOutputData(0, out);
+            out->Delete(); // pipeline owns reference now
+        }
+    }
+
+    // Call superclass to handle other request types (REQUEST_INFORMATION, REQUEST_DATA)
+    return this->Superclass::ProcessRequest(request, inputVector, outputVector);
+}
+
+
